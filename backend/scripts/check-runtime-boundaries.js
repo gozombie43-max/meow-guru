@@ -16,6 +16,7 @@ for (const folder of ['routes', 'controllers', 'agents']) inspect(folder);
 for (const path of [
   'services/questionService.js', 'services/tutorJobs.js', 'services/conceptGroupingWorker.js',
   'services/questions/questionCache.js', 'services/questions/questionMetadataCache.js',
+  'services/questions/questionMetadataService.js', 'services/notes/noteImageCleanup.js',
   'services/questions/topicCountSnapshot.js', 'services/questions/conceptGroupService.js',
   'services/training/application/rebuildLearnerState.js',
 ]) {

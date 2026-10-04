@@ -21,3 +21,14 @@ it('propagates provider deadlines instead of reporting success', async () => {
   await expect(tutorChat({ context: 'Algebra', message: 'help' })).rejects.toMatchObject({ statusCode: 504 });
   expect(chatCompleteMessages).toHaveBeenCalledOnce();
 });
+it('bounds extracted Unicode text before both vision and fallback model calls', async () => {
+  chatCompleteMessages.mockRejectedValueOnce(new Error('unsupported image')).mockResolvedValueOnce('Answer');
+  const extracted = 'क'.repeat(12000);
+  await tutorChat({ context: 'Algebra', message: 'help' }, { text: `${extracted}DO-NOT-SEND-OVER-BUDGET`, imageParts: [{ type: 'image_url', image_url: { url: 'data:image/png;base64,fixture' } }] });
+  const first = chatCompleteMessages.mock.calls[0][0].at(-1).content[0].text;
+  const fallback = chatCompleteMessages.mock.calls[1][0].at(-1).content;
+  for (const content of [first, fallback]) {
+    expect(content).toContain(extracted);
+    expect(content).not.toContain('DO-NOT-SEND-OVER-BUDGET');
+  }
+});

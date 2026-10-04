@@ -1,5 +1,5 @@
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
-import { getMongoDB, getQuestionsCollection } from "../../config/mongodb.js";
+import { aggregateQuestionModeCounts, aggregateQuestionFacets, findMetadataScopes } from '../../repositories/questionMetadataRepository.js';
 import { createHash } from 'node:crypto';
 import { redisGetJson, redisGetJsonMany, redisSetJson } from '../../config/redis.js';
 import { isNormalizedQuestionKeysEnabled, questionCountsCache, revisionedQuestionCacheKey } from "./questionCache.js";
@@ -44,11 +44,10 @@ export async function fetchQuestionCounts(params, { sharedChecked = false } = {}
     return shared;
   }
 
-  const collection = getQuestionsCollection();
   if (isNormalizedQuestionKeysEnabled()) {
     const topicKey = normalizeSearchKey(topic);
     const filter = topic ? { topicKey: ['synonymsantonyms', 'antosynopyq'].includes(topicKey) ? { $in: ['synonymsantonyms', 'antosynopyq'] } : topicKey } : { subjectKey: normalizeSearchKey(subject) };
-    const grouped = await collection.aggregate([{ $match: filter }, { $group: { _id: '$modeKey', count: { $sum: 1 } } }]).toArray();
+    const grouped = await aggregateQuestionModeCounts([{ $match: filter }, { $group: { _id: '$modeKey', count: { $sum: 1 } } }]);
     const counts = { concept: 0, formula: 0, mixed: 0, aiChallenge: 0, easy: 0, hard: 0, studyMode: 0 };
     for (const row of grouped) if (Object.hasOwn(counts, row._id)) counts[row._id] += Number(row.count) || 0;
     questionCountsCache.set(cacheKey, counts);
@@ -73,11 +72,7 @@ export async function fetchQuestionCounts(params, { sharedChecked = false } = {}
     );
   }
 
-  let grouped = await collection
-    .aggregate(
-      questionModeAggregation(combineMongoConditions(directConditions)),
-    )
-    .toArray();
+  let grouped = await aggregateQuestionModeCounts(questionModeAggregation(combineMongoConditions(directConditions)));
 
   if (topic && !isSynonymAntonymTopic && grouped.length === 0) {
     const topicRegex = caseInsensitiveExact(topic);
@@ -94,11 +89,7 @@ export async function fetchQuestionCounts(params, { sharedChecked = false } = {}
         ],
       },
     ];
-    grouped = await collection
-      .aggregate(
-        questionModeAggregation(combineMongoConditions(fallbackConditions)),
-      )
-      .toArray();
+    grouped = await aggregateQuestionModeCounts(questionModeAggregation(combineMongoConditions(fallbackConditions)));
   }
 
   const counts = {
@@ -132,7 +123,6 @@ export async function fetchQuestionsMeta(params) {
 }
 
 async function buildQuestionsMeta(params) {
-  const collection = getQuestionsCollection();
   const { topic, subject, mode } = params;
 
   if (!topic && !subject) {
@@ -176,7 +166,7 @@ async function buildQuestionsMeta(params) {
 
   const mongoFilter = combineMongoConditions(conditions);
 
-  const [facets] = await collection.aggregate([
+  const [facets] = await aggregateQuestionFacets([
     { $match: mongoFilter },
     { $facet: {
       total: [{ $count: 'count' }],
@@ -205,7 +195,7 @@ async function buildQuestionsMeta(params) {
         { $sort: { _id: 1 } },
       ],
     } },
-  ], { maxTimeMS: 10000 }).toArray();
+  ]);
   const { exams: examAgg, concepts: conceptAgg, letters: letterAgg } = facets;
   const total = facets.total[0]?.count ?? 0;
 
@@ -230,8 +220,7 @@ export async function refreshUploadedQuestionMetadata(questions) {
   const topics = new Set(questions.map(q => normalizeSearchKey(q.topic)));
   const subjects = new Set(questions.map(q => normalizeSearchKey(q.subject)));
   try {
-    const entries = await getMongoDB().collection("questionMetadata")
-      .find({ params: { $exists: true } }, { projection: { params: 1 } }).toArray();
+    const entries = await findMetadataScopes();
     const affected = entries.filter(({ params }) => params.topic
       ? topics.has(normalizeSearchKey(params.topic))
       : subjects.has(normalizeSearchKey(params.subject)));

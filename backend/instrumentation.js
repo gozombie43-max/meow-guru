@@ -1,6 +1,9 @@
 import 'dotenv/config';
+import { validateEnvironment } from './config/environment.js';
 import { getReleaseId } from './infrastructure/releaseInfo.js';
 import { sanitizedExporter } from './infrastructure/traceExporter.js';
+
+validateEnvironment();
 
 // Preload before any HTTP/Mongo/provider modules are imported. Export is opt-in.
 if (process.env.OTEL_ENABLED === 'true') {

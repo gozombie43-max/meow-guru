@@ -14,8 +14,9 @@ import * as questionBrowserSort from './011-question-browser-sort.js';
 import * as normalizedQuestionIndexes from './012-normalized-question-query-indexes.js';
 import * as idempotency from './013-idempotency.js';
 import * as feedKeysets from './014-feed-keysets.js';
+import * as auditSecurity from './015-audit-security.js';
 
-export const migrations = [existingIndexes, runtime, productionHardening, readiness, training, oauthState, trainingHardening, trainingPerformance, trainingExamWideCandidates, trainingLearnerStateMeta, questionBrowserSort, normalizedQuestionIndexes, idempotency, feedKeysets];
+export const migrations = [existingIndexes, runtime, productionHardening, readiness, training, oauthState, trainingHardening, trainingPerformance, trainingExamWideCandidates, trainingLearnerStateMeta, questionBrowserSort, normalizedQuestionIndexes, idempotency, feedKeysets, auditSecurity];
 export async function assertMigrations(db) {
   const applied = await db.collection('schemaMigrations').find({ _id: { $in: migrations.map(m => m.id) }, completedAt: { $exists: true } }, { timeoutMS: 2000 }).toArray();
   if (applied.length !== migrations.length) throw new Error('Database migrations required: run npm run db:migrate before starting this release');

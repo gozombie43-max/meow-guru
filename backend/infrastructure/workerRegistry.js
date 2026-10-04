@@ -50,12 +50,14 @@ import { runDailyPracticeReminderWorkerOnce } from '../services/dailyPracticeRem
 import { runStreakProtectionWorkerOnce } from '../services/streakProtectionWorker.js';
 import { runBattleSeasonWorkerOnce } from '../services/battleSeasonWorker.js';
 import { processConceptGroupingJob } from '../services/conceptGroupingWorker.js';
+import { cleanupNoteImages, startNoteImageCleanup, stopNoteImageCleanup, waitForNoteImageCleanupIdle } from '../services/notes/noteImageCleanup.js';
 
 let queuedWorkers;
-const scheduledNames = new Set(['ConceptGrouping', 'ScheduledNotification', 'DailyPracticeReminder', 'StreakProtection', 'BattleSeason']);
+const scheduledNames = new Set(['ConceptGrouping', 'ScheduledNotification', 'DailyPracticeReminder', 'StreakProtection', 'BattleSeason', 'NoteImageCleanup']);
 const pollInterval = (name, fallback) => { const value = Number(process.env[name]); return Number.isFinite(value) && value > 0 ? value : fallback; };
 
 const workers = [
+  { name: 'NoteImageCleanup', start: startNoteImageCleanup, stop: stopNoteImageCleanup, idle: waitForNoteImageCleanupIdle },
   { name: "ConceptGrouping", start: startConceptGroupingWorker, stop: stopConceptGroupingWorker, idle: waitForConceptGroupingWorkerIdle },
   { name: "ScheduledNotification", start: startScheduledNotificationWorker, stop: stopScheduledNotificationWorker, idle: waitForScheduledNotificationWorkerIdle },
   { name: "DailyPracticeReminder", start: startDailyPracticeReminderWorker, stop: stopDailyPracticeReminderWorker, idle: waitForDailyPracticeReminderWorkerIdle },
@@ -70,6 +72,7 @@ let stopping = false;
 export async function startWorkers() {
   stopping = false;
   queuedWorkers = await startMaintenanceQueue([
+    { name: 'NoteImageCleanup', intervalMs: 60_000, run: cleanupNoteImages },
     { name: 'ConceptGrouping', intervalMs: 5000, run: processConceptGroupingJob },
     { name: 'ScheduledNotification', intervalMs: pollInterval('NOTIFICATION_WORKER_POLL_MS', 30000), run: runScheduledNotificationWorkerOnce },
     { name: 'DailyPracticeReminder', intervalMs: pollInterval('DAILY_REMINDER_WORKER_POLL_MS', 60000), run: runDailyPracticeReminderWorkerOnce },

@@ -8,7 +8,7 @@ import { acquireAiLease } from '../../middleware/aiAdmission.js';
 let mongo, db;
 const legacyRefreshToken = () => jwt.sign(
   { id: 'user', email: 'old@example.com', role: 'admin', jti: 'legacy-refresh-jti' },
-  process.env.REFRESH_TOKEN_SECRET || 'dev-fallback-refresh-secret-key-change-in-prod',
+  process.env.REFRESH_TOKEN_SECRET,
   { expiresIn: '30d' },
 );
 beforeAll(async () => {

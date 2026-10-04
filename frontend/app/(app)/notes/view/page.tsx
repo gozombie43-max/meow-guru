@@ -1,5 +1,6 @@
 "use client";
 import type { Note } from "@/features/notes/types";
+import { resolveNoteImageSources } from '@/features/notes/images';
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -92,7 +93,7 @@ function NoteViewContent() {
           <iframe
             className="note-view-frame"
             title={note.title || "Note preview"}
-            srcDoc={note.body || "<p>No HTML content found for this note.</p>"}
+            srcDoc={resolveNoteImageSources(note.body || "<p>No HTML content found for this note.</p>")}
             sandbox="allow-scripts"
             style={styles.iframe}
           />

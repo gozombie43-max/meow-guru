@@ -9,19 +9,24 @@ import { idempotency } from '../middleware/idempotency.js';
 import multer from "multer";
 import { chatComplete } from "../ai/azureClient.js";
 import adminAuth from "../middleware/auth.js";
-import { protect, optionalAuth } from "../middleware/protect.js";
+import { protect } from "../middleware/protect.js";
 import { aiLimiter } from '../middleware/rateLimiter.js';
 import { aiAdmission, acquireAiLease, releaseAiLease } from '../middleware/aiAdmission.js';
 import { tutorRequestSchema, tutorReplySchema, tutorJobResponseSchema } from '@meow/contracts/tutor';
+import { validateTutorAttachment, MAX_TUTOR_ATTACHMENT_BYTES } from '../services/uploads/tutorAttachment.js';
+import { reserveTutorUsage } from '../repositories/tutorQuotaRepository.js';
+import { imageBudget } from '../infrastructure/dependencyBoundary.js';
 
 const router = express.Router();
+// Establish the authenticated identity before generation quotas and admission.
+router.use(protect);
 // Polling and cancellation are inexpensive and do not consume generation quota.
 router.use((req, res, next) => req.method === 'POST' ? aiLimiter(req, res, next) : next());
-router.post('/quota', protect, async (req, res) => {
+router.post('/quota', async (req, res) => {
   const lease = await acquireAiLease(req.user.id);
   res.json({ ok: true, leaseId: lease.leaseId });
 });
-router.delete('/quota/:leaseId', protect, async (req, res) => {
+router.delete('/quota/:leaseId', async (req, res) => {
   await releaseAiLease(req.user.id, req.params.leaseId);
   res.json({ ok: true });
 });
@@ -29,13 +34,7 @@ router.use((req, res, next) => req.method === 'POST' ? aiAdmission(req, res, nex
 
 const tutorUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 18 * 1024 * 1024, files: 1, fields: 4, parts: 5, fieldSize: 200000 },
-  fileFilter: (_req, file, cb) => {
-    const allowed =
-      file.mimetype.startsWith("image/") || file.mimetype === "application/pdf";
-    if (allowed) return cb(null, true);
-    return cb(new Error("Only image files and PDFs are allowed"));
-  },
+  limits: { fileSize: MAX_TUTOR_ATTACHMENT_BYTES, files: 1, fields: 4, parts: 5, fieldSize: 200000 },
 });
 
 function parseMaybeJSON(value, fallback) {
@@ -61,7 +60,7 @@ function wakeTutorAttachmentWorker() {
     });
 }
 
-router.post('/diagram', protect, async (req, res, next) => {
+router.post('/diagram', async (req, res, next) => {
   const question = typeof req.body?.question === 'string' ? req.body.question.trim() : '';
   if (!question) return res.status(400).json({ error: 'Question text is required' });
   if (question.length > 4000) return res.status(413).json({ error: 'Question text is too long' });
@@ -100,7 +99,7 @@ Return a JSON array like this:
 });
 
 // ── 2. Generate Explanation for a Question ────────────
-router.post("/explain", protect, async (req, res) => {
+router.post("/explain", async (req, res) => {
   const { question, correctAnswer, options } = req.body;
 
   if (!question) return res.status(400).json({ error: "question is required" });
@@ -121,8 +120,13 @@ Give a clear step-by-step explanation. Keep it concise.`;
 });
 
 // ── 2b. Tutor chat for submitted quiz questions ───────
-router.post('/tutor-chat', optionalAuth, tutorUpload.single('attachment'), async (req, res) => {
-  const userId = req.user?.id ? String(req.user.id) : (req.ip || 'anonymous');
+router.post('/tutor-chat', (req, res, next) => {
+  tutorUpload.single('attachment')(req, res, error => {
+    if (!error) return next();
+    return res.status(error.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({ error: 'Provide one JPG, PNG, WebP image or PDF, up to 8 MB.' });
+  });
+}, async (req, res) => {
+  const userId = String(req.user.id);
   const parsed = tutorRequestSchema.safeParse({
     context: req.body.context,
     message: req.body.message,
@@ -134,26 +138,28 @@ router.post('/tutor-chat', optionalAuth, tutorUpload.single('attachment'), async
   if (!input.context || (!input.message && !req.file)) return res.status(400).json({ error: 'context and message or attachment are required' });
   if (JSON.stringify(input).length > 200000) return res.status(413).json({ error: 'Chat context is too large' });
   if (req.file) {
-    const job = await enqueueTutorJob(userId, input, req.file, req.get('Idempotency-Key'));
+    const attachment = await imageBudget.execute(() => validateTutorAttachment(req.file));
+    const job = await enqueueTutorJob(userId, input, attachment, req.get('Idempotency-Key'));
     wakeTutorAttachmentWorker();
     return res.status(202).json(tutorJobResponseSchema.parse({ success: true, jobId: job._id, status: job.status }));
   }
   try {
+    await reserveTutorUsage(userId, input);
     res.json(tutorReplySchema.parse(await tutorChat(input)));
   } catch (err) {
     runtimeLog.error('tutor-chat error:', err?.message || err);
-    res.status(err.statusCode || 502).json({ success: false, error: 'AI request failed. Please retry shortly.' });
+    res.status(err.statusCode || 502).json({ success: false, error: err.statusCode === 429 ? err.message : 'AI request failed. Please retry shortly.' });
   }
 });
-router.get('/tutor-jobs/:id', optionalAuth, async (req, res) => {
-  const userId = req.user?.id ? String(req.user.id) : (req.ip || 'anonymous');
+router.get('/tutor-jobs/:id', async (req, res) => {
+  const userId = String(req.user.id);
   const job = await getTutorJob(userId, req.params.id);
   if (!job) return res.status(404).json({ error: 'Job not found' });
   if (job.status === 'queued' || job.status === 'running') wakeTutorAttachmentWorker();
   res.json(tutorJobResponseSchema.parse({ jobId: job._id, status: job.status, ...(job.status === 'completed' ? job.result : {}), ...(job.status === 'failed' ? { error: 'Attachment processing failed. Please retry.' } : {}) }));
 });
-router.delete('/tutor-jobs/:id', optionalAuth, async (req, res) => {
-  const userId = req.user?.id ? String(req.user.id) : (req.ip || 'anonymous');
+router.delete('/tutor-jobs/:id', async (req, res) => {
+  const userId = String(req.user.id);
   const cancelled = await cancelTutorJob(userId, req.params.id);
   res.status(cancelled ? 200 : 404).json({ cancelled });
 });

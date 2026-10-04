@@ -256,8 +256,8 @@ function AiChatPageContent() {
       return;
     }
 
-    if (file.size > 18 * 1024 * 1024) {
-      setAttachmentError('File must be under 18 MB.');
+    if (file.size > 8 * 1024 * 1024) {
+      setAttachmentError('File must be under 8 MB.');
       event.target.value = '';
       return;
     }
@@ -485,7 +485,7 @@ function AiChatPageContent() {
                 ref={fileInputRef}
                 className={styleClasses("file-input")}
                 type="file"
-                accept="image/*,application/pdf"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
                 onChange={handleAttachmentChange}
                aria-label="Choose file"/>
               <button data-ui-button="state" data-ui-shape="icon"

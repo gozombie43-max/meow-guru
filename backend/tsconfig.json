@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "checkJs": true,
+    "checkJs": false,
     "noEmit": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
@@ -10,5 +10,10 @@
     "strict": true,
     "types": ["node"]
   },
-  "include": ["config/processRole.js"]
+  "include": [
+    "config/processRole.js", "config/environment.js", "auth/jwt.js", "auth/requestOrigin.js",
+    "middleware/requireRole.js", "repositories/questionMetadataRepository.js",
+    "services/tutorPolicy.js", "services/uploads/validatedImage.js", "services/uploads/tutorAttachment.js",
+    "services/notes/imageKeys.js"
+  ]
 }

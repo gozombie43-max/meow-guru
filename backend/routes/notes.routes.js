@@ -7,6 +7,8 @@ import { v4 as uuidv4 } from "uuid";
 import { listNotes, findNoteById, insertNote, patchNoteDocument, deleteNoteById } from '../repositories/notesRepository.js';
 
 import adminAuth from "../middleware/auth.js";
+import { noteImageKeys } from '../services/notes/imageKeys.js';
+import { retainNoteImages, scheduleNoteImageCleanup } from '../repositories/noteImageRepository.js';
 
 const router = express.Router();
 
@@ -156,6 +158,8 @@ router.post(
       const note = {
         ...req.body,
 
+        imageKeys: noteImageKeys(req.body?.body),
+
         id:
           uuidv4(),
 
@@ -166,6 +170,7 @@ router.post(
           now,
       };
 
+      await retainNoteImages(note.imageKeys);
       await insertNote(note);
 
       return res
@@ -181,10 +186,10 @@ router.post(
       );
 
       return res
-        .status(500)
+        .status(err.statusCode || 500)
         .json({
           error:
-            "Failed to create note",
+            err.statusCode ? err.message : "Failed to create note",
         });
     }
   }
@@ -232,7 +237,12 @@ router.put(
       const updatedAt =
         new Date().toISOString();
 
+      allowedUpdates.imageKeys = noteImageKeys(Object.hasOwn(allowedUpdates, 'body') ? allowedUpdates.body : existing.body);
+      await retainNoteImages(allowedUpdates.imageKeys);
       await patchNoteDocument(existing._id, { ...allowedUpdates, updatedAt });
+
+      const removed = noteImageKeys(existing.body).filter(key => !allowedUpdates.imageKeys.includes(key));
+      await scheduleNoteImageCleanup(removed);
 
       const updated = {
         ...sanitizeNote(existing),
@@ -257,10 +267,10 @@ router.put(
       );
 
       return res
-        .status(500)
+        .status(err.statusCode || 500)
         .json({
           error:
-            "Failed to update note",
+            err.statusCode ? err.message : "Failed to update note",
         });
     }
   }
@@ -276,6 +286,7 @@ router.delete(
   adminAuth,
   async (req, res) => {
     try {
+      const existing = await findNoteById(req.params.id);
       const result =
         await deleteNoteById(req.params.id);
 
@@ -290,6 +301,7 @@ router.delete(
           });
       }
 
+      await scheduleNoteImageCleanup(noteImageKeys(existing?.body));
       return res.json({
         success: true,
       });

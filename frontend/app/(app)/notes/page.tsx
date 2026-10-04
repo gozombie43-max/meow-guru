@@ -6,10 +6,14 @@ import { BookOpen, FileText, Pencil, Plus, Trash2 } from "lucide-react";
 import { fetchWithRetry } from "@/lib/api/http";
 import { API_BASE as API } from "@/lib/api-base";
 import styles from "./notes.module.css";
+import { useAuth } from '@/context/AuthContext';
+import { canManageNotes } from '@/features/notes/permissions';
 
 const TYPE_LABELS = { formula: "Formula", tip: "Tip & trick", note: "Note" };
 
 export default function NotesPage() {
+  const { user, loading: authLoading } = useAuth();
+  const canWrite = !authLoading && canManageNotes(user?.role);
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterTopic, setFilterTopic] = useState("");
@@ -44,6 +48,7 @@ export default function NotesPage() {
   }, [fetchNotes]);
 
   const handleDelete = async (id: string) => {
+    if (!canWrite) return;
     if (!confirm("Delete this note?")) return;
     setDeleting(id);
     try {
@@ -65,7 +70,7 @@ export default function NotesPage() {
       <div className={styles.content}>
         <header className={styles.header}>
           <div><h1>My notes</h1><p>Your revision library</p></div>
-          <Link href="/notes/new" data-ui-button="primary"><Plus size={18} aria-hidden="true" />New note</Link>
+          {canWrite && <Link href="/notes/new" data-ui-button="primary"><Plus size={18} aria-hidden="true" />New note</Link>}
         </header>
         <div className={styles.filters} role="search" aria-label="Find notes">
           <input type="search" placeholder="Search title, topic or tags" aria-label="Search notes" value={search} onChange={event => setSearch(event.target.value)} />
@@ -81,7 +86,7 @@ export default function NotesPage() {
             <BookOpen size={32} aria-hidden="true" />
             <h2>{filtered ? "No matching notes" : "Make room for your next idea"}</h2>
             <p>{filtered ? "Try a different search or clear your filters to see your library." : "Keep formulas, useful shortcuts and topic notes together for your next revision."}</p>
-            {filtered ? <button data-ui-button="secondary" onClick={clearFilters}>Clear filters</button> : <Link href="/notes/new" data-ui-button="primary">Create your first note</Link>}
+            {filtered ? <button data-ui-button="secondary" onClick={clearFilters}>Clear filters</button> : canWrite ? <Link href="/notes/new" data-ui-button="primary">Create your first note</Link> : null}
           </section>
         ) : !error && (
           <>
@@ -94,10 +99,10 @@ export default function NotesPage() {
                   {note.topic && <p className={styles.meta}>{note.topic}</p>}
                   {!!note.tags?.length && <div className={styles.tags}>{note.tags.map(tag => <span key={tag}>{tag}</span>)}</div>}
                   {(note.updatedAt || note.createdAt) && <p className={styles.meta}>Updated {new Date(note.updatedAt || note.createdAt!).toLocaleDateString()}</p>}
-                  <div className={styles.actions}>
+                  {canWrite && <div className={styles.actions}>
                     <Link data-ui-button="secondary" href={`/notes/edit?id=${encodeURIComponent(note.id)}`}><Pencil size={16} aria-hidden="true" />Edit</Link>
                     <button data-ui-button="icon" aria-label={`Delete ${note.title || "note"}`} onClick={() => void handleDelete(note.id)} disabled={deleting !== null}><Trash2 size={18} aria-hidden="true" /></button>
-                  </div>
+                  </div>}
                 </article>
               ))}
             </div>

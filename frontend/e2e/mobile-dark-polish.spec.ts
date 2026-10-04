@@ -21,7 +21,7 @@ for (const scenario of [
     await context.route('**/backend-api/**', async route => {
       const url = new URL(route.request().url());
       if (url.pathname.endsWith('/auth/refresh')) return route.fulfill({ json: { token } });
-      if (url.pathname.endsWith('/users/me')) return route.fulfill({ json: { ...user, progress: {}, recentQuizzes: [], bookmarks: [] } });
+      if (url.pathname.endsWith('/users/me')) return route.fulfill({ json: { ...user, role: 'admin', progress: {}, recentQuizzes: [], bookmarks: [] } });
       if (url.pathname.endsWith('/api/notes')) return route.fulfill({ json: invalidResponse ? { error: 'Service unavailable' } : [note] });
       return route.fulfill({ json: {} });
     });

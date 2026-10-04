@@ -13,8 +13,8 @@ export default defineConfig({
     include: ["**/*.test.{ts,tsx}"],
     coverage: {
       provider: "v8",
-      thresholds: { "features/quiz/model/sessionReducer.ts": { lines: 90, statements: 90, functions: 90, branches: 90 } },
-      reporter: ["text", "html", "lcov"],
+      thresholds: { lines: 44, statements: 42, functions: 36, branches: 34, "features/quiz/model/sessionReducer.ts": { lines: 90, statements: 90, functions: 90, branches: 90 } },
+      reporter: ["text", "html", "lcov", "json-summary"],
       reportsDirectory: "coverage",
       include: [
         "lib/**/*.{ts,tsx}", "hooks/**/*.{ts,tsx}", "components/**/*.{ts,tsx}", "features/**/*.{ts,tsx}", "shared/**/*.{ts,tsx}",

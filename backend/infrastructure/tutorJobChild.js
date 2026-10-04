@@ -1,15 +1,9 @@
-import { getObject } from './objectStorage.js';
-import { extractAttachmentContext } from '../services/tutorExtraction.js';
-import { tutorChat } from '../services/tutorChatService.js';
+import { processTutorAttachmentJob } from '../services/processTutorAttachmentJob.js';
 import { withTrace, withTraceCarrier } from './tracing.js';
 
-process.once('message', async ({ key, trace }) => {
+process.once('message', async ({ job, trace }) => {
   try {
-    const result = await withTraceCarrier(trace, () => withTrace('job.tutor.extract', {}, async () => {
-      const { input, file } = JSON.parse((await getObject(key)).toString());
-      const context = await extractAttachmentContext({ ...file, buffer: Buffer.from(file.data, 'base64') });
-      return tutorChat(input, context);
-    }));
+    const result = await withTraceCarrier(trace, () => withTrace('job.tutor.extract', {}, () => processTutorAttachmentJob(job)));
     await globalThis.__shutdownTelemetry?.();
     process.send({ result }, () => process.exit(0));
   } catch {

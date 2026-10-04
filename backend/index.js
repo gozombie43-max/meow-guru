@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { validateEnvironment } from './config/environment.js';
 import { assertProcessRole, embeddedWorkersEnabled } from './config/processRole.js';
 import { createServer } from 'node:http';
 import { createApp } from './app.js';
@@ -21,6 +22,7 @@ let waitForAttachmentWorkerIdle;
 let setNotificationRealtimeServer;
 
 const quizOnlyMode = process.env.QUIZ_ONLY_MODE === 'true';
+validateEnvironment();
 assertProcessRole('api');
 const runEmbeddedWorkers = embeddedWorkersEnabled();
 const stopMetrics = startRuntimeMetrics();

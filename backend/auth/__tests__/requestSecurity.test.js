@@ -20,6 +20,13 @@ describe('cookie origin protection', () => {
     requireTrustedOrigin({ headers: {} }, res, next);
     expect(res.status).toHaveBeenCalledWith(403);
   });
+  it('rejects a malformed referrer and localhost when the environment is missing', () => {
+    vi.stubEnv('NODE_ENV', undefined);
+    expect(isTrustedOrigin('http://localhost:3000')).toBe(false);
+    const next = vi.fn(); const res = { status: vi.fn().mockReturnThis(), json: vi.fn() };
+    requireTrustedOrigin({ headers: { referer: 'not-a-url' } }, res, next);
+    expect(res.status).toHaveBeenCalledWith(403); expect(next).not.toHaveBeenCalled();
+  });
 });
 
 describe('OAuth state', () => {

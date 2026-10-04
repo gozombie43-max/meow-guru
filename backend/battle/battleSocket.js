@@ -131,15 +131,51 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
       if (!canUseMatchmaking(socket.user.id)) return socket.emit('matchmaking:error', { code: 'MATCHMAKING_UNAVAILABLE', message: 'Matchmaking is temporarily unavailable.' });
       const parsed = matchmakingSchema.safeParse(raw);
       if (!parsed.success) return socket.emit('matchmaking:error', { message: 'Invalid matchmaking settings.' });
-      try { const ticket = await joinMatchmakingQueue({ userId: socket.user.id, displayName: socket.user.name || socket.user.email || 'Player', ...parsed.data }); socket.emit('matchmaking:queued', { queuedAt: ticket.queuedAt, rating: ticket.rating, subject: ticket.subject, topic: ticket.topic, questionCount: ticket.questionCount }); }
-      catch (error) { runtimeLog.error('matchmaking:join:', error); socket.emit('matchmaking:error', { message: 'Could not enter matchmaking.' }); }
+      try {
+        const ticket = await joinMatchmakingQueue({
+          userId: socket.user.id,
+          displayName: socket.user.name || socket.user.email || 'Player',
+          ...parsed.data,
+        });
+        socket.emit('matchmaking:queued', {
+          queuedAt: ticket.queuedAt, rating: ticket.rating,
+          subject: ticket.subject, topic: ticket.topic, questionCount: ticket.questionCount,
+        });
+      } catch (error) {
+        runtimeLog.error('matchmaking:join:', error);
+        socket.emit('matchmaking:error', { message: 'Could not enter matchmaking.' });
+      }
     });
-    onEvent('matchmaking:cancel', async () => { await cancelMatchmakingQueue(socket.user.id).catch(runtimeLog.error); socket.emit('matchmaking:cancelled'); });
+    onEvent('matchmaking:cancel', async () => {
+      await cancelMatchmakingQueue(socket.user.id).catch(runtimeLog.error);
+      socket.emit('matchmaking:cancelled');
+    });
     onEvent('battle:challengeUser', async (raw) => {
       if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
-      const parsed = socialChallengeSchema.safeParse(raw); if (!parsed.success || parsed.data.targetUserId === socket.user.id) return;
-      try { const { targetUserId, subject, topic, questionCount } = parsed.data, code = await createRoom(socket.id, socket.user.name || 'Player', subject, topic, questionCount, socket.user.id); socket.join(code); const payload = { roomCode: code, challenger: { userId: socket.user.id, name: socket.user.name || 'Player' }, subject, topic, questionCount }; io.to(`user:${targetUserId}`).emit('battle:challengeReceived', payload); void sendPushToUser(targetUserId, { title: `${payload.challenger.name} challenged you ⚔️`, body: `Join the ${subject} battle.`, route: `/battle?join=${code}`, category: 'battleInvites', data: { type: 'battle_invite', roomCode: code, challengerUserId: socket.user.id }, centerKey: `social-battle:${code}:${targetUserId}` }).catch(runtimeLog.error); socket.emit('battle:challengeSent', { roomCode: code, targetUserId }); }
-      catch (error) { runtimeLog.error('battle:challengeUser:', error); socket.emit('room:error', { message: 'Could not send challenge.' }); }
+      const parsed = socialChallengeSchema.safeParse(raw);
+      if (!parsed.success || parsed.data.targetUserId === socket.user.id) return;
+      try {
+        const { targetUserId, subject, topic, questionCount } = parsed.data;
+        const code = await createRoom(socket.id, socket.user.name || 'Player', subject, topic, questionCount, socket.user.id);
+        socket.join(code);
+        const payload = {
+          roomCode: code,
+          challenger: { userId: socket.user.id, name: socket.user.name || 'Player' },
+          subject, topic, questionCount,
+        };
+        io.to(`user:${targetUserId}`).emit('battle:challengeReceived', payload);
+        void sendPushToUser(targetUserId, {
+          title: `${payload.challenger.name} challenged you ⚔️`,
+          body: `Join the ${subject} battle.`, route: `/battle?join=${code}`,
+          category: 'battleInvites',
+          data: { type: 'battle_invite', roomCode: code, challengerUserId: socket.user.id },
+          centerKey: `social-battle:${code}:${targetUserId}`,
+        }).catch(runtimeLog.error);
+        socket.emit('battle:challengeSent', { roomCode: code, targetUserId });
+      } catch (error) {
+        runtimeLog.error('battle:challengeUser:', error);
+        socket.emit('room:error', { message: 'Could not send challenge.' });
+      }
     });
 
     onEvent('battle:resume', async ({ code = null } = {}) => {

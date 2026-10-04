@@ -1,4 +1,5 @@
 import { chatCompleteMessages } from '../ai/azureClient.js';
+import { MAX_TUTOR_EXTRACTED_CHARACTERS } from './tutorPolicy.js';
 function isPracticeQuestionHeading(line) {
   return /^(?:#{1,6}\s*)?(?:\*\*)?Practice Questions?(?:\*\*)?:?\s*$/i.test(String(line || "").trim());
 }
@@ -158,10 +159,11 @@ For mensuration, you may also use:
     ? '\n[Language instruction: Provide your response in Hindi (हिंदी)]'
     : '';
 
+  const attachmentText = String(attachmentContext.text || '').slice(0, MAX_TUTOR_EXTRACTED_CHARACTERS);
   const userText = `Student question:
 ${String(message || "Please solve the attached question.").trim().slice(0, 4000)}${langSuffix}
 
-${attachmentContext.text}
+${attachmentText}
 
 Return a clean markdown response using the formatting rules.
 If OCR text and image context disagree, prefer the visible image/PDF page and mention any unclear text briefly.`;

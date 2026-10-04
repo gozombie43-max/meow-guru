@@ -1,4 +1,5 @@
 import { RedisRateLimitStore } from "./redisRateLimitStore.js";
+import { isLocalEnvironment } from '../config/environment.js';
 // middleware/rateLimiter.js
 
 import rateLimit, {
@@ -91,7 +92,7 @@ function requestIpKey(req) {
 const isDevOrLocal = () => {
   // Production traffic can arrive through a local reverse proxy. Loopback is
   // not an authorization signal and must never disable abuse protection.
-  return process.env.NODE_ENV !== 'production';
+  return isLocalEnvironment();
 };
 
 /**
@@ -114,7 +115,7 @@ const isTrainingRequest = req => {
 // while retaining a cheap IP guard.
 export const trainingIngressLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV !== 'production' ? 100000 : 5000,
+  max: isLocalEnvironment() ? 100000 : 5000,
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: requestIpKey,
@@ -126,12 +127,12 @@ export const trainingIngressLimiter = rateLimit({
 // Global Limiter
 export const globalLimiter =
   rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('global') } : {}),
+    ...(!isLocalEnvironment() ? { store: new RedisRateLimitStore('global') } : {}),
     windowMs:
       15 * 60 * 1000,
 
     max:
-      process.env.NODE_ENV !== 'production' ? 100000 : 5000,
+      isLocalEnvironment() ? 100000 : 5000,
 
     standardHeaders:
       true,
@@ -177,12 +178,12 @@ export const globalLimiter =
 // Authentication
 export const authLimiter =
   rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('auth') } : {}),
+    ...(!isLocalEnvironment() ? { store: new RedisRateLimitStore('auth') } : {}),
     windowMs:
       15 * 60 * 1000,
 
     max:
-      process.env.NODE_ENV !== 'production' ? 10000 : 100,
+      isLocalEnvironment() ? 10000 : 100,
 
     standardHeaders:
       true,
@@ -206,12 +207,12 @@ export const authLimiter =
 // AI
 export const aiLimiter =
   rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('ai') } : {}),
+    ...(!isLocalEnvironment() ? { store: new RedisRateLimitStore('ai') } : {}),
     windowMs:
       15 * 60 * 1000,
 
     max:
-      process.env.NODE_ENV !== 'production' ? 10000 : 100,
+      isLocalEnvironment() ? 10000 : 100,
 
     standardHeaders:
       true,
@@ -237,12 +238,12 @@ export const aiLimiter =
 // cannot exhaust an AI-style bucket.
 export const trainingLimiter =
   rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('training') } : {}),
+    ...(!isLocalEnvironment() ? { store: new RedisRateLimitStore('training') } : {}),
     windowMs:
       15 * 60 * 1000,
 
     max:
-      process.env.NODE_ENV !== 'production' ? 100000 : 1500,
+      isLocalEnvironment() ? 100000 : 1500,
 
     standardHeaders:
       true,
@@ -266,12 +267,12 @@ export const trainingLimiter =
 // Agents
 export const agentLimiter =
   rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('agent') } : {}),
+    ...(!isLocalEnvironment() ? { store: new RedisRateLimitStore('agent') } : {}),
     windowMs:
       15 * 60 * 1000,
 
     max:
-      process.env.NODE_ENV !== 'production' ? 10000 : 150,
+      isLocalEnvironment() ? 10000 : 150,
 
     standardHeaders:
       true,
@@ -295,12 +296,12 @@ export const agentLimiter =
 // Uploads
 export const uploadLimiter =
   rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('upload') } : {}),
+    ...(!isLocalEnvironment() ? { store: new RedisRateLimitStore('upload') } : {}),
     windowMs:
       15 * 60 * 1000,
 
     max:
-      process.env.NODE_ENV !== 'production' ? 10000 : 200,
+      isLocalEnvironment() ? 10000 : 200,
 
     standardHeaders:
       true,

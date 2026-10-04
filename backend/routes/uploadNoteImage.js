@@ -1,137 +1,30 @@
-import { runtimeLog } from '../infrastructure/runtimeLog.js';
-// routes/uploadNoteImage.js
-
-import express from "express";
-import multer from "multer";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { v4 as uuidv4 } from "uuid";
-
-import {
-  b2Client,
-  B2_BUCKET,
-} from "../config/b2.js";
+import express from 'express';
+import multer from 'multer';
+import { randomUUID } from 'node:crypto';
+import adminAuth from '../middleware/auth.js';
+import { putObject, stableImageUrl } from '../infrastructure/objectStorage.js';
+import { imageBudget } from '../infrastructure/dependencyBoundary.js';
+import { normalizeImage } from '../services/uploads/validatedImage.js';
+import { trackPendingNoteImage } from '../repositories/noteImageRepository.js';
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 0, parts: 1 } });
 
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5 MB
-  },
+router.post('/', adminAuth, (req, res, next) => {
+  upload.single('image')(req, res, error => {
+    if (!error) return next();
+    return res.status(error.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({ error: error.code === 'LIMIT_FILE_SIZE' ? 'Images must be no larger than 5 MB' : 'Provide exactly one image file' });
+  });
+}, async (req, res, next) => {
+  if (!req.file) return res.status(400).json({ error: 'No file provided' });
+  try {
+    const image = await imageBudget.execute(() => normalizeImage(req.file.buffer));
+    const owner = Buffer.from(String(req.user.id)).toString('base64url');
+    const key = `notes/images/pending/${owner}/${randomUUID()}.webp`;
+    await trackPendingNoteImage(key, req.user.id);
+    await putObject(key, image, 'image/webp');
+    return res.json({ url: stableImageUrl(key), key });
+  } catch (error) { return next(error); }
 });
-
-const NOTE_IMAGE_PREFIX = "notes/images";
-
-const IMAGE_CACHE_CONTROL =
-  "public, max-age=31536000, immutable";
-
-const ALLOWED_IMAGE_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-]);
-
-const imageIdFromKey = (key) =>
-  Buffer
-    .from(key, "utf8")
-    .toString("base64url");
-
-const buildImageUrl = (key) =>
-  `/api/upload/image/${imageIdFromKey(key)}`;
-
-const extensionFromMime = (mimeType) => {
-  switch (mimeType) {
-    case "image/jpeg":
-      return "jpg";
-
-    case "image/png":
-      return "png";
-
-    case "image/webp":
-      return "webp";
-
-    case "image/gif":
-      return "gif";
-
-    default:
-      return null;
-  }
-};
-
-router.post(
-  "/",
-  upload.single("image"),
-  async (req, res) => {
-    if (!req.file) {
-      return res
-        .status(400)
-        .json({
-          error: "No file provided",
-        });
-    }
-
-    if (
-      !ALLOWED_IMAGE_TYPES.has(
-        req.file.mimetype
-      )
-    ) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Only JPG, PNG, WebP, and GIF images are allowed",
-        });
-    }
-
-    try {
-      const extension =
-        extensionFromMime(
-          req.file.mimetype
-        );
-
-      const key =
-        `${NOTE_IMAGE_PREFIX}/${uuidv4()}.${extension}`;
-
-      await b2Client.send(
-        new PutObjectCommand({
-          Bucket: B2_BUCKET,
-          Key: key,
-
-          Body: req.file.buffer,
-          ContentLength:
-            req.file.buffer.length,
-
-          ContentType:
-            req.file.mimetype,
-
-          CacheControl:
-            IMAGE_CACHE_CONTROL,
-        })
-      );
-
-      const url =
-        buildImageUrl(key);
-
-      return res.json({
-        url,
-        key,
-      });
-
-    } catch (err) {
-      runtimeLog.error(
-        "Note image upload error:",
-        err
-      );
-
-      return res
-        .status(500)
-        .json({
-          error:
-            "Image upload failed",
-        });
-    }
-  }
-);
 
 export default router;

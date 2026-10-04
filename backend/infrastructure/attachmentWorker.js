@@ -2,7 +2,9 @@ import { fork } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { getMongoDB } from '../config/mongodb.js';
 import { claimJob, renewJob, completeJob, failJob } from './durableQueue.js';
-import { deleteObject } from './objectStorage.js';
+import { purgeObjectVersions } from './objectStorage.js';
+import { acquireTutorSlot, releaseTutorSlot } from '../repositories/tutorQuotaRepository.js';
+import { listExpiredTutorObjects, forgetTutorObject, claimTutorInputCleanup, finishTutorInputCleanup } from '../repositories/tutorJobRepository.js';
 import { logger } from './logger.js';
 import { getReleaseId } from './releaseInfo.js';
 import { withTrace, withTraceCarrier } from './tracing.js';
@@ -52,7 +54,7 @@ function runChild(job) {
       if (code === 0 && message?.result) resolve(message.result);
       else reject(new Error('Attachment child failed or timed out'));
     });
-    child.send({ key: job.inputKey, trace: job.trace });
+    child.send({ job, trace: job.trace });
   });
 }
 
@@ -89,19 +91,23 @@ async function processJobs(db, jobs) {
         lastHeartbeat = Date.now();
       }
 
-      const cleanup = await jobs.find({
-        kind: 'tutor',
-        status: { $in: ['completed', 'failed', 'cancelled'] },
-        inputDeleted: { $ne: true },
-      }).limit(20).toArray();
-      for (const old of cleanup) {
+      for (let count = 0; count < 20; count++) {
         if (stopping) break;
+        const old = await claimTutorInputCleanup();
+        if (!old) break;
         try {
-          await deleteObject(old.inputKey);
-          await jobs.updateOne({ _id: old._id }, { $set: { inputDeleted: true } });
+          await purgeObjectVersions(old.attachmentKey || old.inputKey);
+          await forgetTutorObject(old.attachmentKey || old.inputKey);
+          if (old.queueSlot) await releaseTutorSlot(old.queueSlot);
+          await finishTutorInputCleanup(old);
         } catch {
           logger.warn({ jobId: old._id }, 'attachment input cleanup will retry');
         }
+      }
+
+      for (const old of await listExpiredTutorObjects()) {
+        await purgeObjectVersions(old.key);
+        await forgetTutorObject(old._id);
       }
 
       if (stopping) break;
@@ -112,6 +118,15 @@ async function processJobs(db, jobs) {
           break;
         }
         await delay(1_000);
+        continue;
+      }
+
+      let processingSlot;
+      try { processingSlot = await acquireTutorSlot(job.userId, 'running', job.owner); }
+      catch (error) {
+        await jobs.updateOne({ _id: job._id, owner: job.owner }, { $set: { status: 'queued', availableAt: new Date(Date.now() + 1000) }, $inc: { attempts: -1 }, $unset: { owner: '', leaseUntil: '' } });
+        if (error.statusCode !== 429) throw error;
+        await delay(1000);
         continue;
       }
 
@@ -136,6 +151,7 @@ async function processJobs(db, jobs) {
         logger.warn({ jobId: job._id, attempt: job.attempts }, 'attachment job failed');
       } finally {
         clearInterval(heartbeat);
+        await releaseTutorSlot(processingSlot);
         lastActivityAt = Date.now();
       }
     } catch (error) {
@@ -144,6 +160,7 @@ async function processJobs(db, jobs) {
     }
   }
 }
+
 
 export function isAttachmentWorkerReady() {
   return ready && !stopping;

@@ -6,7 +6,9 @@ import {
   verifyRefreshToken,
   signBattleRematchToken,
   verifyBattleRematchToken,
+  verifyLegacyRefreshToken,
 } from '../jwt.js';
+import jwt from 'jsonwebtoken';
 
 describe('Auth JWT Module', () => {
   it('signs and verifies an access token correctly', () => {
@@ -36,6 +38,12 @@ describe('Auth JWT Module', () => {
 
   it('throws error when verifying an invalid token string', () => {
     expect(() => verifyToken('invalid.token.payload')).toThrow();
+  });
+  it('rejects wrong token purposes and string payloads', () => {
+    expect(() => verifyToken(signRefreshToken({ id: 'a' }))).toThrow();
+    expect(() => verifyRefreshToken(signToken({ id: 'a' }))).toThrow();
+    expect(() => verifyLegacyRefreshToken(signRefreshToken({ id: 'a' }))).toThrow();
+    expect(() => verifyToken(jwt.sign('text', process.env.JWT_SECRET))).toThrow('Invalid token payload');
   });
 
   it('signs and verifies a battle rematch token correctly', () => {

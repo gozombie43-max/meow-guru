@@ -8,6 +8,7 @@ import { maintenanceQueueHealth } from './infrastructure/maintenanceQueue.js';
 import { dependencyHealth } from './infrastructure/dependencyBoundary.js';
 import { checkReadiness } from './infrastructure/readiness.js';
 import { requestBodyLimits } from './middleware/requestBodyLimits.js';
+import adminAuth from './middleware/auth.js';
 import { getReleaseId } from './infrastructure/releaseInfo.js';
 
 import 'dotenv/config';
@@ -165,7 +166,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   // route/module startup cost until the user actually opens Tutor or Notes/PDF.
   app.use('/api/ai', lazyRouter(() => import('./routes/speech.js')));
   app.use('/api/ai', lazyRouter(() => import('./routes/aiRoutes.js')));
-  app.use('/api/upload-note-image', uploadLimiter, lazyRouter(() => import('./routes/uploadNoteImage.js')));
+  app.use('/api/upload-note-image', adminAuth, uploadLimiter, lazyRouter(() => import('./routes/uploadNoteImage.js')));
   app.use('/api/notes', lazyRouter(() => import('./routes/notes.routes.js')));
   app.use('/api/pdfs', lazyRouter(() => import('./routes/pdfs.js')));
   app.use('/api/agent', agentLimiter, lazyRouter(() => import('./agents/cognitiveMapperRouter.js')));

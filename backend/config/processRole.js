@@ -1,3 +1,4 @@
+// @ts-check
 /** Validate the deployable's role before starting any owned resources. */
 /** @param {'api' | 'worker' | 'attachments'} expected @param {NodeJS.ProcessEnv | Record<string, string>} env */
 export function assertProcessRole(expected, env = process.env) {

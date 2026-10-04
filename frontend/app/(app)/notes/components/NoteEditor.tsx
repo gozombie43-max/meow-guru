@@ -1,5 +1,6 @@
 "use client";
 import type { Note, NoteImageResponse } from "@/features/notes/types";
+import { noteImageUrl, resolveNoteImageSources, escapeNoteAttribute } from '@/features/notes/images';
 import type { editor } from "monaco-editor";
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
@@ -274,7 +275,7 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
   // sync live preview
   useEffect(() => {
     if (previewRef.current) {
-      previewRef.current.srcdoc = code;
+      previewRef.current.srcdoc = resolveNoteImageSources(code);
     }
   }, [code, activeTab]);
 
@@ -285,7 +286,7 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
   // insert snippet at cursor position
   const insertSnippet = (snippet: string) => {
     const editor = editorRef.current;
-    if (!editor) return;
+    if (!editor) { setCode(current => `${current}\n${snippet}\n`); return; }
     const position = editor.getPosition();
     if (!position) return;
     editor.executeEdits("", [{
@@ -300,10 +301,12 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
     editor.focus();
   };
 
-  // upload image → Azure Blob → auto-insert <img> tag
+  // Upload a validated image and insert its stable resolver URL.
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const input = e.currentTarget;
+    if (file.size > 5 * 1024 * 1024) { alert('Images must be no larger than 5 MB.'); input.value = ''; return; }
     setUploading(true);
     try {
       const formData = new FormData();
@@ -312,18 +315,18 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
         method: "POST",
         body:   formData,
       });
-      if (!res.ok) throw new Error("Upload failed");
-      const { url } = await res.json() as NoteImageResponse;
-      insertSnippet(`<img class="note-img" src="${url}" alt="${file.name}" />`);
-    } catch {
-      alert("Image upload failed. Check your backend console.");
+      const result = await res.json() as NoteImageResponse;
+      if (!res.ok || !result.url) throw new Error(result.error || 'Image upload failed.');
+      insertSnippet(`<img class="note-img" src="${escapeNoteAttribute(noteImageUrl(result.url))}" alt="${escapeNoteAttribute(file.name)}" />`);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Image upload failed. Please try again.');
     } finally {
       setUploading(false);
-      e.target.value = "";
+      input.value = "";
     }
   };
 
-  // save note to Cosmos DB
+  // Save the note through the authenticated API.
   const handleSave = async () => {
     if (!title.trim()) { alert("Please add a title."); return; }
     setSaving(true);
@@ -430,7 +433,7 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp"
             style={{ display: "none" }}
             onChange={handleImageUpload}
            aria-label="Choose file"/>

@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import path from "path";
 import { PHASE_PRODUCTION_SERVER } from "next/constants";
+import { reportOnlyCsp } from './lib/security/csp';
 
 const configuredBackend = process.env.API_URL;
 if (process.env.NODE_ENV === 'production' && !configuredBackend) {
@@ -10,6 +11,9 @@ const BACKEND_URL = (configuredBackend || 'http://localhost:10000').replace(/\/+
 if (!['http:', 'https:'].includes(new URL(BACKEND_URL).protocol)) throw new Error('Backend URL must use HTTP or HTTPS');
 
 const nextConfig: NextConfig = {
+  async headers() {
+    return [{ source: '/:path*', headers: [{ key: 'Content-Security-Policy-Report-Only', value: reportOnlyCsp(BACKEND_URL, process.env.NODE_ENV !== 'production') }] }];
+  },
   images: {
     qualities: [75, 85],
     remotePatterns: [

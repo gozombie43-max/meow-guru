@@ -1,7 +1,9 @@
 import { startBattleOutbox } from "./infrastructure/battleOutbox.js";
 import 'dotenv/config';
+import { validateEnvironment } from './config/environment.js';
 import { assertProcessRole } from './config/processRole.js';
 assertProcessRole('worker');
+validateEnvironment();
 import { connectMongoDB, disconnectMongoDB, getMongoDB } from './config/mongodb.js';
 import { assertMigrations } from './migrations/runner.js';
 import { logger, startRuntimeMetrics } from './infrastructure/logger.js';
