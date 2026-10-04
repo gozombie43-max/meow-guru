@@ -13,7 +13,7 @@ export function getGeminiFailure(error: unknown) {
   const status = value.customErrorData?.status ?? value.customData?.status ?? value.status ?? (Number(message.match(/\[\s*(\d{3})\b/)?.[1]) || undefined);
   const code = typeof value.code === 'string' ? value.code : '';
   let kind: 'busy' | 'timeout' | 'network' | 'access' | 'quota' | 'request' | 'unknown' = 'unknown';
-  if (status === 401 || status === 403 || code.startsWith('appCheck/') || code === 'api-not-enabled' || code === 'AI/api-not-enabled') kind = 'access';
+  if (status === 401 || status === 403 || code.startsWith('auth/') || code.startsWith('appCheck/') || code === 'api-not-enabled' || code === 'AI/api-not-enabled') kind = 'access';
   else if (status === 429) kind = 'quota';
   else if (status === 400 || status === 404) kind = 'request';
   else if ([500, 502, 503, 504].includes(status ?? 0) || /high demand|temporarily unavailable/i.test(message)) kind = 'busy';
@@ -48,6 +48,8 @@ export async function requestGeminiTutor({ context, message, lang, history, mode
   onModelUsed?: (model: string) => void;
 }) {
   // Load Firebase only when the student selects Gemini and sends a message.
+  const { ensureFirebaseTutorAuth } = await import('@/lib/firebase/auth');
+  await ensureFirebaseTutorAuth();
   const { meowAIModel, fallbackAIModel } = await import('@/lib/firebase/ai');
   const languageDirective = lang === 'bn'
     ? 'Respond in Bengali (বাংলা). Write the full explanation, reasoning, steps, tips, headings, and final answer in fluent Bengali (বাংলা). Mathematical formulas, numbers, equations, and algebraic variables ($x, y$, etc.) must remain in standard notation.'

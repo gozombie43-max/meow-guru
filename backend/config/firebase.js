@@ -7,6 +7,7 @@ import {
 import {
   getMessaging,
 } from "firebase-admin/messaging";
+import { getAuth } from "firebase-admin/auth";
 
 const projectId =
   process.env.FIREBASE_PROJECT_ID;
@@ -34,6 +35,7 @@ const firebaseApp =
   getApps().length > 0
     ? getApps()[0]
     : initializeApp({
+        projectId,
         credential: cert({
           projectId,
           clientEmail,
@@ -43,3 +45,4 @@ const firebaseApp =
 
 export const firebaseMessaging =
   getMessaging(firebaseApp);
+export const firebaseAuth = getAuth(firebaseApp);

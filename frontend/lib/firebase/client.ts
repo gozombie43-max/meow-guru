@@ -45,7 +45,12 @@ export function getFirebaseAppCheck(): AppCheck | undefined {
   if (!appCheckGlobal.__meowAppCheck) {
     if (process.env.NODE_ENV === "development") {
       const envToken = process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_DEBUG_TOKEN;
-      const sessionToken = window.sessionStorage?.getItem("__firebase_appcheck_debug_token");
+      let sessionToken: string | null = null;
+      try {
+        sessionToken = window.sessionStorage.getItem("__firebase_appcheck_debug_token");
+      } catch {
+        // Storage can be unavailable in private browsing or embedded clients.
+      }
       appCheckGlobal.FIREBASE_APPCHECK_DEBUG_TOKEN = envToken || sessionToken || true;
     }
 
@@ -59,7 +64,9 @@ export function getFirebaseAppCheck(): AppCheck | undefined {
         }
       );
     } else if (process.env.NODE_ENV === "production") {
-      throw new Error("Missing NEXT_PUBLIC_FIREBASE_APPCHECK_SITE_KEY");
+      throw Object.assign(new Error("Missing NEXT_PUBLIC_FIREBASE_APPCHECK_SITE_KEY"), {
+        code: "appCheck/missing-site-key",
+      });
     }
   }
   return appCheckGlobal.__meowAppCheck;

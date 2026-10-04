@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestGeminiTutor, geminiErrorMessage, getGeminiFailure, GEMINI_FALLBACK_MODEL } from '../gemini';
 import { meowAIModel, fallbackAIModel } from '@/lib/firebase/ai';
+import { ensureFirebaseTutorAuth } from '@/lib/firebase/auth';
+
+vi.mock('@/lib/firebase/auth', () => ({ ensureFirebaseTutorAuth: vi.fn() }));
 
 vi.mock('@/lib/firebase/ai', () => ({
   meowAIModel: { generateContent: vi.fn() },
@@ -14,6 +17,15 @@ const success = { response: { text: () => 'Use this shortcut.' } } as Awaited<Re
 describe('Gemini capacity recovery', () => {
   beforeEach(() => { vi.resetAllMocks(); vi.useFakeTimers(); vi.spyOn(console, 'warn').mockImplementation(() => {}); });
   afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
+
+  it('does not generate or fall back when Firebase sign-in fails', async () => {
+    const error = Object.assign(new Error('Configuration missing'), { code: 'auth/configuration-not-found' });
+    vi.mocked(ensureFirebaseTutorAuth).mockRejectedValue(error);
+    await expect(requestGeminiTutor(request)).rejects.toBe(error);
+    expect(meowAIModel.generateContent).not.toHaveBeenCalled();
+    expect(fallbackAIModel.generateContent).not.toHaveBeenCalled();
+    expect(geminiErrorMessage(error)).toContain('GEMINI_ACCESS');
+  });
 
   it('recovers from the actual SDK timeout error via fallback', async () => {
     const timeout = new DOMException('Timeout has expired.', 'AbortError');

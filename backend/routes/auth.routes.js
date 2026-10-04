@@ -2,6 +2,7 @@ import { runtimeLog } from '../infrastructure/runtimeLog.js';
 // backend/routes/auth.routes.js
 
 import express from 'express';
+import firebaseAuthRoutes from './firebaseAuth.routes.js';
 import { requireTrustedOrigin } from '../auth/requestOrigin.js';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
@@ -24,6 +25,7 @@ import {
 import { findUserByEmail, acquireRegistrationLock, releaseRegistrationLock, insertRegisteredUser } from '../repositories/authRegistrationRepository.js';
 
 const router = express.Router();
+router.use('/firebase', firebaseAuthRoutes);
 
 /*
  * Kept as an init function so index.js does not need

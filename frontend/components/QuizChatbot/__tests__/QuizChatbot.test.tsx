@@ -5,6 +5,9 @@ import api from '@/lib/axios';
 import type { QuizChatbotQuestion } from '../utils';
 import { meowAIModel } from '@/lib/firebase/ai';
 import { GEMINI_TUTOR_MODEL, GEMINI_FALLBACK_MODEL } from '../gemini';
+import { ensureFirebaseTutorAuth } from '@/lib/firebase/auth';
+
+vi.mock('@/lib/firebase/auth', () => ({ ensureFirebaseTutorAuth: vi.fn() }));
 
 vi.mock('@/lib/firebase/ai', () => ({
   meowAIModel: { generateContent: vi.fn() },
@@ -47,6 +50,7 @@ describe('QuizChatbot Component', () => {
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Explain this' } });
     fireEvent.click(screen.getByRole('button', { name: /Send message/i }));
     await screen.findByText('Gemini tutor reply');
+    expect(ensureFirebaseTutorAuth).toHaveBeenCalledOnce();
     expect(api.post).not.toHaveBeenCalled();
     expect(meowAIModel.generateContent).toHaveBeenLastCalledWith(expect.objectContaining({
       systemInstruction: expect.stringContaining('Respond in Hindi'),

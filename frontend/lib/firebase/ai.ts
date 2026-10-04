@@ -6,13 +6,17 @@ import {
   GoogleAIBackend,
 } from "firebase/ai";
 
-import { firebaseApp } from "./client";
+import { getFirebaseApp, getFirebaseAppCheck } from "./client";
 import {
   GEMINI_TUTOR_MODEL,
   GEMINI_FALLBACK_MODEL,
 } from "./models";
 
-const ai = getAI(firebaseApp, {
+const app = getFirebaseApp();
+// AI Logic captures the App Check provider during initialization.
+getFirebaseAppCheck();
+
+const ai = getAI(app, {
   backend: new GoogleAIBackend(),
 });
 
