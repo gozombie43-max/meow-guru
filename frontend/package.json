@@ -13,6 +13,7 @@
     "test:coverage": "vitest run --maxWorkers=2 --coverage",
     "check": "npm run typecheck && npm run test:run && npm run lint",
     "check:interface": "node scripts/check-interface.mjs && node scripts/check-ui-contract.mjs",
+    "check:lint-tooling": "node --test scripts/check-next-lint-tooling.mjs",
     "check:performance": "node scripts/check-performance-budget.mjs",
     "test:performance:startup": "node scripts/benchmark-play-startup.mjs",
     "test:e2e": "playwright test",
@@ -52,6 +53,8 @@
   },
   "devDependencies": {
     "@eslint/compat": "^2.1.1",
+    "@meow/next-lint-glob": "1.0.0",
+    "@next/eslint-plugin-next": "16.3.6",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",

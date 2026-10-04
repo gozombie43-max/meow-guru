@@ -10,7 +10,8 @@
     "frontend",
     "backend",
     "contracts",
-    "tools/azure-migration"
+    "tools/azure-migration",
+    "tools/next-lint-glob"
   ],
   "scripts": {
     "dev:frontend": "npm run dev --workspace frontend",
@@ -27,6 +28,9 @@
     "build:contracts": "npm run build --workspace @meow/contracts"
   },
   "overrides": {
+    "@next/eslint-plugin-next@16.3.6": {
+      "fast-glob": "$fast-glob"
+    },
     "engine.io": "6.6.11",
     "dompurify": "3.4.16",
     "@grpc/grpc-js": "^1.14.5",
@@ -53,6 +57,7 @@
   "license": "ISC",
   "devDependencies": {
     "concurrently": "^10.0.5",
+    "fast-glob": "file:tools/next-lint-glob",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.70.1"
   }
