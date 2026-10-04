@@ -1,4 +1,5 @@
-import { getMongoDB } from "../../config/mongodb.js";
+import { runtimeLog } from '../../infrastructure/runtimeLog.js';
+import { advanceQuestionRevision, findPersistedQuestionMetadata, savePersistedQuestionMetadata } from '../../repositories/questionMetadataRepository.js';
 import { createTieredCache } from '../../infrastructure/tieredCache.js';
 import { createHash } from 'node:crypto';
 import { heavyMongo } from '../../infrastructure/dependencyBoundary.js';
@@ -7,8 +8,6 @@ import { invalidateTrainingCatalog } from '../training/catalogCache.js';
 import { invalidateQuestionCacheRevision, getQuestionRevision } from './questionCache.js';
 import { isNormalizedQuestionKeysEnabled } from './questionCache.js';
 
-const COLLECTION = "questionMetadata";
-const REVISION_ID = "revision";
 // Recovery for imports performed outside the application write services.
 const MAX_AGE_MS = 60 * 60 * 1000;
 const pending = new Map();
@@ -18,33 +17,28 @@ onCacheInvalidation(() => { invalidateTrainingCatalog(); invalidateQuestionCache
 export async function invalidateQuestionMetadata() {
   invalidateTrainingCatalog();
   invalidateQuestionCacheRevision();
-  await getMongoDB().collection(COLLECTION).updateOne(
-    { _id: REVISION_ID },
-    { $inc: { revision: 1 } },
-    { upsert: true },
-  );
+  await advanceQuestionRevision();
   await publishCacheInvalidation();
   try {
     const { fetchTopicCountSnapshot } = await import("./topicCountSnapshot.js");
     await fetchTopicCountSnapshot();
   } catch (error) {
     // The write succeeded. A failed refresh is retried by the next metadata read.
-    console.error("Topic count snapshot refresh failed:", error.message);
+    runtimeLog.error("Topic count snapshot refresh failed:", error.message);
   }
 }
 
 export async function readQuestionMetadata(params, build) {
-  const collection = getMongoDB().collection(COLLECTION);
   const key = JSON.stringify({
     topic: params.topic || "", subject: params.subject || "", mode: params.mode || "",
     normalized: isNormalizedQuestionKeysEnabled(), schema: 3,
   });
   const revision = await getQuestionRevision();
-  return metadataCache.read(`question-meta:${revision}:${createHash('sha256').update(key).digest('hex')}`, () => readPersistedMetadata(collection, key, revision, params, build));
+  return metadataCache.read(`question-meta:${revision}:${createHash('sha256').update(key).digest('hex')}`, () => readPersistedMetadata(key, revision, params, build));
 }
 
-async function readPersistedMetadata(collection, key, revision, params, build) {
-  const cached = await collection.findOne({ _id: key });
+async function readPersistedMetadata(key, revision, params, build) {
+  const cached = await findPersistedQuestionMetadata(key);
   if (cached?.revision === revision && Date.now() - new Date(cached.updatedAt).getTime() < MAX_AGE_MS) {
     return cached.data;
   }
@@ -54,9 +48,7 @@ async function readPersistedMetadata(collection, key, revision, params, build) {
     const data = await heavyMongo.execute(build);
     // A concurrent upload changes the revision. Older builds can never be reused
     // as current metadata, even across separate API/worker processes.
-    await collection.updateOne({ _id: key }, {
-      $set: { revision, data, params: { topic: params.topic, subject: params.subject, mode: params.mode }, updatedAt: new Date() },
-    }, { upsert: true });
+    await savePersistedQuestionMetadata(key, revision, data, params);
     return data;
   })();
   pending.set(pendingKey, work);

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { traceCarrier } from '../../infrastructure/tracing.js';
-import { getMongoDB } from "../../config/mongodb.js";
+import { enqueueConceptGrouping } from '../../repositories/conceptGroupRepository.js';
 import { normalizeSearchKey } from "./questionNormalizer.js";
 
 export const GROUPING_VERSION = 1;
@@ -37,13 +37,11 @@ export function validateConceptGroups(output, concepts) {
 export async function ensureConceptGroups(params, concepts) {
   const input = groupingInput(params, concepts);
   if (!input.concepts.length) return { conceptGroups: [], groupingStatus: "empty" };
-  const collection = getMongoDB().collection(GROUPING_COLLECTION);
   const now = new Date();
-  await collection.updateOne({ _id: input.fingerprint }, { $setOnInsert: {
+  const doc = await enqueueConceptGrouping(input.fingerprint, {
     ...input, params, version: GROUPING_VERSION, kind: "concept-grouping", trace: traceCarrier(), status: "queued", attempts: 0,
     availableAt: now, createdAt: now, expiresAt: new Date(+now + 10 * 365 * 86400000),
-  } }, { upsert: true });
-  const doc = await collection.findOne({ _id: input.fingerprint });
+  });
   return {
     conceptGroups: doc.status === "completed" ? doc.result.groups : [],
     groupingStatus: doc.status === "completed" ? "ready" : doc.status === "failed" ? "failed" : "processing",

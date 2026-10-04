@@ -13,7 +13,7 @@ vi.mock("@/shared/api/request", () => ({
 }));
 
 const response = (texts: string[]) => new Response(JSON.stringify(
-  texts.map((text) => ({ translations: [{ text: `bn:${text}` }] })),
+  texts.map((text) => ({ translations: [{ text: `bn:${text}`, to: "bn" }] })),
 ));
 
 afterEach(() => vi.restoreAllMocks());

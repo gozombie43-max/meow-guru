@@ -14,7 +14,7 @@ describe("useTranslation through the shared transport", () => {
     const refresh = vi.spyOn(axios, "post").mockResolvedValue({ data: { token: "restored-token" } });
     const adapter = vi.fn(async config => {
       const status = config.headers.Authorization === "Bearer restored-token" ? 200 : 401;
-      const response = { config, status, statusText: String(status), headers: {}, data: new TextEncoder().encode(JSON.stringify([{ translations: [{ text: "অর্থের পরিমাণ নির্ণয় করুন।" }] }])).buffer };
+      const response = { config, status, statusText: String(status), headers: {}, data: new TextEncoder().encode(JSON.stringify([{ translations: [{ text: "অর্থের পরিমাণ নির্ণয় করুন।", to: "bn" }] }])).buffer };
       if (status === 401) throw new AxiosError("missing token", "ERR_BAD_REQUEST", config, undefined, response);
       return response;
     });
@@ -32,7 +32,7 @@ describe("useTranslation through the shared transport", () => {
     const refresh = vi.spyOn(axios, "post").mockResolvedValue({ data: { token: "fresh-token" } });
     const adapter = vi.fn(async config => {
       const status = config.headers.Authorization === "Bearer fresh-token" ? 200 : 401;
-      const response = { config, status, statusText: String(status), headers: {}, data: new TextEncoder().encode(JSON.stringify([{ translations: [{ text: "नमस्ते" }] }])).buffer };
+      const response = { config, status, statusText: String(status), headers: {}, data: new TextEncoder().encode(JSON.stringify([{ translations: [{ text: "नमस्ते", to: "hi" }] }])).buffer };
       if (status === 401) throw new AxiosError("expired", "ERR_BAD_REQUEST", config, undefined, response);
       return response;
     });

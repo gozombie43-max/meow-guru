@@ -1,3 +1,5 @@
+import { validateEntry, stemOf, isImage, findImageInZip } from './../services/uploads/questionImageArchive.js';
+import { patchQuestionImage } from './../repositories/questionImageRepository.js';
 import { createQuestion } from "../services/questions/questionWriteService.js";
 // routes/massUploadImages.js
 
@@ -9,14 +11,7 @@ import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 import pLimit from "p-limit";
 
-import {
-  b2Client,
-  B2_BUCKET,
-} from "../config/b2.js";
-
-import {
-  getQuestionsCollection,
-} from "../config/mongodb.js";
+import { b2Client, B2_BUCKET } from "../config/b2.js";
 
 import adminAuth from "../middleware/auth.js";
 
@@ -33,7 +28,6 @@ const QUESTION_PREFIX = "question-images";
 
 const IMAGE_CACHE_CONTROL =
   "public, max-age=31536000, immutable";
-
 
 // ───────────────────────────────────────────────────────
 // B2 helpers
@@ -71,7 +65,6 @@ async function uploadQuestionImageToB2(
   };
 }
 
-
 // ───────────────────────────────────────────────────────
 // Image helpers
 // ───────────────────────────────────────────────────────
@@ -84,30 +77,6 @@ async function toWebP(buffer) {
     .toBuffer();
 }
 
-function mergeQuestionContent(
-  existingQuestion,
-  questionImage
-) {
-  const imageMarkdown =
-    `![question](${questionImage})`;
-
-  const textOnly = String(
-    existingQuestion || ""
-  )
-    .replace(
-      /\s*!\[[^\]]*\]\([^)]+\)\s*/g,
-      "\n\n"
-    )
-    .trim();
-
-  if (!textOnly) {
-    return imageMarkdown;
-  }
-
-  return `${textOnly}\n\n${imageMarkdown}`;
-}
-
-
 // ───────────────────────────────────────────────────────
 // MongoDB helpers
 // ───────────────────────────────────────────────────────
@@ -118,175 +87,9 @@ async function saveQuestion(doc) {
   return doc;
 }
 
-async function patchQuestionImage(
-  questionId,
-  questionImage,
-  questionImageKey
-) {
-  const questions =
-    getQuestionsCollection();
-
-  const doc = await questions.findOne({
-    id: questionId,
-  });
-
-  if (!doc) {
-    throw new Error(
-      `Question "${questionId}" not found in MongoDB`
-    );
-  }
-
-  const question =
-    mergeQuestionContent(
-      doc.question,
-      questionImage
-    );
-
-  await questions.updateOne(
-    {
-      _id: doc._id,
-    },
-    {
-      $set: {
-        questionImage,
-        questionImageKey,
-        question,
-        updatedAt:
-          new Date().toISOString(),
-      },
-    }
-  );
-
-  return {
-    ...doc,
-    questionImage,
-    questionImageKey,
-    question,
-  };
-}
-
-
 // ───────────────────────────────────────────────────────
 // Metadata validation
 // ───────────────────────────────────────────────────────
-
-function validateEntry(entry, index) {
-  const errors = [];
-
-  if (!entry.filename) {
-    errors.push(
-      `[${index}] missing "filename"`
-    );
-  }
-
-  if (
-    !entry.correctAnswer ||
-    !["A", "B", "C", "D"].includes(
-      entry.correctAnswer
-    )
-  ) {
-    errors.push(
-      `[${index}] "correctAnswer" must be A, B, C, or D`
-    );
-  }
-
-  if (
-    !entry.options ||
-    typeof entry.options !== "object"
-  ) {
-    errors.push(
-      `[${index}] missing "options" object`
-    );
-  } else {
-    for (
-      const opt of ["A", "B", "C", "D"]
-    ) {
-      const option =
-        entry.options[opt];
-
-      if (!option) {
-        errors.push(
-          `[${index}] missing option "${opt}"`
-        );
-        continue;
-      }
-
-      for (
-        const field of [
-          "x",
-          "y",
-          "w",
-          "h",
-        ]
-      ) {
-        if (
-          typeof option[field] !==
-            "number" ||
-          option[field] < 0 ||
-          option[field] > 1
-        ) {
-          errors.push(
-            `[${index}] option "${opt}.${field}" must be a number 0–1`
-          );
-        }
-      }
-    }
-  }
-
-  return errors;
-}
-
-function stemOf(filename) {
-  return filename.replace(
-    /\.[^/.]+$/,
-    ""
-  );
-}
-
-const IMAGE_EXTENSIONS =
-  new Set([
-    ".png",
-    ".jpg",
-    ".jpeg",
-    ".webp",
-    ".gif",
-    ".bmp",
-  ]);
-
-function isImage(filename) {
-  const dotIndex =
-    filename.lastIndexOf(".");
-
-  if (dotIndex === -1) {
-    return false;
-  }
-
-  return IMAGE_EXTENSIONS.has(
-    filename
-      .slice(dotIndex)
-      .toLowerCase()
-  );
-}
-
-function findImageInZip(
-  zip,
-  filename
-) {
-  return (
-    zip.file(filename) ||
-    zip.file(`images/${filename}`) ||
-    Object.values(
-      zip.files
-    ).find(
-      (file) =>
-        file.name.endsWith(
-          `/${filename}`
-        ) ||
-        file.name === filename
-    )
-  );
-}
-
 
 // ======================================================
 // POST /api/mass-upload-images
@@ -335,7 +138,6 @@ router.post(
         });
     }
 
-
     // ── Parse ZIP ──────────────────────────────────────
 
     let zip;
@@ -353,7 +155,6 @@ router.post(
             "Could not parse ZIP file.",
         });
     }
-
 
     // ── metadata.json ─────────────────────────────────
 
@@ -401,7 +202,6 @@ router.post(
         });
     }
 
-
     // ── Validate metadata ──────────────────────────────
 
     const allErrors =
@@ -424,7 +224,6 @@ router.post(
             allErrors,
         });
     }
-
 
     // ── Upload ────────────────────────────────────────
 
@@ -569,7 +368,6 @@ router.post(
       )
     );
 
-
     // ── Response ──────────────────────────────────────
 
     return res
@@ -596,7 +394,6 @@ router.post(
   }
 );
 
-
 // ======================================================
 // POST /api/mass-upload-question-images
 //
@@ -621,7 +418,6 @@ router.post(
         });
     }
 
-
     // ── Parse ZIP ──────────────────────────────────────
 
     let zip;
@@ -640,7 +436,6 @@ router.post(
             "Could not parse ZIP file.",
         });
     }
-
 
     // ── Build filename → questionId map ───────────────
 
@@ -765,7 +560,6 @@ router.post(
       }
     }
 
-
     if (
       filenameToQuestionId.size ===
       0
@@ -778,7 +572,6 @@ router.post(
             "No valid image entries found in ZIP.",
         });
     }
-
 
     // ── Process images ─────────────────────────────────
 
@@ -866,7 +659,6 @@ router.post(
             )
         )
     );
-
 
     return res
       .status(

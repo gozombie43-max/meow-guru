@@ -74,7 +74,7 @@ for (const template of routeTemplates) {
   test(`screenshot ${template}`, async ({ page, context, request }, testInfo) => {
     let route = dynamicRoutes[template] ?? template;
     test.skip(route.includes('['), `Add a representative URL to dynamicRoutes for ${template}`);
-    const isGuest = ['/login', '/register', '/access-code', '/auth/callback', '/ai-test'].includes(route);
+    const isGuest = ['/login', '/register', '/access-code', '/auth/callback'].includes(route);
     const isAdmin = route === '/admincontrol' || route === '/admin' || route.startsWith('/admin/');
     const apiFailures: { path: string; status: number }[] = [];
     const pageErrors: string[] = [];
@@ -179,6 +179,10 @@ for (const template of routeTemplates) {
     // Save error pages as evidence, but mark them as failed in the report.
     expect(status ?? 200, `HTTP status for ${route}`).toBeLessThan(400);
     expect(renderedTheme, `Rendered theme for ${route}`).toBe(captureTheme);
+    if (template === '/ai-chat') {
+      expect(pageErrors, 'AI Tutor browser errors').toEqual([]);
+      expect(apiFailures, 'AI Tutor fixture API failures').toEqual([]);
+    }
     if (!isGuest) expect(new URL(page.url()).pathname, `Unexpected auth redirect for ${route}`).not.toMatch(/^\/(login|access-code)$/);
   });
 }

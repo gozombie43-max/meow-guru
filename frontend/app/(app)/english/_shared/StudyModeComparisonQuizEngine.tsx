@@ -1,7 +1,12 @@
 'use client';
 import { useMemo, useRef } from 'react';
 import { ArrowLeft, LogOut, Volume2, X } from "lucide-react";
-import { studyModeComparisonStyles, studyModeLoadingStyles } from "./study-mode-comparison.styles";
+import styles from './StudyModeComparison.module.css';
+import { bindStyleClasses } from '@/lib/styleClasses';
+import loadingStyles from './StudyModeLoading.module.css';
+
+const styleClasses = bindStyleClasses(styles);
+const loadingClasses = bindStyleClasses(loadingStyles);
 import { useNativeDialog } from "@/components/ui/Dialog";
 import BackButton from "@/components/BackButton";
 import { ComparisonWordIndex } from "./ComparisonWordIndex";
@@ -59,13 +64,12 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
   useNativeDialog(exitRef, showExitConfirm && !loading, () => setShowExitConfirm(false));
   if (loading) {
     return (
-      <main className="apple-dict-viewport" data-theme={theme}>
-        <div className="loading-state">
-          <div className="spinner" />
+      <main className={loadingClasses("apple-dict-viewport")} data-theme={theme}>
+        <div className={loadingClasses("loading-state")}>
+          <div className={loadingClasses("spinner")} />
           <p role="status">Loading your vocabulary…</p>
           <BackButton href={`/english/${config.topic}/study-mode`} label="Back to study setup" />
         </div>
-        <style jsx>{studyModeLoadingStyles}</style>
       </main>
     );
   }
@@ -76,36 +80,36 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
   const posLabel = activeCard.meanings.map((m) => m.pos).filter(Boolean).join(" · ");
 
   return (
-    <main className="apple-dict-viewport" data-theme={theme}>
+    <main className={styleClasses("apple-dict-viewport scope")} data-theme={theme}>
       {/* Mini Middle Pop-up Exit Confirmation Modal */}
       {showExitConfirm && (
         <dialog ref={exitRef}
-          className="exit-modal-backdrop"
+          className={styleClasses("exit-modal-backdrop")}
 
           aria-modal="true"
           aria-labelledby="exit-modal-title"
         >
-          <div className="exit-modal-card">
-            <div className="exit-modal-icon-wrap">
-              <LogOut size={22} className="exit-modal-icon" />
+          <div className={styleClasses("exit-modal-card")}>
+            <div className={styleClasses("exit-modal-icon-wrap")}>
+              <LogOut size={22} className={styleClasses("exit-modal-icon")} />
             </div>
-            <h3 id="exit-modal-title" className="exit-modal-title">
+            <h3 id="exit-modal-title" className={styleClasses("exit-modal-title")}>
               Want to exit?
             </h3>
-            <p className="exit-modal-desc">
+            <p className={styleClasses("exit-modal-desc")}>
               Are you sure you want to leave study mode? You can return to the word library at any time.
             </p>
-            <div className="exit-modal-actions">
+            <div className={styleClasses("exit-modal-actions")}>
               <button data-ui-button="secondary"
                 type="button"
-                className="exit-btn-cancel"
+                className={styleClasses("exit-btn-cancel")}
                 onClick={() => setShowExitConfirm(false)}
               >
                 Cancel
               </button>
               <button data-ui-button="primary"
                 type="button"
-                className="exit-btn-confirm"
+                className={styleClasses("exit-btn-confirm")}
                 onClick={handleConfirmExit}
               >
                 Confirm
@@ -116,19 +120,19 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
       )}
 
       {/* ── Authentic macOS Apple Dictionary Window (Zero Scroll on PC) ── */}
-      <div className="apple-app-window">
+      <div className={styleClasses("apple-app-window")}>
 
         {/* ── Left Master-Detail Navigation Sidebar (PC Exclusive) ── */}
-        <aside className="macos-sidebar">
+        <aside className={styleClasses("macos-sidebar")}>
           {/* Traffic Lights + Letter Filter Button inside Sidebar */}
           <div
-            className="traffic-lights"
+            className={styleClasses("traffic-lights")}
             role="group"
             aria-label="Window controls"
           >
             <button
               type="button"
-              data-ui-button="icon" className="sidebar-back"
+              data-ui-button="icon" className={styleClasses("sidebar-back")}
               onClick={() => setShowExitConfirm(true)}
               aria-label="Close and return"
               title="Close to welcome screen"
@@ -137,13 +141,13 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
             </button>
             {/* A-Z Letter Filter Button — upper right */}
             <div
-              className="letter-filter-wrapper"
+              className={styleClasses("letter-filter-wrapper")}
               onMouseDown={(e) => e.stopPropagation()}
               role="presentation"
             >
               <button data-ui-button="state"
                 type="button"
-                className={`letter-filter-btn ${selectedLetter ? "active" : ""} ${isLetterDropdownOpen ? "open" : ""}`}
+                className={styleClasses(`letter-filter-btn ${selectedLetter ? "active" : ""} ${isLetterDropdownOpen ? "open" : ""}`)}
                 onMouseDown={(e) => {
                   e.stopPropagation();
                 }}
@@ -165,13 +169,13 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
 
               {/* Dropdown panel */}
               {isLetterDropdownOpen && (
-                <div className="letter-dropdown" onMouseDown={(e) => e.stopPropagation()} role="presentation">
-                  <div className="letter-dropdown-header">
+                <div className={styleClasses("letter-dropdown")} onMouseDown={(e) => e.stopPropagation()} role="presentation">
+                  <div className={styleClasses("letter-dropdown-header")}>
                     <span>Filter by letter</span>
                     {selectedLetter && (
                       <button data-ui-button="secondary"
                         type="button"
-                        className="letter-clear-btn"
+                        className={styleClasses("letter-clear-btn")}
                         onMouseDown={(e) => e.stopPropagation()}
                         onClick={() => { setSelectedLetter(null); setStagedLetter(null); setIsLetterDropdownOpen(false); setCurrentPage(1); }}
                       >
@@ -179,12 +183,12 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                       </button>
                     )}
                   </div>
-                  <div className="letter-grid">
+                  <div className={styleClasses("letter-grid")}>
                     {availableLetters.map((letter) => (
                       <button data-ui-button="state"
                         key={letter}
                         type="button"
-                        className={`letter-tile ${stagedLetter === letter ? "active" : ""}`}
+                        className={styleClasses(`letter-tile ${stagedLetter === letter ? "active" : ""}`)}
                         onClick={() => {
                           setStagedLetter(stagedLetter === letter ? null : letter);
                         }}
@@ -194,7 +198,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                     ))}
                   </div>
                   {stagedLetter && (
-                    <div className="dropdown-actions" style={{ display: 'flex', gap: '8px', padding: '10px 14px', borderTop: '0.5px solid var(--divider)' }}>
+                    <div className={styleClasses("dropdown-actions")} style={{ display: 'flex', gap: '8px', padding: '10px 14px', borderTop: '0.5px solid var(--divider)' }}>
                       <button data-ui-button="state" type="button" style={{ flex: 1, padding: '8px', borderRadius: '6px', background: 'var(--item-hover)', fontWeight: 600, color: 'var(--text-primary)' }} onClick={() => { setStagedLetter(null); setSelectedLetter(null); setIsLetterDropdownOpen(false); setCurrentPage(1); }}>Reset</button>
                       <button data-ui-button="state" type="button" style={{ flex: 2, padding: '8px', borderRadius: '6px', background: '#007aff', color: '#fff', fontWeight: 600 }} onClick={() => { setSelectedLetter(stagedLetter); setIsLetterDropdownOpen(false); setCurrentPage(1); }}>
                         Show {cards.filter(c => c.word[0]?.toUpperCase() === stagedLetter).length} results
@@ -207,16 +211,16 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
           </div>
 
           {/* Apple Search Field */}
-          <div className="sidebar-search">
-            <div className="search-box">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="search-icon">
+          <div className={styleClasses("sidebar-search")}>
+            <div className={styleClasses("search-box")}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className={styleClasses("search-icon")}>
                 <circle cx="11" cy="11" r="8" />
                 <path d="M21 21l-4.35-4.35" />
               </svg>
               <input
                 ref={searchInputRef}
                 type="search"
-                className="search-input"
+                className={styleClasses("search-input")}
                 placeholder="Search vocab (⌘F)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -224,7 +228,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               {searchQuery && (
                 <button data-ui-button="secondary"
                   type="button"
-                  className="clear-search"
+                  className={styleClasses("clear-search")}
                   onClick={() => setSearchQuery("")}
                   aria-label="Clear search"
                 >
@@ -234,7 +238,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
             </div>
           </div>
 
-          <div className="sidebar-section-title">VOCABULARY INDEX ({filteredCards.length})</div>
+          <div className={styleClasses("sidebar-section-title")}>VOCABULARY INDEX ({filteredCards.length})</div>
 
           {/* Scrollable Wordlist */}
           <ComparisonWordIndex numbers={wordNumbers} cards={filteredCards} activeId={activeCard.id} compact onSelect={id => setCurrentPage(filteredCards.findIndex(card => card.id === id) + 1)} />
@@ -242,44 +246,44 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
         </aside>
 
         {/* ── Main Dictionary Content Workspace ── */}
-        <div className="macos-workspace">
+        <div className={styleClasses("macos-workspace")}>
 
           {/* Top Unified Toolbar */}
-          <header data-ui-chrome="header" className="unified-toolbar">
-            <div className="toolbar-left">
+          <header data-ui-chrome="header" className={styleClasses("unified-toolbar")}>
+            <div className={styleClasses("toolbar-left")}>
               {/* Mobile Back button to return to study mode */}
               <button data-ui-button="icon"
                 type="button"
-                className="mobile-back-btn"
+                className={styleClasses("mobile-back-btn")}
                 onClick={() => setShowExitConfirm(true)}
                 aria-label="Back to Study Mode"
                 title="Back to Study Mode"
               >
                 <ArrowLeft size={15} />
-                <span className="mobile-back-text">Back</span>
+                <span className={styleClasses("mobile-back-text")}>Back</span>
               </button>
             </div>
 
-            <div className="toolbar-center">
+            <div className={styleClasses("toolbar-center")}>
               {/* Apple Segmented View Switcher (PC only) */}
-              <div className="apple-segmented-control" role="group">
+              <div className={styleClasses("apple-segmented-control")} role="group">
                 <button data-ui-button="state"
                   type="button"
-                  className={`segment-item ${viewMode === "all" ? "active" : ""}`}
+                  className={styleClasses(`segment-item ${viewMode === "all" ? "active" : ""}`)}
                   onClick={() => setViewMode("all")}
                 >
                   All Tables
                 </button>
                 <button data-ui-button="state"
                   type="button"
-                  className={`segment-item ${viewMode === "primary" ? "active" : ""}`}
+                  className={styleClasses(`segment-item ${viewMode === "primary" ? "active" : ""}`)}
                   onClick={() => setViewMode("primary")}
                 >
                   {config.primaryLabel}
                 </button>
                 <button data-ui-button="state"
                   type="button"
-                  className={`segment-item ${viewMode === "secondary" ? "active" : ""}`}
+                  className={styleClasses(`segment-item ${viewMode === "secondary" ? "active" : ""}`)}
                   onClick={() => setViewMode("secondary")}
                 >
                   {config.secondaryLabel}
@@ -287,39 +291,39 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               </div>
 
               {/* Mobile title: just the given word */}
-              <div className="mobile-toolbar-title">
-                <span className="mobile-toolbar-word">{activeCard.word}</span>
-                {posLabel && <span className="mobile-toolbar-pos">({posLabel})</span>}
+              <div className={styleClasses("mobile-toolbar-title")}>
+                <span className={styleClasses("mobile-toolbar-word")}>{activeCard.word}</span>
+                {posLabel && <span className={styleClasses("mobile-toolbar-pos")}>({posLabel})</span>}
               </div>
             </div>
 
-            <div className="toolbar-right">
+            <div className={styleClasses("toolbar-right")}>
               {/* Rectangular Counter Box acting as Filter button */}
               <button data-ui-button="state"
                 type="button"
-                className="mobile-counter-filter-btn"
+                className={styleClasses("mobile-counter-filter-btn")}
                 onClick={() => setIsMobilePaletteOpen(true)}
                 aria-label="Filter vocabulary index"
                 title="Filter words"
               >
-                <span className="counter-curr">{totalCards ? currentPage : 0}</span>
-                <span className="counter-sep">/</span>
-                <span className="counter-tot">{totalCards}</span>
+                <span className={styleClasses("counter-curr")}>{totalCards ? currentPage : 0}</span>
+                <span className={styleClasses("counter-sep")}>/</span>
+                <span className={styleClasses("counter-tot")}>{totalCards}</span>
               </button>
 
               <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
-                className="appearance-toggle"
+                className={styleClasses("appearance-toggle")}
                 onClick={() => setTheme((v) => (v === "dark" ? "light" : "dark"))}
                 aria-label="Toggle theme appearance"
                 title="Toggle Theme"
               >
                 {theme === "dark" ? (
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="icon-theme">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className={styleClasses("icon-theme")}>
                     <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
                   </svg>
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="icon-theme">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className={styleClasses("icon-theme")}>
                     <circle cx="12" cy="12" r="5" />
                     <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
                   </svg>
@@ -330,12 +334,12 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
 
           {/* Mobile Full-Page Filter Modal */}
           {isMobilePaletteOpen && (
-            <dialog ref={paletteRef} className="mobile-full-modal" aria-modal="true" aria-label="Vocabulary Index Filter">
+            <dialog ref={paletteRef} className={styleClasses("mobile-full-modal")} aria-modal="true" aria-label="Vocabulary Index Filter">
               {/* Modal Top Header Bar */}
-              <div className="modal-top-bar" data-ui-chrome="header">
+              <div className={styleClasses("modal-top-bar")} data-ui-chrome="header">
                 <button data-ui-button="icon"
                   type="button"
-                  className="modal-top-back-btn"
+                  className={styleClasses("modal-top-back-btn")}
                   onClick={() => setIsMobilePaletteOpen(false)}
                   aria-label="Close Filter"
                 >
@@ -343,7 +347,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                   <span>Done</span>
                 </button>
 
-                <div className="modal-top-title">
+                <div className={styleClasses("modal-top-title")}>
                   <span>Vocabulary Index</span>
                   <small>{cards.length.toLocaleString()} words</small>
                 </div>
@@ -351,7 +355,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                 {mobileSheetSearch || mobileSheetLetter ? (
                   <button data-ui-button="secondary"
                     type="button"
-                    className="modal-top-reset-btn"
+                    className={styleClasses("modal-top-reset-btn")}
                     onClick={() => {
                       setMobileSheetSearch("");
                       setMobileSheetLetter(null);
@@ -360,20 +364,20 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                     Reset
                   </button>
                 ) : (
-                  <span className="modal-header-spacer" aria-hidden="true" />
+                  <span className={styleClasses("modal-header-spacer")} aria-hidden="true" />
                 )}
               </div>
 
               {/* Search Bar (WITHOUT autoFocus so keyboard doesn't open immediately) */}
-              <div className="modal-search-wrapper">
-                <div className="modal-search-box">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="modal-search-ico">
+              <div className={styleClasses("modal-search-wrapper")}>
+                <div className={styleClasses("modal-search-box")}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className={styleClasses("modal-search-ico")}>
                     <circle cx="11" cy="11" r="8" />
                     <path d="M21 21l-4.35-4.35" />
                   </svg>
                   <input
                     type="search"
-                    className="modal-search-input"
+                    className={styleClasses("modal-search-input")}
                     placeholder="Search by word or meaning..."
                     value={mobileSheetSearch}
                     onChange={(e) => setMobileSheetSearch(e.target.value)}
@@ -381,7 +385,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                   {mobileSheetSearch && (
                     <button data-ui-button="secondary"
                       type="button"
-                      className="modal-search-clear"
+                      className={styleClasses("modal-search-clear")}
                       onClick={() => setMobileSheetSearch("")}
                       aria-label="Clear Search"
                     >
@@ -392,10 +396,10 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               </div>
 
               {/* A-Z Letter Filter Scroll Bar */}
-              <div className="modal-letter-strip" role="group" aria-label="Filter by letter">
+              <div className={styleClasses("modal-letter-strip")} role="group" aria-label="Filter by letter">
                 <button data-ui-button="state"
                   type="button"
-                  aria-pressed={!mobileSheetLetter} className={`modal-letter-chip ${!mobileSheetLetter ? "active" : ""}`}
+                  aria-pressed={!mobileSheetLetter} className={styleClasses(`modal-letter-chip ${!mobileSheetLetter ? "active" : ""}`)}
                   onClick={() => setMobileSheetLetter(null)}
                 >
                   All
@@ -406,7 +410,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                     <button data-ui-button="state"
                       key={letter}
                       type="button"
-                      aria-pressed={isSelected} className={`modal-letter-chip ${isSelected ? "active" : ""}`}
+                      aria-pressed={isSelected} className={styleClasses(`modal-letter-chip ${isSelected ? "active" : ""}`)}
                       onClick={() => setMobileSheetLetter(isSelected ? null : letter)}
                     >
                       {letter}
@@ -416,7 +420,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               </div>
 
               {/* Filter Status Summary Bar */}
-              <div className="modal-status-bar">
+              <div className={styleClasses("modal-status-bar")}>
                 <span>
                   Showing {filteredSheetCards.length} {filteredSheetCards.length === 1 ? "word" : "words"}
                   {mobileSheetLetter && ` • Letter "${mobileSheetLetter}"`}
@@ -430,30 +434,30 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
           )}
 
           {/* Main Dictionary Workspace Body */}
-          <div className="dictionary-body-scroll" key={activeCard.id}>
-            {error ? <div className="study-empty" role="alert"><h2>Couldn’t load your vocabulary</h2><p>Please try again.</p><button data-ui-button="primary" onClick={() => void retry()}>Try again</button></div> : totalCards === 0 ? <div className="study-empty" role="status"><h2>No matching words</h2><p>Try a different search or clear your filters.</p><button data-ui-button="secondary" onClick={() => { setSearchQuery(''); setSelectedLetter(null); }}>Clear filters</button></div> : <>
+          <div className={styleClasses("dictionary-body-scroll")} key={activeCard.id}>
+            {error ? <div className={styleClasses("study-empty")} role="alert"><h2>Couldn’t load your vocabulary</h2><p>Please try again.</p><button data-ui-button="primary" onClick={() => void retry()}>Try again</button></div> : totalCards === 0 ? <div className={styleClasses("study-empty")} role="status"><h2>No matching words</h2><p>Try a different search or clear your filters.</p><button data-ui-button="secondary" onClick={() => { setSearchQuery(''); setSelectedLetter(null); }}>Clear filters</button></div> : <>
 
             {/* Centerpiece Word Profile */}
-            <section className="dict-word-profile">
-              <div className="word-heading-line">
-                <h1 className="dict-main-word">{activeCard.word}</h1>
+            <section className={styleClasses("dict-word-profile")}>
+              <div className={styleClasses("word-heading-line")}>
+                <h1 className={styleClasses("dict-main-word")}>{activeCard.word}</h1>
                 <SpeakerBtn text={activeCard.word} bengaliText={activeCard.meanings[0]?.translation} size={34} />
-                {posLabel && <span className="grammar-tag">{posLabel}</span>}
+                {posLabel && <span className={styleClasses("grammar-tag")}>{posLabel}</span>}
               </div>
 
-              <div className="meanings-container">
+              <div className={styleClasses("meanings-container")}>
                 {activeCard.meanings.map((m, idx) => (
-                  <div key={idx} className="dict-meaning-block">
-                    <div className="meaning-eng" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <div key={idx} className={styleClasses("dict-meaning-block")}>
+                    <div className={styleClasses("meaning-eng")} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                       <div style={{ flex: 1 }}>
-                        {m.pos && <strong className="pos-inline">{m.pos} </strong>}
+                        {m.pos && <strong className={styleClasses("pos-inline")}>{m.pos} </strong>}
                         {m.definition}
                       </div>
                       <SpeakerBtn text={m.definition || ''} bengaliText={m.translation} size={22} />
                     </div>
                     {m.translation && (
-                      <blockquote className="meaning-bng-quote">
-                        <span className="quote-icon">❝</span>
+                      <blockquote className={styleClasses("meaning-bng-quote")}>
+                        <span className={styleClasses("quote-icon")}>❝</span>
                         <span>{m.translation}</span>
                       </blockquote>
                     )}
@@ -463,24 +467,24 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
             </section>
 
             {/* PC Split Comparison Tables (NSTableView Style) */}
-            <section className="apple-tables-grid">
+            <section className={styleClasses("apple-tables-grid")}>
               {(viewMode === "all" || viewMode === "primary") && (
-                <div className="ns-table-container">
-                  <div className="table-header">
-                    <span className="table-title">{config.primaryTitle}</span>
-                    <span className="table-count">{activeCard.primaryItems.length} words</span>
+                <div className={styleClasses("ns-table-container")}>
+                  <div className={styleClasses("table-header")}>
+                    <span className={styleClasses("table-title")}>{config.primaryTitle}</span>
+                    <span className={styleClasses("table-count")}>{activeCard.primaryItems.length} words</span>
                   </div>
-                  <div className="table-body">
+                  <div className={styleClasses("table-body")}>
                     {activeCard.primaryItems.length === 0 ? (
-                      <div className="table-empty">{config.primaryEmptyLabel}</div>
+                      <div className={styleClasses("table-empty")}>{config.primaryEmptyLabel}</div>
                     ) : (
                       activeCard.primaryItems.map((s, i) => (
-                        <div key={i} className={`table-row ${i % 2 === 1 ? "alt-row" : ""}`} onClick={() => handleRowClick(s.word, s.translation)} style={{ cursor: "pointer" }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
-                          <span className="cell-term" style={{ display: 'flex', alignItems: 'center' }}>
+                        <div key={i} className={styleClasses(`table-row ${i % 2 === 1 ? "alt-row" : ""}`)} onClick={() => handleRowClick(s.word, s.translation)} style={{ cursor: "pointer" }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
+                          <span className={styleClasses("cell-term")} style={{ display: 'flex', alignItems: 'center' }}>
                             {s.word}
                             {activeSpeech === s.word && <Volume2 size={16} style={{ marginLeft: 8, color: '#007aff' }} />}
                           </span>
-                          <span className="cell-trans">{s.translation || "—"}</span>
+                          <span className={styleClasses("cell-trans")}>{s.translation || "—"}</span>
                         </div>
                       ))
                     )}
@@ -489,22 +493,22 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               )}
 
               {(viewMode === "all" || viewMode === "secondary") && (
-                <div className="ns-table-container">
-                  <div className="table-header">
-                    <span className="table-title">{config.secondaryTitle}</span>
-                    <span className="table-count">{activeCard.secondaryItems.length} words</span>
+                <div className={styleClasses("ns-table-container")}>
+                  <div className={styleClasses("table-header")}>
+                    <span className={styleClasses("table-title")}>{config.secondaryTitle}</span>
+                    <span className={styleClasses("table-count")}>{activeCard.secondaryItems.length} words</span>
                   </div>
-                  <div className="table-body">
+                  <div className={styleClasses("table-body")}>
                     {activeCard.secondaryItems.length === 0 ? (
-                      <div className="table-empty">{config.secondaryEmptyLabel}</div>
+                      <div className={styleClasses("table-empty")}>{config.secondaryEmptyLabel}</div>
                     ) : (
                       activeCard.secondaryItems.map((a, i) => (
-                        <div key={i} className={`table-row ${i % 2 === 1 ? "alt-row" : ""}`} onClick={() => handleRowClick(a.word, a.translation)} style={{ cursor: "pointer" }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
-                          <span className="cell-term" style={{ display: 'flex', alignItems: 'center' }}>
+                        <div key={i} className={styleClasses(`table-row ${i % 2 === 1 ? "alt-row" : ""}`)} onClick={() => handleRowClick(a.word, a.translation)} style={{ cursor: "pointer" }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
+                          <span className={styleClasses("cell-term")} style={{ display: 'flex', alignItems: 'center' }}>
                             {a.word}
                             {activeSpeech === a.word && <Volume2 size={16} style={{ marginLeft: 8, color: '#007aff' }} />}
                           </span>
-                          <span className="cell-trans">{a.translation || "—"}</span>
+                          <span className={styleClasses("cell-trans")}>{a.translation || "—"}</span>
                         </div>
                       ))
                     )}
@@ -514,28 +518,28 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
             </section>
 
             {/* Mobile Swipe Segmented Suite (<900px) */}
-            <section className="mobile-suite">
-              <div className="mobile-seg-control">
+            <section className={styleClasses("mobile-suite")}>
+              <div className={styleClasses("mobile-seg-control")}>
                 <button data-ui-button="state"
                   type="button"
-                  aria-pressed={mobileTab === "primary"} className={`m-tab ${mobileTab === "primary" ? "active" : ""}`}
+                  aria-pressed={mobileTab === "primary"} className={styleClasses(`m-tab ${mobileTab === "primary" ? "active" : ""}`)}
                   onClick={() => setMobileTab("primary")}
                 >
                   <span>{config.primaryLabel}</span>
-                  <span className="m-tab-badge">{activeCard.primaryItems.length}</span>
+                  <span className={styleClasses("m-tab-badge")}>{activeCard.primaryItems.length}</span>
                 </button>
                 <button data-ui-button="state"
                   type="button"
-                  aria-pressed={mobileTab === "secondary"} className={`m-tab ${mobileTab === "secondary" ? "active" : ""}`}
+                  aria-pressed={mobileTab === "secondary"} className={styleClasses(`m-tab ${mobileTab === "secondary" ? "active" : ""}`)}
                   onClick={() => setMobileTab("secondary")}
                 >
                   <span>{config.secondaryLabel}</span>
-                  <span className="m-tab-badge">{activeCard.secondaryItems.length}</span>
+                  <span className={styleClasses("m-tab-badge")}>{activeCard.secondaryItems.length}</span>
                 </button>
               </div>
 
               <div
-                className="mobile-swipe-viewport"
+                className={styleClasses("mobile-swipe-viewport")}
                 onTouchStart={(e) => {
                   const t = e.touches[0];
                   touchStartXRef.current = t?.clientX ?? null;
@@ -553,33 +557,33 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                   if (dx > 0 && mobileTab === "secondary") setMobileTab("primary");
                 }}
               >
-                <div className="ns-table-container">
-                  <div className="table-body">
+                <div className={styleClasses("ns-table-container")}>
+                  <div className={styleClasses("table-body")}>
                     {mobileTab === "primary" ? (
                       activeCard.primaryItems.length === 0 ? (
-                        <div className="table-empty">{config.primaryEmptyLabel}</div>
+                        <div className={styleClasses("table-empty")}>{config.primaryEmptyLabel}</div>
                       ) : (
                         activeCard.primaryItems.map((s, i) => (
-                          <div key={i} className="table-row" onClick={() => handleRowClick(s.word, s.translation)} style={{ cursor: "pointer" }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
-                            <span className="cell-term" style={{ display: 'flex', alignItems: 'center' }}>
+                          <div key={i} className={styleClasses("table-row")} onClick={() => handleRowClick(s.word, s.translation)} style={{ cursor: "pointer" }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
+                            <span className={styleClasses("cell-term")} style={{ display: 'flex', alignItems: 'center' }}>
                               {s.word}
                               {activeSpeech === s.word && <Volume2 size={16} style={{ marginLeft: 8, color: '#007aff' }} />}
                             </span>
-                            <span className="cell-trans">{s.translation || "—"}</span>
+                            <span className={styleClasses("cell-trans")}>{s.translation || "—"}</span>
                           </div>
                         ))
                       )
                     ) : (
                       activeCard.secondaryItems.length === 0 ? (
-                        <div className="table-empty">{config.secondaryEmptyLabel}</div>
+                        <div className={styleClasses("table-empty")}>{config.secondaryEmptyLabel}</div>
                       ) : (
                         activeCard.secondaryItems.map((a, i) => (
-                          <div key={i} className="table-row" onClick={() => handleRowClick(a.word, a.translation)} style={{ cursor: "pointer" }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
-                            <span className="cell-term" style={{ display: 'flex', alignItems: 'center' }}>
+                          <div key={i} className={styleClasses("table-row")} onClick={() => handleRowClick(a.word, a.translation)} style={{ cursor: "pointer" }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
+                            <span className={styleClasses("cell-term")} style={{ display: 'flex', alignItems: 'center' }}>
                               {a.word}
                               {activeSpeech === a.word && <Volume2 size={16} style={{ marginLeft: 8, color: '#007aff' }} />}
                             </span>
-                            <span className="cell-trans">{a.translation || "—"}</span>
+                            <span className={styleClasses("cell-trans")}>{a.translation || "—"}</span>
                           </div>
                         ))
                       )
@@ -592,10 +596,10 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
           </div>
 
           {/* ── Mobile Floating Navigation Buttons ── */}
-          <div className="mobile-nav-footer">
+          <div className={styleClasses("mobile-nav-footer")}>
             <button data-ui-button="secondary"
               type="button"
-              className="mobile-footer-btn prev"
+              className={styleClasses("mobile-footer-btn prev")}
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={!totalCards || currentPage === 1}
               aria-label="Previous Word"
@@ -608,7 +612,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
 
             <button data-ui-button="state"
               type="button"
-              className="mobile-footer-btn next"
+              className={styleClasses("mobile-footer-btn next")}
               onClick={() => setCurrentPage((prev) => Math.min(totalCards, prev + 1))}
               disabled={!totalCards || currentPage >= totalCards}
               aria-label="Next Word"
@@ -622,8 +626,6 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
 
         </div>
       </div>
-
-      <style jsx>{studyModeComparisonStyles}</style>
     </main>
   );
 }

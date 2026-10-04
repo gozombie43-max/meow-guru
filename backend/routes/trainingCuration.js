@@ -2,26 +2,16 @@ import { invalidateQuestionMetadata } from "../services/questions/questionMetada
 import express from "express";
 import { z } from "zod";
 import adminAuth from "../middleware/auth.js";
-import {
-  getMongoDB,
-  getQuestionsCollection,
-  withMongoTransaction,
-} from "../config/mongodb.js";
+import { listPendingTrainingVariants, findTrainingSeed, insertTrainingVariant, reviewTrainingVariant } from '../repositories/trainingCurationRepository.js';
 import { EXAMS, normalizeQuestion } from "../services/trainingEngine.js";
 import { draftTrainingVariant } from "../services/trainingVariants.js";
-import { trainingQuestionMetadata } from '../services/training/domain/questionMetadata.js';
 
 const router = express.Router();
 router.use(adminAuth);
 router.get("/variants", async (_req, res, next) => {
   try {
     res.json({
-      variants: await getMongoDB()
-        .collection("trainingQuestionVariants")
-        .find({ validationStatus: "pending_review" })
-        .sort({ createdAt: -1 })
-        .limit(50)
-        .toArray(),
+      variants: await listPendingTrainingVariants(),
     });
   } catch (e) {
     next(e);
@@ -36,9 +26,7 @@ router.post("/variants", async (req, res, next) => {
       return res
         .status(400)
         .json({ error: "Choose a seed question and exam." });
-    const seed = await getQuestionsCollection().findOne({
-      id: parsed.data.seedId,
-    });
+    const seed = await findTrainingSeed(parsed.data.seedId);
     if (!seed || !normalizeQuestion(seed))
       return res.status(422).json({ error: "A valid bank seed is required." });
     const tags = [
@@ -68,9 +56,7 @@ router.post("/variants", async (req, res, next) => {
             "The provider did not return a valid draft. No question was published.",
         });
     }
-    await getMongoDB()
-      .collection("trainingQuestionVariants")
-      .insertOne({ ...draft, createdBy: String(req.user.id) });
+    await insertTrainingVariant(draft, req.user.id);
     res.status(201).json(draft);
   } catch (e) {
     next(e);
@@ -91,60 +77,7 @@ router.post("/variants/:id/review", async (req, res, next) => {
         .json({
           error: "Provide a decision and substantive verification notes.",
         });
-    let output;
-    await withMongoTransaction(async ({ db, session }) => {
-      const drafts = db.collection("trainingQuestionVariants");
-      const draft = await drafts.findOne({ id: req.params.id }, { session });
-      if (!draft)
-        throw Object.assign(new Error("Variant not found"), {
-          statusCode: 404,
-        });
-      if (draft.validationStatus !== "pending_review") {
-        output = { id: draft.id, status: draft.validationStatus };
-        return;
-      }
-      if (parsed.data.decision === "approve") {
-        if (
-          parsed.data.verifiedAnswer === undefined ||
-          parsed.data.verifiedAnswer >= draft.options.length
-        )
-          throw Object.assign(
-            new Error("Select the independently verified answer index"),
-            { statusCode: 400 },
-          );
-        const { _id, createdBy, ...question } = draft;
-        await db
-          .collection("questions")
-          .insertOne(
-            {
-              ...question,
-              ...trainingQuestionMetadata({ ...question, correctAnswer: parsed.data.verifiedAnswer, validationStatus: 'validated' }),
-              correctAnswer: parsed.data.verifiedAnswer,
-              validationStatus: "validated",
-              validatedBy: String(req.user.id),
-              validatedAt: new Date(),
-              updatedAt: new Date(),
-              verificationNotes: parsed.data.verificationNotes,
-            },
-            { session },
-          );
-      }
-      const status =
-        parsed.data.decision === "approve" ? "validated" : "rejected";
-      await drafts.updateOne(
-        { _id: draft._id },
-        {
-          $set: {
-            validationStatus: status,
-            reviewedBy: String(req.user.id),
-            reviewedAt: new Date(),
-            verificationNotes: parsed.data.verificationNotes,
-          },
-        },
-        { session },
-      );
-      output = { id: draft.id, status };
-    });
+    const output = await reviewTrainingVariant(req.params.id, req.user.id, parsed.data);
     if (output.status === "validated") await invalidateQuestionMetadata();
     res.json(output);
   } catch (e) {

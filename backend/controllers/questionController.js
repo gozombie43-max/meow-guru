@@ -1,5 +1,6 @@
 // controllers/questionController.js
 import * as questionService from '../services/questionService.js';
+import { questionAnswerRequestSchema } from '@meow/contracts/questions';
 
 // ── Helpers (kept from your original for req parsing) ─
 function buildRichText(textValue, imagePath) {
@@ -310,10 +311,11 @@ const getQuestionsMeta = async (req, res) => {
 // ── POST /api/questions/:id/answer ─────────────────────
 const submitAnswer = async (req, res) => {
   try {
-    const { answer, submissionId } = req.body;
-    if (typeof answer !== 'number') {
+    const parsed = questionAnswerRequestSchema.safeParse(req.body);
+    if (!parsed.success) {
       return res.status(400).json({ error: 'Valid answer required' });
     }
+    const { answer, submissionId } = parsed.data;
     const result = await questionService.processUserAnswer(
       req.user._id || req.user.id,
       req.params.id,

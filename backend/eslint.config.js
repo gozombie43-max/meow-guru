@@ -7,4 +7,7 @@ export default [
     'no-dupe-keys': 'error', 'no-duplicate-case': 'error', 'valid-typeof': 'error',
     'constructor-super': 'error', 'no-unsafe-finally': 'error',
   } },
+  { files: ['**/*.js'], ignores: ['scripts/**', 'migrations/**', '**/__tests__/**', '**/*.test.js'], rules: {
+    'no-console': 'error',
+  } },
 ];

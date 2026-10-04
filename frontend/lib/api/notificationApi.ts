@@ -1,3 +1,5 @@
+import type { z } from 'zod';
+import type { engagementSchema } from '@meow/contracts/notifications';
 import api from "@/shared/api/client";
 
 export interface UserNotification {
@@ -97,9 +99,6 @@ export async function trackNotificationEngagement(
 ) {
   await api.post(
     `/api/notifications/inbox/${notificationId}/engagement`,
-    {
-      event,
-      source,
-    }
+    { event, source } satisfies z.input<typeof engagementSchema>
   );
 }

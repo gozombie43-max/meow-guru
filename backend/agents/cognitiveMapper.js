@@ -61,7 +61,7 @@ Reply with ONLY valid JSON. No extra text, no markdown, no explanation outside t
 Format: {"dimension":"<ONE_OF_THREE>","reason":"<one sentence why>","confidence":<0.0_to_1.0>}`;
 
   const parsed = await chatJSON(prompt, DEFAULT_MODEL, "You are a precise JSON-only response bot.", failureClassificationSchema);
-  return { ...parsed, source: "llm" };
+  return { ...failureClassificationSchema.parse(parsed), source: "llm" };
 }
 
 // ─── Main export: tag a single wrong answer ──────────────────────────────────
@@ -120,19 +120,25 @@ function getRuleReason(dimension, { timeSpent }) {
  */
 export async function tagFailureBatch(wrongAnswers, concurrency = 3) {
   const results = [];
+  const failures = [];
   for (let i = 0; i < wrongAnswers.length; i += concurrency) {
     const batch = wrongAnswers.slice(i, i + concurrency);
-    const tagged = await Promise.all(batch.map((q) => tagFailure(q)));
+    const settled = await Promise.allSettled(batch.map((q) => tagFailure(q)));
+    const tagged = settled.flatMap((entry, idx) => {
+      if (entry.status === 'fulfilled') return [{ tag: entry.value, question: batch[idx] }];
+      failures.push({ questionId: batch[idx].questionId, error: 'Classification unavailable' });
+      return [];
+    });
     results.push(
-      ...tagged.map((tag, idx) => ({
-        questionId: batch[idx].questionId,
-        topic: batch[idx].topic,
-        concept: batch[idx].concept,
+      ...tagged.map(({ tag, question }) => ({
+        questionId: question.questionId,
+        topic: question.topic,
+        concept: question.concept,
         ...tag,
       }))
     );
   }
-  return results;
+  return { tagged: results, failures };
 }
 
 // ─── Failure Map updater: merge tags into user's Cosmos profile ───────────────

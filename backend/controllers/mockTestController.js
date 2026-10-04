@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { v4 as uuidv4 } from 'uuid';
 import { activePaper } from '../services/mockTestPresentation.js';
 import { validateAssessment } from '../services/assessmentPolicy.js';
@@ -56,7 +57,7 @@ export const fetchExamSlots = async (req, res) => {
     const slots = await fetchSlotsForExam(examSlug);
     res.json({ slots });
   } catch (err) {
-    console.error('Fetch slots error:', err);
+    runtimeLog.error('Fetch slots error:', err);
     res.status(500).json({ error: 'Failed to fetch mock test slots' });
   }
 };
@@ -69,7 +70,7 @@ export const fetchSingleSlot = async (req, res) => {
     if (!slot) return res.status(404).json({ error: 'Slot not found' });
     res.json({ slot: summarizeSlot(slot) });
   } catch (err) {
-    console.error('Fetch single slot error:', err);
+    runtimeLog.error('Fetch single slot error:', err);
     res.status(500).json({ error: 'Failed to fetch slot details' });
   }
 };
@@ -82,11 +83,11 @@ export const adminCreateSlot = async (req, res) => {
     }
     const createdSlot = await createMockSlot({ id, examSlug, configKey, title, tier, type, isFree, order, assessmentMode });
     if (createdSlot.type === "mock") {
-      void notifyNewMockPublished({ id: createdSlot.id, examSlug: createdSlot.examSlug, title: createdSlot.title, tier: createdSlot.tier, type: createdSlot.type }).catch(console.error);
+      void notifyNewMockPublished({ id: createdSlot.id, examSlug: createdSlot.examSlug, title: createdSlot.title, tier: createdSlot.tier, type: createdSlot.type }).catch(runtimeLog.error);
     }
     res.status(201).json({ success: true, slot: createdSlot });
   } catch (err) {
-    console.error('Admin create slot error:', err);
+    runtimeLog.error('Admin create slot error:', err);
     res.status(500).json({ error: err.message || 'Failed to create mock slot' });
   }
 };
@@ -99,7 +100,7 @@ export const adminUpdateSlot = async (req, res) => {
     const updatedSlot = await updateMockSlot(examSlug, slotId, updates);
     res.json({ success: true, slot: updatedSlot });
   } catch (err) {
-    console.error('Admin update slot error:', err);
+    runtimeLog.error('Admin update slot error:', err);
     res.status(500).json({ error: err.message || 'Failed to update mock slot' });
   }
 };
@@ -112,7 +113,7 @@ export const adminDeleteSlot = async (req, res) => {
     const result = await deleteMockSlot(examSlug, slotId);
     res.json(result);
   } catch (err) {
-    console.error('Admin delete slot error:', err);
+    runtimeLog.error('Admin delete slot error:', err);
     res.status(500).json({ error: err.message || 'Failed to delete mock slot' });
   }
 };
@@ -123,7 +124,7 @@ export const adminFetchAllSlots = async (req, res) => {
     const slots = await fetchAllAdminSlots(examFilter);
     res.json({ success: true, slots });
   } catch (err) {
-    console.error('Admin fetch all slots error:', err);
+    runtimeLog.error('Admin fetch all slots error:', err);
     res.status(500).json({ error: 'Failed to fetch admin slots' });
   }
 };
@@ -135,11 +136,11 @@ export const adminUploadPaper = async (req, res) => {
     if (!Array.isArray(questions) || questions.length === 0) return res.status(400).json({ error: 'questions array is required and must not be empty' });
     const result = await uploadFullPaper({ slotData: slot, questions });
     if (result.isNewSlot && result.type === "mock") {
-      void notifyNewMockPublished({ id: result.slotId, examSlug: result.examSlug, title: result.title, tier: result.tier, type: result.type }).catch(console.error);
+      void notifyNewMockPublished({ id: result.slotId, examSlug: result.examSlug, title: result.title, tier: result.tier, type: result.type }).catch(runtimeLog.error);
     }
     res.status(201).json(result);
   } catch (err) {
-    console.error('Admin upload paper error:', err);
+    runtimeLog.error('Admin upload paper error:', err);
     res.status(500).json({ error: err.message || 'Failed to upload mock test / PYQ paper' });
   }
 };
@@ -149,7 +150,7 @@ export const adminSeedSlots = async (req, res) => {
     const result = await seedDefaultSlots();
     res.json({ success: true, ...result });
   } catch (err) {
-    console.error('Admin seed slots error:', err);
+    runtimeLog.error('Admin seed slots error:', err);
     res.status(500).json({ error: 'Failed to seed default slots' });
   }
 };
@@ -216,7 +217,7 @@ export const startMockTest = async (req, res) => {
     }
     return res.status(201).json(presentAttempt(doc));
   } catch (err) {
-    console.error('Start test error:', err);
+    runtimeLog.error('Start test error:', err);
     return res.status(err.statusCode || 500).json({ error: err.statusCode ? err.message : 'Failed to start test' });
   }
 };
@@ -275,7 +276,7 @@ export const autosaveAttempt = async (req, res) => {
     }
     return res.json({ ok: true, revision: Math.max(Number(doc.revision) || 0, result.modifiedCount ? revision : 0) });
   } catch (err) {
-    console.error('Autosave error:', err);
+    runtimeLog.error('Autosave error:', err);
     return res.status(500).json({ error: 'Failed to autosave' });
   }
 };
@@ -304,7 +305,7 @@ export const submitAttemptHandler = async (req, res) => {
     await invalidateTrainingDashboard(claimed.userId, claimed.examSlug);
     return res.json({ result: finalResult, attemptId: claimed.id });
   } catch (err) {
-    console.error('Submit error:', err);
+    runtimeLog.error('Submit error:', err);
     return res.status(500).json({ error: 'Failed to submit test' });
   }
 };
@@ -327,7 +328,7 @@ export const getAttemptDetails = async (req, res) => {
 
     return res.json(presentAttempt(doc));
   } catch (err) {
-    console.error('Get attempt error:', err);
+    runtimeLog.error('Get attempt error:', err);
     return res.status(500).json({ error: 'Failed to get attempt' });
   }
 };
@@ -338,7 +339,7 @@ export const getTestHistoryHandler = async (req, res) => {
     const resources = await getTestHistory(req.user.id, examSlug, testId);
     return res.json({ attempts: resources });
   } catch (err) {
-    console.error('Test history error:', err);
+    runtimeLog.error('Test history error:', err);
     return res.status(500).json({ error: 'Failed to get history' });
   }
 };
@@ -349,7 +350,7 @@ export const getExamHistoryHandler = async (req, res) => {
     const resources = await getExamHistory(req.user.id, examSlug);
     return res.json({ attempts: resources });
   } catch (err) {
-    console.error('Exam history error:', err);
+    runtimeLog.error('Exam history error:', err);
     return res.status(500).json({ error: 'Failed to get history' });
   }
 };

@@ -1,3 +1,4 @@
+import { runtimeLog } from '../../infrastructure/runtimeLog.js';
 import crypto from "crypto";
 import { invalidateQuestionMetadata } from "./questionMetadataCache.js";
 import { refreshUploadedQuestionMetadata } from "./questionMetadataService.js";
@@ -190,7 +191,7 @@ export async function removeQuestionsBulk(ids) {
       total: uniqueIds.length,
     };
   } catch (err) {
-    console.error("removeQuestionsBulk error:", err);
+    runtimeLog.error("removeQuestionsBulk error:", err);
 
     return {
       deleted: 0,

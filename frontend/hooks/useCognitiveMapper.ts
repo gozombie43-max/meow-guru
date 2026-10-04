@@ -3,6 +3,8 @@
 
 import { useState, useCallback } from "react";
 import axios from "@/shared/api/client"; // your existing configured axios instance
+import type { z } from 'zod';
+import type { failureRequestSchema, failureBatchRequestSchema } from '@meow/contracts/cognitive';
 
 export interface FailureTag {
   dimension: "CONCEPTUAL_GAP" | "APPLICATION_ERROR" | "TRAP_CAUGHT" | "SPEED_PANIC" | "BLIND_SPOT";
@@ -140,10 +142,11 @@ export function useTagFailure() {
     setLoading(true);
     try {
       const userId = localStorage.getItem("userId"); // or from your AuthContext
+      if (!userId) return null;
       const { data } = await axios.post("/api/agent/tag-failure", {
         userId,
         ...params,
-      });
+      } satisfies z.input<typeof failureRequestSchema>);
       setLastTag(data.tag);
       return data;
     } catch (err) {
@@ -168,10 +171,11 @@ export function useTagQuizResults() {
     setLoading(true);
     try {
       const userId = localStorage.getItem("userId");
+      if (!userId) return null;
       const { data } = await axios.post("/api/agent/tag-quiz-results", {
         userId,
         wrongAnswers,
-      });
+      } satisfies z.input<typeof failureBatchRequestSchema>);
       setResults(data.tagged);
       return data;
     } catch (err) {

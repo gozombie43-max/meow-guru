@@ -1,11 +1,10 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 // routes/notes.routes.js
 
 import express from "express";
 import { v4 as uuidv4 } from "uuid";
 
-import {
-  getNotesCollection,
-} from "../config/mongodb.js";
+import { listNotes, findNoteById, insertNote, patchNoteDocument, deleteNoteById } from '../repositories/notesRepository.js';
 
 import adminAuth from "../middleware/auth.js";
 
@@ -81,27 +80,12 @@ router.get("/", async (req, res) => {
     }
 
     const notes =
-      await getNotesCollection()
-        .find(
-          filter,
-          {
-            projection: {
-              _id: 0,
-              _cosmosRid: 0,
-            },
-          }
-        )
-        .sort({
-          updatedAt: -1,
-          createdAt: -1,
-          _ts: -1,
-        })
-        .toArray();
+      await listNotes(filter);
 
     return res.json(notes);
 
   } catch (err) {
-    console.error(
+    runtimeLog.error(
       "GET /api/notes error:",
       err
     );
@@ -123,20 +107,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const note =
-      await getNotesCollection()
-        .findOne(
-          {
-            id: String(
-              req.params.id
-            ),
-          },
-          {
-            projection: {
-              _id: 0,
-              _cosmosRid: 0,
-            },
-          }
-        );
+      await findNoteById(req.params.id);
 
     if (!note) {
       return res
@@ -150,7 +121,7 @@ router.get("/:id", async (req, res) => {
     return res.json(note);
 
   } catch (err) {
-    console.error(
+    runtimeLog.error(
       "GET /api/notes/:id error:",
       err
     );
@@ -195,8 +166,7 @@ router.post(
           now,
       };
 
-      await getNotesCollection()
-        .insertOne(note);
+      await insertNote(note);
 
       return res
         .status(201)
@@ -205,7 +175,7 @@ router.post(
         );
 
     } catch (err) {
-      console.error(
+      runtimeLog.error(
         "POST /api/notes error:",
         err
       );
@@ -233,13 +203,10 @@ router.put(
       const id =
         String(req.params.id);
 
-      const notes =
-        getNotesCollection();
+
 
       const existing =
-        await notes.findOne({
-          id,
-        });
+        await findNoteById(id, true);
 
       if (!existing) {
         return res
@@ -265,18 +232,7 @@ router.put(
       const updatedAt =
         new Date().toISOString();
 
-      await notes.updateOne(
-        {
-          _id:
-            existing._id,
-        },
-        {
-          $set: {
-            ...allowedUpdates,
-            updatedAt,
-          },
-        }
-      );
+      await patchNoteDocument(existing._id, { ...allowedUpdates, updatedAt });
 
       const updated = {
         ...sanitizeNote(existing),
@@ -295,7 +251,7 @@ router.put(
       );
 
     } catch (err) {
-      console.error(
+      runtimeLog.error(
         "PUT /api/notes error:",
         err
       );
@@ -321,12 +277,7 @@ router.delete(
   async (req, res) => {
     try {
       const result =
-        await getNotesCollection()
-          .deleteOne({
-            id: String(
-              req.params.id
-            ),
-          });
+        await deleteNoteById(req.params.id);
 
       if (
         result.deletedCount === 0
@@ -344,7 +295,7 @@ router.delete(
       });
 
     } catch (err) {
-      console.error(
+      runtimeLog.error(
         "DELETE /api/notes error:",
         err
       );

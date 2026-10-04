@@ -1,5 +1,5 @@
-import { verifyToken, isRevoked } from "../auth/jwt.js";
-import { getUsersCollection } from "../config/mongodb.js";
+import { verifyToken } from "../auth/jwt.js";
+import { findCurrentAdminUser } from '../repositories/adminUserRepository.js';
 import { assertSession } from '../auth/sessions.js';
 
 const ADMIN_ROLES = new Set(["admin", "superadmin"]);
@@ -13,14 +13,8 @@ const adminAuth = async (req, res, next) => {
   try {
     const decoded = verifyToken(authHeader.slice(7));
     await assertSession(decoded);
-    if (decoded.jti && isRevoked(decoded.jti)) {
-      return res.status(401).json({ error: "Token has been revoked" });
-    }
 
-    const user = await getUsersCollection().findOne(
-      { id: String(decoded.id), type: { $ne: "email_lock" } },
-      { projection: { id: 1, email: 1, name: 1, role: 1, status: 1 } },
-    );
+    const user = await findCurrentAdminUser(decoded.id);
     if (!user || ["suspended", "banned"].includes(user.status)) {
       return res.status(403).json({ error: "Account is not active" });
     }

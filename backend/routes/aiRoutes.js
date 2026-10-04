@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { SYSTEM_PROMPT as diagramPrompt } from "@meow/contracts/diagramPrompt";
 import { generateQuestionDrafts, classifyQuestion, generateDiagram } from "../ai/gateway.js";
 import { tutorChat } from '../services/tutorChatService.js';
@@ -11,6 +12,7 @@ import adminAuth from "../middleware/auth.js";
 import { protect, optionalAuth } from "../middleware/protect.js";
 import { aiLimiter } from '../middleware/rateLimiter.js';
 import { aiAdmission, acquireAiLease, releaseAiLease } from '../middleware/aiAdmission.js';
+import { tutorRequestSchema, tutorReplySchema, tutorJobResponseSchema } from '@meow/contracts/tutor';
 
 const router = express.Router();
 // Polling and cancellation are inexpensive and do not consume generation quota.
@@ -47,7 +49,7 @@ function parseMaybeJSON(value, fallback) {
 }
 
 function wakeTutorAttachmentWorker() {
-  if (process.env.QUIZ_ONLY_MODE !== 'true') return;
+  if (process.env.QUIZ_ONLY_MODE !== 'true' || process.env.RUN_EMBEDDED_WORKERS !== 'true') return;
 
   void import('../infrastructure/attachmentWorker.js')
     .then(({ startAttachmentWorker }) => startAttachmentWorker({
@@ -55,7 +57,7 @@ function wakeTutorAttachmentWorker() {
       idleTimeoutMs: 10_000,
     }))
     .catch((error) => {
-      console.error('Failed to start on-demand tutor attachment worker:', error);
+      runtimeLog.error('Failed to start on-demand tutor attachment worker:', error);
     });
 }
 
@@ -121,24 +123,26 @@ Give a clear step-by-step explanation. Keep it concise.`;
 // ── 2b. Tutor chat for submitted quiz questions ───────
 router.post('/tutor-chat', optionalAuth, tutorUpload.single('attachment'), async (req, res) => {
   const userId = req.user?.id ? String(req.user.id) : (req.ip || 'anonymous');
-  const input = {
+  const parsed = tutorRequestSchema.safeParse({
     context: req.body.context,
     message: req.body.message,
     history: parseMaybeJSON(req.body.history, []),
     lang: req.body.lang || 'en',
-  };
+  });
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid tutor request' });
+  const input = parsed.data;
   if (!input.context || (!input.message && !req.file)) return res.status(400).json({ error: 'context and message or attachment are required' });
   if (JSON.stringify(input).length > 200000) return res.status(413).json({ error: 'Chat context is too large' });
   if (req.file) {
     const job = await enqueueTutorJob(userId, input, req.file, req.get('Idempotency-Key'));
     wakeTutorAttachmentWorker();
-    return res.status(202).json({ success: true, jobId: job._id, status: job.status });
+    return res.status(202).json(tutorJobResponseSchema.parse({ success: true, jobId: job._id, status: job.status }));
   }
   try {
-    res.json(await tutorChat(input));
+    res.json(tutorReplySchema.parse(await tutorChat(input)));
   } catch (err) {
-    console.error('tutor-chat error:', err?.message || err);
-    res.status(err.statusCode || 502).json({ success: false, error: err.message || 'AI request failed. Please retry shortly.' });
+    runtimeLog.error('tutor-chat error:', err?.message || err);
+    res.status(err.statusCode || 502).json({ success: false, error: 'AI request failed. Please retry shortly.' });
   }
 });
 router.get('/tutor-jobs/:id', optionalAuth, async (req, res) => {
@@ -146,7 +150,7 @@ router.get('/tutor-jobs/:id', optionalAuth, async (req, res) => {
   const job = await getTutorJob(userId, req.params.id);
   if (!job) return res.status(404).json({ error: 'Job not found' });
   if (job.status === 'queued' || job.status === 'running') wakeTutorAttachmentWorker();
-  res.json({ jobId: job._id, status: job.status, ...(job.status === 'completed' ? job.result : {}), ...(job.status === 'failed' ? { error: job.error } : {}) });
+  res.json(tutorJobResponseSchema.parse({ jobId: job._id, status: job.status, ...(job.status === 'completed' ? job.result : {}), ...(job.status === 'failed' ? { error: 'Attachment processing failed. Please retry.' } : {}) }));
 });
 router.delete('/tutor-jobs/:id', optionalAuth, async (req, res) => {
   const userId = req.user?.id ? String(req.user.id) : (req.ip || 'anonymous');

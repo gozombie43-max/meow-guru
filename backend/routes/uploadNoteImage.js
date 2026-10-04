@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 // routes/uploadNoteImage.js
 
 import express from "express";
@@ -118,7 +119,7 @@ router.post(
       });
 
     } catch (err) {
-      console.error(
+      runtimeLog.error(
         "Note image upload error:",
         err
       );

@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { assertSession } from '../auth/sessions.js';
 import { tracedSocketListener } from '../infrastructure/tracing.js';
 import { registerBattleRelay } from "../infrastructure/battleOutbox.js";
@@ -86,7 +87,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     addCreatedAtField: true,
   }));
 
-  console.log(`Socket.IO ${adapterFactory ? 'Redis Streams' : 'MongoDB'} adapter enabled ✅`);
+  runtimeLog.info(`Socket.IO ${adapterFactory ? 'Redis Streams' : 'MongoDB'} adapter enabled ✅`);
 
   registerBattleRelay(io);
   setBattleRealtimeServer(io);
@@ -116,7 +117,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
         socket.disconnect(true);
       }
     });
-    console.log(`Socket connected: ${socket.id} (user: ${socket.user?.email || socket.user?.id})`);
+    runtimeLog.info(`Socket connected: ${socket.id} (user: ${socket.user?.email || socket.user?.id})`);
 
     const userRoom = `user:${String(socket.user.id)}`;
     socket.join(userRoom);
@@ -131,14 +132,14 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
       const parsed = matchmakingSchema.safeParse(raw);
       if (!parsed.success) return socket.emit('matchmaking:error', { message: 'Invalid matchmaking settings.' });
       try { const ticket = await joinMatchmakingQueue({ userId: socket.user.id, displayName: socket.user.name || socket.user.email || 'Player', ...parsed.data }); socket.emit('matchmaking:queued', { queuedAt: ticket.queuedAt, rating: ticket.rating, subject: ticket.subject, topic: ticket.topic, questionCount: ticket.questionCount }); }
-      catch (error) { console.error('matchmaking:join:', error); socket.emit('matchmaking:error', { message: 'Could not enter matchmaking.' }); }
+      catch (error) { runtimeLog.error('matchmaking:join:', error); socket.emit('matchmaking:error', { message: 'Could not enter matchmaking.' }); }
     });
-    onEvent('matchmaking:cancel', async () => { await cancelMatchmakingQueue(socket.user.id).catch(console.error); socket.emit('matchmaking:cancelled'); });
+    onEvent('matchmaking:cancel', async () => { await cancelMatchmakingQueue(socket.user.id).catch(runtimeLog.error); socket.emit('matchmaking:cancelled'); });
     onEvent('battle:challengeUser', async (raw) => {
       if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
       const parsed = socialChallengeSchema.safeParse(raw); if (!parsed.success || parsed.data.targetUserId === socket.user.id) return;
-      try { const { targetUserId, subject, topic, questionCount } = parsed.data, code = await createRoom(socket.id, socket.user.name || 'Player', subject, topic, questionCount, socket.user.id); socket.join(code); const payload = { roomCode: code, challenger: { userId: socket.user.id, name: socket.user.name || 'Player' }, subject, topic, questionCount }; io.to(`user:${targetUserId}`).emit('battle:challengeReceived', payload); void sendPushToUser(targetUserId, { title: `${payload.challenger.name} challenged you ⚔️`, body: `Join the ${subject} battle.`, route: `/battle?join=${code}`, category: 'battleInvites', data: { type: 'battle_invite', roomCode: code, challengerUserId: socket.user.id }, centerKey: `social-battle:${code}:${targetUserId}` }).catch(console.error); socket.emit('battle:challengeSent', { roomCode: code, targetUserId }); }
-      catch (error) { console.error('battle:challengeUser:', error); socket.emit('room:error', { message: 'Could not send challenge.' }); }
+      try { const { targetUserId, subject, topic, questionCount } = parsed.data, code = await createRoom(socket.id, socket.user.name || 'Player', subject, topic, questionCount, socket.user.id); socket.join(code); const payload = { roomCode: code, challenger: { userId: socket.user.id, name: socket.user.name || 'Player' }, subject, topic, questionCount }; io.to(`user:${targetUserId}`).emit('battle:challengeReceived', payload); void sendPushToUser(targetUserId, { title: `${payload.challenger.name} challenged you ⚔️`, body: `Join the ${subject} battle.`, route: `/battle?join=${code}`, category: 'battleInvites', data: { type: 'battle_invite', roomCode: code, challengerUserId: socket.user.id }, centerKey: `social-battle:${code}:${targetUserId}` }).catch(runtimeLog.error); socket.emit('battle:challengeSent', { roomCode: code, targetUserId }); }
+      catch (error) { runtimeLog.error('battle:challengeUser:', error); socket.emit('room:error', { message: 'Could not send challenge.' }); }
     });
 
     onEvent('battle:resume', async ({ code = null } = {}) => {
@@ -184,14 +185,14 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
         });
         if (latestRoom.status === 'waiting' && latestRoom.players.length === 2) {
           void startGame(io, latestRoom.code).catch((error) => {
-            console.error('Resume startGame repair failed:', error);
+            runtimeLog.error('Resume startGame repair failed:', error);
           });
         }
         if (latestRoom.status === 'active') {
           void repairAnsweredBattle(io, latestRoom);
         }
       } catch (error) {
-        console.error('battle:resume failed:', error);
+        runtimeLog.error('battle:resume failed:', error);
         socket.emit('battle:resumeResult', { ok: false, reason: 'server-error' });
       }
     });
@@ -209,7 +210,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
       const code = await createRoom(socket.id, playerName, subject, topic, questionCount, socket.user?.id);
       socket.join(code);
       socket.emit('room:created', { code, playerName, subject, topic, questionCount });
-      console.log(`Room ${code} created by ${playerName}`);
+      runtimeLog.info(`Room ${code} created by ${playerName}`);
     });
 
     // Waiting-room cancellation is explicit so a cancelled room is not
@@ -345,7 +346,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
           message: 'Battle invite sent!',
         });
       } catch (err) {
-        console.error('room:invite error:', err.message);
+        runtimeLog.error('room:invite error:', err.message);
         socket.emit('room:inviteResult', {
           ok: false,
           message: 'Failed to send battle invite.',
@@ -414,7 +415,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
               : 'Room created, but push could not be delivered.',
         });
       } catch (error) {
-        console.error('Rematch error:', error);
+        runtimeLog.error('Rematch error:', error);
         socket.emit('battle:rematchResult', {
           ok: false,
           message: 'Rematch request is invalid or expired.',
@@ -457,7 +458,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
       lastAnswerEventAt = Date.now();
       const parsed = answerPayloadSchema.safeParse(rawPayload);
       if (!parsed.success) {
-        void recordBattleIntegritySignal({ dedupeKey: `invalid-answer-payload:${socket.user.id}:${new Date().toISOString().slice(0, 10)}`, userId: socket.user.id, signalType: 'invalid-answer-payload', severity: 'low', riskPoints: 5, details: { socketId: socket.id } }).catch(console.error);
+        void recordBattleIntegritySignal({ dedupeKey: `invalid-answer-payload:${socket.user.id}:${new Date().toISOString().slice(0, 10)}`, userId: socket.user.id, signalType: 'invalid-answer-payload', severity: 'low', riskPoints: 5, details: { socketId: socket.id } }).catch(runtimeLog.error);
         socket.emit('game:answerRejected', { reason: 'invalid-payload' });
         return;
       }
@@ -466,12 +467,12 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
       try {
         result = await submitAnswer({ code, userId: socket.user.id, questionIndex, selectedIndex });
       } catch (error) {
-        console.error('Battle answer persistence failed:', error);
+        runtimeLog.error('Battle answer persistence failed:', error);
         socket.emit('game:answerRejected', { reason: 'server-error', questionIndex });
         return;
       }
       if (!result.ok) {
-        if (result.reason === 'invalid-option') void recordBattleIntegritySignal({ dedupeKey: `invalid-option:${socket.user.id}:${new Date().toISOString().slice(0, 10)}`, userId: socket.user.id, roomCode: code, signalType: 'invalid-option-attempt', severity: 'medium', riskPoints: 15 }).catch(console.error);
+        if (result.reason === 'invalid-option') void recordBattleIntegritySignal({ dedupeKey: `invalid-option:${socket.user.id}:${new Date().toISOString().slice(0, 10)}`, userId: socket.user.id, roomCode: code, signalType: 'invalid-option-attempt', severity: 'medium', riskPoints: 15 }).catch(runtimeLog.error);
         socket.emit('game:answerRejected', { reason: result.reason, questionIndex });
         return;
       }
@@ -504,14 +505,14 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
         });
         setTimeout(() => {
           void advanceBattleAfterAnswers(io, code, currentIdx)
-            .catch((error) => console.error('Battle advance failed:', error));
+            .catch((error) => runtimeLog.error('Battle advance failed:', error));
         }, REVEAL_DELAY);
       }
     });
 
     // ── Disconnect ───────────────────────────────────────
     onEvent('disconnect', async (reason) => {
-      void cancelMatchmakingQueue(socket.user.id).catch((error) => console.error('Matchmaking disconnect cleanup:', error));
+      void cancelMatchmakingQueue(socket.user.id).catch((error) => runtimeLog.error('Matchmaking disconnect cleanup:', error));
       try {
         const found = await markSocketDisconnected(socket.id, {
           deployment: reason === 'server shutting down',
@@ -525,9 +526,9 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
           });
         }
       } catch (error) {
-        console.error('Battle disconnect persistence failed:', error);
+        runtimeLog.error('Battle disconnect persistence failed:', error);
       }
-      console.log(`Socket disconnected: ${socket.id}`);
+      runtimeLog.info(`Socket disconnected: ${socket.id}`);
     });
   });
 
@@ -539,7 +540,7 @@ async function repairAnsweredBattle(io, room) {
   const expectedIndex = room.currentIndex;
   setTimeout(() => {
     void advanceBattleAfterAnswers(io, room.code, expectedIndex)
-      .catch((error) => console.error('Battle recovery advance failed:', error));
+      .catch((error) => runtimeLog.error('Battle recovery advance failed:', error));
   }, REVEAL_DELAY);
 }
 
@@ -669,7 +670,7 @@ async function startGame(io, code) {
     }, 1200);
 
   } catch (err) {
-    console.error(
+    runtimeLog.error(
       'startGame error:',
       err.message
     );

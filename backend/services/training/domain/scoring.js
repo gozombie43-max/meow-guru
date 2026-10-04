@@ -1,14 +1,8 @@
+import { MISTAKES } from '@meow/contracts/training';
+export { MISTAKES };
 import { effectiveTrainingMode } from "../../trainingModePolicy.js";
 
-export const MISTAKES = [
-  "Concept Gap",
-  "Calculation Error",
-  "Misread",
-  "Memory/Formula",
-  "Bad Elimination",
-  "Time Management",
-  "Guessing",
-];
+
 
 export function resultFor(s) {
   const rows = s.questions.map((q, index) => {

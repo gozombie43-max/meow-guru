@@ -1,10 +1,8 @@
+import { insertAdminAudit, countAllAdminUsers, countActiveAdminUsers, countNewAdminUsers, countSuspendedAdminUsers, findAndroidUserIds, findAdminUserPage, countFilteredAdminUsers, findAndroidDevicesForUsers, findAdminUserDetail, findAndroidDevicesForUser, findAdminUserStatistics, findUserForRoleChange, persistUserRole, findUserForStatusChange, persistUserStatus, findUserForDeletion, deleteAdminUserRecord, findUserForNotification } from '../repositories/adminUserRepository.js';
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 // backend/controllers/adminUsers.controller.js
 
-import {
-  getUsersCollection,
-  getAuditLogCollection,
-  getPushDevicesCollection,
-} from '../config/mongodb.js';
+
 import { roleLevel } from '../middleware/requireRole.js';
 import { sendPushToUser } from '../services/pushNotificationService.js';
 import { evictUserSessionCache, revokeUserSessions } from '../auth/sessions.js';
@@ -37,18 +35,10 @@ function escapeRegex(str) {
 
 async function logAudit({ adminId, adminEmail, action, targetUserId, details, reason }) {
   try {
-    const auditLog = getAuditLogCollection();
-    await auditLog.insertOne({
-      adminId,
-      adminEmail,
-      action,
-      targetUserId,
-      details: details || {},
-      reason: reason || '',
-      createdAt: new Date().toISOString(),
-    });
+
+    await insertAdminAudit(adminId, adminEmail, action, targetUserId, details, reason);
   } catch (err) {
-    console.error('Failed to write audit log:', err.message);
+    runtimeLog.error('Failed to write audit log:', err.message);
   }
 }
 
@@ -56,7 +46,7 @@ async function logAudit({ adminId, adminEmail, action, targetUserId, details, re
 
 export async function getDashboardStats(req, res) {
   try {
-    const users = getUsersCollection();
+
 
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
@@ -65,27 +55,15 @@ export async function getDashboardStats(req, res) {
     const baseFilter = { type: { $ne: 'email_lock' } };
 
     const [totalUsers, activeToday, newThisWeek, suspendedCount] = await Promise.all([
-      users.countDocuments(baseFilter),
-      users.countDocuments({
-        ...baseFilter,
-        $or: [
-          { lastLoginAt: { $gte: todayStart } },
-          { lastActiveDate: { $gte: todayStart } },
-        ],
-      }),
-      users.countDocuments({
-        ...baseFilter,
-        createdAt: { $gte: weekAgo },
-      }),
-      users.countDocuments({
-        ...baseFilter,
-        status: 'suspended',
-      }),
+      countAllAdminUsers(baseFilter),
+      countActiveAdminUsers(baseFilter, todayStart),
+      countNewAdminUsers(baseFilter, weekAgo),
+      countSuspendedAdminUsers(baseFilter),
     ]);
 
     res.json({ totalUsers, activeToday, newThisWeek, suspendedCount });
   } catch (err) {
-    console.error('getDashboardStats error:', err);
+    runtimeLog.error('getDashboardStats error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -134,10 +112,7 @@ export async function getUsers(req, res) {
     }
 
     if (push && ['android', 'none'].includes(push)) {
-      const registeredUserIds = await getPushDevicesCollection().distinct('userId', {
-        enabled: true,
-        platform: 'android',
-      });
+      const registeredUserIds = await findAndroidUserIds();
       filter.id = push === 'android'
         ? { $in: registeredUserIds.map(String) }
         : { $nin: registeredUserIds.map(String) };
@@ -153,26 +128,16 @@ export async function getUsers(req, res) {
       }
     }
 
-    const users = getUsersCollection();
+
 
     const [docs, total] = await Promise.all([
-      users
-        .find(filter, { projection: USER_PROJECTION })
-        .sort(sortObj)
-        .skip(skip)
-        .limit(limitNum)
-        .toArray(),
-      users.countDocuments(filter),
+      findAdminUserPage(filter, USER_PROJECTION, sortObj, skip, limitNum),
+      countFilteredAdminUsers(filter),
     ]);
 
     const userIds = docs.map((user) => String(user.id));
     const devices = userIds.length
-      ? await getPushDevicesCollection()
-        .find(
-          { userId: { $in: userIds }, enabled: true, platform: 'android' },
-          { projection: { _id: 0, userId: 1, lastSeenAt: 1, updatedAt: 1 } }
-        )
-        .toArray()
+      ? await findAndroidDevicesForUsers(userIds)
       : [];
 
     const pushByUserId = new Map();
@@ -209,7 +174,7 @@ export async function getUsers(req, res) {
       totalPages: Math.ceil(total / limitNum),
     });
   } catch (err) {
-    console.error('getUsers error:', err);
+    runtimeLog.error('getUsers error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -219,23 +184,15 @@ export async function getUsers(req, res) {
 export async function getUserById(req, res) {
   try {
     const { id } = req.params;
-    const users = getUsersCollection();
 
-    const user = await users.findOne(
-      { id: String(id), type: { $ne: 'email_lock' } },
-      { projection: USER_DETAIL_PROJECTION }
-    );
+
+    const user = await findAdminUserDetail(id, USER_DETAIL_PROJECTION);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const devices = await getPushDevicesCollection()
-      .find(
-        { userId: String(id), enabled: true, platform: 'android' },
-        { projection: { _id: 0, lastSeenAt: 1, updatedAt: 1 } }
-      )
-      .toArray();
+    const devices = await findAndroidDevicesForUser(id);
     const lastSeenAt = devices.reduce((latest, device) => {
       const seen = device.lastSeenAt || device.updatedAt || null;
       return !latest || (seen && new Date(seen) > new Date(latest)) ? seen : latest;
@@ -251,7 +208,7 @@ export async function getUserById(req, res) {
       },
     });
   } catch (err) {
-    console.error('getUserById error:', err);
+    runtimeLog.error('getUserById error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -261,12 +218,9 @@ export async function getUserById(req, res) {
 export async function getUserStats(req, res) {
   try {
     const { id } = req.params;
-    const users = getUsersCollection();
 
-    const user = await users.findOne(
-      { id: String(id), type: { $ne: 'email_lock' } },
-      { projection: { progress: 1, studyTime: 1, recentQuizzes: 1, failureMap: 1 } }
-    );
+
+    const user = await findAdminUserStatistics(id);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -319,7 +273,7 @@ export async function getUserStats(req, res) {
       topTopics: topTopics.slice(0, 10),
     });
   } catch (err) {
-    console.error('getUserStats error:', err);
+    runtimeLog.error('getUserStats error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -346,13 +300,10 @@ export async function updateUserRole(req, res) {
       });
     }
 
-    const users = getUsersCollection();
+
 
     // Check target user exists and their current role
-    const targetUser = await users.findOne(
-      { id: String(id), type: { $ne: 'email_lock' } },
-      { projection: { role: 1, id: 1, name: 1, email: 1 } }
-    );
+    const targetUser = await findUserForRoleChange(id);
 
     if (!targetUser) {
       return res.status(404).json({ error: 'User not found' });
@@ -366,10 +317,7 @@ export async function updateUserRole(req, res) {
       });
     }
 
-    await users.updateOne(
-      { id: String(id) },
-      { $set: { role: newRole, updatedAt: new Date().toISOString() } }
-    );
+    await persistUserRole(id, newRole);
     await evictUserSessionCache(id);
 
     await logAudit({
@@ -382,7 +330,7 @@ export async function updateUserRole(req, res) {
 
     res.json({ message: 'Role updated ✅', role: newRole });
   } catch (err) {
-    console.error('updateUserRole error:', err);
+    runtimeLog.error('updateUserRole error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -400,12 +348,9 @@ export async function updateUserStatus(req, res) {
       return res.status(400).json({ error: 'Cannot change your own status' });
     }
 
-    const users = getUsersCollection();
 
-    const targetUser = await users.findOne(
-      { id: String(id), type: { $ne: 'email_lock' } },
-      { projection: { role: 1, id: 1, status: 1 } }
-    );
+
+    const targetUser = await findUserForStatusChange(id);
 
     if (!targetUser) {
       return res.status(404).json({ error: 'User not found' });
@@ -422,10 +367,7 @@ export async function updateUserStatus(req, res) {
 
     const previousStatus = targetUser.status || 'active';
 
-    await users.updateOne(
-      { id: String(id) },
-      { $set: { status, updatedAt: new Date().toISOString() } }
-    );
+    await persistUserStatus(id, status);
     if (['suspended', 'banned'].includes(status)) {
       await revokeUserSessions(id, status);
     } else {
@@ -449,7 +391,7 @@ export async function updateUserStatus(req, res) {
 
     res.json({ message: `User ${status} ✅`, status });
   } catch (err) {
-    console.error('updateUserStatus error:', err);
+    runtimeLog.error('updateUserStatus error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -466,12 +408,9 @@ export async function deleteUser(req, res) {
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
-    const users = getUsersCollection();
 
-    const targetUser = await users.findOne(
-      { id: String(id), type: { $ne: 'email_lock' } },
-      { projection: { role: 1, id: 1, name: 1, email: 1 } }
-    );
+
+    const targetUser = await findUserForDeletion(id);
 
     if (!targetUser) {
       return res.status(404).json({ error: 'User not found' });
@@ -487,7 +426,7 @@ export async function deleteUser(req, res) {
     }
 
     await revokeUserSessions(id, 'deleted');
-    await users.deleteOne({ id: String(id) });
+    await deleteAdminUserRecord(id);
 
     await logAudit({
       adminId: adminUser.id,
@@ -499,7 +438,7 @@ export async function deleteUser(req, res) {
 
     res.json({ message: 'User deleted ✅' });
   } catch (err) {
-    console.error('deleteUser error:', err);
+    runtimeLog.error('deleteUser error:', err);
     res.status(500).json({ error: err.message });
   }
 }
@@ -512,12 +451,9 @@ export async function sendNotification(req, res) {
     const { title, body } = req.body;
     const adminUser = req.user;
 
-    const users = getUsersCollection();
 
-    const targetUser = await users.findOne(
-      { id: String(id), type: { $ne: 'email_lock' } },
-      { projection: { id: 1, name: 1, email: 1 } }
-    );
+
+    const targetUser = await findUserForNotification(id);
 
     if (!targetUser) {
       return res.status(404).json({ error: 'User not found' });
@@ -577,7 +513,7 @@ export async function sendNotification(req, res) {
       notificationId: result.notificationId ?? null,
     });
   } catch (err) {
-    console.error('sendNotification error:', err);
+    runtimeLog.error('sendNotification error:', err);
     res.status(500).json({ error: err.message });
   }
 }

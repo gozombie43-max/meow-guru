@@ -17,6 +17,7 @@ out/
 build/
 dist/
 *.tsbuildinfo
+backend/pagination-benchmark.json
 next-env.d.ts
 
 # Testing & Coverage

@@ -4,8 +4,6 @@ import {
   signRefreshToken,
   verifyToken,
   verifyRefreshToken,
-  revokeToken,
-  isRevoked,
   signBattleRematchToken,
   verifyBattleRematchToken,
 } from '../jwt.js';
@@ -35,13 +33,6 @@ describe('Auth JWT Module', () => {
     expect(decoded.jti).toBeDefined();
   });
 
-  it('correctly tracks and checks blacklisted token JTIs', () => {
-    const sampleJti = 'test-token-uuid-12345';
-    expect(isRevoked(sampleJti)).toBe(false);
-
-    revokeToken(sampleJti);
-    expect(isRevoked(sampleJti)).toBe(true);
-  });
 
   it('throws error when verifying an invalid token string', () => {
     expect(() => verifyToken('invalid.token.payload')).toThrow();

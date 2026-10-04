@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import { assertProcessRole } from './config/processRole.js';
+assertProcessRole('attachments');
 import { connectMongoDB, disconnectMongoDB } from './config/mongodb.js';
 import { assertMigrations } from './migrations/runner.js';
 import { logger, startRuntimeMetrics } from './infrastructure/logger.js';

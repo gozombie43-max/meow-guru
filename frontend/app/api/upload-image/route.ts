@@ -8,7 +8,6 @@ export async function POST(req: Request) {
   const formData = await req.formData();
   const backendUrl =
     process.env.API_URL ||
-    process.env.AZURE_BACKEND_URL ||
     "http://localhost:10000";
 
   try {

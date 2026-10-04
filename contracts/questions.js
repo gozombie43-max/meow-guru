@@ -1,0 +1,9 @@
+import { z } from 'zod';
+export const publicTopicCountsSchema = z.object({
+  subject: z.string().min(1), revision: z.number().int().nonnegative(), updatedAt: z.string(),
+  totals: z.record(z.string(), z.number().int().nonnegative()),
+});
+export const questionAnswerRequestSchema = z.object({
+  answer: z.number().int().nonnegative().max(20),
+  submissionId: z.string().min(1).max(200).optional(),
+});

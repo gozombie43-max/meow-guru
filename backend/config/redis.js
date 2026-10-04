@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { createClient } from 'redis';
 import { createHash } from 'node:crypto';
 import { BSON } from 'mongodb';
@@ -30,7 +31,7 @@ export function redisHealth() { return !process.env.REDIS_URL ? 'disabled' : cli
 export function reportRedisFailure() {
   if (Date.now() - lastWarning < 30_000) return;
   lastWarning = Date.now();
-  console.warn('Redis unavailable; using MongoDB fallback where required');
+  runtimeLog.warn('Redis unavailable; using MongoDB fallback where required');
 }
 
 export async function getRedisClient() {

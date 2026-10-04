@@ -1,4 +1,8 @@
 "use client";
+import styles from "./FormulaNotes.module.css";
+import "./FormulaNotes.globals.css";
+import { bindStyleClasses } from "@/lib/styleClasses";
+const styleClasses = bindStyleClasses(styles);
 import { Dialog } from "@/components/ui/Dialog";
 import { requestResponse as fetch } from "@/shared/api/request";
 
@@ -68,7 +72,7 @@ const PdfIcon = () => (
     viewBox="0 0 48 48"
     width="30"
     height="30"
-    className="fn-pdf-icon"
+    className={styleClasses("fn-pdf-icon")}
     style={{ filter: "drop-shadow(0 2px 4px rgba(173, 11, 0, 0.25))" }}
   >
     {/* Document sheet and folded corner in #AD0B00 */}
@@ -89,7 +93,7 @@ const IosSpinner = ({ size = 34 }: { size?: number }) => (
     width={size}
     height={size}
     viewBox="0 0 24 24"
-    className="ios-spinner"
+    className={styleClasses("ios-spinner")}
     role="status"
     aria-label="Loading"
     style={{
@@ -98,12 +102,6 @@ const IosSpinner = ({ size = 34 }: { size?: number }) => (
       color: "var(--spinner-color, #8E8E93)",
     }}
   >
-    <style>{`
-      @keyframes ios-spinner-fade {
-        0% { opacity: 1; }
-        100% { opacity: 0.15; }
-      }
-    `}</style>
     {Array.from({ length: 12 }).map((_, i) => (
       <line
         key={i}
@@ -133,6 +131,11 @@ export default function FormulaNotesPage({
   topicLabel?: string;
   subject?: string;
 }) {
+  useEffect(() => {
+    document.body.classList.add('formula-notes-route');
+    return () => document.body.classList.remove('formula-notes-route');
+  }, []);
+
   const router = useRouter();
   const params = useParams();
   const routeTopic = Array.isArray(params.topic) ? params.topic[0] : params.topic;
@@ -409,24 +412,24 @@ export default function FormulaNotesPage({
   };
 
   return (
-    <main className="formula-notes-page">
+    <main className={styleClasses("formula-notes-page")}>
       {/* ── Fixed Position Top Area: Header + Filter Box ── */}
-      <div className="fn-top-pinned">
-        <header data-ui-chrome="header" className="fn-header">
-          <div className="fn-header-inner">
+      <div className={styleClasses("fn-top-pinned")}>
+        <header data-ui-chrome="header" className={styleClasses("fn-header")}>
+          <div className={styleClasses("fn-header-inner")}>
             <button data-ui-button="icon"
               type="button"
-              className="fn-back-btn"
+              className={styleClasses("fn-back-btn")}
               onClick={handleBack}
               aria-label="Back"
             >
               <ChevronLeft size={22} />
             </button>
-            <h1 className="fn-header-title">{topicLabel}</h1>
-            <div className="fn-header-actions">
+            <h1 className={styleClasses("fn-header-title")}>{topicLabel}</h1>
+            <div className={styleClasses("fn-header-actions")}>
               <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
-                className={`fn-search-btn ${isSearchOpen ? "active" : ""}`}
+                className={styleClasses(`fn-search-btn ${isSearchOpen ? "active" : ""}`)}
                 onClick={() => {
                   setIsSearchOpen((prev) => !prev);
                   if (isSearchOpen) setSearchQuery("");
@@ -438,7 +441,7 @@ export default function FormulaNotesPage({
               {!loading && pdfs.length === 0 ? (
                 <button data-ui-button="state" data-ui-shape="icon"
                   type="button"
-                  className="fn-add-btn"
+                  className={styleClasses("fn-add-btn")}
                   onClick={() => setShowAddModal(true)}
                   aria-label={`Add files to ${topicLabel}`}
                   disabled={uploading}
@@ -450,14 +453,14 @@ export default function FormulaNotesPage({
           </div>
 
           {isSearchOpen ? (
-            <div className="fn-search-bar">
-              <div className="fn-search-input-wrap">
-                <span className="fn-search-input-icon">
+            <div className={styleClasses("fn-search-bar")}>
+              <div className={styleClasses("fn-search-input-wrap")}>
+                <span className={styleClasses("fn-search-input-icon")}>
                   <Search size={15} />
                 </span>
                 <input
                   type="text"
-                  className="fn-search-input"
+                  className={styleClasses("fn-search-input")}
                   placeholder={`Search in ${activeTab}...`}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -465,7 +468,7 @@ export default function FormulaNotesPage({
                 {searchQuery ? (
                   <button data-ui-button="secondary"
                     type="button"
-                    className="fn-search-clear"
+                    className={styleClasses("fn-search-clear")}
                     onClick={() => setSearchQuery("")}
                     aria-label="Clear search"
                   >
@@ -478,14 +481,14 @@ export default function FormulaNotesPage({
         </header>
 
         {/* ── Fixed Position Filter Box (Category Tabs) ── */}
-        <div className="fn-filter-box">
-          <div className="fn-tabs-wrapper">
-            <div className="fn-tabs" role="tablist" aria-label="PDF categories">
+        <div className={styleClasses("fn-filter-box")}>
+          <div className={styleClasses("fn-tabs-wrapper")}>
+            <div className={styleClasses("fn-tabs")} role="tablist" aria-label="PDF categories">
               {tabs.map((tab) => (
                 <button data-ui-button="state"
                   key={tab}
                   type="button"
-                  className={`fn-tab-pill ${tab === activeTab ? "active" : ""}`}
+                  className={styleClasses(`fn-tab-pill ${tab === activeTab ? "active" : ""}`)}
                   onClick={() => {
                     setActiveTab(tab);
                     setSearchQuery("");
@@ -502,20 +505,20 @@ export default function FormulaNotesPage({
       </div>
 
       {/* ── Scrollable PDF Cards Area Only ── */}
-      <div className="fn-scroll-body">
-        <div className="fn-content">
+      <div className={styleClasses("fn-scroll-body")}>
+        <div className={styleClasses("fn-content")}>
           {/* ── First-Time Documents Loading: iOS Spinner ── */}
           {loading && pdfs.length === 0 ? (
-            <div className="fn-loading-state" role="status" aria-label="Loading documents">
+            <div className={styleClasses("fn-loading-state")} role="status" aria-label="Loading documents">
               <IosSpinner size={34} />
-              <p className="fn-loading-text">Loading documents...</p>
+              <p className={styleClasses("fn-loading-text")}>Loading documents...</p>
             </div>
           ) : notice ? (
-            <div className="fn-error-state">
-              <p className="fn-error-text">{notice}</p>
+            <div className={styleClasses("fn-error-state")}>
+              <p className={styleClasses("fn-error-text")}>{notice}</p>
               <button data-ui-button="state"
                 type="button"
-                className="fn-retry-btn"
+                className={styleClasses("fn-retry-btn")}
                 onClick={() => fetchCategoryPdfs(activeTab, true)}
               >
                 Retry
@@ -523,46 +526,46 @@ export default function FormulaNotesPage({
             </div>
           ) : (
             /* ── File Cards List ── */
-            <section className="fn-card-list">
+            <section className={styleClasses("fn-card-list")}>
               {filteredPdfs.length > 0 ? (
                 filteredPdfs.map((pdf, index) => (
                   <button data-ui-button="state"
                     key={pdf.id}
                     onClick={() => openPdf(pdf)}
                     type="button"
-                    className="fn-card"
+                    className={styleClasses("fn-card")}
                     style={{ animationDelay: `${index * 40}ms` }}
                   >
-                    <div className="fn-card-icon-wrap" aria-hidden="true">
+                    <div className={styleClasses("fn-card-icon-wrap")} aria-hidden="true">
                       <PdfIcon />
                     </div>
-                    <div className="fn-card-body">
-                      <span className="fn-card-title">
+                    <div className={styleClasses("fn-card-body")}>
+                      <span className={styleClasses("fn-card-title")}>
                         {pdf.title || pdf.fileName || `${topicLabel} PDF`}
                       </span>
-                      <div className="fn-card-meta">
-                        <span className="fn-card-tag">{formatSize(pdf.size, pdf.fileName)}</span>
+                      <div className={styleClasses("fn-card-meta")}>
+                        <span className={styleClasses("fn-card-tag")}>{formatSize(pdf.size, pdf.fileName)}</span>
                         {pdf.updatedAt || pdf.uploadedAt ? (
-                          <span className="fn-card-date">
+                          <span className={styleClasses("fn-card-date")}>
                             {formatDate(pdf.updatedAt || pdf.uploadedAt)}
                           </span>
                         ) : null}
                       </div>
                     </div>
-                    <div className="fn-card-arrow" aria-hidden="true">
+                    <div className={styleClasses("fn-card-arrow")} aria-hidden="true">
                       <ChevronRight size={18} />
                     </div>
                   </button>
                 ))
               ) : !loading && !notice ? (
-                <div className="fn-empty-state">
-                  <div className="fn-empty-icon" aria-hidden="true">
+                <div className={styleClasses("fn-empty-state")}>
+                  <div className={styleClasses("fn-empty-icon")} aria-hidden="true">
                     <FileText size={32} strokeWidth={1.5} />
                   </div>
-                  <p className="fn-empty-title">
+                  <p className={styleClasses("fn-empty-title")}>
                     {searchQuery ? "No matching files" : "No files found"}
                   </p>
-                  <p className="fn-empty-sub">
+                  <p className={styleClasses("fn-empty-sub")}>
                     {searchQuery
                       ? `No files match "${searchQuery}" in ${activeTab}.`
                       : `There are currently no files in the ${activeTab} category.`}
@@ -570,7 +573,7 @@ export default function FormulaNotesPage({
                   {!searchQuery ? (
                     <button data-ui-button="state"
                       type="button"
-                      className="fn-empty-add-btn"
+                      className={styleClasses("fn-empty-add-btn")}
                       onClick={() => chooseUploadCategory(categoryFromTab(activeTab))}
                       disabled={uploading}
                       aria-label={`Add files to ${activeTab}`}
@@ -592,14 +595,14 @@ export default function FormulaNotesPage({
         type="file"
         accept="application/pdf,text/html,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.html,.htm,.doc,.docx"
         multiple
-        className="pdf-input"
+        className={styleClasses("pdf-input")}
         onChange={handlePdfUpload}
        aria-label="Choose file"/>
 
       {/* ── Floating Action Button (FAB) ── */}
       {pdfs.length > 0 ? (
         <button data-ui-button="state" data-ui-shape="icon"
-          className="fn-fab"
+          className={styleClasses("fn-fab")}
           type="button"
           aria-label={`Add files to ${topicLabel}`}
           disabled={uploading}
@@ -611,22 +614,22 @@ export default function FormulaNotesPage({
 
       {/* ── Category Choice Modal ── */}
       {showAddModal ? (
-        <div className="modal-backdrop">
+        <div className={styleClasses("modal-backdrop")}>
           <Dialog onClose={() => setShowAddModal(false)}
-            className="add-modal"
+            className={styleClasses("add-modal")}
             role="dialog"
             aria-modal="true"
             aria-labelledby="add-pdf-title"
           >
             <h2 id="add-pdf-title">Add files to</h2>
-            <div className="modal-options">
+            <div className={styleClasses("modal-options")}>
               {tabs.map((tab) => {
                 const category = categoryFromTab(tab);
                 return (
                   <button data-ui-button="state"
                     key={tab}
                     type="button"
-                    className="modal-option"
+                    className={styleClasses("modal-option")}
                     onClick={() => chooseUploadCategory(category)}
                   >
                     {tab.toUpperCase()}
@@ -634,715 +637,12 @@ export default function FormulaNotesPage({
                 );
               })}
             </div>
-            <button data-ui-button="secondary" type="button" className="modal-cancel" onClick={() => setShowAddModal(false)}>
+            <button data-ui-button="secondary" type="button" className={styleClasses("modal-cancel")} onClick={() => setShowAddModal(false)}>
               Cancel
             </button>
           </Dialog>
         </div>
       ) : null}
-
-      <style jsx global>{`
-        .bottom-pill-nav {
-          display: none !important;
-        }
-
-        body.has-bottom-nav {
-          padding-bottom: 0 !important;
-        }
-
-        @keyframes ios-spinner-fade {
-          0% {
-            opacity: 1;
-          }
-          100% {
-            opacity: 0.15;
-          }
-        }
-      `}</style>
-
-      <style jsx>{`
-        /* ════════════════════════════════════════════
-           THEME TOKENS: DARK (DEFAULT)
-           ════════════════════════════════════════════ */
-        .formula-notes-page {
-          --bg: var(--dark-canvas);
-          --card-bg: var(--dark-surface);
-          --card-hover: #242428;
-          --border: rgba(255, 255, 255, 0.09);
-          --header-bg: #000000;
-          --text-primary: #f8fafc;
-          --text-secondary: rgba(235, 235, 245, 0.6);
-          --text-tertiary: rgba(235, 235, 245, 0.35);
-          --tab-bg: rgba(255, 255, 255, 0.08);
-          --tab-color: rgba(235, 235, 245, 0.75);
-          --accent: var(--ios-system-blue);
-          --modal-bg: var(--dark-surface);
-          --modal-option-bg: #28282c;
-          --notice-color: rgba(235, 235, 245, 0.5);
-          --spinner-color: rgba(235, 235, 245, 0.75);
-
-          height: 100dvh;
-          width: 100%;
-          box-sizing: border-box;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          background: var(--bg);
-          color: var(--text-primary);
-          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
-          -webkit-font-smoothing: antialiased;
-          position: relative;
-        }
-
-        /* ── Fixed Position Top Area: Header + Filter Box ── */
-        .fn-top-pinned {
-          flex-shrink: 0;
-          z-index: 30;
-          background: var(--header-bg);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-bottom: none !important;
-          padding-top: var(--safe-top);
-        }
-
-        .fn-header {
-          border-bottom: none;
-        }
-
-        .fn-header-inner {
-          height: 56px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 12px;
-          max-width: 600px;
-          margin: 0 auto;
-        }
-
-        .fn-header-actions {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .fn-back-btn,
-        .fn-search-btn,
-        .fn-add-btn {
-          width: 36px !important;
-          height: 36px !important;
-          border-radius: 50% !important;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: transparent !important;
-          border: none !important;
-          color: var(--text-primary);
-          cursor: pointer;
-          transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .fn-back-btn:hover,
-        .fn-search-btn:hover,
-        .fn-add-btn:hover {
-          background: var(--tab-bg);
-        }
-
-        .fn-back-btn:active,
-        .fn-search-btn:active,
-        .fn-add-btn:active {
-          opacity: 0.6;
-          transform: scale(0.95);
-        }
-
-        .fn-search-btn.active {
-          background: var(--accent);
-          color: #ffffff;
-        }
-
-        .fn-add-btn:disabled {
-          opacity: 0.4;
-          cursor: wait;
-        }
-
-        .fn-header-title {
-          font-size: 17px;
-          font-weight: 650;
-          letter-spacing: -0.02em;
-          color: var(--text-primary);
-          margin: 0;
-          text-align: center;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          flex: 1;
-          padding: 0 8px;
-        }
-
-        /* ── Search Bar Dropdown ── */
-        .fn-search-bar {
-          padding: 0 16px 10px;
-          max-width: 680px;
-          margin: 0 auto;
-          display: flex;
-          align-items: center;
-          animation: fn-slide-down 0.2s ease;
-        }
-
-        @keyframes fn-slide-down {
-          from {
-            opacity: 0;
-            transform: translateY(-6px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .fn-search-input-wrap {
-          position: relative;
-          width: 100%;
-          display: block;
-        }
-
-        .fn-search-input {
-          width: 100%;
-          height: 38px;
-          border-radius: 10px;
-          border: 1px solid var(--border);
-          background: var(--card-bg);
-          color: var(--text-primary);
-          font-size: 14px;
-          padding: 0 36px 0 36px;
-          outline: none;
-          box-sizing: border-box;
-          transition: border-color 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .fn-search-input:focus {
-          border-color: var(--accent);
-          box-shadow: 0 0 0 2px rgb(var(--ios-system-blue-rgb) / 0.22);
-        }
-
-        .fn-search-input-icon {
-          position: absolute;
-          left: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: var(--text-tertiary);
-          pointer-events: none;
-          display: flex;
-          align-items: center;
-        }
-
-        .fn-search-clear {
-          position: absolute;
-          right: 9px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 22px;
-          height: 22px;
-          border-radius: 50%;
-          background: var(--tab-bg);
-          border: none;
-          color: var(--text-secondary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-        }
-
-        /* ── Fixed Position Filter Box (Category Tabs) ── */
-        .fn-filter-box {
-          max-width: 680px;
-          margin: 0 auto;
-          padding: 4px 16px 12px;
-        }
-
-        .fn-tabs-wrapper {
-          overflow-x: auto;
-          scrollbar-width: none;
-          -webkit-overflow-scrolling: touch;
-        }
-
-        .fn-tabs-wrapper::-webkit-scrollbar {
-          display: none;
-        }
-
-        .fn-tabs {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          min-width: 100%;
-        }
-
-        .fn-tab-pill {
-          padding: 7px 16px;
-          border-radius: 999px;
-          border: 1px solid var(--border);
-          background: var(--card-bg);
-          color: var(--tab-color);
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 0.03em;
-          cursor: pointer;
-          white-space: nowrap;
-          transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .fn-tab-pill:active {
-          transform: scale(0.96);
-        }
-
-        .fn-tab-pill.active {
-          background: var(--accent);
-          border-color: var(--accent);
-          color: #ffffff;
-          box-shadow: 0 2px 10px rgb(var(--ios-system-blue-rgb) / 0.35);
-        }
-
-        /* ── Scrollable PDF Cards Area Only ── */
-        .fn-scroll-body {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          overflow-y: auto;
-          -webkit-overflow-scrolling: touch;
-          overscroll-behavior-y: contain;
-          scrollbar-width: thin;
-        }
-
-        .fn-content {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          width: 100%;
-          max-width: 680px;
-          margin: 0 auto;
-          padding: 16px 16px calc(92px + var(--safe-bottom));
-          box-sizing: border-box;
-        }
-
-        /* ── Notices & Error State ── */
-        :global(.fn-loading-state),
-        .fn-loading-state {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          min-height: calc(75dvh - 120px);
-          gap: 14px;
-          animation: fn-fade-up 0.25s ease;
-          margin: auto 0;
-          transform: translateY(-30px);
-          text-align: center;
-          width: 100%;
-        }
-
-        :global(.ios-spinner),
-        .ios-spinner {
-          display: inline-block;
-          color: var(--spinner-color);
-          flex-shrink: 0;
-        }
-
-        :global(.fn-loading-text),
-        .fn-loading-text {
-          font-size: 13.5px;
-          font-weight: 500;
-          color: var(--text-secondary);
-          letter-spacing: -0.01em;
-          margin: 0;
-          text-align: center;
-        }
-
-        .fn-status-notice {
-          text-align: center;
-          font-size: 13px;
-          color: var(--notice-color);
-          padding: 6px 0 12px;
-        }
-
-        .fn-error-state {
-          text-align: center;
-          padding: 24px 20px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .fn-error-text {
-          font-size: 13.5px;
-          color: var(--notice-color);
-          margin: 0;
-        }
-
-        .fn-retry-btn {
-          padding: 6px 18px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          background: var(--card-bg);
-          color: var(--accent);
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background-color 0.15s ease;
-        }
-
-        .fn-retry-btn:hover {
-          background: var(--card-hover);
-        }
-
-        /* ── PDF Cards List ── */
-        .fn-card-list {
-          display: flex;
-          flex-direction: column;
-          gap: 9px;
-        }
-
-        .fn-card {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          padding: 12px 16px;
-          min-height: 62px;
-          border-radius: 14px;
-          border: 1px solid var(--border);
-          background: var(--card-bg);
-          color: var(--text-primary);
-          text-align: left;
-          cursor: pointer;
-          outline: none;
-          transition: background-color 0.12s ease, border-color 0.12s ease;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-          -webkit-tap-highlight-color: transparent;
-          user-select: none;
-          animation: fn-fade-up 0.28s ease both;
-        }
-
-        @keyframes fn-fade-up {
-          from {
-            opacity: 0;
-            transform: translateY(8px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @media (hover: hover) {
-          .fn-card:hover {
-            background: var(--card-hover);
-            border-color: rgba(255, 255, 255, 0.16);
-          }
-        }
-
-        .fn-card:active {
-          background: var(--card-hover);
-          border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .fn-card-icon-wrap {
-          width: 38px;
-          height: 38px;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .fn-card-body {
-          flex: 1;
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-
-        .fn-card-title {
-          font-size: 14.5px;
-          font-weight: 600;
-          line-height: 1.3;
-          color: var(--text-primary);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .fn-card-meta {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 12px;
-          color: var(--text-secondary);
-        }
-
-        .fn-card-tag {
-          display: inline-block;
-          padding: 1px 6px;
-          border-radius: 4px;
-          background: var(--tab-bg);
-          font-size: 11px;
-          font-weight: 500;
-          letter-spacing: 0.02em;
-        }
-
-        .fn-card-date {
-          font-size: 11.5px;
-          color: var(--text-secondary);
-        }
-
-        .fn-card-arrow {
-          color: var(--text-tertiary);
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          transition: color 0.15s ease;
-        }
-
-        @media (hover: hover) {
-          .fn-card:hover .fn-card-arrow {
-            color: var(--text-primary);
-          }
-        }
-
-        /* ── Empty State ── */
-        .fn-empty-state {
-          text-align: center;
-          padding: 56px 20px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .fn-empty-icon {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          background: var(--tab-bg);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--text-tertiary);
-          margin-bottom: 14px;
-        }
-
-        .fn-empty-title {
-          font-size: 16px;
-          font-weight: 650;
-          color: var(--text-primary);
-          margin: 0 0 6px;
-        }
-
-        .fn-empty-sub {
-          font-size: 13px;
-          color: var(--text-secondary);
-          margin: 0;
-          max-width: 290px;
-          line-height: 1.4;
-        }
-
-        .fn-empty-add-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 7px;
-          margin-top: 18px;
-          padding: 10px 20px;
-          border-radius: 999px;
-          border: none;
-          background: var(--accent);
-          color: #ffffff;
-          font-size: 13.5px;
-          font-weight: 650;
-          cursor: pointer;
-          box-shadow: 0 4px 14px rgb(var(--ios-system-blue-rgb) / 0.35);
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .fn-empty-add-btn:active {
-          transform: scale(0.96);
-        }
-
-        .fn-empty-add-btn:disabled {
-          opacity: 0.5;
-          cursor: wait;
-        }
-
-        /* ── Floating Action Button (FAB) ── */
-        .fn-fab {
-          position: fixed;
-          right: max(20px, calc(16px + var(--safe-right)));
-          bottom: max(24px, calc(20px + var(--safe-bottom)));
-          width: 52px;
-          height: 52px;
-          border-radius: 50%;
-          border: none;
-          background: var(--accent);
-          color: #ffffff;
-          box-shadow: 0 4px 18px rgb(var(--ios-system-blue-rgb) / 0.44), 0 2px 6px rgb(var(--ios-system-blue-rgb) / 0.25);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          z-index: 35;
-          transition: transform 0.16s ease, box-shadow 0.16s ease;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .fn-fab:hover {
-          transform: scale(1.05);
-          box-shadow: 0 6px 22px rgb(var(--ios-system-blue-rgb) / 0.55);
-        }
-
-        .fn-fab:active {
-          transform: scale(0.92);
-        }
-
-        .fn-fab:disabled {
-          opacity: 0.6;
-          cursor: wait;
-        }
-
-        .pdf-input {
-          display: none;
-        }
-
-        /* ── Add Modal ── */
-        .modal-backdrop {
-          position: fixed;
-          inset: 0;
-          z-index: 50;
-          display: flex;
-          align-items: flex-end;
-          justify-content: center;
-          padding: 16px;
-          background: rgba(0, 0, 0, 0.65);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          animation: fn-fade-in 0.18s ease;
-        }
-
-        @keyframes fn-fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        .add-modal {
-          width: min(100%, 400px);
-          border-radius: 20px;
-          border: 1px solid var(--border);
-          background: var(--modal-bg);
-          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
-          padding: 20px;
-          margin-bottom: var(--safe-bottom);
-          animation: fn-modal-up 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes fn-modal-up {
-          from {
-            transform: translateY(20px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-
-        .add-modal h2 {
-          margin: 0 0 16px;
-          font-size: 16px;
-          font-weight: 700;
-          color: var(--text-primary);
-        }
-
-        .modal-options {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 10px;
-        }
-
-        .modal-option {
-          min-height: 48px;
-          border-radius: 14px;
-          border: 1px solid var(--border);
-          color: var(--text-primary);
-          background: var(--modal-option-bg);
-          font-size: 13.5px;
-          font-weight: 650;
-          letter-spacing: 0.02em;
-          cursor: pointer;
-          transition: background 0.15s ease, transform 0.1s ease;
-        }
-
-        .modal-option:active {
-          transform: scale(0.97);
-        }
-
-        .modal-cancel {
-          width: 100%;
-          min-height: 44px;
-          margin-top: 12px;
-          border-radius: 14px;
-          border: 1px solid var(--border);
-          color: var(--text-secondary);
-          background: transparent;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.15s ease;
-        }
-
-        .modal-cancel:hover {
-          background: var(--tab-bg);
-        }
-
-        /* ════════════════════════════════════════════
-           LIGHT THEME OVERRIDES (body.theme-light)
-           ════════════════════════════════════════════ */
-        :global(body.theme-light) .formula-notes-page,
-        :global(html.theme-light) .formula-notes-page {
-          --bg: var(--light-canvas);
-          --card-bg: #ffffff;
-          --card-hover: #f8fafc;
-          --border: rgba(0, 0, 0, 0.08);
-          --header-bg: rgba(246, 248, 250, 0.92);
-          --text-primary: var(--light-text);
-          --text-secondary: var(--light-text-secondary);
-          --text-tertiary: var(--light-text-muted);
-          --tab-bg: rgba(0, 0, 0, 0.05);
-          --tab-color: var(--light-text-secondary);
-          --modal-bg: #ffffff;
-          --modal-option-bg: var(--light-canvas);
-          --notice-color: var(--light-text-secondary);
-          --spinner-color: rgba(60, 60, 67, 0.6);
-        }
-
-        :global(body.theme-light) .fn-card {
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
-        }
-
-        @media (hover: hover) {
-          :global(body.theme-light) .fn-card:hover {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            background: #f8fafc;
-            border-color: rgba(0, 0, 0, 0.14);
-          }
-        }
-
-        :global(body.theme-light) .fn-card:active {
-          background: #ebeef2;
-          border-color: rgba(0, 0, 0, 0.16);
-        }
-      `}</style>
     </main>
   );
 }

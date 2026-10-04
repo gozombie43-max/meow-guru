@@ -1,4 +1,5 @@
 import api from '@/shared/api/client';
+import { tutorJobResponseSchema, tutorReplySchema } from '@meow/contracts/tutor';
 
 export class TutorJobError extends Error {
   constructor(message: string, public terminal = true) { super(message); }
@@ -12,8 +13,9 @@ export async function waitForTutorJob(jobId: string, signal?: AbortSignal): Prom
       if (error?.response?.status === 404) throw new TutorJobError('This attachment job has expired. Please attach the file again.');
       throw error;
     });
-    if (data.status === 'completed') return data.reply;
-    if (data.status === 'failed' || data.status === 'cancelled') throw new TutorJobError(data.error || 'Attachment processing cancelled');
+    const job = tutorJobResponseSchema.parse(data);
+    if (job.status === 'completed') return tutorReplySchema.parse(job).reply;
+    if (job.status === 'failed' || job.status === 'cancelled') throw new TutorJobError(job.error || 'Attachment processing cancelled');
     await new Promise<void>((resolve, reject) => {
       const done = () => { signal?.removeEventListener('abort', cancel); resolve(); };
       const timer = setTimeout(done, 1500);

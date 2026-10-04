@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { randomUUID } from "node:crypto";
 
 import {
@@ -192,19 +193,19 @@ async function processJob(job) {
           sentAt,
       });
     } catch (historyError) {
-      console.error(
+      runtimeLog.error(
         "Notification history write failed:",
         historyError
       );
     }
 
-    console.log(
+    runtimeLog.info(
       `Scheduled notification ${job._id} sent:`,
       result
     );
 
   } catch (error) {
-    console.error(
+    runtimeLog.error(
       `Scheduled notification ${job._id} failed:`,
       error
     );
@@ -305,14 +306,14 @@ export async function startScheduledNotificationWorker() {
     setInterval(() => {
       void runScheduledNotificationWorkerOnce()
         .catch((error) => {
-          console.error(
+          runtimeLog.error(
             "Scheduled notification worker error:",
             error
           );
         });
     }, POLL_MS);
 
-  console.log(
+  runtimeLog.info(
     `Notification worker started (${POLL_MS}ms interval) ✅`
   );
 }

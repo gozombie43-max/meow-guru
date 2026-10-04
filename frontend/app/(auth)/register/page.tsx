@@ -1,4 +1,6 @@
 'use client';
+import type { z } from 'zod';
+import type { registerSchema } from '@meow/contracts/auth';
 
 import { useState, Suspense } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
@@ -46,7 +48,7 @@ function RegisterContent() {
   const onSubmit = async (data: RegisterFormData) => {
     setError('');
     try {
-      const res = await api.post('/auth/register', data);
+      const res = await api.post('/auth/register', data satisfies z.input<typeof registerSchema>);
       await login(res.data.token);
       router.replace('/');
     } catch (err: unknown) {

@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { getScores, buildBattleReview } from './roomManager.js';
 import { settleBattleResult } from './battleResultService.js';
 import { signBattleRematchToken } from '../auth/jwt.js';
@@ -5,7 +6,7 @@ import { sendPushToUser } from '../services/pushNotificationService.js';
 export async function finishBattle(io, finishedRoom) {
   const finalScores = await getScores(finishedRoom.code);
   const settlement = await settleBattleResult(finishedRoom).catch((error) => {
-    console.error('Battle settlement failed:', error);
+    runtimeLog.error('Battle settlement failed:', error);
     return null;
   });
   const players = finishedRoom.players;
@@ -33,7 +34,7 @@ export async function finishBattle(io, finishedRoom) {
     }
   }
   await sendBattleResultNotifications(finishedRoom, finalScores)
-    .catch((error) => console.error('Battle result notification error:', error));
+    .catch((error) => runtimeLog.error('Battle result notification error:', error));
 }
 
 export async function sendBattleResultNotifications(
@@ -184,7 +185,7 @@ export async function sendBattleResultNotifications(
         result.status ===
         "rejected"
       ) {
-        console.error(
+        runtimeLog.error(
           "Battle result push failed:",
           result.reason
         );

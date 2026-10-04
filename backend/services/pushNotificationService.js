@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { firebaseProvider } from '../infrastructure/dependencyBoundary.js';
 import {
   getPushDevicesCollection,
@@ -149,7 +150,7 @@ export async function sendPushToUser(
             centerKey,
         });
     } catch (error) {
-      console.error(
+      runtimeLog.error(
         "Notification Center persistence failed:",
         error
       );
@@ -345,7 +346,7 @@ export async function sendPushToUser(
           }
         );
     } catch (error) {
-      console.error(
+      runtimeLog.error(
         "Failed to save notification push metrics:",
         error
       );
@@ -392,7 +393,7 @@ export async function sendPushToAllUsers({
             centerKey,
         });
     } catch (error) {
-      console.error(
+      runtimeLog.error(
         "Global Notification Center persistence failed:",
         error
       );
@@ -622,7 +623,7 @@ export async function sendPushToAllUsers({
       )
       .catch(
         (error) =>
-          console.error(
+          runtimeLog.error(
             "Broadcast metric persistence failed:",
             error
           )

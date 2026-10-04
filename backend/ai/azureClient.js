@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 // backend/ai/azureClient.js
 import OpenAI from "openai";
 import { aiProvider } from '../infrastructure/dependencyBoundary.js';
@@ -7,7 +8,7 @@ const apiKey = process.env.AZURE_OPENAI_KEY || process.env.OPENAI_API_KEY;
 const baseURL = process.env.AZURE_OPENAI_BASE_URL || process.env.AZURE_OPENAI_ENDPOINT || "https://quizguru-ai.openai.azure.com/openai/v1";
 
 if (!apiKey && process.env.NODE_ENV === "production") {
-  console.warn("WARNING: AZURE_OPENAI_KEY is not configured in environment variables.");
+  runtimeLog.warn("WARNING: AZURE_OPENAI_KEY is not configured in environment variables.");
 }
 
 const client = new OpenAI({

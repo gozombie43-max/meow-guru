@@ -2,9 +2,9 @@ import type { NextConfig } from "next";
 import path from "path";
 import { PHASE_PRODUCTION_SERVER } from "next/constants";
 
-const configuredBackend = process.env.API_URL || process.env.AZURE_BACKEND_URL;
+const configuredBackend = process.env.API_URL;
 if (process.env.NODE_ENV === 'production' && !configuredBackend) {
-  throw new Error('API_URL or AZURE_BACKEND_URL is required for production builds');
+  throw new Error('API_URL is required for production builds');
 }
 const BACKEND_URL = (configuredBackend || 'http://localhost:10000').replace(/\/+$/, '');
 if (!['http:', 'https:'].includes(new URL(BACKEND_URL).protocol)) throw new Error('Backend URL must use HTTP or HTTPS');
@@ -23,6 +23,8 @@ const nextConfig: NextConfig = {
   },
   devIndicators: false,
   experimental: {
+    // Bound static-generation memory while building the 800-page catalog.
+    cpus: 2,
     // Avoid shipping unrelated page styles in the shared mobile entry chunks.
     cssChunking: { type: 'graph', requestCost: 20_000 },
     optimizePackageImports: ['lucide-react', 'react-hook-form'],

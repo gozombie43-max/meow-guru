@@ -1,5 +1,5 @@
 import { LRUCache } from "lru-cache";
-import { getMongoDB } from "../../config/mongodb.js";
+import { readQuestionRevision } from '../../repositories/questionMetadataRepository.js';
 
 let cachedRevision = { value: 0, expires: 0 };
 let pendingRevision;
@@ -9,14 +9,10 @@ export function isNormalizedQuestionKeysEnabled() {
 }
 
 export async function getQuestionRevision() {
-  let db;
-  try { db = getMongoDB(); } catch { return cachedRevision.value; }
-  if (pendingRevision?.db === db) return pendingRevision.promise;
+  if (pendingRevision) return pendingRevision;
   const promise = (async () => {
     try {
-      const doc = await db
-        .collection('questionMetadata')
-        .findOne({ _id: 'revision' }, { projection: { revision: 1 }, timeoutMS: 300 });
+      const doc = await readQuestionRevision();
       const revision = doc?.revision ?? 0;
       cachedRevision = { value: revision, expires: Date.now() };
       return revision;
@@ -24,9 +20,9 @@ export async function getQuestionRevision() {
       return cachedRevision.value;
     }
   })();
-  pendingRevision = { db, promise };
+  pendingRevision = promise;
   try { return await promise; }
-  finally { if (pendingRevision?.promise === promise) pendingRevision = undefined; }
+  finally { if (pendingRevision === promise) pendingRevision = undefined; }
 }
 
 export function invalidateQuestionCacheRevision() {

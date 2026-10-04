@@ -1,3 +1,4 @@
+import { runtimeLog } from '../../infrastructure/runtimeLog.js';
 import { getMongoDB, getQuestionsCollection } from "../../config/mongodb.js";
 import { createHash } from 'node:crypto';
 import { redisGetJson, redisGetJsonMany, redisSetJson } from '../../config/redis.js';
@@ -248,6 +249,6 @@ export async function refreshUploadedQuestionMetadata(questions) {
   } catch (error) {
     // The revision was already advanced. A failed warmup is retried on the next
     // metadata read and must not report an already saved upload as failed.
-    console.error("Question metadata warmup failed:", error.message);
+    runtimeLog.error("Question metadata warmup failed:", error.message);
   }
 }

@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { createQuestion } from "../services/questions/questionWriteService.js";
 import sharp from "sharp";
 import pLimit from "p-limit";
@@ -7,7 +8,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { b2Client, B2_BUCKET } from "../config/b2.js";
-import { getQuestionsCollection } from "../config/mongodb.js";
+
 
 const IMAGE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const QUESTION_PREFIX = "question-images";
@@ -79,7 +80,7 @@ export const serveImage = async (req, res) => {
 
     return res.redirect(302, url);
   } catch (err) {
-    console.error("serveImage error:", err);
+    runtimeLog.error("serveImage error:", err);
     return res
       .status(500)
       .json({
@@ -177,7 +178,7 @@ export const uploadImageQuestion = async (req, res) => {
       questionImage: questionImageUrl,
     });
   } catch (err) {
-    console.error("uploadImageQuestion:", err);
+    runtimeLog.error("uploadImageQuestion:", err);
     return res.status(500).json({ error: err.message });
   }
 };
@@ -239,7 +240,7 @@ export const bulkUpload = async (req, res) => {
       results,
     });
   } catch (err) {
-    console.error("bulkUpload:", err);
+    runtimeLog.error("bulkUpload:", err);
     return res.status(500).json({ error: err.message });
   }
 };
@@ -272,7 +273,7 @@ export const uploadSolutionImage = async (req, res) => {
     const url = buildImageUrl(key);
     return res.json({ url, key });
   } catch (err) {
-    console.error("uploadSolutionImage:", err);
+    runtimeLog.error("uploadSolutionImage:", err);
     return res.status(500).json({ error: err.message });
   }
 };

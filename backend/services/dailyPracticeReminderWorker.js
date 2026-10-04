@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import {
   getUsersCollection,
 } from "../config/mongodb.js";
@@ -258,7 +259,7 @@ async function processUser(
     );
 
   } catch (error) {
-    console.error(
+    runtimeLog.error(
       `Daily reminder failed for ${user.id}:`,
       error
     );
@@ -404,7 +405,7 @@ export async function startDailyPracticeReminderWorker() {
         void runDailyPracticeReminderWorkerOnce()
           .catch(
             (error) => {
-              console.error(
+              runtimeLog.error(
                 "Daily reminder worker error:",
                 error
               );
@@ -414,7 +415,7 @@ export async function startDailyPracticeReminderWorker() {
       POLL_MS
     );
 
-  console.log(
+  runtimeLog.info(
     `Daily Practice reminder worker started (${POLL_MS}ms) ✅`
   );
 }

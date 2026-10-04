@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import {
   getNotificationWorkerHealthCollection,
 } from "../config/mongodb.js";
@@ -21,7 +22,7 @@ async function safeUpdate(workerName, update) {
     );
   } catch (error) {
     // Monitoring must never interrupt notification delivery.
-    console.error(
+    runtimeLog.error(
       `Worker health write failed (${workerName}):`,
       error
     );

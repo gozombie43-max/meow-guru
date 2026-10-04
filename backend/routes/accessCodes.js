@@ -1,11 +1,10 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 // backend/routes/accessCodes.js
 
 import express from 'express';
 import crypto from 'crypto';
 
-import {
-  getAccessCodesCollection,
-} from '../config/mongodb.js';
+import { findActiveAccessCode, consumeAccessCode } from '../repositories/accessCodeRepository.js';
 
 import { validateBody } from '../middleware/validation.js';
 import { accessCodeVerifySchema } from '../schemas/apiSchemas.js';
@@ -118,17 +117,13 @@ router.post(
       const trimmed =
         String(code).trim();
 
-      const collection =
-        getAccessCodesCollection();
+
 
       /*
        * Find matching active access code.
        */
       const codeDoc =
-        await collection.findOne({
-          code: trimmed,
-          active: true,
-        });
+        await findActiveAccessCode(trimmed);
 
       if (!codeDoc) {
         return res
@@ -191,25 +186,12 @@ router.post(
        * in the filter so two simultaneous requests
        * cannot both consume the final allowed use.
        */
-      const usageFilter = {
-        _id: codeDoc._id,
-        active: true,
-      };
 
-      if (maxUses > 0) {
-        usageFilter.usedCount =
-          currentUsed;
-      }
+
+
 
       const updateResult =
-        await collection.updateOne(
-          usageFilter,
-          {
-            $inc: {
-              usedCount: 1,
-            },
-          }
-        );
+        await consumeAccessCode(codeDoc._id, currentUsed, maxUses);
 
       if (
         updateResult.matchedCount === 0
@@ -260,7 +242,7 @@ router.post(
       });
 
     } catch (err) {
-      console.error(
+      runtimeLog.error(
         'Access code verification error:',
         err.message
       );

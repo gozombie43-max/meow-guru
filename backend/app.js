@@ -11,6 +11,7 @@ import { requestBodyLimits } from './middleware/requestBodyLimits.js';
 import { getReleaseId } from './infrastructure/releaseInfo.js';
 
 import 'dotenv/config';
+import { embeddedWorkersEnabled } from './config/processRole.js';
 
 import express from 'express';
 import cors from 'cors';
@@ -108,7 +109,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
         redis: redisHealth(),
         maintenanceQueue: maintenanceQueueHealth(),
         storage: dependencyHealth().storage?.circuit === 'open' ? 'degraded' : 'unknown',
-        workers: quizOnlyMode || process.env.RUN_EMBEDDED_WORKERS === 'false' ? 'disabled' : 'unknown',
+        workers: quizOnlyMode || !embeddedWorkersEnabled() ? 'disabled' : 'embedded',
       },
       state: isShuttingDown() ? 'draining' : healthy ? 'ready' : 'starting',
       service: 'backend',
@@ -162,6 +163,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
 
   // Keep user-invoked study tools on F1, but lazy-load them so they consume no
   // route/module startup cost until the user actually opens Tutor or Notes/PDF.
+  app.use('/api/ai', lazyRouter(() => import('./routes/speech.js')));
   app.use('/api/ai', lazyRouter(() => import('./routes/aiRoutes.js')));
   app.use('/api/upload-note-image', uploadLimiter, lazyRouter(() => import('./routes/uploadNoteImage.js')));
   app.use('/api/notes', lazyRouter(() => import('./routes/notes.routes.js')));

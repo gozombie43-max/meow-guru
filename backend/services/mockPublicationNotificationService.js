@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import {
   getMockSlotsCollection,
   getNotificationHistoryCollection,
@@ -209,7 +210,7 @@ export async function notifyNewMockPublished({
       });
 
     } catch (historyError) {
-      console.error(
+      runtimeLog.error(
         "New mock notification history failed:",
         historyError
       );
@@ -221,7 +222,7 @@ export async function notifyNewMockPublished({
     };
 
   } catch (error) {
-    console.error(
+    runtimeLog.error(
       "Automatic new mock push failed:",
       error
     );

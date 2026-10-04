@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { randomUUID } from "node:crypto";
 import { getBattleRoomsCollection } from "../config/mongodb.js";
 import { getBattleRealtimeServer } from "../battle/battleRealtime.js";
@@ -69,7 +70,7 @@ async function resolveRoom(candidate, now) {
     { returnDocument: "after" }
   );
   if (!finished) return;
-  await settleBattleResult(finished).catch((error) => console.error("Battle settlement failed:", error));
+  await settleBattleResult(finished).catch((error) => runtimeLog.error("Battle settlement failed:", error));
   await emitFinished(finished);
   await notifyFinished(finished);
 }
@@ -87,8 +88,8 @@ export async function runBattlePresenceWorkerOnce() {
 export async function startBattlePresenceWorker() {
   if (timer) return;
   await runBattlePresenceWorkerOnce();
-  timer = setInterval(() => { void runBattlePresenceWorkerOnce().catch((error) => console.error("Battle presence worker failed:", error)); }, POLL_MS);
-  console.log(`Battle presence worker started (${POLL_MS}ms) ✅`);
+  timer = setInterval(() => { void runBattlePresenceWorkerOnce().catch((error) => runtimeLog.error("Battle presence worker failed:", error)); }, POLL_MS);
+  runtimeLog.info(`Battle presence worker started (${POLL_MS}ms) ✅`);
 }
 export function stopBattlePresenceWorker() { if (timer) { clearInterval(timer); timer = null; } }
 export async function waitForBattlePresenceWorkerIdle(timeoutMs = 10_000) {

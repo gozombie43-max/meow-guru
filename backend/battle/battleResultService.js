@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { getBattleMatchesCollection, getBattleProfilesCollection, getBattleRoomsCollection, getBattleSeasonProfilesCollection, withMongoTransaction } from "../config/mongodb.js";
 import { calculateElo, DEFAULT_BATTLE_RATING } from "./battleRatingService.js";
 import { getBattleTier } from "./battleTierService.js";
@@ -48,12 +49,12 @@ export async function settleBattleResult(room) {
     }
     return { alreadyRecorded: false, match: { ...match, _id: inserted.insertedId }, achievementProfiles: { [a.userId]: { lifetime: { ...lifeA, ...lifeStatsA }, season: seasonStatsA ? { ...seasonA, ...seasonStatsA, tier: tierA.name } : null }, [b.userId]: { lifetime: { ...lifeB, ...lifeStatsB }, season: seasonStatsB ? { ...seasonB, ...seasonStatsB, tier: tierB.name } : null } } };
   });
-  if (settlement?.match) await getBattleRoomsCollection().updateOne({ code: room.code }, { $set: { resultRecordedAt: new Date(), battleMatchId: settlement.match._id } }).catch(console.error);
-  if (settlement?.match && !settlement.alreadyRecorded) void analyzeSettledBattle(settlement.match).catch((error) => console.error("Battle integrity analysis failed:", error));
-  if (settlement?.match && !settlement.alreadyRecorded) void processBattleMissionProgress(settlement.match).catch((error) => console.error("Battle mission progress failed:", error));
+  if (settlement?.match) await getBattleRoomsCollection().updateOne({ code: room.code }, { $set: { resultRecordedAt: new Date(), battleMatchId: settlement.match._id } }).catch(runtimeLog.error);
+  if (settlement?.match && !settlement.alreadyRecorded) void analyzeSettledBattle(settlement.match).catch((error) => runtimeLog.error("Battle integrity analysis failed:", error));
+  if (settlement?.match && !settlement.alreadyRecorded) void processBattleMissionProgress(settlement.match).catch((error) => runtimeLog.error("Battle mission progress failed:", error));
   if (settlement?.match && !settlement.alreadyRecorded) for (const player of settlement.match.players) {
     const source = player.userId === a.userId ? a : b, profiles = settlement.achievementProfiles?.[player.userId];
-    void evaluateBattleAchievements({ match: settlement.match, player: source, lifetimeProfile: profiles?.lifetime, seasonProfile: profiles?.season }).catch((error) => console.error("Battle achievement evaluation failed:", error));
+    void evaluateBattleAchievements({ match: settlement.match, player: source, lifetimeProfile: profiles?.lifetime, seasonProfile: profiles?.season }).catch((error) => runtimeLog.error("Battle achievement evaluation failed:", error));
   }
   return settlement;
 }

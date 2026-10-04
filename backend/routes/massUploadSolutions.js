@@ -15,9 +15,7 @@ import {
   B2_BUCKET,
 } from "../config/b2.js";
 
-import {
-  getQuestionsCollection,
-} from "../config/mongodb.js";
+import { patchSolutionImage, findQuestionForSolution } from '../repositories/questionImageRepository.js';
 
 import adminAuth from "../middleware/auth.js";
 
@@ -99,85 +97,14 @@ async function uploadSolutionToB2(
 // Solution markdown
 // ───────────────────────────────────────────────────────
 
-function mergeSolutionContent(
-  existingSolution,
-  solutionImage
-) {
-  const imageMarkdown =
-    `![solution](${solutionImage})`;
 
-  const textOnly = String(
-    existingSolution || ""
-  )
-    .replace(
-      /\s*!\[[^\]]*\]\([^)]+\)\s*/g,
-      "\n\n"
-    )
-    .trim();
-
-  if (!textOnly) {
-    return imageMarkdown;
-  }
-
-  return (
-    `${textOnly}\n\n${imageMarkdown}`
-  );
-}
 
 
 // ───────────────────────────────────────────────────────
 // MongoDB patch
 // ───────────────────────────────────────────────────────
 
-async function patchSolutionImage(
-  questionId,
-  solutionImage,
-  solutionImageKey
-) {
-  const questions =
-    getQuestionsCollection();
 
-  const doc =
-    await questions.findOne({
-      id: questionId,
-    });
-
-  if (!doc) {
-    throw new Error(
-      `Question "${questionId}" not found in MongoDB`
-    );
-  }
-
-  const solution =
-    mergeSolutionContent(
-      doc.solution,
-      solutionImage
-    );
-
-  await questions.updateOne(
-    {
-      _id: doc._id,
-    },
-    {
-      $set: {
-        solutionImage,
-        solutionImageKey,
-        solution,
-
-        updatedAt:
-          new Date()
-            .toISOString(),
-      },
-    }
-  );
-
-  return {
-    ...doc,
-    solutionImage,
-    solutionImageKey,
-    solution,
-  };
-}
 
 
 // ───────────────────────────────────────────────────────
@@ -444,13 +371,10 @@ router.post(
 
         // Confirm question exists BEFORE uploading
 
-        const questions =
-          getQuestionsCollection();
+
 
         const existing =
-          await questions.findOne({
-            id: questionId,
-          });
+          await findQuestionForSolution(questionId);
 
         if (!existing) {
           errors.push({

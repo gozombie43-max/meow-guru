@@ -6,10 +6,20 @@
   "exports": {
     "./ai": "./ai.js",
     "./geometry": "./geometry.js",
-    "./diagramPrompt": "./diagramPrompt.js"
+    "./diagramPrompt": "./diagramPrompt.js",
+    "./speech": "./speech.js",
+    "./cognitive": "./cognitive.js",
+    "./auth": "./auth.js",
+    "./progress": "./progress.js",
+    "./admin": "./admin.js",
+    "./training": "./training.js",
+    "./notifications": "./notifications.js",
+    "./questions": "./questions.js",
+    "./tutor": "./tutor.js"
   },
   "scripts": {
-    "build": "tsc --allowJs --declaration --emitDeclarationOnly --skipLibCheck --module nodenext --target es2022 ai.js geometry.js diagramPrompt.js"
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "zod": "^4.6.5"

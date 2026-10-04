@@ -1,5 +1,5 @@
 import express from "express";
-import { readKeysetPage } from '../infrastructure/keysetPage.js';
+
 import { z } from "zod";
 
 import {
@@ -10,9 +10,7 @@ import {
   requireRole,
 } from "../middleware/requireRole.js";
 
-import {
-  getExamUpdatesCollection,
-} from "../config/mongodb.js";
+import { readExamUpdateCursor, readExamUpdatePage } from '../repositories/examUpdateRepository.js';
 
 import {
   publishExamUpdate,
@@ -148,21 +146,12 @@ router.get(
           ? { examSlug }
           : {};
 
-      const collection =
-        getExamUpdatesCollection();
 
-      if (req.query.pagination === 'cursor') return res.json(await readKeysetPage(collection, { filter, scope: `exam-updates:${examSlug || 'all'}`, field: 'publishedAt', cursor: req.query.cursor, limit, includeTotal: !req.query.cursor }));
+
+      if (req.query.pagination === 'cursor') return res.json(await readExamUpdateCursor({ filter, scope: `exam-updates:${examSlug || 'all'}`, field: 'publishedAt', cursor: req.query.cursor, limit, includeTotal: !req.query.cursor }));
 
       const [items, total] =
-        await Promise.all([
-          collection
-            .find(filter)
-            .sort({ publishedAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .toArray(),
-          collection.countDocuments(filter),
-        ]);
+        await readExamUpdatePage(filter, page, limit);
 
       return res.json({
         items,
@@ -205,24 +194,15 @@ router.get(
           )
         );
 
-      const collection =
-        getExamUpdatesCollection();
+
 
       const filter =
         { examSlug };
 
-      if (req.query.pagination === 'cursor') return res.json(await readKeysetPage(collection, { filter, scope: `exam-updates:${examSlug}`, field: 'publishedAt', cursor: req.query.cursor, limit, includeTotal: !req.query.cursor }));
+      if (req.query.pagination === 'cursor') return res.json(await readExamUpdateCursor({ filter, scope: `exam-updates:${examSlug}`, field: 'publishedAt', cursor: req.query.cursor, limit, includeTotal: !req.query.cursor }));
 
       const [items, total] =
-        await Promise.all([
-          collection
-            .find(filter)
-            .sort({ publishedAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .toArray(),
-          collection.countDocuments(filter),
-        ]);
+        await readExamUpdatePage(filter, page, limit);
 
       return res.json({
         items,

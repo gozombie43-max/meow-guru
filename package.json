@@ -9,20 +9,21 @@
   "workspaces": [
     "frontend",
     "backend",
-    "contracts"
+    "contracts",
+    "tools/azure-migration"
   ],
   "scripts": {
-    "dev:frontend": "npm --prefix frontend run dev",
-    "dev:backend": "npm --prefix backend run dev",
-    "dev": "node -e \"const { spawn } = require('child_process'); const p1 = spawn('npm', ['--prefix', 'backend', 'run', 'dev'], { stdio: 'inherit', shell: true }); const p2 = spawn('npm', ['--prefix', 'frontend', 'run', 'dev'], { stdio: 'inherit', shell: true }); process.on('SIGINT', () => { p1.kill(); p2.kill(); process.exit(); });\"",
-    "build": "npm --prefix frontend run build",
-    "test": "npm --prefix frontend run test:run && npm --prefix backend test",
-    "test:frontend": "npm --prefix frontend run test:run",
-    "test:backend": "npm --prefix backend test",
-    "lint": "npm --prefix frontend run lint && npm --prefix backend run lint",
-    "typecheck": "npm --prefix frontend run typecheck",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "dev:backend": "npm run dev --workspace backend",
+    "dev": "concurrently --kill-others -n backend,frontend \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
+    "build": "npm run build --workspace @meow/contracts && npm run build --workspace backend && npm run build --workspace frontend",
+    "test": "npm run test:run --workspace frontend && npm run test --workspace backend",
+    "test:frontend": "npm run test:run --workspace frontend",
+    "test:backend": "npm run test --workspace backend",
+    "lint": "npm run lint --workspace frontend && npm run lint --workspace backend",
+    "typecheck": "npm run typecheck --workspace @meow/contracts && npm run typecheck --workspace backend && npm run typecheck --workspace frontend",
     "check": "npm run typecheck && npm run lint && npm run test",
-    "start": "npm --prefix backend start",
+    "start": "npm run start --workspace backend",
     "build:contracts": "npm run build --workspace @meow/contracts"
   },
   "overrides": {
@@ -51,6 +52,7 @@
   "author": "Meow Guru Team",
   "license": "ISC",
   "devDependencies": {
+    "concurrently": "^10.0.5",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.70.1"
   }

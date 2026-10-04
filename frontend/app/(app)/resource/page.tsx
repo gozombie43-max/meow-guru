@@ -3,7 +3,10 @@ import { requestResponse as fetch } from "@/shared/api/request";
 
 
 import { API_BASE } from "@/lib/api-base";
-import { resourcePageStyles } from "./resource.styles";
+import styles from './Resource.module.css';
+import { bindStyleClasses } from '@/lib/styleClasses';
+
+const styleClasses = bindStyleClasses(styles);
 import ResourceUploadDialog from "./ResourceUploadDialog";
 import { fetchWithRetry } from "@/lib/api/http";
 import { announceFeedback } from "@/lib/feedback";
@@ -193,22 +196,22 @@ export default function ResourcePage() {
   };
 
   return (
-    <main className="resource-page">
+    <main className={styleClasses("resource-page scope")}>
       {/* ── Fixed Position Top Area ── */}
-      <div className="res-top-pinned">
-        <header data-ui-chrome="header" className="res-header">
+      <div className={styleClasses("res-top-pinned")}>
+        <header data-ui-chrome="header" className={styleClasses("res-header")}>
           {/* ── Compact Navigation Bar (44px) ── */}
-          <div className="res-nav-bar">
-            <Link replace href="/" className="res-nav-btn res-back-btn" aria-label="Back to home">
+          <div className={styleClasses("res-nav-bar")}>
+            <Link replace href="/" className={styleClasses("res-nav-btn res-back-btn")} aria-label="Back to home">
               <ChevronLeft size={22} strokeWidth={2.4} />
             </Link>
 
-            <h1 className="res-nav-title">Resources</h1>
+            <h1 className={styleClasses("res-nav-title")}>Resources</h1>
 
-            <div className="res-nav-actions">
+            <div className={styleClasses("res-nav-actions")}>
               <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
-                className={`res-nav-btn ${showSearch ? "active" : ""}`}
+                className={styleClasses(`res-nav-btn ${showSearch ? "active" : ""}`)}
                 onClick={() => {
                   setShowSearch((prev) => !prev);
                   if (showSearch) setQuery("");
@@ -221,7 +224,7 @@ export default function ResourcePage() {
               {files.length === 0 && (
                 <button data-ui-button="state" data-ui-shape="icon"
                   type="button"
-                  className="res-nav-btn res-add-btn"
+                  className={styleClasses("res-nav-btn res-add-btn")}
                   onClick={triggerUploadCurrent}
                   disabled={uploading}
                   aria-label="Add files"
@@ -234,21 +237,21 @@ export default function ResourcePage() {
 
           {/* ── Compact Search Bar Dropdown ── */}
           {showSearch && (
-            <div className="res-search-container">
-              <div className="res-search-input-wrap">
-                <Search size={15} className="res-search-field-icon" aria-hidden="true" />
+            <div className={styleClasses("res-search-container")}>
+              <div className={styleClasses("res-search-input-wrap")}>
+                <Search size={15} className={styleClasses("res-search-field-icon")} aria-hidden="true" />
                 <input
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={`Search ${selectedSubject.label} ${activeTab}...`}
-                  className="res-search-input"
+                  className={styleClasses("res-search-input")}
                  aria-label={`Search ${selectedSubject.label} ${activeTab}...`}/>
                 {query && (
                   <button data-ui-button="secondary"
                     type="button"
                     onClick={() => setQuery("")}
-                    className="res-search-clear-btn"
+                    className={styleClasses("res-search-clear-btn")}
                     aria-label="Clear search"
                   >
                     <X size={14} />
@@ -259,9 +262,9 @@ export default function ResourcePage() {
           )}
 
           {/* ── Unified Filter Architecture ── */}
-          <div className="res-filter-container">
+          <div className={styleClasses("res-filter-container")}>
             {/* Level 1: Primary Subject Segmented Control (iOS UISegmentedControl style) */}
-            <div className="res-subject-segment" role="tablist" aria-label="Subjects">
+            <div className={styleClasses("res-subject-segment")} role="tablist" aria-label="Subjects">
               {subjects.map((subject) => {
                 const Icon = subject.Icon;
                 const isActive = subject.id === activeSubject;
@@ -270,7 +273,7 @@ export default function ResourcePage() {
                   <button data-ui-button="state"
                     key={subject.id}
                     type="button"
-                    className={`res-segment-btn ${isActive ? "active" : ""}`}
+                    className={styleClasses(`res-segment-btn ${isActive ? "active" : ""}`)}
                     style={{
                       "--subject-accent": subject.accent,
                     } as React.CSSProperties}
@@ -278,22 +281,22 @@ export default function ResourcePage() {
                     role="tab"
                     aria-selected={isActive}
                   >
-                    <Icon size={14} strokeWidth={2.2} className="res-segment-icon" />
-                    <span className="res-segment-label">{subject.label}</span>
+                    <Icon size={14} strokeWidth={2.2} className={styleClasses("res-segment-icon")} />
+                    <span className={styleClasses("res-segment-label")}>{subject.label}</span>
                   </button>
                 );
               })}
             </div>
 
             {/* Level 2: Secondary Category Chip Bar */}
-            <div className="res-category-strip" role="tablist" aria-label="Resource Categories">
+            <div className={styleClasses("res-category-strip")} role="tablist" aria-label="Resource Categories">
               {resourceTabs.map((tab) => {
                 const isActive = tab === activeTab;
                 return (
                   <button data-ui-button="state"
                     key={tab}
                     type="button"
-                    className={`res-chip ${isActive ? "active" : ""}`}
+                    className={styleClasses(`res-chip ${isActive ? "active" : ""}`)}
                     onClick={() => setActiveTab(tab)}
                     role="tab"
                     aria-selected={isActive}
@@ -308,15 +311,15 @@ export default function ResourcePage() {
       </div>
 
       {/* ── Scrollable Document List ── */}
-      <div className="res-scroll-body">
-        <div className="res-content">
+      <div className={styleClasses("res-scroll-body")}>
+        <div className={styleClasses("res-content")}>
           {notice && (
-            <div className="res-notice-banner">
+            <div className={styleClasses("res-notice-banner")}>
               <span>{notice}</span>
               <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
                 onClick={() => setNotice("")}
-                className="res-notice-close"
+                className={styleClasses("res-notice-close")}
                 aria-label="Dismiss notice"
               >
                 <X size={14} />
@@ -325,53 +328,53 @@ export default function ResourcePage() {
           )}
 
           {loading ? (
-            <div className="res-loading-state" role="status" aria-label="Loading resources">
+            <div className={styleClasses("res-loading-state")} role="status" aria-label="Loading resources">
               <IosSpinner size={34} />
-              <span className="res-loading-text">Loading {selectedSubject.label} files...</span>
+              <span className={styleClasses("res-loading-text")}>Loading {selectedSubject.label} files...</span>
             </div>
           ) : visibleFiles.length > 0 ? (
-            <div className="res-card-list">
+            <div className={styleClasses("res-card-list")}>
               {visibleFiles.map((file, index) => (
                 <button data-ui-button="state"
                   key={file.id}
                   type="button"
-                  className="res-card"
+                  className={styleClasses("res-card")}
                   style={{ animationDelay: `${Math.min(index, 12) * 35}ms` }}
                   onClick={() => openFile(file)}
                 >
-                  <div className="res-card-icon-wrap" aria-hidden="true">
+                  <div className={styleClasses("res-card-icon-wrap")} aria-hidden="true">
                     <PdfIcon />
                   </div>
 
-                  <div className="res-card-body">
-                    <span className="res-card-title">
+                  <div className={styleClasses("res-card-body")}>
+                    <span className={styleClasses("res-card-title")}>
                       {file.title || file.fileName || `${selectedSubject.label} Document`}
                     </span>
-                    <div className="res-card-meta">
-                      <span className="res-card-tag">{formatSize(file.size, file.fileName)}</span>
+                    <div className={styleClasses("res-card-meta")}>
+                      <span className={styleClasses("res-card-tag")}>{formatSize(file.size, file.fileName)}</span>
                       {file.updatedAt || file.uploadedAt ? (
-                        <span className="res-card-date">
+                        <span className={styleClasses("res-card-date")}>
                           {formatDate(file.updatedAt || file.uploadedAt)}
                         </span>
                       ) : null}
                     </div>
                   </div>
 
-                  <div className="res-card-arrow" aria-hidden="true">
+                  <div className={styleClasses("res-card-arrow")} aria-hidden="true">
                     <ChevronRight size={18} />
                   </div>
                 </button>
               ))}
             </div>
           ) : (
-            <div className="res-empty-state">
-              <div className="res-empty-icon" aria-hidden="true">
+            <div className={styleClasses("res-empty-state")}>
+              <div className={styleClasses("res-empty-icon")} aria-hidden="true">
                 <FileText size={34} strokeWidth={1.5} />
               </div>
-              <p className="res-empty-title">
+              <p className={styleClasses("res-empty-title")}>
                 {query ? "No matching files" : "No files found"}
               </p>
-              <p className="res-empty-sub">
+              <p className={styleClasses("res-empty-sub")}>
                 {query
                   ? `No files match "${query}" in ${selectedSubject.label} ${activeTab}.`
                   : `No documents uploaded yet for ${selectedSubject.label} (${activeTab}).`}
@@ -379,7 +382,7 @@ export default function ResourcePage() {
               {!query && (
                 <button data-ui-button="state"
                   type="button"
-                  className="res-empty-btn"
+                  className={styleClasses("res-empty-btn")}
                   onClick={triggerUploadCurrent}
                   disabled={uploading}
                 >
@@ -396,7 +399,7 @@ export default function ResourcePage() {
       {files.length > 0 && (
         <button data-ui-button="state" data-ui-shape="icon"
           type="button"
-          className="res-fab"
+          className={styleClasses("res-fab")}
           onClick={() => setShowUploadModal(true)}
           disabled={uploading}
           aria-label="Add files"
@@ -411,7 +414,7 @@ export default function ResourcePage() {
         type="file"
         accept="application/pdf,text/html,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.html,.htm,.doc,.docx"
         multiple
-        className="res-file-input"
+        className={styleClasses("res-file-input")}
         onChange={handleUpload}
        aria-label="Choose file"/>
 
@@ -424,8 +427,6 @@ export default function ResourcePage() {
           onClose={() => setShowUploadModal(false)}
         />
       )}
-
-      <style jsx>{resourcePageStyles}</style>
     </main>
   );
 }

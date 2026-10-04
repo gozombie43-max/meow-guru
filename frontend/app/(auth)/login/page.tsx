@@ -1,4 +1,6 @@
 'use client';
+import type { z } from 'zod';
+import type { loginSchema } from '@meow/contracts/auth';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
@@ -70,7 +72,7 @@ function LoginContent() {
       const res = await api.post('/auth/login', {
         email: data.email,
         password: data.password,
-      });
+      } satisfies z.input<typeof loginSchema>);
 
       if (rememberMe) {
         try {

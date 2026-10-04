@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 // backend/routes/auth.routes.js
 
 import express from 'express';
@@ -20,10 +21,7 @@ import {
   loginSchema,
 } from '../schemas/apiSchemas.js';
 
-import {
-  getUsersCollection,
-  getMongoDB,
-} from '../config/mongodb.js';
+import { findUserByEmail, acquireRegistrationLock, releaseRegistrationLock, insertRegisteredUser } from '../repositories/authRegistrationRepository.js';
 
 const router = express.Router();
 
@@ -68,20 +66,7 @@ const applyRefreshToken = (
  * Ignore old Cosmos email_lock documents when
  * looking for an actual user.
  */
-async function findUserByEmail(email) {
-  const users =
-    getUsersCollection();
 
-  return users.findOne({
-    email: String(email)
-      .trim()
-      .toLowerCase(),
-
-    type: {
-      $ne: 'email_lock',
-    },
-  });
-}
 
 
 // ── POST /auth/register ─────────────────────────────────
@@ -110,10 +95,7 @@ router.post(
      * simultaneous registrations for the same email
      * cannot both acquire this lock.
      */
-    const registrationLocks =
-      getMongoDB().collection(
-        'registrationLocks'
-      );
+
 
     let lockAcquired = false;
 
@@ -121,11 +103,7 @@ router.post(
       // ── Acquire email registration lock ───────────────
 
       try {
-        await registrationLocks.insertOne({
-          _id: normalizedEmail,
-          createdAt:
-            new Date(),
-        });
+        await acquireRegistrationLock(normalizedEmail);
 
         lockAcquired = true;
 
@@ -196,10 +174,7 @@ router.post(
           new Date().toISOString(),
       };
 
-      const users =
-        getUsersCollection();
-
-      await users.insertOne(user);
+      await insertRegisteredUser(user);
 
 
       // ── Create auth tokens ─────────────────────────────
@@ -235,7 +210,7 @@ router.post(
         });
 
     } catch (err) {
-      console.error(
+      runtimeLog.error(
         'Registration error:',
         err
       );
@@ -255,11 +230,9 @@ router.post(
        */
       if (lockAcquired) {
         try {
-          await registrationLocks.deleteOne({
-            _id: normalizedEmail,
-          });
+          await releaseRegistrationLock(normalizedEmail);
         } catch (err) {
-          console.warn(
+          runtimeLog.warn(
             'Failed to release registration lock:',
             err.message
           );

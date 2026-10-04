@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
  *    If missing → redirects to /access-code.
  *
  * IMPORTANT: /backend-api/* must NEVER be intercepted here.
- * These are proxy requests forwarded to the Azure backend via next.config.ts rewrites.
+ * These are proxy requests forwarded to the Express backend via next.config.ts rewrites.
  * If middleware redirects them, Vercel returns 307 → /access-code → 405.
  */
 export function proxy(request: NextRequest) {
@@ -24,7 +24,7 @@ export function proxy(request: NextRequest) {
   // ── Access Code Gate ──
   // Paths that must NEVER be gated (pass straight through)
   const isExempt =
-    pathname.startsWith('/backend-api') ||   // ← Azure backend proxy — NEVER block
+    pathname.startsWith('/backend-api') ||   // ← Express backend proxy — NEVER block
     pathname.startsWith('/api/') ||           // Next.js API routes
     pathname === '/monitoring' ||             // Sentry tunnel must also work before login
     pathname.startsWith('/monitoring/') ||
@@ -35,7 +35,6 @@ export function proxy(request: NextRequest) {
     pathname === '/login' ||
     pathname === '/register' ||
     pathname === '/favicon.ico' ||
-    pathname === '/ai-test' ||
     // Static file extensions
     /\.(?:png|jpg|jpeg|gif|svg|ico|webp|css|js|woff2?|ttf|eot)$/i.test(pathname);
 

@@ -23,8 +23,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      - name: Install Frontend Dependencies
-        run: npm ci --workspace frontend --include-workspace-root=false
+      - name: Install workspace dependencies
+        run: npm ci
+
+      - name: Shared HTTP contracts and backend typecheck
+        run: npm run typecheck --workspace @meow/contracts && npm run build --workspace backend
 
       - name: Frontend TypeScript Typecheck
         working-directory: ./frontend
@@ -101,6 +104,21 @@ jobs:
           TRAINING_LOAD_SCENARIOS: 'section-mathematics,adaptive-all,mission-all'
         run: npm run test:load:training
 
+      - name: Pagination benchmark (isolated local database)
+        working-directory: ./backend
+        env:
+          PAGINATION_BENCH_REPORT: ${{ runner.temp }}/pagination-benchmark.json
+        run: npm run test:benchmark:pagination
+
+      - name: Upload raw benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pagination-benchmark
+          path: ${{ runner.temp }}/pagination-benchmark.json
+          retention-days: 14
+          if-no-files-found: error
+
   security-and-vulnerability-scan:
     name: Security & Vulnerability Scan
     runs-on: ubuntu-latest
@@ -136,8 +154,7 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install application and browser fixture dependencies
         run: npm ci
-      - name: Production Next.js build
-        working-directory: ./frontend
+      - name: Build contracts, backend and production frontend
         run: npm run build
       - name: Enforce entry JavaScript budgets
         working-directory: ./frontend

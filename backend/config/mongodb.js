@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import dns from "node:dns";
 import { MongoClient } from "mongodb";
 import { observeMongo } from '../infrastructure/logger.js';
@@ -61,7 +62,7 @@ async function openMongoDB() {
     throw error;
   }
 
-  console.log("✅ MongoDB Atlas connected");
+  runtimeLog.info("✅ MongoDB Atlas connected");
 
   return db;
 }
@@ -91,9 +92,9 @@ export async function disconnectMongoDB() {
 
   try {
     await activeClient.close();
-    console.log("MongoDB Atlas disconnected ✅");
+    runtimeLog.info("MongoDB Atlas disconnected ✅");
   } catch (error) {
-    console.error("MongoDB disconnect failed:", error);
+    runtimeLog.error("MongoDB disconnect failed:", error);
     throw error;
   }
 }

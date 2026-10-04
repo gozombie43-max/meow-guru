@@ -1,3 +1,6 @@
+import type { z } from 'zod';
+import type { progressPatchSchema } from '@meow/contracts/progress';
+import type { questionAnswerRequestSchema } from '@meow/contracts/questions';
 import api from '@/shared/api/client';
 import { announceFeedback } from './feedback';
 
@@ -27,7 +30,7 @@ export interface BookmarkMeta {
 }
 
 export const updateProgress = (token: string, topic: string, attempted: number, correct: number) =>
-  api.patch('/users/me/progress', { topic, attempted, correct }, {
+  api.patch('/users/me/progress', { topic, attempted, correct } satisfies z.input<typeof progressPatchSchema>, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -116,7 +119,7 @@ export async function updateStudyGoal(
   return data;
 }
 export const submitQuestionAnswer = (token: string, questionId: string | number, answer: number, submissionId: string) =>
-  api.post(`/api/questions/${questionId}/answer`, { answer, submissionId }, {
+  api.post(`/api/questions/${questionId}/answer`, { answer, submissionId } satisfies z.input<typeof questionAnswerRequestSchema>, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

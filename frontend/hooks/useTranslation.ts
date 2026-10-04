@@ -1,3 +1,5 @@
+import type { z } from 'zod';
+import type { translationRequestSchema, translationResponseSchema } from '@meow/contracts/speech';
 import { useState, useCallback, useRef } from "react";
 import { requestResponse } from "@/shared/api/request";
 
@@ -59,11 +61,11 @@ export function useTranslation() {
       // including after a reload when the in-memory token is still empty.
       const response = await requestResponse('/api/translate/', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texts: toFetch.map(item => item.text), targetLang }),
+        body: JSON.stringify({ texts: toFetch.map(item => item.text), targetLang } satisfies z.input<typeof translationRequestSchema>),
       }, { timeoutMs: 30_000 });
 
       if (!response.ok) throw new Error(`Translation failed: ${response.status}`);
-      const data = await response.json();
+      const data: z.output<typeof translationResponseSchema> = await response.json();
 
       toFetch.forEach((item, i) => {
         const translated = data[i]?.translations?.[0]?.text ?? item.text;

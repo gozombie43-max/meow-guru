@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { getBattleRoomsCollection } from "../config/mongodb.js";
 import { getBattleRealtimeServer } from "../battle/battleRealtime.js";
 import {
@@ -65,8 +66,8 @@ export async function runBattleQuestionDeadlineWorkerOnce() {
 export async function startBattleQuestionDeadlineWorker() {
   if (timer) return;
   await runBattleQuestionDeadlineWorkerOnce();
-  timer = setInterval(() => void runBattleQuestionDeadlineWorkerOnce().catch((error) => console.error("Battle question deadline worker failed:", error)), POLL_MS);
-  console.log(`Battle question deadline worker started (${POLL_MS}ms) ✅`);
+  timer = setInterval(() => void runBattleQuestionDeadlineWorkerOnce().catch((error) => runtimeLog.error("Battle question deadline worker failed:", error)), POLL_MS);
+  runtimeLog.info(`Battle question deadline worker started (${POLL_MS}ms) ✅`);
 }
 
 export function stopBattleQuestionDeadlineWorker() {

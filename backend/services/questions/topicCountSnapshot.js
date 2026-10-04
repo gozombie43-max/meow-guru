@@ -1,4 +1,4 @@
-import { getMongoDB } from "../../config/mongodb.js";
+import { findPersistedQuestionMetadata, saveTopicCountSnapshot } from '../../repositories/questionMetadataRepository.js';
 import { redisGetJson, redisSetJson } from '../../config/redis.js';
 import { getQuestionRevision, isNormalizedQuestionKeysEnabled } from "./questionCache.js";
 import { fetchQuestionCounts, primeQuestionCountCaches } from "./questionMetadataService.js";
@@ -46,14 +46,13 @@ export async function fetchTopicCountSnapshot(subject = "mathematics") {
     error.statusCode = 400;
     throw error;
   }
-  const collection = getMongoDB().collection("questionMetadata");
   const id = `topic-counts:v2:${normalizedSubject}:${isNormalizedQuestionKeysEnabled()}`;
   for (let attempt = 0; attempt < 3; attempt++) {
     const revision = await getQuestionRevision();
     const sharedKey = `topic-counts:${id}:${revision}`;
     const shared = await redisGetJson(sharedKey);
     if (shared?.revision === revision) return shared;
-    const cached = await collection.findOne({ _id: id });
+    const cached = await findPersistedQuestionMetadata(id);
     if (cached?.revision === revision) {
       await redisSetJson(sharedKey, cached.data, 120);
       return cached.data;
@@ -74,9 +73,7 @@ export async function fetchTopicCountSnapshot(subject = "mathematics") {
         const data = { subject, revision, totals, updatedAt: new Date().toISOString() };
         const snapshot = { _id: id, revision, data, kind: "topic-counts" };
         // An older worker must never overwrite a newer snapshot.
-        await collection.updateOne({ _id: id }, [{ $replaceWith: {
-          $cond: [{ $gt: [{ $ifNull: ["$revision", -1] }, revision] }, "$$ROOT", { $literal: snapshot }],
-        } }], { upsert: true });
+        await saveTopicCountSnapshot(snapshot);
         return data;
       })();
       pending.set(key, work);

@@ -6,14 +6,14 @@ afterEach(() => { vi.clearAllMocks(); vi.useRealTimers(); });
 describe('attachment job polling', () => {
   it('waits through queued and running states before returning the reply', async () => {
     vi.useFakeTimers();
-    vi.mocked(api.get).mockResolvedValueOnce({ data: { status: 'queued' } }).mockResolvedValueOnce({ data: { status: 'running' } }).mockResolvedValueOnce({ data: { status: 'completed', reply: 'Answer' } });
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { jobId: 'job', status: 'queued' } }).mockResolvedValueOnce({ data: { jobId: 'job', status: 'running' } }).mockResolvedValueOnce({ data: { jobId: 'job', status: 'completed', success: true, reply: 'Answer' } });
     const result = waitForTutorJob('job');
     await vi.runAllTimersAsync();
     await expect(result).resolves.toBe('Answer');
     expect(api.get).toHaveBeenCalledTimes(3);
   });
   it('surfaces terminal errors and stops polling after unmount', async () => {
-    vi.mocked(api.get).mockResolvedValueOnce({ data: { status: 'failed', error: 'Unreadable PDF' } });
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { jobId: 'job', status: 'failed', error: 'Unreadable PDF' } });
     await expect(waitForTutorJob('job')).rejects.toThrow('Unreadable PDF');
     const controller = new AbortController();
     controller.abort();

@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { assertProcessRole, embeddedWorkersEnabled } from './config/processRole.js';
 import { createServer } from 'node:http';
 import { createApp } from './app.js';
 import { initPassport } from './auth/passport.js';
@@ -20,7 +21,8 @@ let waitForAttachmentWorkerIdle;
 let setNotificationRealtimeServer;
 
 const quizOnlyMode = process.env.QUIZ_ONLY_MODE === 'true';
-const runEmbeddedWorkers = !quizOnlyMode && process.env.RUN_EMBEDDED_WORKERS !== 'false';
+assertProcessRole('api');
+const runEmbeddedWorkers = embeddedWorkersEnabled();
 const stopMetrics = startRuntimeMetrics();
 const PORT = process.env.PORT || 10000;
 

@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { getBattleRoomsCollection } from "../config/mongodb.js";
 import { settleBattleResult } from "../battle/battleResultService.js";
 
@@ -23,8 +24,8 @@ export async function runBattleResultWorkerOnce() {
 export async function startBattleResultWorker() {
   if (timer) return;
   await runBattleResultWorkerOnce();
-  timer = setInterval(() => void runBattleResultWorkerOnce().catch((error) => console.error("Battle result worker failed:", error)), POLL_MS);
-  console.log(`Battle result worker started (${POLL_MS}ms) ✅`);
+  timer = setInterval(() => void runBattleResultWorkerOnce().catch((error) => runtimeLog.error("Battle result worker failed:", error)), POLL_MS);
+  runtimeLog.info(`Battle result worker started (${POLL_MS}ms) ✅`);
 }
 
 export function stopBattleResultWorker() {

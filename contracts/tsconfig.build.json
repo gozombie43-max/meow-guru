@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "checkJs": false,
+    "declaration": true,
+    "emitDeclarationOnly": true
+  },
+  "include": ["*.js"],
+  "exclude": ["*.d.ts"]
+}

@@ -1,3 +1,5 @@
+import type { z } from 'zod';
+import type { actionSchema } from '@meow/contracts/training';
 import { useCallback } from "react";
 import { isAxiosError } from "axios";
 import { useRouter } from "next/navigation";
@@ -39,7 +41,7 @@ export function useTrainingActions({
       setError("");
       const key = crypto.randomUUID();
       try {
-        const body = { ...action, revision: session.revision };
+        const body = { ...action, revision: session.revision } satisfies z.input<typeof actionSchema>;
         if (offlineTrainingEnabled() && userId) {
           await savePendingTrainingAction(userId, id, { key, body, expiresAt: Date.now() + 86400000 });
           if (!navigator.onLine) throw new Error('Action saved on this device. Reconnect and reload to synchronize.');

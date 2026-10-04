@@ -8,7 +8,7 @@ export function hashId(id) {
   return id ? createHash('sha256').update(String(id)).digest('hex').substring(0, 16) : undefined;
 }
 
-const role = process.env.PROCESS_ROLE || (process.argv[1]?.endsWith('attachment-worker.js') ? 'attachments' : process.argv[1]?.endsWith('worker.js') ? 'maintenance' : 'api');
+const role = process.env.PROCESS_ROLE || (process.argv[1]?.endsWith('attachment-worker.js') ? 'attachments' : process.argv[1]?.endsWith('worker.js') ? 'worker' : 'api');
 export const logger = pino({ level: process.env.LOG_LEVEL || 'info', mixin: traceFields, base: { service: 'backend', role }, redact: ['password', 'token', 'authorization', 'cookie', 'secret', 'req.headers', 'req.body'] });
 const databaseLatency = createHistogram();
 let databaseErrors = 0;

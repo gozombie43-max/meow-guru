@@ -206,7 +206,7 @@ describe('QuizChatbot Component', () => {
 
   it('types a custom question and submits with send button with Azure AI when selected', async () => {
     (api.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      data: { reply: 'Detailed concept explanation.' },
+      data: { success: true, reply: 'Detailed concept explanation.' },
     });
 
     render(

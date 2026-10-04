@@ -1,4 +1,5 @@
 import api from '@/shared/api/client';
+import { roleUpdateSchema, statusUpdateSchema, notificationSchema } from '@meow/contracts/admin';
 import type {
   AdminUser,
   AdminUserStats,
@@ -54,7 +55,7 @@ export async function updateUserRole(
   id: string,
   role: UserRole
 ): Promise<{ message: string; role: UserRole }> {
-  const { data } = await api.patch(`/api/admin/users/${id}/role`, { role });
+  const { data } = await api.patch(`/api/admin/users/${id}/role`, roleUpdateSchema.parse({ role }));
   return data;
 }
 
@@ -65,10 +66,10 @@ export async function updateUserStatus(
   status: UserStatus,
   reason?: string
 ): Promise<{ message: string; status: UserStatus }> {
-  const { data } = await api.patch(`/api/admin/users/${id}/status`, {
+  const { data } = await api.patch(`/api/admin/users/${id}/status`, statusUpdateSchema.parse({
     status,
     reason,
-  });
+  }));
   return data;
 }
 
@@ -97,10 +98,10 @@ export async function sendUserNotification(
   suppressed: boolean;
   notificationId: string | null;
 }> {
-  const { data } = await api.post(`/api/admin/users/${id}/notification`, {
+  const { data } = await api.post(`/api/admin/users/${id}/notification`, notificationSchema.parse({
     title,
     body,
-  });
+  }));
   return data;
 }
 

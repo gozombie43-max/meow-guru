@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import {
   getUsersCollection,
 } from "../config/mongodb.js";
@@ -309,7 +310,7 @@ async function processUser(
     );
 
   } catch (error) {
-    console.error(
+    runtimeLog.error(
       `Streak protection failed for ${user.id}:`,
       error
     );
@@ -452,7 +453,7 @@ export async function startStreakProtectionWorker() {
         void runStreakProtectionWorkerOnce()
           .catch(
             (error) => {
-              console.error(
+              runtimeLog.error(
                 "Streak protection worker:",
                 error
               );
@@ -463,7 +464,7 @@ export async function startStreakProtectionWorker() {
       POLL_MS
     );
 
-  console.log(
+  runtimeLog.info(
     `Streak Protection worker started (${POLL_MS}ms) ✅`
   );
 }

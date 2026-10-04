@@ -1,3 +1,4 @@
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { randomUUID } from 'node:crypto';
 import { getBattleSeasonsCollection, getBattleSeasonProfilesCollection, getBattleSeasonRewardsCollection, withMongoTransaction } from "../config/mongodb.js";
 
@@ -53,6 +54,6 @@ export async function runBattleSeasonWorkerOnce() {
   try { const now = new Date(), seasons = getBattleSeasonsCollection(); const ended = await seasons.find({ ...finalizable(now), endsAt: { $lte: now } }, { maxTimeMS: 5000 }).toArray(); for (const season of ended) await finalizeSeason(season, now); await activateNextSeason(now); }
   finally { running = false; }
 }
-export async function startBattleSeasonWorker() { if (timer) return; await runBattleSeasonWorkerOnce(); timer = setInterval(() => void runBattleSeasonWorkerOnce().catch(console.error), POLL_MS); }
+export async function startBattleSeasonWorker() { if (timer) return; await runBattleSeasonWorkerOnce(); timer = setInterval(() => void runBattleSeasonWorkerOnce().catch(runtimeLog.error), POLL_MS); }
 export function stopBattleSeasonWorker() { if (timer) { clearInterval(timer); timer = null; } }
 export async function waitForBattleSeasonWorkerIdle(timeoutMs = 10_000) { const deadline = Date.now() + timeoutMs; while (running && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 100)); return !running; }

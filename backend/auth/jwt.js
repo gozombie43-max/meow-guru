@@ -1,7 +1,6 @@
 // backend/auth/jwt.js
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
-import { LRUCache } from 'lru-cache';
 
 const SECRET         = process.env.JWT_SECRET || 'dev-fallback-secret-key-change-in-prod';
 const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET || 'dev-fallback-refresh-secret-key-change-in-prod';
@@ -12,11 +11,6 @@ if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || !proces
   throw new Error('JWT_SECRET and REFRESH_TOKEN_SECRET are required in production');
 }
 
-// TTL-managed LRU cache for blacklisted tokens (prevents unbounded memory growth)
-const blacklist = new LRUCache({
-  max: 10000,
-  ttl: 30 * 24 * 60 * 60 * 1000, // 30 days matches max refresh token TTL
-});
 
 export const signToken = (payload) =>
   jwt.sign({ ...payload, type: 'access', jti: randomUUID() }, SECRET, { expiresIn: ACCESS_TOKEN_TTL });
@@ -54,8 +48,6 @@ export const signSessionRefreshToken = (session) => jwt.sign({
   iat: session.refreshIssuedAt, exp: Math.floor(session.expiresAt.getTime() / 1000),
 }, REFRESH_SECRET, { algorithm: 'HS256' });
 
-export const revokeToken = (jti) => blacklist.set(jti, true);
-export const isRevoked  = (jti) => blacklist.has(jti);
 
 export const signBattleRematchToken = (payload) =>
   jwt.sign(

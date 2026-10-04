@@ -1,19 +1,8 @@
-export const TRAINING_MODES = [
-  "adaptive",
-  "challenge",
-  "sprint",
-  "pressure",
-  "section",
-  "gauntlet",
-  "nightmare",
-  "survival",
-];
+import { TRAINING_MODES, TRAINING_EXAMS } from '@meow/contracts/training';
+export { TRAINING_MODES, TRAINING_EXAMS };
 
-export const TRAINING_EXAMS = [
-  { id: "ssc-cgl", label: "SSC CGL" },
-  { id: "ssc-chsl", label: "SSC CHSL" },
-  { id: "cat", label: "CAT" },
-];
+
+
 
 const base = {
   navigation: "forward",
