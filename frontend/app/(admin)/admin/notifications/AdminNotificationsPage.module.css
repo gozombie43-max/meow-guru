@@ -212,7 +212,7 @@
 .input:focus,
 .textarea:focus {
   border-color: var(--input-focus-border);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 3px rgb(var(--ios-system-blue-rgb) / 0.15);
 }
 
 .input::placeholder,
@@ -270,7 +270,7 @@
 }
 
 .presetChipActive {
-  background: #3b82f6;
+  background: var(--ios-system-blue);
   color: #ffffff;
 }
 
@@ -280,15 +280,15 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: rgb(var(--ios-system-blue-rgb) / 0.08);
+  border: 1px solid rgb(var(--ios-system-blue-rgb) / 0.25);
   border-radius: 12px;
   padding: 14px 16px;
   margin-bottom: 24px;
 }
 
 .noticeIcon {
-  color: #3b82f6;
+  color: var(--ios-system-blue);
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -315,17 +315,17 @@
   font-size: 15px;
   font-weight: 600;
   border-radius: 12px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, var(--ios-system-blue), var(--ios-system-blue));
   color: #ffffff;
   border: none;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 12px rgb(var(--ios-system-blue-rgb) / 0.25);
 }
 
 .submitBtn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+  background: linear-gradient(135deg, var(--ios-system-blue), var(--ios-system-blue));
+  box-shadow: 0 6px 16px rgb(var(--ios-system-blue-rgb) / 0.35);
   transform: translateY(-1px);
 }
 
@@ -389,7 +389,7 @@
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  background: #2563eb;
+  background: var(--ios-system-blue);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -431,8 +431,8 @@
   margin-top: 10px;
   font-size: 11px;
   font-family: monospace;
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: rgb(var(--ios-system-blue-rgb) / 0.1);
+  color: var(--ios-system-blue);
   padding: 3px 8px;
   border-radius: 6px;
 }
@@ -589,7 +589,7 @@
 .statBoxRate {
   font-size: 13px;
   font-weight: 700;
-  color: #3b82f6;
+  color: var(--ios-system-blue);
   margin-top: 4px;
 }
 
@@ -786,8 +786,8 @@
 .spinnerPage {
   width: 36px;
   height: 36px;
-  border: 3px solid rgba(59, 130, 246, 0.2);
-  border-top-color: #3b82f6;
+  border: 3px solid rgb(var(--ios-system-blue-rgb) / 0.2);
+  border-top-color: var(--ios-system-blue);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
@@ -949,9 +949,9 @@
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 6px;
-  background: rgba(59, 130, 246, 0.12);
-  color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: rgb(var(--ios-system-blue-rgb) / 0.12);
+  color: var(--ios-system-blue);
+  border: 1px solid rgb(var(--ios-system-blue-rgb) / 0.25);
   white-space: nowrap;
 }
 
@@ -1008,8 +1008,8 @@
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 6px;
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: rgb(var(--ios-system-blue-rgb) / 0.1);
+  color: var(--ios-system-blue);
 }
 
 .historyEmptyState {

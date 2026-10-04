@@ -905,7 +905,7 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
           background: var(--light-accent);
           color: #fff;
           border-color: var(--light-accent);
-          box-shadow: 0 3px 10px rgba(0, 122, 255, 0.35);
+          box-shadow: 0 3px 10px rgb(var(--ios-system-blue-rgb) / 0.35);
           font-weight: 700;
         }
         .mac-series-quiz[data-theme="light"] .mac-palette-btn.is-answered {

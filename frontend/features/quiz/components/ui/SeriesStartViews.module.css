@@ -15,7 +15,7 @@
   --mac-surface-hover: var(--dark-surface-muted);
   --mac-surface-active: var(--dark-surface-muted);
   --mac-border: var(--dark-border);
-  --mac-border-hover: rgba(10, 132, 255, 0.45);
+  --mac-border-hover: rgb(var(--ios-system-blue-rgb) / 0.45);
   --mac-border-focus: var(--dark-accent);
   --mac-blue: var(--dark-accent);
   --mac-blue-hover: var(--dark-accent-hover);
@@ -1059,7 +1059,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(10, 132, 255, 0.15);
+  background: rgb(var(--ios-system-blue-rgb) / 0.15);
   color: var(--ios-accent);
   flex-shrink: 0;
 }
@@ -1146,7 +1146,7 @@
   background: var(--ios-accent) !important;
   color: #ffffff !important;
   border-color: var(--ios-accent) !important;
-  box-shadow: 0 2px 8px rgba(10, 132, 255, 0.35);
+  box-shadow: 0 2px 8px rgb(var(--ios-system-blue-rgb) / 0.35);
 }
 
 .iosChipDot {
@@ -1348,8 +1348,8 @@
 }
 
 .iosSubConceptRowSelected {
-  background: rgba(10, 132, 255, 0.08);
-  border-color: rgba(10, 132, 255, 0.25);
+  background: rgb(var(--ios-system-blue-rgb) / 0.08);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.25);
 }
 
 .iosSubConceptName {
@@ -1493,7 +1493,7 @@
   color: #ffffff !important;
   font-size: 16px;
   font-weight: 700;
-  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.35);
+  box-shadow: 0 4px 14px rgb(var(--ios-system-blue-rgb) / 0.35);
   cursor: pointer;
   transition: opacity 0.15s ease, transform 0.1s ease;
   -webkit-tap-highlight-color: transparent;
@@ -1625,7 +1625,7 @@
 .iosLetterActiveLabel {
   font-size: 12px;
   font-weight: 600;
-  color: var(--ios-accent, #007aff);
+  color: var(--ios-accent, var(--ios-system-blue));
 }
 
 .iosLetterScroll {
@@ -1677,10 +1677,10 @@
 }
 
 .iosLetterPillActive {
-  background: var(--ios-accent, #007aff) !important;
+  background: var(--ios-accent, var(--ios-system-blue)) !important;
   color: #ffffff !important;
-  border-color: var(--ios-accent, #007aff) !important;
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.4);
+  border-color: var(--ios-accent, var(--ios-system-blue)) !important;
+  box-shadow: 0 2px 8px rgb(var(--ios-system-blue-rgb) / 0.4);
 }
 
 .iosLetterPillDisabled {
@@ -1812,7 +1812,7 @@
   --ios-subtle: var(--oled-secondary, #a2a9b4);
   --ios-separator: transparent;
   --ios-nav: var(--oled-canvas, #000000);
-  --ios-accent: var(--oled-selected, #216bc1);
+  --ios-accent: var(--oled-selected, var(--ios-system-blue));
 }
 .iosScreen[data-theme="dark"] :is(.iosSelect, .iosSearchInput, .iosChip, .iosLetterPill) {
   background: var(--ios-card); border: 0; border-radius: 999px !important; box-shadow: none;
@@ -1826,7 +1826,7 @@
 }
 .iosScreen[data-theme="dark"] .iosConceptGroupContainer:last-child { margin-bottom: 0; }
 .iosScreen[data-theme="dark"] .iosGroupTile {
-  color: color-mix(in srgb, var(--group-accent, #75a9df) 65%, #b6becb) !important;
+  color: color-mix(in srgb, var(--group-accent, var(--ios-system-blue)) 65%, #b6becb) !important;
   background: color-mix(in srgb, currentColor 14%, transparent) !important;
   box-shadow: none; border: 0;
 }

@@ -1,5 +1,7 @@
 /* Shared light palette. These constants also support isolated exam surfaces. */
 :root {
+  --ios-system-blue: #007aff;
+  --ios-system-blue-rgb: 0 122 255;
   --light-canvas: #f5f7fa;
   --light-surface: #ffffff;
   --light-surface-muted: #edf1f6;
@@ -7,9 +9,9 @@
   --light-text: #182438;
   --light-text-secondary: #526176;
   --light-text-muted: #66758a;
-  --light-accent: #245dcc;
-  --light-accent-hover: #194aa8;
-  --light-accent-soft: #eaf1ff;
+  --light-accent: #007aff;
+  --light-accent-hover: #0062cc;
+  --light-accent-soft: rgba(0, 122, 255, 0.12);
   --light-shadow: 0 4px 20px rgb(24 36 56 / 5%);
 }
 

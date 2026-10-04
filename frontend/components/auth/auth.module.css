@@ -17,7 +17,7 @@
   --ios-input-bg: var(--light-canvas);
   --ios-input-border: var(--light-border);
   --ios-input-focus-border: var(--light-accent);
-  --ios-input-focus-ring: rgba(0, 122, 255, 0.18);
+  --ios-input-focus-ring: rgb(var(--ios-system-blue-rgb) / 0.18);
   --ios-segmented-bg: var(--light-surface-muted);
   --ios-segmented-active: var(--light-surface);
   --ios-segmented-active-text: var(--light-text);
@@ -46,7 +46,7 @@
   padding: calc(16px + var(--safe-top, 0px)) 16px calc(16px + var(--safe-bottom, 0px));
   background-color: var(--ios-bg);
   background-image: 
-    radial-gradient(ellipse at 50% 10%, rgba(0, 122, 255, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 10%, rgb(var(--ios-system-blue-rgb) / 0.08) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 80%, rgba(88, 86, 214, 0.06) 0%, transparent 50%);
   color: var(--ios-text);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
@@ -75,7 +75,7 @@
   --ios-input-bg: var(--dark-surface-muted);
   --ios-input-border: var(--dark-border);
   --ios-input-focus-border: var(--dark-border);
-  --ios-input-focus-ring: rgba(10, 132, 255, 0.25);
+  --ios-input-focus-ring: rgb(var(--ios-system-blue-rgb) / 0.25);
   --ios-segmented-bg: var(--dark-surface-muted);
   --ios-segmented-active: var(--dark-accent-soft);
   --ios-segmented-active-text: var(--dark-text);
@@ -129,7 +129,7 @@
 
 /* Left Showcase Pane (Desktop PC Only) */
 .pcShowcase {
-  background: linear-gradient(155deg, rgba(0, 122, 255, 0.06) 0%, rgba(88, 86, 214, 0.04) 100%);
+  background: linear-gradient(155deg, rgb(var(--ios-system-blue-rgb) / 0.06) 0%, rgba(88, 86, 214, 0.04) 100%);
   border-right: 1px solid var(--ios-card-border);
   padding: 24px 26px;
   display: flex;
@@ -262,12 +262,12 @@
   width: 40px;
   height: 40px;
   border-radius: 11px;
-  background: linear-gradient(145deg, #007aff 0%, #5856d6 100%);
+  background: linear-gradient(145deg, var(--ios-system-blue) 0%, #5856d6 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+  box-shadow: 0 4px 12px rgb(var(--ios-system-blue-rgb) / 0.25);
   margin-bottom: 0;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
@@ -358,7 +358,7 @@
 
 .googleBtn:hover {
   background: var(--ios-google-hover);
-  border-color: rgba(0, 122, 255, 0.3);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.3);
 }
 
 .googleBtn:active {
@@ -677,14 +677,14 @@
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  box-shadow: 0 3px 12px rgba(0, 122, 255, 0.28);
+  box-shadow: 0 3px 12px rgb(var(--ios-system-blue-rgb) / 0.28);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-tap-highlight-color: transparent;
 }
 
 .primaryBtn:hover:not(:disabled) {
   background: var(--theme-action, var(--ios-blue-hover));
-  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.36);
+  box-shadow: 0 4px 16px rgb(var(--ios-system-blue-rgb) / 0.36);
 }
 
 .primaryBtn:active:not(:disabled) {
@@ -844,7 +844,7 @@
   font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+  box-shadow: 0 4px 12px rgb(var(--ios-system-blue-rgb) / 0.25);
   transition: all 0.18s ease;
 }
 
@@ -952,4 +952,9 @@
   .modalSheet {
     animation: none !important;
   }
+}
+
+@media (max-width: 767px) {
+  :global(html.theme-dark) .mobileCardHeader { --ui-header-surface: var(--dark-surface); }
+  :global(html.theme-dark) .authShell { border-color: transparent; box-shadow: none; }
 }

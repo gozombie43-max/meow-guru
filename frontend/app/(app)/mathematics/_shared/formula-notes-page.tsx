@@ -675,7 +675,7 @@ export default function FormulaNotesPage({
           --text-tertiary: rgba(235, 235, 245, 0.35);
           --tab-bg: rgba(255, 255, 255, 0.08);
           --tab-color: rgba(235, 235, 245, 0.75);
-          --accent: #007aff;
+          --accent: var(--ios-system-blue);
           --modal-bg: var(--dark-surface);
           --modal-option-bg: #28282c;
           --notice-color: rgba(235, 235, 245, 0.5);
@@ -822,7 +822,7 @@ export default function FormulaNotesPage({
 
         .fn-search-input:focus {
           border-color: var(--accent);
-          box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.22);
+          box-shadow: 0 0 0 2px rgb(var(--ios-system-blue-rgb) / 0.22);
         }
 
         .fn-search-input-icon {
@@ -900,7 +900,7 @@ export default function FormulaNotesPage({
           background: var(--accent);
           border-color: var(--accent);
           color: #ffffff;
-          box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35);
+          box-shadow: 0 2px 10px rgb(var(--ios-system-blue-rgb) / 0.35);
         }
 
         /* ── Scrollable PDF Cards Area Only ── */
@@ -1162,7 +1162,7 @@ export default function FormulaNotesPage({
           font-size: 13.5px;
           font-weight: 650;
           cursor: pointer;
-          box-shadow: 0 4px 14px rgba(0, 122, 255, 0.35);
+          box-shadow: 0 4px 14px rgb(var(--ios-system-blue-rgb) / 0.35);
           transition: transform 0.15s ease, box-shadow 0.15s ease;
           -webkit-tap-highlight-color: transparent;
         }
@@ -1187,7 +1187,7 @@ export default function FormulaNotesPage({
           border: none;
           background: var(--accent);
           color: #ffffff;
-          box-shadow: 0 4px 18px rgba(0, 122, 255, 0.44), 0 2px 6px rgba(0, 122, 255, 0.25);
+          box-shadow: 0 4px 18px rgb(var(--ios-system-blue-rgb) / 0.44), 0 2px 6px rgb(var(--ios-system-blue-rgb) / 0.25);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1199,7 +1199,7 @@ export default function FormulaNotesPage({
 
         .fn-fab:hover {
           transform: scale(1.05);
-          box-shadow: 0 6px 22px rgba(0, 122, 255, 0.55);
+          box-shadow: 0 6px 22px rgb(var(--ios-system-blue-rgb) / 0.55);
         }
 
         .fn-fab:active {

@@ -1,0 +1,18 @@
+/* Let the existing editor modes use the full phone width. */
+@media (max-width: 767px) {
+  .root { height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom)) !important; min-height: 560px; }
+  .topBar { flex-shrink: 0; }
+  .metaRow { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .metaRow input, .metaRow select { width: 100% !important; min-width: 0 !important; min-height: 44px; border-radius: 10px !important; font-size: 16px !important; }
+  .metaRow input:first-child { grid-column: 1 / -1; }
+  .metaRow input:last-child { grid-column: 1 / -1; }
+  .actionRow { gap: 8px; }
+  .tabGroup { width: 100%; border-radius: 12px !important; padding: 3px; }
+  .tabGroup button { flex: 1; }
+  .snippetBar { padding-block: 10px !important; }
+  .snippetBar button { flex-shrink: 0; }
+  .workspace { flex-direction: column; overflow-y: auto !important; min-height: 0; }
+  .pane { flex: 1 0 320px !important; width: 100%; }
+  .divider { width: 100% !important; height: 1px; background: var(--ui-border) !important; }
+  :global(html.theme-dark) .metaRow :is(input, select) { background: var(--dark-surface); border-color: transparent; }
+}

@@ -58,7 +58,7 @@
   },
   "scripts": {
     "start": "node --import ./instrumentation.js index.js",
-    "dev": "nodemon --exec \"node --import ./instrumentation.js\" index.js",
+    "dev": "nodemon scripts/dev.js",
     "test": "vitest run --maxWorkers=1",
     "test:unit": "vitest run --exclude='**/*.integration.test.js'",
     "test:integration": "vitest run integration",

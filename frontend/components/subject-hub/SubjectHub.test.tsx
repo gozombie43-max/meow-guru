@@ -140,8 +140,11 @@ describe("SubjectHub", () => {
     expect(screen.getByText("0 / 705 solved")).toBeInTheDocument();
     expect(screen.getAllByText("Coming soon").length).toBeGreaterThanOrEqual(1);
 
-    // Verify 0% progress label is present for active topic
-    expect(screen.getAllByText("0%").length).toBeGreaterThanOrEqual(1);
+    // Mobile cards omit progress percentages.
+    container.querySelectorAll('[data-hub-part="mobileTopicRow"]').forEach((card) => {
+      expect(card).not.toHaveTextContent(/\d+%/);
+      expect(card.querySelector('[class*="progress"]')).toBeNull();
+    });
 
     // Verify NO chevrons exist in mobile topic rows
     const rows = container.querySelectorAll('[data-hub-part="mobileTopicRow"]');

@@ -161,7 +161,7 @@
   font-weight: 600;
   color: #ffffff;
   text-align: center;
-  caret-color: #0a84ff;
+  caret-color: var(--ios-system-blue);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
   -webkit-appearance: none;
@@ -176,8 +176,8 @@
 }
 
 .codeInput:focus {
-  border-color: rgba(10, 132, 255, 0.6);
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15), 0 0 20px rgba(10, 132, 255, 0.1);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.6);
+  box-shadow: 0 0 0 3px rgb(var(--ios-system-blue-rgb) / 0.15), 0 0 20px rgb(var(--ios-system-blue-rgb) / 0.1);
 }
 
 .codeInput::placeholder {
@@ -239,7 +239,7 @@
   padding: 16px;
   border: none;
   border-radius: 14px;
-  background: #0a84ff;
+  background: var(--ios-system-blue);
   color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   font-size: 17px;
@@ -253,7 +253,7 @@
 }
 
 .continueBtn:hover:not(:disabled) {
-  background: #409cff;
+  background: var(--ios-system-blue);
 }
 
 .continueBtn:active:not(:disabled) {

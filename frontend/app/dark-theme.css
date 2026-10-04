@@ -7,8 +7,8 @@
   --oled-inset: #29292c;
   --oled-text: #e5eaf0;
   --oled-secondary: #a2a9b4;
-  --oled-selected: #216bc1;
-  --oled-selected-soft: #182f4b;
+  --oled-selected: var(--dark-action);
+  --oled-selected-soft: var(--dark-accent-soft);
   --dark-canvas: #000000;
   --dark-surface: #1c1c1e;
   --dark-surface-muted: #2c2c2e;
@@ -17,7 +17,7 @@
   --dark-text-secondary: rgba(235, 235, 245, 0.65);
   --dark-text-muted: rgba(235, 235, 245, 0.40);
   --dark-accent: #0a84ff;
-  --dark-accent-hover: #409cff;
+  --dark-accent-hover: #0070e0;
   --dark-action: #0a84ff;
   --dark-accent-soft: rgba(10, 132, 255, 0.16);
   --dark-shadow: 0 8px 32px rgba(0, 0, 0, 0.60);
@@ -149,7 +149,7 @@ html.theme-dark .training-dark {
   --tr-border: transparent;
   --tr-text: var(--oled-text);
   --tr-secondary: var(--oled-secondary);
-  --tr-accent: #75a9df;
+  --tr-accent: var(--dark-accent);
 }
 html.theme-dark .training-dark :is(
   .training-mode-card[data-ui-button], .training-panel, .training-mission,
@@ -185,7 +185,7 @@ html.theme-dark .training-dark :is(.play-setup-hero-icon, .setup-hero-icon-box) 
   background: #292439; color: #ab91cf; box-shadow: none; border: 0;
 }
 html.theme-dark .training-dark :is(.play-setup-hero-icon--speed, .setup-icon--speed) { background: #342c20; color: #cba56c; }
-html.theme-dark .training-dark :is(.play-setup-hero-icon--sectional, .setup-icon--sectional) { background: #1d2b3c; color: #73a8dc; }
+html.theme-dark .training-dark :is(.play-setup-hero-icon--sectional, .setup-icon--sectional) { background: var(--dark-accent-soft); color: var(--dark-accent); }
 html.theme-dark .training-dark :is(.play-setup-hero-icon--extreme, .setup-icon--extreme) { background: #352429; color: #d5919b; }
 html.theme-dark .training-dark :is(.play-setup-start-btn, .setup-start-btn) {
   background: var(--oled-selected); box-shadow: none; border: 0;
@@ -208,8 +208,38 @@ html.theme-dark .training-dark.tfp-backdrop {
 html.theme-dark .training-dark :is(.tfp-sheet, .tfp-search, .tfp-categories button) { border: 0; box-shadow: none; }
 html.theme-dark .training-dark .tfp-categories button { border-radius: 999px; }
 html.theme-dark .training-dark .tfp-categories button[aria-pressed="true"] { background: var(--oled-selected); color: #edf4fc; }
-html.theme-dark .training-dark .tfp-search:focus-within { outline: 2px solid #75a9df; outline-offset: 2px; }
+html.theme-dark .training-dark .tfp-search:focus-within { outline: 2px solid var(--dark-accent); outline-offset: 2px; }
 
 html.theme-dark .training-dark .trade-filter-tab { border: 0; border-radius: 999px !important; box-shadow: none; }
 html.theme-dark .training-dark .trade-ledger-item:hover { background: var(--oled-hover) !important; box-shadow: none; }
 html.theme-dark .training-dark :is(.play-setup-cat-badge, .play-setup-pill-pos, .play-setup-pill-neg, .play-setup-pill-zero, .setup-cat-badge) { border: 0; box-shadow: none; }
+
+/* Mobile refinements: keep the established OLED surfaces, soften white text,
+   and reserve the brighter accent for focus, links and selected states. */
+@media (max-width: 767px) {
+  html.theme-dark,
+  body.theme-dark {
+    --dark-text: #e5eaf0;
+    --dark-text-secondary: #a2a9b4;
+    --dark-text-muted: #929aa6;
+    --dark-border: #38383c;
+  }
+
+  html.theme-dark .route-boundary__content--error,
+  html.theme-dark .route-boundary__recovery {
+    margin: 24px auto;
+    padding: 24px;
+    border: 0;
+    border-radius: 20px;
+    background: var(--dark-surface);
+    color: #f0a2a8;
+  }
+  html.theme-dark :is(.route-boundary__content--error, .route-boundary__recovery) h1 { color: var(--dark-text); margin-top: 16px; }
+  html.theme-dark :is(.route-boundary__content--error, .route-boundary__recovery) p { color: var(--dark-text-secondary); line-height: 1.6; margin-bottom: 20px; }
+  html.theme-dark .route-boundary__retry { background: var(--dark-action); border-color: transparent; }
+  html.theme-dark .route-boundary__home { color: var(--dark-text); border-color: var(--dark-border); }
+  html.theme-dark :is(.route-boundary__skeleton-line, .route-boundary__skeleton-tabs span, .route-boundary__skeleton-cards > div) {
+    background: var(--dark-surface);
+    animation: none;
+  }
+}

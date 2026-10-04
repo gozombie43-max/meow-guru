@@ -301,7 +301,7 @@
   left: 12%;
   right: 12%;
   height: 2.5px;
-  background: #2563EB;
+  background: var(--ios-system-blue);
   border-radius: 2px;
 }
 
@@ -1058,7 +1058,7 @@
   --bg: var(--oled-canvas); --card: var(--oled-surface);
   --text-dark: var(--oled-text); --text-muted: var(--oled-secondary);
   --text-light: var(--oled-secondary); --border: transparent;
-  --primary: #75a9df; --primary-light: #75a9df;
+  --primary: var(--ios-system-blue); --primary-light: var(--ios-system-blue);
   --primary-bg: var(--oled-selected-soft);
   background: var(--oled-canvas); color: var(--oled-text);
 }

@@ -3,6 +3,8 @@
 // Shared ranked chapter hub for Geography and the three History periods.
 
 import MicIcon from "@/components/MicIcon";
+import { useBackLayer } from "@/hooks/useAppNavigation";
+import { Check, SlidersHorizontal } from "lucide-react";
 import hubStyles from "@/components/SubjectHub.module.css";
 import type {
 RankedTopicGroup,
@@ -30,7 +32,6 @@ Building2,
 Calendar,
 Castle,
 ChevronLeft,
-ChevronRight,
 CircleDot,
 Clock,
 CloudFog,
@@ -152,7 +153,7 @@ import Link from "next/link";
 import { useCallback,useEffect,useMemo,useRef,useState } from "react";
 import styles from "./RankedTopicGroupPage.module.css";
 
-type PriorityFilter = RankedTopicPriority;
+type PriorityFilter = RankedTopicPriority | "All";
 
 const PRIORITY_CLASS: Record<RankedTopicPriority, string> = {
   "Very High": styles.veryHigh,
@@ -399,10 +400,20 @@ const GROUP_META: Record<string, TopicMeta> = {
 
 export default function RankedTopicGroupPage({ group }: { group: RankedTopicGroup }) {
   const [query, setQuery] = useState("");
-  const [priority, setPriority] = useState<PriorityFilter>(group.filters[0] || "Core");
+  const [priority, setPriority] = useState<PriorityFilter>("All");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filterDialogRef = useRef<HTMLDialogElement>(null);
+  useBackLayer(filterOpen, () => setFilterOpen(false));
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setPriority(group.filters[0] || "Core"), 0);
+    const dialog = filterDialogRef.current;
+    if (!dialog) return;
+    if (filterOpen && !dialog.open) dialog.showModal();
+    if (!filterOpen && dialog.open) dialog.close();
+  }, [filterOpen]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setPriority("All"), 0);
     return () => window.clearTimeout(timer);
   }, [group.slug, group.filters]);
 
@@ -474,14 +485,30 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
       const matchesQuery =
         normalizedQuery === "" || topic.title.toLowerCase().includes(normalizedQuery);
       const matchesPriority =
-        normalizedQuery !== "" || topic.priority === priority;
+        normalizedQuery !== "" || priority === "All" || topic.priority === priority;
       return matchesQuery && matchesPriority;
     });
   }, [group.topics, priority, query]);
 
   const filters = useMemo<readonly PriorityFilter[]>(
-    () => group.filters,
+    () => ["All", ...group.filters],
     [group.filters]
+  );
+
+  const filterButton = (
+    <button
+      type="button"
+      data-ui-button="state"
+      data-ui-shape="icon"
+      className={styles.headerFilter}
+      aria-label={`Filter chapters, ${priority} selected`}
+      aria-haspopup="dialog"
+      aria-expanded={filterOpen}
+      aria-controls="chapter-filter-dialog"
+      onClick={() => setFilterOpen(true)}
+    >
+      <SlidersHorizontal size={20} aria-hidden="true" />
+    </button>
   );
 
   return (
@@ -499,7 +526,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
             <ChevronLeft size={23} strokeWidth={2.2} />
           </Link>
           <h1 className={styles.headerTitle}>{group.label}</h1>
-          <span aria-hidden="true" />
+          {filterButton}
         </header>
 
         <main className={styles.content}>
@@ -535,28 +562,11 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
             ) : null}
           </div>
 
-          <nav className={styles.filters} aria-label={`Filter by ${group.metricLabel.toLowerCase()}`}>
-            {filters.map((filter) => (
-              <button data-ui-button="state"
-                key={filter}
-                type="button"
-                className={`${styles.filterButton} ${
-                  priority === filter ? styles.filterButtonActive : ""
-                }`}
-                onClick={() => setPriority(filter)}
-                aria-pressed={priority === filter}
-              >
-                {filter}
-              </button>
-            ))}
-          </nav>
-
           <section className={styles.table} aria-label={`Ranked ${group.label} chapters`}>
             <div className={styles.tableHeader} aria-hidden="true">
               <span>Rank</span>
               <span>Chapter</span>
               <span>{group.metricLabel}</span>
-              <span />
             </div>
 
             {topics.length > 0 ? (
@@ -576,7 +586,6 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
                     />
                     {topic.priority}
                   </span>
-                  <ChevronRight className={styles.chevron} size={17} aria-hidden="true" />
                 </Link>
               ))
             ) : (
@@ -589,9 +598,9 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
       {/* =========================================================================
           MOBILE / TABLET VIEW (< 768px Handheld Devices)
           ========================================================================= */}
-      <div className={`${hubStyles.mobileContainer} ${hubStyles.fixedTopicsMobile} ${hubStyles.oledMobile}`}>
+      <div className={`${hubStyles.mobileContainer} ${hubStyles.fixedTopicsMobile} ${hubStyles.oledMobile} ${styles.mobileLayout}`}>
         {/* Mobile Topbar */}
-        <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={hubStyles.mobileTopbar}>
+        <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={`${hubStyles.mobileTopbar} ${styles.mobileHeader}`}>
           <Link replace
             href="/general-awareness"
             className={`${hubStyles.mobileBackBtn} ${styles.mobileBackBtn}`}
@@ -602,7 +611,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
           <span className={`${hubStyles.mobileTopbarTitle} ${styles.mobileTopbarTitle}`}>
             {group.label} Chapters
           </span>
-          <div style={{ width: 34 }} />
+          {filterButton}
         </header>
 
         <div data-hub-part="mobileBody" className={hubStyles.mobileBody}>
@@ -644,27 +653,8 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
           {/* Section Title Header */}
           <div data-hub-part="mobileTopicsTitle" className={hubStyles.mobileTopicsTitle}>CHAPTERS</div>
 
-          {/* iOS Grouped Card Container with Filter Header */}
-          <div data-hub-part="mobileTopicGroup" className={hubStyles.mobileTopicGroup}>
-            {/* Weightage Tabs in Card Header */}
-            <div data-hub-part="mobileTabsScroll" className={hubStyles.mobileTabsScroll} role="tablist" aria-label={`Filter by ${group.metricLabel.toLowerCase()}`}>
-              {filters.map((filter) => {
-                const isActive = priority === filter;
-                return (
-                  <button data-ui-button="state"
-                    key={filter}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    className={`${hubStyles.mobileTabBtn} ${isActive ? hubStyles.mobileTabActive : ""}`}
-                    onClick={() => setPriority(filter)}
-                  >
-                    {filter}
-                  </button>
-                );
-              })}
-            </div>
-
+          {/* Chapter cards */}
+          <div data-hub-part="mobileTopicGroup" className={`${hubStyles.mobileTopicGroup} ${styles.chapterList}`}>
             {topics.length === 0 ? (
               <div style={{ padding: "28px 16px", textAlign: "center", color: "var(--mac-text-secondary, #8E8E93)", fontSize: "0.9rem" }}>
                 No {group.label.toLowerCase()} chapters found matching &ldquo;{query}&rdquo;
@@ -681,11 +671,8 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
                     aria-label={`${topic.rank}. ${topic.title}`}
                   >
                     <div className={hubStyles.mobileTopicRowLeft}>
-                      <div
-                        className={hubStyles.mobileTopicIconBox}
-                        style={{ "--topic-color": `color-mix(in srgb, ${meta.color} 65%, #b6becb)` } as React.CSSProperties}
-                      >
-                        <TopicIcon size={18} strokeWidth={2.2} color="#ffffff" />
+                      <div className={styles.chapterIcon}>
+                        <TopicIcon size={24} strokeWidth={2.2} aria-hidden="true" />
                       </div>
 
                       <span className={`${hubStyles.mobileTopicName} ${styles.mobileTopicName}`}>
@@ -693,7 +680,6 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
                       </span>
                     </div>
 
-                    <ChevronRight size={16} strokeWidth={2.4} className={hubStyles.mobileChevron} />
                   </Link>
                 );
               })
@@ -701,6 +687,42 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
           </div>
         </div>
       </div>
+      <dialog
+        ref={filterDialogRef}
+        id="chapter-filter-dialog"
+        className={styles.filterDialog}
+        aria-labelledby="chapter-filter-title"
+        onCancel={(event) => { event.preventDefault(); setFilterOpen(false); }}
+        onClose={() => setFilterOpen(false)}
+        onPointerDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          const bounds = event.currentTarget.getBoundingClientRect();
+          if (event.clientX < bounds.left || event.clientX > bounds.right ||
+              event.clientY < bounds.top || event.clientY > bounds.bottom) setFilterOpen(false);
+        }}
+      >
+        <div className={styles.filterDialogHeader}>
+          <h2 id="chapter-filter-title">Filter chapters</h2>
+          <button type="button" data-ui-button="icon" aria-label="Close filters" onClick={() => setFilterOpen(false)}>
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
+        <div className={styles.filterOptions} aria-label={`Filter by ${group.metricLabel.toLowerCase()}`}>
+          {filters.map((filter) => (
+            <button
+              key={filter}
+              type="button"
+              data-ui-button="state"
+              className={styles.filterOption}
+              aria-pressed={priority === filter}
+              onClick={() => { setPriority(filter); setFilterOpen(false); }}
+            >
+              {filter}
+              {priority === filter && <Check size={18} aria-hidden="true" />}
+            </button>
+          ))}
+        </div>
+      </dialog>
     </div>
   );
 }

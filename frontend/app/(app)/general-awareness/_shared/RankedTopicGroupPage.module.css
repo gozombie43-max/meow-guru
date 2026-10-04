@@ -27,6 +27,10 @@
 }
 
 @media (min-width: 768px) {
+  .page .mobileLayout {
+    display: none !important;
+  }
+
   .desktopContainer {
     display: block;
     min-height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom));
@@ -95,7 +99,7 @@
   box-sizing: border-box;
   padding: var(--safe-top) 16px 0;
   display: grid;
-  grid-template-columns: 40px 1fr 40px;
+  grid-template-columns: 44px 1fr 44px;
   align-items: center;
   background: color-mix(in srgb, var(--geo-bg) 88%, transparent);
   border-bottom: 1px solid var(--geo-border);
@@ -224,46 +228,6 @@
   cursor: pointer;
 }
 
-.filters {
-  display: flex;
-  gap: 20px;
-  margin: 0 0 12px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.filters::-webkit-scrollbar {
-  display: none;
-}
-
-.filterButton {
-  position: relative;
-  flex: 0 0 auto;
-  padding: 7px 0 9px;
-  color: var(--geo-secondary);
-  background: transparent;
-  border: 0;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 650;
-  cursor: pointer;
-}
-
-.filterButtonActive {
-  color: var(--geo-text);
-}
-
-.filterButtonActive::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 2px;
-  height: 2px;
-  background: #16845b;
-  border-radius: 2px;
-}
-
 .table {
   overflow: hidden;
   background: var(--geo-surface);
@@ -274,7 +238,7 @@
 .tableHeader,
 .row {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 90px 18px;
+  grid-template-columns: 42px minmax(0, 1fr) 90px;
   align-items: center;
   column-gap: 8px;
 }
@@ -359,10 +323,6 @@
   background: #8e99a8;
 }
 
-.chevron {
-  color: var(--geo-tertiary);
-}
-
 .empty {
   padding: 44px 20px;
   color: var(--geo-secondary);
@@ -387,7 +347,7 @@
 
   .tableHeader,
   .row {
-    grid-template-columns: 64px minmax(0, 1fr) 130px 20px;
+    grid-template-columns: 64px minmax(0, 1fr) 130px;
     column-gap: 16px;
   }
 
@@ -407,4 +367,98 @@
   .weightage {
     font-size: 12px;
   }
+}
+
+/* Compact chapter filter, shared by mobile and desktop headers. */
+.mobileHeader {
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+}
+
+.headerFilter {
+  color: var(--ios-system-blue);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.chapterIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  color: var(--ios-system-blue);
+}
+
+.page .chapterList,
+.filterDialog {
+  scrollbar-width: none;
+}
+
+.chapterList::-webkit-scrollbar,
+.filterDialog::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.filterDialog {
+  width: min(300px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  padding: 12px;
+  color: var(--geo-text);
+  background: var(--geo-surface);
+  border: 1px solid var(--geo-border);
+  border-radius: 20px;
+  box-shadow: 0 16px 48px rgb(0 0 0 / 24%);
+}
+
+.filterDialog::backdrop {
+  background: rgb(0 0 0 / 42%);
+}
+
+.filterDialogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-left: 8px;
+  margin-bottom: 8px;
+}
+
+.filterDialogHeader h2 {
+  font-size: 16px;
+  font-weight: 650;
+  margin: 0;
+}
+
+.filterOptions {
+  display: grid;
+  gap: 4px;
+}
+
+.filterOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px;
+  color: var(--geo-text);
+  background: transparent;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.filterOption:hover {
+  background: var(--geo-surface-muted);
+}
+
+.filterOption[aria-pressed="true"] {
+  color: var(--ios-system-blue);
+  background: rgb(var(--ios-system-blue-rgb) / 12%);
 }

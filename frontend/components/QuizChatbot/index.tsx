@@ -542,7 +542,7 @@ export default function QuizChatbot({
                                   </div>
                                   <span className="model-desc">{item.description}</span>
                                 </div>
-                                {selectedModel === item.id && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                                {selectedModel === item.id && <Check className="w-4 h-4 text-[var(--ios-system-blue)] shrink-0" />}
                               </button>
                             ))}
                           </div>
@@ -587,7 +587,7 @@ export default function QuizChatbot({
                               aria-pressed={selectedLang === item.code}
                             >
                               <span className="lang-label">{item.label}</span>
-                              {selectedLang === item.code && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                              {selectedLang === item.code && <Check className="w-4 h-4 text-[var(--ios-system-blue)] shrink-0" />}
                             </button>
                           ))}
                         </div>

@@ -98,7 +98,7 @@
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: rgba(37, 99, 235, 0.1);
+  background: rgb(var(--ios-system-blue-rgb) / 0.1);
   color: var(--tr-accent);
   flex-shrink: 0;
 }
@@ -395,9 +395,9 @@
 }
 
 .training-tag-topic {
-  background: rgba(37, 99, 235, 0.08);
+  background: rgb(var(--ios-system-blue-rgb) / 0.08);
   color: var(--tr-accent);
-  border: 1px solid rgba(37, 99, 235, 0.2);
+  border: 1px solid rgb(var(--ios-system-blue-rgb) / 0.2);
 }
 
 .training-dark .training-tag-topic {
@@ -418,11 +418,11 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: var(--ios-system-blue);
 }
 
 .diff-dot.diff-1 { background: #10b981; }
-.diff-dot.diff-2 { background: #3b82f6; }
+.diff-dot.diff-2 { background: var(--ios-system-blue); }
 .diff-dot.diff-3 { background: #f59e0b; }
 .diff-dot.diff-4 { background: #f97316; }
 .diff-dot.diff-5 { background: #ef4444; }
@@ -495,7 +495,7 @@
 
 .training-option-btn.selected {
   border-color: var(--tr-accent);
-  background: rgba(37, 99, 235, 0.08);
+  background: rgb(var(--ios-system-blue-rgb) / 0.08);
   box-shadow: 0 0 0 1px var(--tr-accent);
 }
 
@@ -939,7 +939,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(37, 99, 235, 0.1);
+  background: rgb(var(--ios-system-blue-rgb) / 0.1);
   color: var(--tr-accent);
   padding: 4px 10px;
   border-radius: 9999px;
@@ -976,7 +976,7 @@
 }
 
 .trade-rating-pill.is-positive {
-  background: rgba(37, 99, 235, 0.14);
+  background: rgb(var(--ios-system-blue-rgb) / 0.14);
   color: var(--tr-accent);
 }
 
@@ -1411,7 +1411,7 @@
 }
 
 .trade-settlement-row.is-total-row {
-  background: rgba(37, 99, 235, 0.06);
+  background: rgb(var(--ios-system-blue-rgb) / 0.06);
   padding: 16px 18px;
 }
 
@@ -1558,7 +1558,7 @@
 
 /* ── Strategy Execution Log ── */
 .trade-mode-banner {
-  background: rgba(37, 99, 235, 0.08);
+  background: rgb(var(--ios-system-blue-rgb) / 0.08);
   border-radius: 12px;
   padding: 10px 14px;
   font-size: 13px;
@@ -1861,7 +1861,7 @@
 .trade-choice-row.is-wrong-pick .choice-label { color: #dc2626; }
 
 .trade-choice-row.is-official-pick {
-  background: rgba(37, 99, 235, 0.08);
+  background: rgb(var(--ios-system-blue-rgb) / 0.08);
 }
 .trade-choice-row.is-official-pick .choice-label { color: var(--tr-accent); }
 
@@ -1901,7 +1901,7 @@
 .trade-solution-callout {
   padding: 12px 14px;
   border-radius: 10px;
-  background: rgba(37, 99, 235, 0.05);
+  background: rgb(var(--ios-system-blue-rgb) / 0.05);
   border-left: 3px solid var(--tr-accent);
   font-size: 13px;
   line-height: 1.55;

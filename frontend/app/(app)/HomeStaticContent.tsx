@@ -92,6 +92,16 @@ export function DesktopHomeContent() {
             })}
           </div>
         </section>
+        <div className={styles.desktopQuickLinks}>
+          <Link href="/resource" className={styles.resourceCard}>
+            <span className={styles.resourceIcon}><BooksIcon size={40} /></span>
+            <span><strong>ALL BOOKS & NOTES</strong><small>Books, chapter notes, extras & DPP</small></span>
+          </Link>
+          <Link href="/battle" className={styles.battleCard}>
+            <span className={styles.battleIcon}><BattleIcon size={40} /></span>
+            <span><strong>BATTLE MODE</strong><small>Challenge yourself & win rewards</small></span>
+          </Link>
+        </div>
       </div>
 
       <MobileRecentQuiz desktop />

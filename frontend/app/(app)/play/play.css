@@ -6,7 +6,7 @@
   --tr-border: var(--light-border, #e3e6eb);
   --tr-text: var(--light-text, #1c2533);
   --tr-secondary: var(--light-text-secondary, #647084);
-  --tr-accent: var(--light-accent, #2563eb);
+  --tr-accent: var(--light-accent, var(--ios-system-blue));
   color: var(--tr-text);
   background: var(--tr-bg);
   font-family: inherit;

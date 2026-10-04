@@ -41,8 +41,8 @@
     115deg,
     transparent 0%,
     transparent 25%,
-    #0284c7 40%,
-    #38bdf8 48%,
+    var(--ios-system-blue) 40%,
+    var(--ios-system-blue) 48%,
     #ffffff 52%,
     #6366f1 60%,
     transparent 75%,
@@ -53,7 +53,7 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  filter: drop-shadow(0 0 6px rgba(2, 132, 199, 0.45));
+  filter: drop-shadow(0 0 6px rgb(var(--ios-system-blue-rgb) / 0.45));
   animation: shinySweep var(--shiny-speed, 2.6s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
@@ -63,7 +63,7 @@
     115deg,
     transparent 0%,
     transparent 25%,
-    #38bdf8 38%,
+    var(--ios-system-blue) 38%,
     #7dd3fc 46%,
     #ffffff 50%,
     #a78bfa 58%,
@@ -75,7 +75,7 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.75));
+  filter: drop-shadow(0 0 10px rgb(var(--ios-system-blue-rgb) / 0.75));
 }
 
 @media (prefers-color-scheme: dark) {
@@ -85,7 +85,7 @@
       115deg,
       transparent 0%,
       transparent 25%,
-      #38bdf8 38%,
+      var(--ios-system-blue) 38%,
       #7dd3fc 46%,
       #ffffff 50%,
       #a78bfa 58%,
@@ -97,7 +97,7 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
-    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.75));
+    filter: drop-shadow(0 0 10px rgb(var(--ios-system-blue-rgb) / 0.75));
   }
 }
 

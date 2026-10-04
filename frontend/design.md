@@ -37,6 +37,10 @@ Use `--light-canvas` for page backgrounds, `--light-surface` for white cards,
 `--light-surface-muted` for grouped controls, `--light-border` for separators,
 and `--light-text`, `--light-text-secondary`, and `--light-text-muted` for text.
 Primary actions use `--light-accent`; selected controls use `--light-accent-soft`.
+Blue accents use iOS blue: `#007aff` in light mode and `#0a84ff` in dark mode.
+Use `--ios-system-blue` for route accents and `rgb(var(--ios-system-blue-rgb) / alpha)`
+for translucent blue fills. Keep the same accent on mobile and desktop; use the
+shared hover and soft tokens for interaction states instead of pale blue overrides.
 Keep semantic success, error, warning, and subject colors distinct.
 
 Light navigation follows the shared theme on every route where navigation is

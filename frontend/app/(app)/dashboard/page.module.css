@@ -15,7 +15,7 @@
   --text-dimmer: rgba(235, 235, 245, 0.40);
 
   /* iOS system colors (dark mode values) */
-  --ios-blue: #0a84ff;
+  --ios-blue: var(--ios-system-blue);
   --ios-green: #30d158;
   --ios-indigo: #5e5ce6;
   --ios-orange: #ff9f0a;
@@ -383,7 +383,7 @@
   left: 0;
   right: 0;
   height: 2.5px;
-  background: #2563EB;
+  background: var(--ios-system-blue);
   border-radius: 2px;
 }
 
@@ -771,4 +771,14 @@
 
 :global(.theme-light) .page .cardIcon {
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+@media (max-width: 767px) {
+  :global(html.theme-dark) .page {
+    --text-dim: var(--dark-text-secondary);
+    --text-dimmer: var(--dark-text-muted);
+    --card: var(--dark-surface);
+    --cards-box-bg: transparent;
+    --ios-blue: var(--dark-accent);
+  }
 }

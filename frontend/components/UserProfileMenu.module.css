@@ -215,9 +215,9 @@
 
 :global(.dark) .roleBadge,
 :global(body.theme-dark) .roleBadge {
-  background: rgba(10, 132, 255, 0.18);
-  color: #60a5fa;
-  border-color: rgba(10, 132, 255, 0.3);
+  background: rgb(var(--ios-system-blue-rgb) / 0.18);
+  color: var(--ios-system-blue);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.3);
 }
 
 .roleBadge.roleSuperadmin {
@@ -247,16 +247,16 @@
 }
 
 .roleBadge.roleModerator {
-  background: rgba(14, 165, 233, 0.12);
-  color: #0284c7;
-  border: 1px solid rgba(14, 165, 233, 0.3);
+  background: rgb(var(--ios-system-blue-rgb) / 0.12);
+  color: var(--ios-system-blue);
+  border: 1px solid rgb(var(--ios-system-blue-rgb) / 0.3);
 }
 
 :global(.dark) .roleBadge.roleModerator,
 :global(body.theme-dark) .roleBadge.roleModerator {
-  background: rgba(56, 189, 248, 0.16);
+  background: rgb(var(--ios-system-blue-rgb) / 0.16);
   color: #7dd3fc;
-  border-color: rgba(56, 189, 248, 0.32);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.32);
 }
 
 .roleBadge.roleUser,
@@ -270,9 +270,9 @@
 :global(.dark) .roleBadge.roleStudent,
 :global(body.theme-dark) .roleBadge.roleUser,
 :global(body.theme-dark) .roleBadge.roleStudent {
-  background: rgba(10, 132, 255, 0.18);
-  color: #60a5fa;
-  border-color: rgba(10, 132, 255, 0.3);
+  background: rgb(var(--ios-system-blue-rgb) / 0.18);
+  color: var(--ios-system-blue);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.3);
 }
 
 .divider {
@@ -345,8 +345,8 @@
 }
 :global(.dark) .iconBlue,
 :global(body.theme-dark) .iconBlue {
-  background: rgba(10, 132, 255, 0.2);
-  color: #60a5fa;
+  background: rgb(var(--ios-system-blue-rgb) / 0.2);
+  color: var(--ios-system-blue);
 }
 
 .iconPurple {
@@ -606,8 +606,8 @@
 
 :global(.dark) .modalTitleIcon,
 :global(body.theme-dark) .modalTitleIcon {
-  background: rgba(10, 132, 255, 0.2);
-  color: #60a5fa;
+  background: rgb(var(--ios-system-blue-rgb) / 0.2);
+  color: var(--ios-system-blue);
 }
 
 .modalTitle {
@@ -761,7 +761,7 @@
 :global(body.theme-dark) .formInput:focus {
   background: var(--dark-surface-muted);
   border-color: var(--dark-accent);
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.25);
+  box-shadow: 0 0 0 3px rgb(var(--ios-system-blue-rgb) / 0.25);
 }
 
 .formHelp {
@@ -952,8 +952,8 @@
 
 :global(.dark) .accountCard,
 :global(body.theme-dark) .accountCard {
-  background: rgba(10, 132, 255, 0.08);
-  border-color: rgba(10, 132, 255, 0.2);
+  background: rgb(var(--ios-system-blue-rgb) / 0.08);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.2);
 }
 
 .accountRow {
@@ -1057,9 +1057,9 @@
 
 :global(.dark) .loginPillBtn:hover,
 :global(body.theme-dark) .loginPillBtn:hover {
-  background: rgba(10, 132, 255, 0.12);
+  background: rgb(var(--ios-system-blue-rgb) / 0.12);
   border-color: #2b95ff;
   color: #2b95ff;
-  box-shadow: 0 0 12px rgba(10, 132, 255, 0.2);
+  box-shadow: 0 0 12px rgb(var(--ios-system-blue-rgb) / 0.2);
 }
 

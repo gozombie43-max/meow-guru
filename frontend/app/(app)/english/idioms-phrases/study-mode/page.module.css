@@ -5,7 +5,7 @@
   --secondary-label: #6e6e73;
   --tertiary-label: #8e8e93;
   --separator: rgba(60,60,67,0.29);
-  --blue: #007aff;
+  --blue: var(--ios-system-blue);
   --green: #34c759;
   --fill: rgba(120,120,128,0.12);
   --shadow: rgba(0,0,0,0.06);
@@ -376,12 +376,12 @@
 .startIcon {
   width: 76px; height: 76px;
   border-radius: 22px;
-  background: linear-gradient(155deg, var(--blue), #5ac8fa);
+  background: linear-gradient(155deg, var(--blue), var(--ios-system-blue));
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 22px 0 22px;
-  box-shadow: 0 8px 20px rgba(0,122,255,0.28);
+  box-shadow: 0 8px 20px rgb(var(--ios-system-blue-rgb) / 0.28);
 }
 .startIcon svg { width: 38px; height: 38px; color: #ffffff; }
 .startTitle {
@@ -424,7 +424,7 @@
   min-height: 54px;
   border-radius: 14px;
   cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0,122,255,0.25);
+  box-shadow: 0 8px 20px rgb(var(--ios-system-blue-rgb) / 0.25);
   transition: transform .12s, opacity .15s;
 }
 .startCta:active { transform: scale(0.97); opacity: 0.85; }

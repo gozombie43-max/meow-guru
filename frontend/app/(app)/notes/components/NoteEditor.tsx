@@ -6,6 +6,8 @@ import dynamic from "next/dynamic";
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 import { API_BASE as API } from "@/lib/api-base";
 import { fetchWithRetry } from "@/lib/api/http";
+import { Sun, Moon } from "lucide-react";
+import styles from "./note-editor.module.css";
 
 
 
@@ -357,18 +359,18 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div style={s.root}>
+    <div className={styles.root} style={s.root}>
 
       {/* ── Top bar ── */}
-      <div data-ui-chrome="header" style={s.topBar}>
-        <div style={s.metaRow}>
+      <div data-ui-chrome="header" className={styles.topBar} style={s.topBar}>
+        <div className={styles.metaRow} style={s.metaRow}>
           <input
             style={s.titleInput}
             placeholder="Note title…"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
            aria-label="Note title…"/>
-          <select style={s.select} value={type} onChange={(e) => setType(e.target.value as Note["type"])}>
+          <select aria-label="Note type" style={s.select} value={type} onChange={(e) => setType(e.target.value as Note["type"])}>
             <option value="note">📝 Note</option>
             <option value="formula">📐 Formula</option>
             <option value="tip">💡 Tip & Trick</option>
@@ -387,13 +389,14 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
            aria-label="Tags (comma separated)"/>
         </div>
 
-        <div style={s.actionRow}>
+        <div className={styles.actionRow} style={s.actionRow}>
           {/* View tabs */}
-          <div style={s.tabGroup}>
+          <div className={styles.tabGroup} style={s.tabGroup}>
             {["editor", "split", "preview"].map((t) => (
               <button
                 data-ui-button="state"
                 key={t}
+                aria-pressed={activeTab === t}
                 style={{ ...s.tabBtn, ...(activeTab === t ? s.tabBtnActive : {}) }}
                 onClick={() => setActiveTab(t)}
               >
@@ -410,7 +413,7 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
             onClick={() => setTheme((t) => (t === "vs-dark" ? "light" : "vs-dark"))}
             title="Toggle editor theme"
           >
-            {theme === "vs-dark" ? "☀️ Light" : "🌙 Dark"}
+            {theme === "vs-dark" ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
           {/* Image upload */}
@@ -419,7 +422,8 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
             aria-label="Upload image"
             style={s.iconBtn}
             onClick={() => fileRef.current?.click()}
-            title="Upload image to Azure Blob Storage"
+            title="Add an image to your note"
+            disabled={uploading}
           >
             {uploading ? "⏳ Uploading…" : "🖼 Image"}
           </button>
@@ -436,6 +440,8 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
             data-ui-button="primary"
             style={{ ...s.saveBtn, ...(saved ? s.saveBtnSuccess : {}) }}
             onClick={handleSave}
+            disabled={saving || uploading}
+            aria-busy={saving}
           >
             {saving ? "Saving…" : saved ? "✓ Saved!" : "💾 Save Note"}
           </button>
@@ -443,7 +449,7 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
       </div>
 
       {/* ── Snippet bar ── */}
-      <div style={s.snippetBar}>
+      <div className={styles.snippetBar} style={s.snippetBar}>
         <span style={s.snippetLabel}>Insert:</span>
         {SNIPPETS.map((sn) => (
           <button
@@ -458,11 +464,11 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
       </div>
 
       {/* ── Workspace ── */}
-      <div style={s.workspace}>
+      <div className={styles.workspace} style={s.workspace}>
 
         {/* Monaco editor */}
         {(activeTab === "editor" || activeTab === "split") && (
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+          <div className={styles.pane} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
             <Editor
               height="100%"
               defaultLanguage="html"
@@ -487,11 +493,11 @@ export default function NoteEditor({ initialNote = null, onSaved }: { initialNot
         )}
 
         {/* Split divider */}
-        {activeTab === "split" && <div style={s.divider} />}
+        {activeTab === "split" && <div className={styles.divider} style={s.divider} />}
 
         {/* Live preview iframe */}
         {(activeTab === "preview" || activeTab === "split") && (
-          <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+          <div className={styles.pane} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
             <div style={s.previewLabel}>⚡ Live Preview</div>
             <iframe
               ref={previewRef}
@@ -519,7 +525,7 @@ const s: Record<string, React.CSSProperties> = {
     overflow:       "hidden",
   },
   topBar: {
-    padding:        "10px 16px 6px",
+    padding:        "calc(10px + var(--safe-top)) 16px 6px",
     background:     "var(--ui-surface)",
     borderBottom:   "1px solid var(--ui-border)",
     display:        "flex",
@@ -612,6 +618,7 @@ const s: Record<string, React.CSSProperties> = {
   },
   snippetLabel: { color: "var(--ui-secondary)", fontSize: 12, whiteSpace: "nowrap" },
   snippetBtn: {
+    flexShrink:   0,
     background:   "var(--ui-muted-surface)",
     border:       "1px solid var(--ui-border)",
     borderRadius: 6,

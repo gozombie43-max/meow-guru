@@ -20,7 +20,7 @@ export default function RootError({
   return (
     <main
       style={{
-        minHeight: '80vh',
+        minHeight: '80dvh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -34,9 +34,9 @@ export default function RootError({
           width: '100%',
           padding: '32px',
           borderRadius: '24px',
-          background: 'rgba(255, 255, 255, 0.85)',
+          background: 'var(--ui-surface)',
           backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(220, 230, 245, 0.8)',
+          border: '1px solid var(--ui-border)',
           boxShadow: '0 12px 36px rgba(0, 50, 100, 0.08)',
           textAlign: 'center',
         }}
@@ -61,7 +61,7 @@ export default function RootError({
           style={{
             fontSize: '1.4rem',
             fontWeight: 700,
-            color: '#0f172a',
+            color: 'var(--ui-text)',
             marginBottom: '8px',
           }}
         >
@@ -71,7 +71,7 @@ export default function RootError({
         <p
           style={{
             fontSize: '0.92rem',
-            color: '#64748b',
+            color: 'var(--ui-secondary)',
             lineHeight: 1.5,
             marginBottom: '24px',
           }}
@@ -79,8 +79,8 @@ export default function RootError({
           An unexpected error occurred while loading this page. You can try refreshing or returning to the home screen.
         </p>
 
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-          <button data-ui-button="state"
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button data-ui-button="primary"
             onClick={() => reset()}
             style={{
               display: 'inline-flex',
@@ -102,6 +102,7 @@ export default function RootError({
 
           <Link
             href="/"
+            data-ui-button="secondary"
             style={{
               display: 'inline-flex',
               alignItems: 'center',

@@ -42,7 +42,7 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 .tsd-trigger--card:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--tr-accent, #2563eb) 40%, var(--tr-border, #e3e6eb));
+  border-color: color-mix(in srgb, var(--tr-accent, var(--ios-system-blue)) 40%, var(--tr-border, #e3e6eb));
   background: var(--tr-surface, #fff);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
@@ -101,8 +101,8 @@
 
 /* Icon tile color variations */
 .tsd-icon-tile--blue {
-  background: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
+  background: rgb(var(--ios-system-blue-rgb) / 0.1);
+  color: var(--ios-system-blue);
 }
 .tsd-icon-tile--purple {
   background: rgba(147, 51, 234, 0.1);
@@ -122,8 +122,8 @@
 }
 
 .tsd-dark .tsd-icon-tile--blue {
-  background: rgba(96, 165, 250, 0.16);
-  color: #60a5fa;
+  background: rgb(var(--ios-system-blue-rgb) / 0.16);
+  color: var(--ios-system-blue);
 }
 .tsd-dark .tsd-icon-tile--purple {
   background: rgba(192, 132, 252, 0.16);
@@ -174,7 +174,7 @@
   color: var(--tr-text, #f0f2f5);
 }
 .tsd-trigger:hover:not(:disabled) {
-  border-color: var(--tr-accent, #2563eb);
+  border-color: var(--tr-accent, var(--ios-system-blue));
   background: var(--tr-muted, #f0f2f5);
 }
 .tsd-dark .tsd-trigger:hover:not(:disabled) {
@@ -182,8 +182,8 @@
   background: var(--tr-muted, #2a2e35);
 }
 .tsd-trigger--open {
-  border-color: var(--tr-accent, #2563eb) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tr-accent, #2563eb) 16%, transparent);
+  border-color: var(--tr-accent, var(--ios-system-blue)) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tr-accent, var(--ios-system-blue)) 16%, transparent);
 }
 .training-dark .tsd-trigger--open,
 .tsd-dark .tsd-trigger--open {
@@ -194,8 +194,8 @@
 .tsd-trigger:disabled { opacity: 0.45; cursor: not-allowed; }
 .tsd-trigger:focus-visible {
   outline: none;
-  border-color: var(--tr-accent, #2563eb);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tr-accent, #2563eb) 20%, transparent);
+  border-color: var(--tr-accent, var(--ios-system-blue));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tr-accent, var(--ios-system-blue)) 20%, transparent);
 }
 
 /* ── Trigger value text ──────────────────────────────────────────────────── */
@@ -216,7 +216,7 @@
   transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s;
 }
 .tsd-dark .tsd-chevron { color: var(--tr-secondary, #a5aebc); }
-.tsd-chevron--open { transform: rotate(180deg); color: var(--tr-accent, #2563eb); }
+.tsd-chevron--open { transform: rotate(180deg); color: var(--tr-accent, var(--ios-system-blue)); }
 .tsd-dark .tsd-chevron--open { color: var(--tr-accent, #85aaff); }
 
 /* ── Dropdown Popover (anchored absolutely to .tsd-field) ────────────────── */
@@ -304,9 +304,9 @@
 .tsd-dark .tsd-option--focused { background: var(--tr-muted, #2a2e35); }
 
 .tsd-option--selected {
-  color: var(--tr-accent, #2563eb);
+  color: var(--tr-accent, var(--ios-system-blue));
   font-weight: 600;
-  background: color-mix(in srgb, var(--tr-accent, #2563eb) 8%, transparent);
+  background: color-mix(in srgb, var(--tr-accent, var(--ios-system-blue)) 8%, transparent);
 }
 .training-dark .tsd-option--selected,
 .tsd-dark .tsd-option--selected {
@@ -314,7 +314,7 @@
   background: color-mix(in srgb, var(--tr-accent, #85aaff) 10%, transparent);
 }
 .tsd-option--selected.tsd-option--focused {
-  background: color-mix(in srgb, var(--tr-accent, #2563eb) 14%, transparent);
+  background: color-mix(in srgb, var(--tr-accent, var(--ios-system-blue)) 14%, transparent);
 }
 .training-dark .tsd-option--selected.tsd-option--focused,
 .tsd-dark .tsd-option--selected.tsd-option--focused {
@@ -329,7 +329,7 @@
   white-space: nowrap;
 }
 
-.tsd-check { flex-shrink: 0; color: var(--tr-accent, #2563eb); }
+.tsd-check { flex-shrink: 0; color: var(--tr-accent, var(--ios-system-blue)); }
 .training-dark .tsd-check,
 .tsd-dark .tsd-check { color: var(--tr-accent, #85aaff); }
 

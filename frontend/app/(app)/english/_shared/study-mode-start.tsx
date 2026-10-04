@@ -263,7 +263,7 @@ export default function StudyModeStartView({
           --text-primary: #ffffff;
           --text-secondary: rgba(235, 235, 245, 0.6);
           --text-tertiary: rgba(235, 235, 245, 0.38);
-          --blue-ios: #007aff;
+          --blue-ios: var(--ios-system-blue);
           --green-ios: #34c759;
 
           width: 100vw;
@@ -373,7 +373,7 @@ export default function StudyModeStartView({
           align-items: center;
           justify-content: center;
           margin: 0 auto 16px auto;
-          box-shadow: 0 4px 16px rgba(0, 122, 255, 0.35);
+          box-shadow: 0 4px 16px rgb(var(--ios-system-blue-rgb) / 0.35);
         }
 
         .study-mobile-hero-heading {
@@ -476,7 +476,7 @@ export default function StudyModeStartView({
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 16px rgba(0, 122, 255, 0.35);
+          box-shadow: 0 4px 16px rgb(var(--ios-system-blue-rgb) / 0.35);
           transition: transform 0.12s ease, filter 0.12s ease;
           -webkit-tap-highlight-color: transparent;
         }
@@ -629,7 +629,7 @@ export default function StudyModeStartView({
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          box-shadow: 0 4px 16px rgba(0, 122, 255, 0.35);
+          box-shadow: 0 4px 16px rgb(var(--ios-system-blue-rgb) / 0.35);
         }
 
         .study-mac-header-text {
@@ -707,7 +707,7 @@ export default function StudyModeStartView({
           border: none;
           cursor: pointer;
           width: fit-content;
-          box-shadow: 0 4px 14px rgba(0, 122, 255, 0.35);
+          box-shadow: 0 4px 14px rgb(var(--ios-system-blue-rgb) / 0.35);
           transition: transform 0.12s ease, filter 0.12s ease;
         }
 

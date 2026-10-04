@@ -83,13 +83,11 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
   slug,
   name,
   icon: FallbackIcon,
-  accent,
   detail,
 }: MobileTopicCardProps) {
   const router = useRouter();
   const count = detail?.questionCount;
   const isComingSoon = count === 0;
-  const progressPct = detail?.progress ?? 0;
   const userSolved = detail?.userSolved ?? 0;
 
   return (
@@ -101,7 +99,6 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
       onTouchStart={() => { if (!isComingSoon) router.prefetch(href); }}
       data-hub-part="mobileTopicRow"
       className={`${styles.card} ${isComingSoon ? styles.cardComingSoon : ""}`}
-      style={{ "--accent": accent } as React.CSSProperties}
       aria-label={`${name}${isComingSoon ? ", Coming soon" : count !== undefined ? `, ${count} questions` : ""}`}
       aria-disabled={isComingSoon ? true : undefined}
       tabIndex={isComingSoon ? -1 : undefined}
@@ -127,20 +124,6 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
         </span>
       </div>
 
-      {/* 2. Bottom Section: Progress bar for active topics */}
-      <div className={styles.cardFooter}>
-        {!isComingSoon && (
-          <div className={styles.progressRow}>
-            <div className={styles.progressTrack}>
-              <div
-                className={styles.progressBar}
-                style={{ width: `${Math.min(100, Math.max(0, progressPct))}%` }}
-              />
-            </div>
-            <span className={styles.progressLabel}>{progressPct}%</span>
-          </div>
-        )}
-      </div>
     </Link>
   );
 });

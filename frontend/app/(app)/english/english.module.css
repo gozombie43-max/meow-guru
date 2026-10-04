@@ -64,7 +64,7 @@
   --mac-red: #ff3b30;
   --mac-purple: #af52de;
   --mac-indigo: #5856d6;
-  --mac-teal: #5ac8fa;
+  --mac-teal: var(--ios-system-blue);
   --mac-text-primary: var(--light-text);
   --mac-text-secondary: var(--light-text-secondary);
   --mac-text-tertiary: var(--light-text-muted);
@@ -99,7 +99,7 @@
   --mac-surface-hover: var(--dark-surface-muted);
   --mac-surface-active: var(--dark-surface-muted);
   --mac-border: var(--dark-border);
-  --mac-border-hover: rgba(10, 132, 255, 0.35);
+  --mac-border-hover: rgb(var(--ios-system-blue-rgb) / 0.35);
   --mac-border-focus: var(--dark-accent);
   --mac-blue: var(--dark-accent);
   --mac-blue-hover: var(--dark-accent-hover);
@@ -113,10 +113,10 @@
   --mac-card-border: var(--dark-border);
   --mac-card-hover-bg: var(--dark-surface-muted);
   --mac-card-hover-border: var(--dark-border);
-  --mac-card-hover-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(10, 132, 255, 0.2);
-  --mac-card-selected-bg: rgba(10, 132, 255, 0.18);
+  --mac-card-hover-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 0 1px rgb(var(--ios-system-blue-rgb) / 0.2);
+  --mac-card-selected-bg: rgb(var(--ios-system-blue-rgb) / 0.18);
   --mac-card-selected-border: var(--dark-border);
-  --mac-card-selected-shadow: 0 0 0 1.5px var(--dark-accent), 0 4px 16px rgba(10, 132, 255, 0.3);
+  --mac-card-selected-shadow: 0 0 0 1.5px var(--dark-accent), 0 4px 16px rgb(var(--ios-system-blue-rgb) / 0.3);
 
   --mac-icon-box-bg: linear-gradient(150deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 100%);
   --mac-icon-box-border: rgba(255, 255, 255, 0.14);
@@ -1069,7 +1069,7 @@
   width: 26px;
   height: 26px;
   border-radius: 7.5px;
-  background: var(--card-accent, #007AFF) !important;
+  background: var(--card-accent, var(--ios-system-blue)) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.18);
   display: flex;
@@ -1086,7 +1086,7 @@
 
 :global(body.theme-dark) .modeCardIcon,
 :global(html.theme-dark) .modeCardIcon {
-  background: var(--card-accent, #007AFF) !important;
+  background: var(--card-accent, var(--ios-system-blue)) !important;
   border-color: rgba(255, 255, 255, 0.18) !important;
   color: #ffffff !important;
 }
@@ -1172,7 +1172,7 @@
 .modeCardQsText {
   font-size: 11.5px;
   font-weight: 750;
-  color: #007AFF !important;
+  color: var(--ios-system-blue) !important;
   letter-spacing: -0.01em;
   white-space: nowrap;
   line-height: 1;
@@ -1188,7 +1188,7 @@
 
 :global(body.theme-dark) .modeCardQsText,
 :global(html.theme-dark) .modeCardQsText {
-  color: #007AFF !important;
+  color: var(--ios-system-blue) !important;
 }
 
 /* ── Resources List ── */
@@ -1413,8 +1413,8 @@
 }
 
 .mobileSearchInput:focus {
-  border-color: #007aff;
-  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.25), 0 2px 8px rgba(0, 0, 0, 0.25);
+  border-color: var(--ios-system-blue);
+  box-shadow: 0 0 0 2px rgb(var(--ios-system-blue-rgb) / 0.25), 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 :global(body.theme-light) .mobileSearchInput {
@@ -1425,8 +1425,8 @@
 }
 
 :global(body.theme-light) .mobileSearchInput:focus {
-  border-color: #007aff !important;
-  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2), 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  border-color: var(--ios-system-blue) !important;
+  box-shadow: 0 0 0 2px rgb(var(--ios-system-blue-rgb) / 0.2), 0 2px 6px rgba(0, 0, 0, 0.08) !important;
 }
 
 .mobileSearchRightActions {
@@ -1615,20 +1615,20 @@
   left: 6px;
   right: 6px;
   height: 2.5px;
-  background: #0A84FF; /* iOS Blue */
+  background: var(--ios-system-blue); /* iOS Blue */
   border-radius: 3px 3px 0 0;
   pointer-events: none;
 }
 
 :global(body.theme-light) .mobileTabActive {
   background: transparent !important;
-  color: #007AFF !important;
+  color: var(--ios-system-blue) !important;
   border: none !important;
   box-shadow: none !important;
 }
 
 :global(body.theme-light) .mobileTabActive::after {
-  background: #007AFF !important;
+  background: var(--ios-system-blue) !important;
 }
 
 .mobileCountRow {
@@ -1669,7 +1669,7 @@
 }
 
 .mobileResetLink {
-  color: #007AFF;
+  color: var(--ios-system-blue);
   font-size: 0.78rem;
   font-weight: 600;
   background: none;
@@ -1812,32 +1812,32 @@
   justify-content: space-between;
   padding: 9px 12px;
   border-radius: 11px;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: linear-gradient(135deg, rgb(var(--ios-system-blue-rgb) / 0.12) 0%, rgba(99, 102, 241, 0.12) 100%);
+  border: 1px solid rgb(var(--ios-system-blue-rgb) / 0.35);
   text-decoration: none;
   color: var(--mac-text-primary);
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.08);
+  box-shadow: 0 2px 8px rgb(var(--ios-system-blue-rgb) / 0.08);
   cursor: pointer;
 }
 
 .studyModeBanner:hover {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%);
-  border-color: rgba(56, 189, 248, 0.6);
+  background: linear-gradient(135deg, rgb(var(--ios-system-blue-rgb) / 0.2) 0%, rgba(99, 102, 241, 0.2) 100%);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.6);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.18);
+  box-shadow: 0 4px 14px rgb(var(--ios-system-blue-rgb) / 0.18);
 }
 
 :global(body.theme-dark) .studyModeBanner {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.16) 0%, rgba(99, 102, 241, 0.16) 100%);
-  border-color: rgba(56, 189, 248, 0.32);
+  background: linear-gradient(135deg, rgb(var(--ios-system-blue-rgb) / 0.16) 0%, rgba(99, 102, 241, 0.16) 100%);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.32);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }
 
 :global(body.theme-dark) .studyModeBanner:hover {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(99, 102, 241, 0.25) 100%);
-  border-color: rgba(56, 189, 248, 0.65);
-  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.28);
+  background: linear-gradient(135deg, rgb(var(--ios-system-blue-rgb) / 0.25) 0%, rgba(99, 102, 241, 0.25) 100%);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.65);
+  box-shadow: 0 4px 16px rgb(var(--ios-system-blue-rgb) / 0.28);
 }
 
 .studyModeBannerLeft {
@@ -1851,13 +1851,13 @@
   width: 32px;
   height: 32px;
   border-radius: 8.5px;
-  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  background: linear-gradient(135deg, var(--ios-system-blue), #6366f1);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.35);
+  box-shadow: 0 2px 6px rgb(var(--ios-system-blue-rgb) / 0.35);
 }
 
 .studyModeInfo {
@@ -1872,11 +1872,11 @@
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #0284c7;
+  color: var(--ios-system-blue);
 }
 
 :global(body.theme-dark) .studyModeKicker {
-  color: #38bdf8;
+  color: var(--ios-system-blue);
 }
 
 .studyModeTitle {

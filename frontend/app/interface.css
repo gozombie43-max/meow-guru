@@ -29,6 +29,8 @@
 }
 
 .theme-dark, [data-theme="dark"], .training-dark {
+  --ios-system-blue: #0a84ff;
+  --ios-system-blue-rgb: 10 132 255;
   --ui-header-surface: var(--dark-canvas);
   --ui-surface: var(--dark-surface);
   --ui-muted-surface: var(--dark-surface-muted);
@@ -41,6 +43,8 @@
 }
 
 .theme-light, [data-theme="light"] {
+  --ios-system-blue: #007aff;
+  --ios-system-blue-rgb: 0 122 255;
   --ui-header-surface: var(--light-surface);
   --ui-surface: var(--light-surface);
   --ui-muted-surface: var(--light-surface-muted);

@@ -23,8 +23,8 @@ export const studyModeLoadingStyles = css`
           .spinner {
             width: 38px;
             height: 38px;
-            border: 3px solid rgba(0, 122, 255, 0.2);
-            border-top-color: #007aff;
+            border: 3px solid rgb(var(--ios-system-blue-rgb) / 0.2);
+            border-top-color: var(--ios-system-blue);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
           }
@@ -50,8 +50,8 @@ export const studyModeComparisonStyles = css`
           --table-header: rgba(255, 255, 255, 0.03);
           --table-alt: rgba(255, 255, 255, 0.02);
           --quote-bg: rgba(255, 255, 255, 0.04);
-          --quote-border: #007aff;
-          --system-blue: #007aff;
+          --quote-border: var(--ios-system-blue);
+          --system-blue: var(--ios-system-blue);
 
           min-height: 100dvh;
           height: 100dvh;
@@ -78,8 +78,8 @@ export const studyModeComparisonStyles = css`
           --table-header: rgba(0, 0, 0, 0.025);
           --table-alt: rgba(0, 0, 0, 0.015);
           --quote-bg: rgba(0, 0, 0, 0.03);
-          --quote-border: #007aff;
-          --system-blue: #007aff;
+          --quote-border: var(--ios-system-blue);
+          --system-blue: var(--ios-system-blue);
         }
 
         /* ── macOS Application Window Frame ── */
@@ -161,7 +161,7 @@ export const studyModeComparisonStyles = css`
         }
         .mobile-back-btn:active {
           transform: scale(0.95);
-          background: rgba(0, 122, 255, 0.14);
+          background: rgb(var(--ios-system-blue-rgb) / 0.14);
         }
         .mobile-back-text {
           line-height: 1;
@@ -220,7 +220,7 @@ export const studyModeComparisonStyles = css`
         }
         .mobile-counter-filter-btn:active {
           transform: scale(0.95);
-          background: rgba(0, 122, 255, 0.14);
+          background: rgb(var(--ios-system-blue-rgb) / 0.14);
         }
         .counter-curr { font-weight: 700; }
         .counter-sep { opacity: 0.7; font-weight: 800; }
@@ -306,15 +306,15 @@ export const studyModeComparisonStyles = css`
 
         .mobile-footer-btn:active:not(:disabled) {
           transform: scale(0.96);
-          background: rgba(0, 122, 255, 0.25);
-          border-color: rgba(0, 122, 255, 0.5);
-          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+          background: rgb(var(--ios-system-blue-rgb) / 0.25);
+          border-color: rgb(var(--ios-system-blue-rgb) / 0.5);
+          box-shadow: 0 2px 8px rgb(var(--ios-system-blue-rgb) / 0.3);
         }
 
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn:active:not(:disabled) {
-          background: rgba(0, 122, 255, 0.15);
-          border-color: rgba(0, 122, 255, 0.4);
-          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+          background: rgb(var(--ios-system-blue-rgb) / 0.15);
+          border-color: rgb(var(--ios-system-blue-rgb) / 0.4);
+          box-shadow: 0 2px 8px rgb(var(--ios-system-blue-rgb) / 0.2);
         }
 
         .mobile-footer-btn:disabled {
@@ -456,9 +456,9 @@ export const studyModeComparisonStyles = css`
           left: 12%;
           right: 12%;
           height: 3px;
-          background: #007aff;
+          background: var(--ios-system-blue);
           border-radius: 3px 3px 0 0;
-          box-shadow: 0 1px 6px rgba(0, 122, 255, 0.45);
+          box-shadow: 0 1px 6px rgb(var(--ios-system-blue-rgb) / 0.45);
         }
 
         .m-tab-badge {
@@ -474,9 +474,9 @@ export const studyModeComparisonStyles = css`
         }
 
         .m-tab.active .m-tab-badge {
-          background: rgba(0, 122, 255, 0.14);
-          color: #007aff;
-          border-color: rgba(0, 122, 255, 0.3);
+          background: rgb(var(--ios-system-blue-rgb) / 0.14);
+          color: var(--ios-system-blue);
+          border-color: rgb(var(--ios-system-blue-rgb) / 0.3);
         }
 
         .ns-table-container {
@@ -622,7 +622,7 @@ export const studyModeComparisonStyles = css`
         }
         .modal-top-back-btn:active {
           transform: scale(0.95);
-          background: rgba(0, 122, 255, 0.14);
+          background: rgb(var(--ios-system-blue-rgb) / 0.14);
         }
 
         .modal-top-title {
@@ -738,7 +738,7 @@ export const studyModeComparisonStyles = css`
           background: var(--system-blue);
           color: #ffffff;
           border-color: var(--system-blue);
-          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.35);
+          box-shadow: 0 2px 8px rgb(var(--ios-system-blue-rgb) / 0.35);
         }
 
         .modal-status-bar {
@@ -776,11 +776,11 @@ export const studyModeComparisonStyles = css`
         }
         .modal-word-item:active {
           transform: scale(0.985);
-          background: rgba(0, 122, 255, 0.1);
+          background: rgb(var(--ios-system-blue-rgb) / 0.1);
         }
         .modal-word-item.active {
-          background: rgba(0, 122, 255, 0.12);
-          border-color: rgba(0, 122, 255, 0.4);
+          background: rgb(var(--ios-system-blue-rgb) / 0.12);
+          border-color: rgb(var(--ios-system-blue-rgb) / 0.4);
         }
 
         .word-item-left {
@@ -1073,7 +1073,7 @@ export const studyModeComparisonStyles = css`
           }
 
           .letter-filter-btn:hover {
-            background: rgba(0, 122, 255, 0.12);
+            background: rgb(var(--ios-system-blue-rgb) / 0.12);
             border-color: var(--system-blue);
             color: var(--system-blue);
           }
@@ -1085,7 +1085,7 @@ export const studyModeComparisonStyles = css`
           }
 
           .letter-filter-btn.open {
-            background: rgba(0, 122, 255, 0.15);
+            background: rgb(var(--ios-system-blue-rgb) / 0.15);
             border-color: var(--system-blue);
             color: var(--system-blue);
           }
@@ -1155,7 +1155,7 @@ export const studyModeComparisonStyles = css`
           }
 
           .letter-tile:hover {
-            background: rgba(0, 122, 255, 0.15);
+            background: rgb(var(--ios-system-blue-rgb) / 0.15);
             color: var(--system-blue);
             border-color: var(--system-blue);
           }

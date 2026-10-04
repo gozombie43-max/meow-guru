@@ -26,7 +26,7 @@
 
 .battle-lobby-shell { width: min(100%, 1080px); display: grid; gap: 16px; margin: 0 auto; padding: 20px 16px 28px; }
 .battle-intro { padding: 4px 4px 8px; }
-.battle-hero-icon { width: 42px; height: 42px; display: grid; place-items: center; margin-bottom: 12px; border-radius: 13px; color: #fff; background: var(--battle-accent); box-shadow: 0 10px 24px rgba(0, 122, 255, .25); transform: rotate(-3deg); }
+.battle-hero-icon { width: 42px; height: 42px; display: grid; place-items: center; margin-bottom: 12px; border-radius: 13px; color: #fff; background: var(--battle-accent); box-shadow: 0 10px 24px rgb(var(--ios-system-blue-rgb) / .25); transform: rotate(-3deg); }
 .battle-hero-icon svg { width: 22px; }
 .battle-intro h1, .battle-auth-card h1, .battle-waiting-card h1, .battle-result-hero h1 { margin: 6px 0 8px; font-size: clamp(28px, 6vw, 42px); line-height: 1.08; letter-spacing: -.04em; }
 .battle-intro > p:last-of-type, .battle-auth-card > p, .battle-waiting-card > p, .battle-result-hero > p { max-width: 480px; margin: 0; color: var(--battle-muted); font-size: 13.5px; line-height: 1.55; }
@@ -49,7 +49,7 @@
 .battle-field { display: grid; gap: 6px; margin-top: 12px; }
 .battle-field > span, .battle-count-field legend, .battle-invite > label { color: #514b5c; font-size: var(--ui-font-meta); font-weight: 800; }
 .battle-field input, .battle-field select { width: 100%; height: 44px; padding: 0 13px; border: 1px solid #ddd8e5; border-radius: 11px; outline: none; color: var(--battle-ink); background: #fff; font-size: 13.5px; }
-.battle-field input:focus, .battle-field select:focus, .battle-invite input:focus { border-color: var(--battle-accent); box-shadow: 0 0 0 3px rgba(0, 122, 255, .1); }
+.battle-field input:focus, .battle-field select:focus, .battle-invite input:focus { border-color: var(--battle-accent); box-shadow: 0 0 0 3px rgb(var(--ios-system-blue-rgb) / .1); }
 .battle-field-grid { display: grid; grid-template-columns: 1fr; gap: 0 12px; }
 .battle-code-field input { text-align: center; font-size: 24px; font-weight: 850; letter-spacing: .3em; font-variant-numeric: tabular-nums; }
 .battle-count-field { margin: 12px 0 0; padding: 0; border: 0; }
@@ -82,7 +82,7 @@
 .battle-waiting-page { background: radial-gradient(circle at 50% 10%, #e5f0ff, #f7f5fa 50%); }
 .battle-waiting-card { width: min(calc(100% - 32px), 520px); margin: auto; padding: 26px 22px; border-radius: 24px; text-align: center; }
 .battle-pulse { position: relative; width: 54px; height: 54px; display: grid; place-items: center; margin: 0 auto 16px; border-radius: 50%; color: #fff; background: var(--battle-accent); }
-.battle-pulse::before { content: ""; position: absolute; inset: -7px; border: 1px solid rgba(0, 122, 255, .28); border-radius: inherit; animation: battle-pulse 1.8s ease-out infinite; }
+.battle-pulse::before { content: ""; position: absolute; inset: -7px; border: 1px solid rgb(var(--ios-system-blue-rgb) / .28); border-radius: inherit; animation: battle-pulse 1.8s ease-out infinite; }
 .battle-pulse svg { width: 23px; }
 @keyframes battle-pulse { 70%, 100% { opacity: 0; transform: scale(1.22); } }
 .battle-room-code { width: 100%; display: grid; justify-items: center; gap: 3px; margin: 20px 0; padding: 14px; border: 1px dashed #8fbaed; border-radius: 16px; background: #edf5ff; }
@@ -165,7 +165,7 @@
 .battle-result-page { background: radial-gradient(circle at 50% 8%, #e1eeff, #f7f5fa 48%); }
 .battle-result-shell { position: relative; z-index: 2; width: min(calc(100% - 32px), 640px); margin: 24px auto 0; }
 .battle-result-hero { text-align: center; }
-.battle-result-hero > span { width: 56px; height: 56px; display: grid; place-items: center; margin: 0 auto 14px; border-radius: 18px; color: #fff; background: var(--battle-accent); box-shadow: 0 14px 36px rgba(0, 122, 255, .28); transform: rotate(-4deg); }
+.battle-result-hero > span { width: 56px; height: 56px; display: grid; place-items: center; margin: 0 auto 14px; border-radius: 18px; color: #fff; background: var(--battle-accent); box-shadow: 0 14px 36px rgb(var(--ios-system-blue-rgb) / .28); transform: rotate(-4deg); }
 .battle-result-page.is-win .battle-result-hero > span { background: #d38a13; box-shadow: 0 14px 36px rgba(211, 138, 19, .25); }
 .battle-result-hero svg { width: 26px; }
 .battle-result-hero > p { margin-right: auto; margin-left: auto; }
@@ -358,7 +358,7 @@ html.theme-dark .battle-secondary-button { border-color: #48484a; color: var(--b
 html.theme-dark .battle-field input,
 html.theme-dark .battle-field select,
 html.theme-dark .battle-invite input { color-scheme: dark; }
-html.theme-dark .battle-options > button.is-selected { border-color: var(--battle-accent); background: rgba(10, 132, 255, .16); }
+html.theme-dark .battle-options > button.is-selected { border-color: var(--battle-accent); background: rgb(var(--ios-system-blue-rgb) / .16); }
 html.theme-dark .battle-options > button.is-correct { border-color: var(--battle-green); background: rgba(48, 209, 88, .15); }
 html.theme-dark .battle-options > button.is-wrong { border-color: var(--battle-red); background: rgba(255, 105, 97, .15); }
 html.theme-dark .battle-player.is-opponent .battle-avatar { color: #ffb86c; background: #4a3320; }
@@ -370,7 +370,7 @@ html.theme-dark .battle-waiting-page,
 html.theme-dark .battle-result-page { background: radial-gradient(circle at 50% 8%, #101f30, var(--dark-canvas) 55%); }
 
 .battle-route-shell .battle-aux-page :is(.text-violet-700, .text-violet-600) { color: #0062cc; }
-.battle-route-shell .battle-aux-page :is(.bg-violet-700, .bg-violet-600) { background: #006bd6; }
+.battle-route-shell .battle-aux-page :is(.bg-violet-700, .bg-violet-600) { background: var(--ios-system-blue); }
 .battle-route-shell .battle-aux-page .bg-violet-50 { background: #e8f2ff; }
 .battle-route-shell .battle-aux-page .bg-violet-200 { background: #bbd6f7; }
 .battle-route-shell .battle-aux-page .border-violet-100 { border-color: #bbd6f7; }
@@ -382,7 +382,7 @@ html.theme-dark .battle-aux-page .bg-slate-50 { background: var(--dark-canvas); 
 html.theme-dark .battle-aux-page .bg-white { background: var(--dark-surface); }
 html.theme-dark .battle-aux-page .bg-slate-200,
 html.theme-dark .battle-aux-page .bg-slate-100 { background: var(--dark-surface-muted); }
-html.theme-dark .battle-aux-page .bg-violet-50 { background: rgba(10, 132, 255, .14); }
+html.theme-dark .battle-aux-page .bg-violet-50 { background: rgb(var(--ios-system-blue-rgb) / .14); }
 html.theme-dark .battle-aux-page .bg-emerald-50 { background: rgba(48, 209, 88, .14); }
 html.theme-dark .battle-aux-page .bg-amber-50 { background: rgba(255, 214, 10, .14); }
 html.theme-dark .battle-aux-page .border-slate-200,
@@ -403,7 +403,7 @@ html.theme-dark,
 body.theme-dark {
   --battle-ink: #ffffff;
   --battle-muted: rgba(235, 235, 245, 0.65);
-  --battle-accent: #0a84ff;
+  --battle-accent: var(--ios-system-blue);
   --battle-accent-strong: #0070e0;
   --battle-surface: #1c1c1e;
   --battle-line: rgba(255, 255, 255, 0.12);
@@ -429,8 +429,8 @@ html.theme-dark .battle-count-field button.is-active { color: #9dccff; border-co
 html.theme-dark .battle-invite input { color: var(--battle-ink); background: transparent; }
 html.theme-dark .battle-route-shell input::placeholder { color: var(--dark-text-muted); opacity: 1; }
 html.theme-dark .battle-invite button,
-html.theme-dark .battle-primary-button { color: #fff; background: #006bd6; box-shadow: none; }
-html.theme-dark .battle-primary-button:not(:disabled):hover { background: #007aff; box-shadow: none; }
+html.theme-dark .battle-primary-button { color: #fff; background: var(--ios-system-blue); box-shadow: none; }
+html.theme-dark .battle-primary-button:not(:disabled):hover { background: var(--ios-system-blue); box-shadow: none; }
 html.theme-dark .battle-icon-button:hover { background: var(--dark-surface-muted); }
 html.theme-dark .battle-route-shell :is(button, a, input, select):focus-visible { outline: 2px solid var(--dark-accent); outline-offset: 3px; }
 html.theme-dark .battle-notice { color: #ffd980; background: #332b1b; border-color: #705c32; }
@@ -472,3 +472,12 @@ html.theme-dark .battle-badge-user.is-me.is-loss { color: #ff8982; background: r
 html.theme-dark .battle-badge-user.is-opp.is-win { color: #ffb86c; background: #4a3320; border-color: #795029; }
 html.theme-dark .battle-badge-user.is-opp.is-loss { color: #b8b8bd; background: var(--dark-surface-muted); border-color: #48484a; }
 
+
+@media (max-width: 767px) {
+  html.theme-dark .battle-setup-card { border-color: transparent; border-radius: 20px; padding: 20px; box-shadow: none; }
+  html.theme-dark .battle-tabs button.is-active { background: var(--dark-accent-soft); color: var(--dark-text); box-shadow: none; }
+  html.theme-dark .battle-quick-links a { border-color: transparent; padding: 14px 12px; }
+  html.theme-dark .battle-quick-links small { color: var(--dark-text-secondary); }
+  html.theme-dark .battle-field :is(input, select) { font-size: 16px; }
+  html.theme-dark .battle-kicker { letter-spacing: .08em; color: var(--dark-text-secondary); }
+}

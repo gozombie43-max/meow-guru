@@ -127,7 +127,7 @@
 }
 
 .tabActive .tabCount {
-  background: #3b82f6;
+  background: var(--ios-system-blue);
   color: #ffffff;
 }
 
@@ -178,8 +178,8 @@
 }
 
 .statusPending {
-  background: rgba(59, 130, 246, 0.12);
-  color: #3b82f6;
+  background: rgb(var(--ios-system-blue-rgb) / 0.12);
+  color: var(--ios-system-blue);
 }
 
 .statusProcessing {
@@ -232,8 +232,8 @@
   font-size: 11px;
   padding: 2px 7px;
   border-radius: 5px;
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: rgb(var(--ios-system-blue-rgb) / 0.1);
+  color: var(--ios-system-blue);
 }
 
 .metaError {

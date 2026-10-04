@@ -8,6 +8,7 @@ import { startSessionInvalidationSubscriber, closeSessionInvalidationSubscriber 
 import { checkReadiness } from './infrastructure/readiness.js';
 import { startCacheInvalidationSubscriber, closeCacheInvalidationSubscriber } from './infrastructure/cacheInvalidation.js';
 import { startRuntimeMetrics, logger } from './infrastructure/logger.js';
+import { listenServer } from './infrastructure/httpListen.js';
 
 let socketServer = null, httpServer;
 let isShuttingDown = false, isReady = false;
@@ -180,11 +181,9 @@ async function initWithRetry() {
       logger.info('Embedded maintenance and attachment workers ready');
     }
 
+    await listenServer(httpServer, PORT);
     isReady = true;
-
-    httpServer.listen(PORT, '0.0.0.0', () => {
-      logger.info({ port: PORT, quizOnlyMode, embeddedWorkers: runEmbeddedWorkers }, 'server ready');
-    });
+    logger.info({ port: PORT, quizOnlyMode, embeddedWorkers: runEmbeddedWorkers }, 'server ready');
   } catch (err) {
     isReady = false;
 
@@ -192,7 +191,9 @@ async function initWithRetry() {
       return;
     }
 
-    logger.error({ err }, 'API startup failed');
+    logger.error({ err, port: PORT }, err.code === 'EADDRINUSE'
+      ? `Port ${PORT} is already in use. Stop the existing backend before starting another instance.`
+      : 'API startup failed');
     await gracefulShutdown('startup failure', 1);
   }
 }

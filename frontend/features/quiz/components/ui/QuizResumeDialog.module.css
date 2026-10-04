@@ -72,8 +72,8 @@
   height: 56px;
   margin: 0 auto 14px;
   border-radius: 16px;
-  background: color-mix(in srgb, var(--ui-accent, #0a84ff) 15%, transparent);
-  color: var(--ui-accent, #0a84ff);
+  background: color-mix(in srgb, var(--ui-accent, var(--ios-system-blue)) 15%, transparent);
+  color: var(--ui-accent, var(--ios-system-blue));
 }
 .content h2 {
   margin: 0;
@@ -123,8 +123,8 @@
   background: rgba(0, 0, 0, 0.1);
 }
 .progress::-webkit-progress-bar { background: transparent; border-radius: 8px; }
-.progress::-webkit-progress-value { background: var(--ui-accent, #0a84ff); border-radius: 8px; }
-.progress::-moz-progress-bar { background: var(--ui-accent, #0a84ff); border-radius: 8px; }
+.progress::-webkit-progress-value { background: var(--ui-accent, var(--ios-system-blue)); border-radius: 8px; }
+.progress::-moz-progress-bar { background: var(--ui-accent, var(--ios-system-blue)); border-radius: 8px; }
 
 .actions { display: grid; gap: 8px; margin-top: 18px; }
 .actions button { width: 100%; cursor: pointer; min-height: 46px; border-radius: 12px; font-weight: 600; font-size: 14px; }

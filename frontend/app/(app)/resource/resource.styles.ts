@@ -302,7 +302,7 @@ export const resourcePageStyles = css.global`
           left: 0;
           right: 0;
           height: 2.5px;
-          background: #2563EB;
+          background: var(--ios-system-blue);
           border-radius: 2px;
         }
 
@@ -534,7 +534,7 @@ export const resourcePageStyles = css.global`
           font-weight: 600;
           border: none;
           cursor: pointer;
-          box-shadow: 0 4px 14px rgba(0, 122, 255, 0.35);
+          box-shadow: 0 4px 14px rgb(var(--ios-system-blue-rgb) / 0.35);
           transition: transform 0.15s ease, opacity 0.15s ease;
         }
 
@@ -554,7 +554,7 @@ export const resourcePageStyles = css.global`
           background: var(--accent);
           border: none;
           color: #ffffff;
-          box-shadow: 0 4px 18px rgba(0, 122, 255, 0.44), 0 2px 6px rgba(0, 122, 255, 0.25);
+          box-shadow: 0 4px 18px rgb(var(--ios-system-blue-rgb) / 0.44), 0 2px 6px rgb(var(--ios-system-blue-rgb) / 0.25);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -566,7 +566,7 @@ export const resourcePageStyles = css.global`
 
         .res-fab:hover {
           transform: scale(1.05);
-          box-shadow: 0 6px 22px rgba(0, 122, 255, 0.55);
+          box-shadow: 0 6px 22px rgb(var(--ios-system-blue-rgb) / 0.55);
         }
 
         .res-fab:active {
@@ -767,5 +767,13 @@ export const resourcePageStyles = css.global`
         :global(body.theme-light) .res-card:active {
           background: #ebeef2;
           border-color: rgba(0, 0, 0, 0.16);
+        }
+
+        @media (max-width: 767px) {
+          :global(html.theme-dark) .res-empty-state { margin-top: 20px; padding: 32px 20px; border-radius: 20px; background: var(--dark-surface); }
+          :global(html.theme-dark) .res-empty-btn { background: var(--dark-action); box-shadow: none; min-height: 44px; }
+          :global(html.theme-dark) .res-card { border-color: transparent; border-radius: 16px; }
+          :global(html.theme-dark) .res-card-title { line-height: 1.45; }
+          :global(html.theme-dark) .res-search-input { font-size: 16px; }
         }
       `;

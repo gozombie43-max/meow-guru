@@ -6,7 +6,7 @@
   --tfp-border: var(--light-border, #e3e6eb);
   --tfp-text: var(--light-text, #1c2533);
   --tfp-secondary: var(--light-text-secondary, #647084);
-  --tfp-accent: var(--light-accent, #2563eb);
+  --tfp-accent: var(--light-accent, var(--ios-system-blue));
   position: fixed;
   inset: 0;
   z-index: 150;

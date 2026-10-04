@@ -1,329 +1,109 @@
-// app/notes/page.jsx
 "use client";
 import type { Note } from "@/features/notes/types";
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { BookOpen, FileText, Pencil, Plus, Trash2 } from "lucide-react";
 import { fetchWithRetry } from "@/lib/api/http";
-
 import { API_BASE as API } from "@/lib/api-base";
+import styles from "./notes.module.css";
 
-const TYPE_COLORS = {
-  formula: { bg: "var(--ui-surface)", border: "#63b3ed", label: "📐 Formula" },
-  tip:     { bg: "var(--ui-surface)", border: "#38a169", label: "💡 Tip"     },
-  note:    { bg: "var(--ui-surface)", border: "#805ad5", label: "📝 Note"    },
-};
+const TYPE_LABELS = { formula: "Formula", tip: "Tip & trick", note: "Note" };
 
 export default function NotesPage() {
-  const router = useRouter();
-  const [notes,        setNotes]        = useState<Note[]>([]);
-  const [loading,      setLoading]      = useState(true);
-  const [filterTopic,  setFilterTopic]  = useState("");
-  const [filterType,   setFilterType]   = useState("");
-  const [deleting,     setDeleting]     = useState<string | null>(null);
-  const [search,       setSearch]       = useState("");
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterTopic, setFilterTopic] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [error, setError] = useState("");
 
-  const fetchNotes = useCallback(async () => {
+  const fetchNotes = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
+    setError("");
     try {
       const params = new URLSearchParams();
-      if (filterTopic) params.append("topic", filterTopic);
-      if (filterType)  params.append("type",  filterType);
-      const res  = await fetchWithRetry(`${API}/api/notes?${params}`);
-      const data = await res.json();
-      setNotes(data);
+      if (filterTopic.trim()) params.set("topic", filterTopic.trim());
+      if (filterType) params.set("type", filterType);
+      const response = await fetchWithRetry(`${API}/api/notes?${params}`, { signal });
+      if (!response.ok) throw new Error("Unable to load notes");
+      const data: unknown = await response.json();
+      if (!Array.isArray(data)) throw new Error("Invalid notes response");
+      if (!signal?.aborted) setNotes(data);
     } catch {
-      alert("Failed to load notes.");
+      if (!signal?.aborted) setError("Your notes could not be loaded. Please try again.");
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   }, [filterTopic, filterType]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => void fetchNotes(), 0);
-    return () => window.clearTimeout(timer);
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => void fetchNotes(controller.signal), 150);
+    return () => { window.clearTimeout(timer); controller.abort(); };
   }, [fetchNotes]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this note?")) return;
     setDeleting(id);
     try {
-      await fetchWithRetry(`${API}/api/notes/${id}`, { method: "DELETE" });
-      setNotes((prev) => prev.filter((n) => n.id !== id));
-    } finally {
-      setDeleting(null);
-    }
+      const response = await fetchWithRetry(`${API}/api/notes/${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Delete failed");
+      setNotes(previous => previous.filter(note => note.id !== id));
+    } catch {
+      setError("This note could not be deleted. Please try again.");
+    } finally { setDeleting(null); }
   };
 
-  // client-side search filter
-  const visible = notes.filter((n) =>
-    n.title?.toLowerCase().includes(search.toLowerCase()) ||
-    n.topic?.toLowerCase().includes(search.toLowerCase()) ||
-    n.tags?.some((t) => t.toLowerCase().includes(search.toLowerCase()))
-  );
+  const query = search.trim().toLowerCase();
+  const visible = notes.filter(note => [note.title, note.topic, ...(note.tags ?? [])].some(value => value?.toLowerCase().includes(query)));
+  const filtered = Boolean(filterTopic || filterType || search);
+  const clearFilters = () => { setFilterTopic(""); setFilterType(""); setSearch(""); };
 
   return (
-    <div style={s.root}>
-
-      {/* Header */}
-      <div data-ui-chrome="header" style={s.header}>
-        <div>
-          <h1 style={s.heading}>📚 My Notes</h1>
-          <p style={s.sub}>{notes.length} note{notes.length !== 1 ? "s" : ""} saved</p>
+    <main className={styles.page}>
+      <div className={styles.content}>
+        <header className={styles.header}>
+          <div><h1>My notes</h1><p>Your revision library</p></div>
+          <Link href="/notes/new" data-ui-button="primary"><Plus size={18} aria-hidden="true" />New note</Link>
+        </header>
+        <div className={styles.filters} role="search" aria-label="Find notes">
+          <input type="search" placeholder="Search title, topic or tags" aria-label="Search notes" value={search} onChange={event => setSearch(event.target.value)} />
+          <input placeholder="Filter by topic" aria-label="Filter by topic" value={filterTopic} onChange={event => setFilterTopic(event.target.value)} />
+          <select aria-label="Note type" value={filterType} onChange={event => setFilterType(event.target.value)}>
+            <option value="">All types</option><option value="note">Notes</option><option value="formula">Formulas</option><option value="tip">Tips & tricks</option>
+          </select>
+          {filtered && <button data-ui-button="secondary" onClick={clearFilters}>Clear filters</button>}
         </div>
-        <button data-ui-button="primary" style={s.newBtn} onClick={() => router.push("/notes/new")}>
-          + New Note
-        </button>
-      </div>
-
-      {/* Filters */}
-      <div style={s.filterBar}>
-        <input
-          style={s.searchInput}
-          placeholder="🔍 Search title, topic, tags…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-         aria-label="🔍 Search title, topic, tags…"/>
-        <input
-          style={s.filterInput}
-          placeholder="Filter by topic"
-          value={filterTopic}
-          onChange={(e) => setFilterTopic(e.target.value)}
-         aria-label="Filter by topic"/>
-        <select
-          style={s.select}
-          value={filterType}
-          onChange={(e) => setFilterType(e.target.value)}
-        >
-          <option value="">All types</option>
-          <option value="note">📝 Note</option>
-          <option value="formula">📐 Formula</option>
-          <option value="tip">💡 Tip & Trick</option>
-        </select>
-        {(filterTopic || filterType || search) && (
-          <button
-            data-ui-button="secondary"
-            style={s.clearBtn}
-            onClick={() => { setFilterTopic(""); setFilterType(""); setSearch(""); }}
-          >
-            ✕ Clear
-          </button>
+        {error && <section className={styles.empty} role="alert"><h2>Something needs attention</h2><p>{error}</p><button data-ui-button="secondary" onClick={() => void fetchNotes()}>Try again</button></section>}
+        {loading ? <p className={styles.summary} role="status">Loading your notes…</p> : !error && visible.length === 0 ? (
+          <section className={styles.empty}>
+            <BookOpen size={32} aria-hidden="true" />
+            <h2>{filtered ? "No matching notes" : "Make room for your next idea"}</h2>
+            <p>{filtered ? "Try a different search or clear your filters to see your library." : "Keep formulas, useful shortcuts and topic notes together for your next revision."}</p>
+            {filtered ? <button data-ui-button="secondary" onClick={clearFilters}>Clear filters</button> : <Link href="/notes/new" data-ui-button="primary">Create your first note</Link>}
+          </section>
+        ) : !error && (
+          <>
+            <p className={styles.summary} aria-live="polite">{visible.length} {visible.length === 1 ? "note" : "notes"}{filtered ? " matching your filters" : " in your library"}</p>
+            <div className={styles.grid}>
+              {visible.map(note => (
+                <article key={note.id} className={styles.card}>
+                  <span className={styles.badge}><FileText size={14} aria-hidden="true" />{TYPE_LABELS[note.type] || "Note"}</span>
+                  <h2><Link href={`/notes/view?id=${encodeURIComponent(note.id)}`}>{note.title || "Untitled note"}</Link></h2>
+                  {note.topic && <p className={styles.meta}>{note.topic}</p>}
+                  {!!note.tags?.length && <div className={styles.tags}>{note.tags.map(tag => <span key={tag}>{tag}</span>)}</div>}
+                  {(note.updatedAt || note.createdAt) && <p className={styles.meta}>Updated {new Date(note.updatedAt || note.createdAt!).toLocaleDateString()}</p>}
+                  <div className={styles.actions}>
+                    <Link data-ui-button="secondary" href={`/notes/edit?id=${encodeURIComponent(note.id)}`}><Pencil size={16} aria-hidden="true" />Edit</Link>
+                    <button data-ui-button="icon" aria-label={`Delete ${note.title || "note"}`} onClick={() => void handleDelete(note.id)} disabled={deleting !== null}><Trash2 size={18} aria-hidden="true" /></button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
         )}
       </div>
-
-      {/* Notes grid */}
-      {loading ? (
-        <div style={s.empty}>Loading…</div>
-      ) : visible.length === 0 ? (
-        <div style={s.empty}>
-          No notes found.{" "}
-          <span
-            style={{ color: "#63b3ed", cursor: "pointer" }}
-            onClick={() => router.push("/notes/new")}
-           role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
-            Create one →
-          </span>
-        </div>
-      ) : (
-        <div style={s.grid}>
-          {visible.map((note) => {
-            const color = TYPE_COLORS[note.type] || TYPE_COLORS.note;
-            return (
-              <div key={note.id} style={{ ...s.card, background: color.bg, borderColor: color.border }}>
-                {/* Type badge */}
-                <span style={{ ...s.badge, borderColor: color.border, color: color.border }}>
-                  {color.label}
-                </span>
-
-                {/* Title */}
-                <h2 style={s.cardTitle}>{note.title}</h2>
-
-                {/* Topic */}
-                {note.topic && (
-                  <p style={s.cardTopic}>📌 {note.topic}</p>
-                )}
-
-                {/* Tags */}
-                {(note.tags?.length ?? 0) > 0 && (
-                  <div style={s.tagRow}>
-                    {(note.tags ?? []).map((t) => (
-                      <span key={t} style={s.tag}>{t}</span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Date */}
-                <p style={s.cardDate}>
-                  {note.updatedAt
-                    ? `Updated ${new Date(note.updatedAt ?? note.createdAt ?? 0).toLocaleDateString()}`
-                    : (note.createdAt ? `Created ${new Date(note.createdAt).toLocaleDateString()}` : "")}
-                </p>
-
-                {/* Actions */}
-                <div style={s.cardActions}>
-                  <button
-                    data-ui-button="secondary"
-                    style={s.editBtn}
-                    onClick={() => router.push(`/notes/edit?id=${note.id}`)}
-                  >
-                    ✏️ Edit
-                  </button>
-                  <button
-                    data-ui-button="danger"
-                    style={s.deleteBtn}
-                    onClick={() => handleDelete(note.id)}
-                    disabled={deleting === note.id}
-                  >
-                    {deleting === note.id ? "…" : "🗑 Delete"}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+    </main>
   );
 }
-
-const s: Record<string, React.CSSProperties> = {
-  root: {
-    minHeight:   "100dvh",
-    background:  "var(--background)",
-    color:       "var(--ui-text)",
-    fontFamily:  "'Segoe UI', sans-serif",
-    padding:     "calc(16px + var(--safe-top)) 16px calc(24px + var(--safe-bottom)) 16px",
-    boxSizing:   "border-box",
-  },
-  header: {
-    display:        "flex",
-    justifyContent: "space-between",
-    alignItems:     "center",
-    marginBottom:   "1.5rem",
-  },
-  heading: { fontSize: "1.8rem", fontWeight: 700, color: "var(--ui-text)" },
-  sub:     { fontSize: "0.85rem", color: "var(--ui-secondary)", marginTop: 4 },
-  newBtn: {
-    background:   "#238636",
-    border:       "1px solid #2ea043",
-    borderRadius: 8,
-    color:        "#fff",
-    padding:      "8px 20px",
-    fontSize:     14,
-    fontWeight:   600,
-    cursor:       "pointer",
-  },
-  filterBar: {
-    display:      "flex",
-    gap:          10,
-    marginBottom: "1.5rem",
-    flexWrap:     "wrap",
-    alignItems:   "center",
-  },
-  searchInput: {
-    flex:         1,
-    minWidth:     200,
-    background:   "var(--ui-surface)",
-    border:       "1px solid var(--ui-border)",
-    borderRadius: 8,
-    color:        "var(--ui-text)",
-    padding:      "8px 14px",
-    fontSize:     14,
-    outline:      "none",
-  },
-  filterInput: {
-    background:   "var(--ui-surface)",
-    border:       "1px solid var(--ui-border)",
-    borderRadius: 8,
-    color:        "var(--ui-text)",
-    padding:      "8px 14px",
-    fontSize:     14,
-    outline:      "none",
-    width:        160,
-  },
-  select: {
-    background:   "var(--ui-surface)",
-    border:       "1px solid var(--ui-border)",
-    borderRadius: 8,
-    color:        "var(--ui-text)",
-    padding:      "8px 14px",
-    fontSize:     14,
-    cursor:       "pointer",
-  },
-  clearBtn: {
-    background:   "transparent",
-    border:       "1px solid var(--ui-border)",
-    borderRadius: 8,
-    color:        "var(--ui-secondary)",
-    padding:      "8px 14px",
-    fontSize:     13,
-    cursor:       "pointer",
-  },
-  grid: {
-    display:             "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-    gap:                 "1.25rem",
-  },
-  card: {
-    border:       "1px solid",
-    borderRadius: 14,
-    padding:      "1.25rem",
-    display:      "flex",
-    flexDirection: "column",
-    gap:          8,
-    transition:   "transform 0.15s, box-shadow 0.15s",
-    cursor:       "default",
-  },
-  badge: {
-    display:      "inline-block",
-    border:       "1px solid",
-    borderRadius: 99,
-    fontSize:     11,
-    padding:      "2px 10px",
-    fontWeight:   600,
-    width:        "fit-content",
-  },
-  cardTitle: {
-    fontSize:   "1.1rem",
-    fontWeight: 700,
-    color:      "var(--ui-text)",
-    margin:     0,
-  },
-  cardTopic: { fontSize: 13, color: "var(--ui-secondary)", margin: 0 },
-  tagRow:    { display: "flex", flexWrap: "wrap", gap: 6 },
-  tag: {
-    background:   "var(--ui-muted-surface)",
-    border:       "1px solid var(--ui-border)",
-    borderRadius: 99,
-    fontSize:     11,
-    padding:      "2px 8px",
-    color:        "var(--ui-secondary)",
-  },
-  cardDate:    { fontSize: 12, color: "var(--ui-secondary)", marginTop: "auto" },
-  cardActions: { display: "flex", gap: 8, marginTop: 4 },
-  editBtn: {
-    flex:         1,
-    background:   "#1f6feb",
-    border:       "none",
-    borderRadius: 6,
-    color:        "#fff",
-    padding:      "6px 0",
-    fontSize:     13,
-    cursor:       "pointer",
-    fontWeight:   600,
-  },
-  deleteBtn: {
-    background:   "var(--ui-muted-surface)",
-    border:       "1px solid var(--ui-border)",
-    borderRadius: 6,
-    color:        "#f85149",
-    padding:      "6px 12px",
-    fontSize:     13,
-    cursor:       "pointer",
-  },
-  empty: {
-    textAlign:  "center",
-    color:      "var(--ui-secondary)",
-    marginTop:  "4rem",
-    fontSize:   16,
-  },
-};

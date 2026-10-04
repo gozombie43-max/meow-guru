@@ -1,7 +1,7 @@
 .page {
-  --primary: var(--dark-accent, #0a84ff);
+  --primary: var(--dark-accent, var(--ios-system-blue));
   --primary-light: var(--dark-accent-hover);
-  --primary-bg: rgba(10, 132, 255, 0.16);
+  --primary-bg: rgb(var(--ios-system-blue-rgb) / 0.16);
   --bg: var(--dark-canvas, #000000);
   --card: var(--dark-surface, #1c1c1e);
   --text-dark: var(--dark-text, #ffffff);
@@ -291,13 +291,13 @@
   left: 0;
   right: 0;
   height: 2.5px;
-  background: #2563EB;
+  background: var(--ios-system-blue);
   border-radius: 2px;
 }
 
 :global(body.theme-dark) .activeChip::after,
 :global(html.theme-dark) .activeChip::after {
-  background: #2563EB;
+  background: var(--ios-system-blue);
 }
 
 .examGrid {
@@ -336,7 +336,7 @@
 .examCard:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
-  border-color: var(--primary-light, #0a84ff);
+  border-color: var(--primary-light, var(--ios-system-blue));
 }
 
 .examCard:active {
@@ -441,7 +441,7 @@
 }
 
 .countIcon {
-  color: var(--primary, #0a84ff);
+  color: var(--primary, var(--ios-system-blue));
   flex-shrink: 0;
 }
 
@@ -1159,13 +1159,13 @@
     left: 0;
     right: 0;
     height: 2.5px;
-    background: #2563EB;
+    background: var(--ios-system-blue);
     border-radius: 2px;
   }
 
   :global(body.theme-dark) .activeChip::after,
   :global(html.theme-dark) .activeChip::after {
-    background: #2563EB;
+    background: var(--ios-system-blue);
   }
 
 .examGrid {
@@ -1358,7 +1358,7 @@
   --bg: var(--oled-canvas); --card: var(--oled-surface);
   --text-dark: var(--oled-text); --text-muted: var(--oled-secondary);
   --text-light: var(--oled-secondary); --border: transparent;
-  --primary: #75a9df; --primary-light: #75a9df;
+  --primary: var(--ios-system-blue); --primary-light: var(--ios-system-blue);
   --primary-bg: var(--oled-selected-soft);
   background: var(--oled-canvas); color: var(--oled-text);
 }

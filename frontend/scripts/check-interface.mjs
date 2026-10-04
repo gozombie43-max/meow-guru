@@ -114,7 +114,7 @@ try {
         assert.equal(metrics.canvas, 'rgb(245, 247, 250)');
         assert.equal(metrics.headerBackground, 'rgb(255, 255, 255)', 'Light headers must not inherit the dark canvas');
         assert.equal(metrics.headerIconColor, 'rgb(24, 36, 56)', 'Light header icons must remain readable');
-        assert.equal(metrics.submit, 'rgb(36, 93, 204)');
+        assert.equal(metrics.submit, 'rgb(0, 122, 255)');
         assert.equal(metrics.languageBackground, 'rgb(237, 241, 246)');
       } else {
         assert.deepEqual(metrics.geometry, lightGeometry, 'Light and dark mobile quiz geometry must match');
@@ -123,9 +123,9 @@ try {
         assert.equal(metrics.canvas, 'rgb(0, 0, 0)');
         assert.equal(metrics.headerBackground, 'rgb(0, 0, 0)', 'Dark headers retain the OLED canvas');
         assert.equal(metrics.headerIconColor, 'rgb(229, 234, 240)');
-        assert.equal(metrics.submit, 'rgb(33, 107, 193)');
+        assert.equal(metrics.submit, 'rgb(10, 132, 255)');
         assert.equal(metrics.languageBackground, 'rgb(28, 28, 30)');
-        assert.equal(metrics.languageActive, 'rgb(24, 47, 75)');
+        assert.equal(metrics.languageActive, 'rgba(10, 132, 255, 0.16)');
       }
       console.log(`${theme} ${width}px: control geometry, state colors, wrapping, and quiz styles passed`);
     }

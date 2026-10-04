@@ -22,7 +22,7 @@ export default function MobileRecentQuiz({ desktop = false }: { desktop?: boolea
       </div>
       <div
         ref={carouselRef}
-        className={`${cardStyles.list} ${!desktop ? cardStyles.carousel : ''}`}
+        className={`${cardStyles.list} ${desktop ? cardStyles.desktopList : cardStyles.carousel}`}
         onScroll={!desktop ? (event) => {
           const carousel = event.currentTarget;
           const cards = Array.from(carousel.children) as HTMLElement[];
@@ -35,10 +35,10 @@ export default function MobileRecentQuiz({ desktop = false }: { desktop?: boolea
           });
           setActiveSlide(nearest);
         } : undefined}
-        role={!desktop ? 'region' : undefined}
+        role="region"
         aria-roledescription={!desktop ? 'carousel' : undefined}
-        aria-label={!desktop ? 'Recent quizzes' : undefined}
-        tabIndex={!desktop && recent.length > 1 ? 0 : undefined}
+        aria-label={desktop ? 'Recent quiz list' : 'Recent quizzes'}
+        tabIndex={recent.length > 1 ? 0 : undefined}
       >
         {recent.map((quiz, index) => {
           const total = quiz.totalQuestions && quiz.totalQuestions > 0 ? quiz.totalQuestions : null;
@@ -49,22 +49,31 @@ export default function MobileRecentQuiz({ desktop = false }: { desktop?: boolea
           const url = new URL(quiz.href, 'https://local.invalid');
           if (quiz.mode) url.searchParams.set('mode', quiz.mode);
           url.searchParams.set('resume', '1');
+          const subject = url.pathname.includes('/arithmetic/') ? 'Arithmetic'
+            : url.pathname.includes('/advance/') ? 'Advanced Mathematics'
+            : ({ mathematics: 'Mathematics', reasoning: 'Reasoning', english: 'English', 'general-awareness': 'General Awareness' }[quiz.subject]
+              ?? quiz.subject.replace(/[-_]/g, ' '));
           const Icon = quiz.subject === 'mathematics' ? Sigma : quiz.subject === 'reasoning' ? Brain : quiz.subject === 'english' ? BookOpen : Globe;
           return (
             <article key={quiz.quizKey} className={cardStyles.card} aria-roledescription={!desktop ? 'slide' : undefined} aria-label={!desktop ? `${index + 1} of ${recent.length}: ${quiz.title || 'Quiz'}` : undefined}>
               <div className={cardStyles.header}>
                 <span className={cardStyles.icon}><Icon size={32} strokeWidth={2.2} aria-hidden="true" /></span>
                 <div className={cardStyles.copy}>
-                  <h3>{quiz.title || quiz.subject || 'Quiz'}</h3>
-                  <p>{total ? `${count}/${total} questions` : `${count} answered`}</p>
+                  <div className={cardStyles.titleRow}>
+                    <h3>{quiz.title || quiz.subject || 'Quiz'}</h3>
+                    <span className={cardStyles.count}>{total ? `${count}/${total}` : `${count} answered`}</span>
+                  </div>
+                  <p>{subject}</p>
+                  {total ? <progress className={cardStyles.progress} value={count} max={total} aria-label={`${quiz.title || 'Quiz'} progress`} /> : null}
                 </div>
               </div>
-              {total ? <progress className={cardStyles.progress} value={count} max={total} aria-label={`${quiz.title || 'Quiz'} progress`} /> : null}
-              <p className={cardStyles.detail}>{completed ? 'Practice completed' : `Continue from question ${total ? Math.min(current, total) : current}`}</p>
-              <Link href={`${url.pathname}${url.search}${url.hash}`} data-ui-button="primary" className={cardStyles.resume}>
-                <Play size={18} fill="currentColor" aria-hidden="true" />
-                {completed ? 'Review Practice' : 'Resume Practice'}
-              </Link>
+              <div className={cardStyles.footer}>
+                <p className={cardStyles.detail}>{completed ? 'Practice completed' : `Continue from Q${total ? Math.min(current, total) : current}`}</p>
+                <Link href={`${url.pathname}${url.search}${url.hash}`} data-ui-button="primary" className={cardStyles.resume}>
+                  <Play size={18} fill="currentColor" aria-hidden="true" />
+                  {completed ? 'Review' : 'Resume'}
+                </Link>
+              </div>
             </article>
           );
         })}
@@ -89,7 +98,7 @@ export default function MobileRecentQuiz({ desktop = false }: { desktop?: boolea
                 const carousel = carouselRef.current;
                 const card = carousel?.children[index] as HTMLElement | undefined;
                 if (carousel && card) {
-                  carousel.scrollBy({ left: card.getBoundingClientRect().left - carousel.getBoundingClientRect().left, behavior: 'instant' });
+                  carousel.scrollTo({ left: carousel.scrollLeft + card.getBoundingClientRect().left - carousel.getBoundingClientRect().left, behavior: 'instant' });
                   setActiveSlide(index);
                 }
               }}

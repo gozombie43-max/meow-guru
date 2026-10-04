@@ -35,11 +35,11 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--primary, #3b82f6);
+  color: var(--primary, var(--ios-system-blue));
 }
 
 .submitBtn {
-  background-color: var(--primary, #3b82f6);
+  background-color: var(--primary, var(--ios-system-blue));
   color: white;
   border: none;
   border-radius: 0.375rem;
@@ -87,8 +87,8 @@
 }
 
 .tab.active {
-  border-bottom-color: var(--primary, #3b82f6);
-  color: var(--primary, #3b82f6);
+  border-bottom-color: var(--primary, var(--ios-system-blue));
+  color: var(--primary, var(--ios-system-blue));
 }
 
 .questionGrid {
@@ -120,7 +120,7 @@
 .qBubble.answeredMarked { background-color: #f59e0b; color: white; border-color: #f59e0b; }
 .qBubble.notAnswered { background-color: #94a3b8; color: white; border-color: #94a3b8; }
 .qBubble.notVisited { background-color: transparent; }
-.qBubble.current { box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary, #3b82f6); }
+.qBubble.current { box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary, var(--ios-system-blue)); }
 
 .legend {
   padding: 1rem;
@@ -200,7 +200,7 @@
 }
 
 .optionLabel.selected {
-  border-color: var(--primary, #3b82f6);
+  border-color: var(--primary, var(--ios-system-blue));
   background-color: var(--light-accent-soft);
 }
 
@@ -208,7 +208,7 @@
   margin: 0;
   width: 1.25rem;
   height: 1.25rem;
-  accent-color: var(--primary, #3b82f6);
+  accent-color: var(--primary, var(--ios-system-blue));
 }
 
 .actionsBar {
@@ -235,7 +235,7 @@
 }
 
 .btnPrimary {
-  background: var(--primary, #3b82f6);
+  background: var(--primary, var(--ios-system-blue));
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -284,7 +284,7 @@
 }
 
 .mobileTab.active {
-  background: var(--primary, #3b82f6);
+  background: var(--primary, var(--ios-system-blue));
   color: white;
 }
 
@@ -410,4 +410,4 @@
 :global(html.theme-dark) .container :is(.tab, .mobileTab, .mobilePill, .btnOutline) { border: 0; border-radius: 999px !important; background: var(--oled-inset); }
 :global(html.theme-dark) .container :is(.tab.active, .mobileTab.active) { background: var(--oled-selected); color: #edf4fc; }
 :global(html.theme-dark) .container .qBubble.notVisited { background: var(--oled-inset); color: var(--oled-text); }
-:global(html.theme-dark) .container .qBubble.current { box-shadow: none; outline: 2px solid #75a9df; outline-offset: 2px; }
+:global(html.theme-dark) .container .qBubble.current { box-shadow: none; outline: 2px solid var(--ios-system-blue); outline-offset: 2px; }

@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { hidesPrimaryNavigation } from '@/lib/shell-policy';
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { ClipboardList, Home as HomeIcon, Play, Video } from 'lucide-react';
 import { useThemeMode } from '@/hooks/useTheme';
 import { AiChatIcon } from '@/components/AiChatIcon';
 
 export default function BottomNav() {
+  const navRef = useRef<HTMLElement>(null);
   const pathname = usePathname() || '/';
   const shouldHideNav = hidesPrimaryNavigation(pathname);
   const { theme } = useThemeMode();
@@ -24,6 +25,29 @@ export default function BottomNav() {
     return () => body.classList.remove('has-bottom-nav');
   }, [shouldHideNav]);
 
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const root = document.documentElement;
+    const updateHeight = () => {
+      root.style.setProperty('--app-bottom-nav-occupied-height', `${nav.getBoundingClientRect().height}px`);
+    };
+    updateHeight();
+    
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(updateHeight);
+      observer.observe(nav);
+    }
+    
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+      root.style.removeProperty('--app-bottom-nav-occupied-height');
+    };
+  }, [shouldHideNav]);
+
   if (shouldHideNav) return null;
 
   const isHome = pathname === '/';
@@ -33,6 +57,7 @@ export default function BottomNav() {
 
   return (
     <nav
+      ref={navRef}
       data-ui-chrome="footer"
       className={`bottom-pill-nav${isLightSurface ? ' is-light' : ''}`}
       aria-label="Primary"

@@ -728,6 +728,16 @@ export default function VideosPage() {
             height: 24px;
           }
         }
+
+        @media (max-width: 767px) {
+          html.theme-dark .videos-page .playlist-card { padding: 8px; border-radius: 16px; background: var(--dark-surface); gap: 12px; }
+          html.theme-dark .videos-page .playlist-card:hover { transform: none; background: var(--oled-hover); }
+          html.theme-dark .videos-page .playlist-thumb { border: 0; border-radius: 10px; }
+          html.theme-dark .videos-page .playlist-meta-row { grid-template-columns: minmax(0, 1fr) 28px; gap: 4px; }
+          html.theme-dark .videos-page .channel-logo { display: none; }
+          html.theme-dark .videos-page .video-chip.is-active { color: var(--dark-text) !important; }
+          html.theme-dark .videos-page .video-chip.is-active::after { background: var(--dark-accent); }
+        }
       `}</style>
     </div>
   );

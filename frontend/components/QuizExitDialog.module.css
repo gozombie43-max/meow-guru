@@ -33,8 +33,8 @@
   height: 46px;
   margin: 0 auto 12px;
   border-radius: 15px;
-  background: color-mix(in srgb, var(--ui-accent, #409cff) 14%, transparent);
-  color: var(--ui-accent, #409cff);
+  background: color-mix(in srgb, var(--ui-accent, var(--ios-system-blue)) 14%, transparent);
+  color: var(--ui-accent, var(--ios-system-blue));
 }
 .dialog h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.4px; }
 .dialog p { margin: 8px 0 20px; font-size: 14px; line-height: 1.5; color: var(--ui-secondary, #a8aeb8); }

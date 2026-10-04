@@ -107,27 +107,27 @@ export function QuizThemeStyles({ cssClassName }: { cssClassName: string }) {
         --quiz-border: rgba(255, 255, 255, 0.08);
         --quiz-border-strong: rgba(255, 255, 255, 0.12);
         --quiz-divider: rgba(255, 255, 255, 0.08);
-        --quiz-pill-bg: rgba(95, 143, 200, 0.12);
+        --quiz-pill-bg: rgb(var(--ios-system-blue-rgb) / 0.12);
         --quiz-pill-text: #8cb0de;
-        --quiz-pill-border: rgba(95, 143, 200, 0.25);
-        --quiz-accent-bg: rgba(95, 143, 200, 0.16);
-        --quiz-accent-border: #5F8FC8;
-        --quiz-accent-text: #5F8FC8;
+        --quiz-pill-border: rgb(var(--ios-system-blue-rgb) / 0.25);
+        --quiz-accent-bg: rgb(var(--ios-system-blue-rgb) / 0.16);
+        --quiz-accent-border: var(--ios-system-blue);
+        --quiz-accent-text: var(--ios-system-blue);
         --quiz-overlay: rgba(0, 0, 0, 0.65);
         --quiz-option-bg: #171D29;
         --quiz-option-border: rgba(255, 255, 255, 0.06);
         --quiz-option-hover-bg: #1C2331;
-        --quiz-option-hover-border: rgba(95, 143, 200, 0.35);
+        --quiz-option-hover-border: rgb(var(--ios-system-blue-rgb) / 0.35);
         --quiz-option-text: #F1F4F8;
         --quiz-option-label-bg: rgba(255, 255, 255, 0.06);
         --quiz-option-label-border: rgba(255, 255, 255, 0.06);
         --quiz-option-label-text: #929DB0;
         --quiz-option-shadow: none;
         --quiz-option-selected-shadow: none;
-        --quiz-option-selected-bg: rgba(95, 143, 200, 0.16);
-        --quiz-option-selected-border: #5F8FC8;
-        --quiz-option-selected-label-bg: #5F8FC8;
-        --quiz-option-selected-label-border: #5F8FC8;
+        --quiz-option-selected-bg: rgb(var(--ios-system-blue-rgb) / 0.16);
+        --quiz-option-selected-border: var(--ios-system-blue);
+        --quiz-option-selected-label-bg: var(--ios-system-blue);
+        --quiz-option-selected-label-border: var(--ios-system-blue);
         --quiz-option-selected-label-text: #ffffff;
         --quiz-option-correct-bg: rgba(34, 197, 94, 0.14);
         --quiz-option-correct-border: rgba(34, 197, 94, 0.45);
@@ -147,21 +147,21 @@ export function QuizThemeStyles({ cssClassName }: { cssClassName: string }) {
         --quiz-error-border: rgba(239, 68, 68, 0.45);
         --quiz-error-text: #f87171;
         --quiz-ring-track: rgba(255, 255, 255, 0.08);
-        --quiz-quote-bg: rgba(95, 143, 200, 0.16);
-        --quiz-quote-border: #5F8FC8;
+        --quiz-quote-bg: rgb(var(--ios-system-blue-rgb) / 0.16);
+        --quiz-quote-border: var(--ios-system-blue);
         --quiz-quote-text: #8cb0de;
-        --quiz-selected-icon: #5F8FC8;
+        --quiz-selected-icon: var(--ios-system-blue);
         --quiz-toggle-bg: #121722;
         --quiz-toggle-border: rgba(255, 255, 255, 0.08);
         --quiz-toggle-track: #080C14;
         --quiz-toggle-thumb: linear-gradient(135deg, #171D29 0%, #121722 100%);
-        --quiz-status-current-bg: #5F8FC8;
+        --quiz-status-current-bg: var(--ios-system-blue);
         --quiz-status-current-text: #ffffff;
-        --quiz-status-current-border: #5F8FC8;
-        --quiz-status-current-shadow: 0 2px 8px rgba(95, 143, 200, 0.35);
-        --quiz-status-answered-bg: rgba(95, 143, 200, 0.12);
+        --quiz-status-current-border: var(--ios-system-blue);
+        --quiz-status-current-shadow: 0 2px 8px rgb(var(--ios-system-blue-rgb) / 0.35);
+        --quiz-status-answered-bg: rgb(var(--ios-system-blue-rgb) / 0.12);
         --quiz-status-answered-text: #8cb0de;
-        --quiz-status-answered-border: rgba(95, 143, 200, 0.3);
+        --quiz-status-answered-border: rgb(var(--ios-system-blue-rgb) / 0.3);
         --quiz-status-correct-bg: rgba(34, 197, 94, 0.18);
         --quiz-status-correct-text: #4ade80;
         --quiz-status-correct-border: rgba(34, 197, 94, 0.45);
@@ -312,7 +312,7 @@ export function QuizThemeStyles({ cssClassName }: { cssClassName: string }) {
       }
       .${cssClassName}[data-theme="dark"] .glass-card:hover {
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-        border-color: rgba(95, 143, 200, 0.35);
+        border-color: rgb(var(--ios-system-blue-rgb) / 0.35);
       }
       .${cssClassName}[data-theme="dark"] .btn-outline {
         background: #171D29;

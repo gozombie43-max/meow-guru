@@ -15,7 +15,9 @@
     "check:interface": "node scripts/check-interface.mjs && node scripts/check-ui-contract.mjs",
     "check:performance": "node scripts/check-performance-budget.mjs",
     "test:performance:startup": "node scripts/benchmark-play-startup.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "screenshots:all": "node scripts/capture-all-routes.mjs",
+    "screenshots:all:dark": "node scripts/capture-all-routes.mjs --theme=dark"
   },
   "dependencies": {
     "@fontsource/noto-sans-bengali": "^5.3.0",

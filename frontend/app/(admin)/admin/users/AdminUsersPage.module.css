@@ -149,7 +149,7 @@
   font-size: 16px;
 }
 
-.statIcon.blue { background: #dbeafe; color: #1d4ed8; }
+.statIcon.blue { background: #dbeafe; color: var(--ios-system-blue); }
 .statIcon.green { background: #dcfce7; color: #15803d; }
 .statIcon.purple { background: #ede9fe; color: #6d28d9; }
 .statIcon.red { background: #fee2e2; color: #b91c1c; }
@@ -158,8 +158,8 @@
 :global(body.theme-dark) .statIcon.blue,
 :global(html.theme-dark) .statIcon.blue,
 :global(.dark) .statIcon.blue {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
+  background: rgb(var(--ios-system-blue-rgb) / 0.2);
+  color: var(--ios-system-blue);
 }
 
 :global(.theme-dark) .statIcon.green,
@@ -245,8 +245,8 @@
 }
 
 .searchInput:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  border-color: var(--ios-system-blue);
+  box-shadow: 0 0 0 3px rgb(var(--ios-system-blue-rgb) / 0.15);
 }
 
 .filterSelect {
@@ -278,7 +278,7 @@
 }
 
 .filterSelect:focus {
-  border-color: #3b82f6;
+  border-color: var(--ios-system-blue);
 }
 
 .filterSelect option,
@@ -394,7 +394,7 @@
 }
 
 .roleBadge.user { background: #f1f5f9; color: #334155; }
-.roleBadge.moderator { background: #dbeafe; color: #1d4ed8; }
+.roleBadge.moderator { background: #dbeafe; color: var(--ios-system-blue); }
 .roleBadge.admin { background: #ede9fe; color: #6d28d9; }
 .roleBadge.superadmin { background: #fef3c7; color: #92400e; }
 
@@ -410,8 +410,8 @@
 :global(body.theme-dark) .roleBadge.moderator,
 :global(html.theme-dark) .roleBadge.moderator,
 :global(.dark) .roleBadge.moderator {
-  background: rgba(59, 130, 246, 0.2);
-  color: #93c5fd;
+  background: rgb(var(--ios-system-blue-rgb) / 0.2);
+  color: var(--ios-system-blue);
 }
 
 :global(.theme-dark) .roleBadge.admin,
@@ -530,7 +530,7 @@
 
 .pageBtn:hover:not(:disabled) {
   background: var(--btn-hover);
-  border-color: #3b82f6;
+  border-color: var(--ios-system-blue);
   color: var(--color-text-primary);
 }
 
@@ -540,8 +540,8 @@
 }
 
 .pageBtn.active {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: var(--ios-system-blue);
+  border-color: var(--ios-system-blue);
   color: #ffffff;
 }
 
@@ -765,7 +765,7 @@
 
 .actionBtn:hover {
   background: var(--btn-hover);
-  border-color: #3b82f6;
+  border-color: var(--ios-system-blue);
 }
 
 .actionBtn.danger {
@@ -832,7 +832,7 @@
 }
 
 .modalInput:focus {
-  border-color: #3b82f6;
+  border-color: var(--ios-system-blue);
 }
 
 .modalTextarea {
@@ -898,12 +898,12 @@
 
 .modalBtnPrimary {
   composes: modalBtn;
-  background: #2563eb;
+  background: var(--ios-system-blue);
   color: #ffffff;
 }
 
 .modalBtnPrimary:hover {
-  background: #1d4ed8;
+  background: var(--ios-system-blue);
 }
 
 .modalBtnDanger {
@@ -929,7 +929,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid var(--color-border-secondary);
-  border-top-color: #2563eb;
+  border-top-color: var(--ios-system-blue);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }

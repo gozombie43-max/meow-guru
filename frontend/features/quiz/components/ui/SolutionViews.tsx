@@ -267,6 +267,7 @@ export function SolutionBottomSheet({
                 font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
               }
               .ios-solution-sheet {
+                --ui-header-surface: var(--dark-surface);
                 width: 100%;
                 max-width: 680px;
                 max-height: 86svh;
@@ -312,7 +313,7 @@ export function SolutionBottomSheet({
                 transition: transform 0.2s ease, background 0.2s ease;
               }
               .ios-solution-drag-zone:hover .ios-sheet-handle {
-                background: rgba(10, 132, 255, 0.4);
+                background: rgb(var(--ios-system-blue-rgb) / 0.4);
               }
               .ios-solution-drag-zone.is-holding .ios-sheet-handle {
                 transform: scaleY(1.3);
@@ -320,7 +321,7 @@ export function SolutionBottomSheet({
               .ios-hold-indicator {
                 position: absolute;
                 inset: 0;
-                background: #0a84ff;
+                background: var(--ios-system-blue);
                 border-radius: 99px;
                 transform: scaleX(0);
                 transform-origin: center;
@@ -354,7 +355,7 @@ export function SolutionBottomSheet({
                 padding: 0;
                 font-size: 17px;
                 font-weight: 600;
-                color: #0a84ff;
+                color: var(--ios-system-blue);
                 cursor: pointer;
                 justify-self: start;
               }
@@ -408,6 +409,7 @@ export function SolutionBottomSheet({
                 background: rgba(15, 23, 42, 0.4);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-sheet {
+                --ui-header-surface: #FFFFFF;
                 background: #FFFFFF;
                 border-color: var(--light-border);
                 color: var(--light-text);
@@ -416,10 +418,10 @@ export function SolutionBottomSheet({
                 background: var(--light-border);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-drag-zone:hover .ios-sheet-handle {
-                background: rgba(0, 122, 255, 0.35);
+                background: rgb(var(--ios-system-blue-rgb) / 0.35);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-hold-indicator {
-                background: #007aff;
+                background: var(--ios-system-blue);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-header {
                 border-bottom-color: var(--light-border);
@@ -466,6 +468,7 @@ export function SolutionBottomSheet({
               }
               .ios-solution-backdrop[data-theme="dark"] { backdrop-filter: none; }
               .ios-solution-backdrop[data-theme="dark"] .ios-solution-sheet {
+                --ui-header-surface: var(--oled-surface, #1c1c1e);
                 background: var(--oled-surface, #1c1c1e);
                 color: var(--oled-text, #e5eaf0);
                 border: 0;
@@ -488,7 +491,7 @@ export function SolutionBottomSheet({
                 border: 0;
                 box-shadow: none;
               }
-              .ios-solution-backdrop[data-theme="dark"] .ios-hold-indicator { background: var(--oled-selected, #216bc1); }
+              .ios-solution-backdrop[data-theme="dark"] .ios-hold-indicator { background: var(--oled-selected, var(--ios-system-blue)); }
             `}</style>
           </motion.div>
         </motion.div>

@@ -36,12 +36,12 @@ export const aiChatStyles = css`
           --ink: var(--dark-text, #ffffff);
           --muted: var(--dark-text-muted, rgba(235, 235, 245, 0.65));
           --line: var(--dark-border, rgba(255, 255, 255, 0.12));
-          --accent: var(--dark-accent, #0a84ff);
+          --accent: var(--dark-accent, var(--ios-system-blue));
           --accent-dark: #0060cc;
           --topbar-bg: #000000;
           --input-bg: var(--dark-surface, #1c1c1e);
           --bubble-ai: var(--dark-surface, #1c1c1e);
-          --bubble-user: var(--dark-accent, #0a84ff);
+          --bubble-user: var(--dark-accent, var(--ios-system-blue));
           --bubble-user-text: #ffffff;
           --bubble-ai-text: var(--dark-text, #ffffff);
           --surface-transparent: rgba(0, 0, 0, 0);
@@ -545,7 +545,7 @@ export const aiChatStyles = css`
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: var(--accent, #38bdf8);
+          background: var(--accent, var(--ios-system-blue));
           animation: typingBounce 900ms infinite ease-in-out;
         }
 

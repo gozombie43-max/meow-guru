@@ -321,7 +321,7 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
 
       <style jsx>{`
         .formula-notes-page {
-          --primary-blue: #007aff;
+          --primary-blue: var(--ios-system-blue);
           --bg-start: #f0f0f5;
           --bg-end: #e8e8f0;
           --text-primary: rgba(0, 0, 0, 0.8);
@@ -347,7 +347,7 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
         .orb-1 {
           width: 220px;
           height: 220px;
-          background: rgba(0, 122, 255, 0.22);
+          background: rgb(var(--ios-system-blue-rgb) / 0.22);
           top: -70px;
           right: -50px;
         }
@@ -416,7 +416,7 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
         }
 
         .search-button:focus-visible {
-          outline: 2px solid rgba(0, 122, 255, 0.5);
+          outline: 2px solid rgb(var(--ios-system-blue-rgb) / 0.5);
         }
 
         .icon {
@@ -455,10 +455,10 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
 
         .tab-pill.is-active {
           color: #ffffff;
-          background: linear-gradient(135deg, rgba(0, 122, 255, 0.9) 0%, rgba(0, 100, 220, 0.95) 100%);
+          background: linear-gradient(135deg, rgb(var(--ios-system-blue-rgb) / 0.9) 0%, rgba(0, 100, 220, 0.95) 100%);
           box-shadow:
-            0 2px 8px rgba(0, 122, 255, 0.35),
-            0 1px 3px rgba(0, 122, 255, 0.2),
+            0 2px 8px rgb(var(--ios-system-blue-rgb) / 0.35),
+            0 1px 3px rgb(var(--ios-system-blue-rgb) / 0.2),
             inset 0 1px 0 rgba(255, 255, 255, 0.25);
         }
 
@@ -514,7 +514,7 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
           width: 46px;
           height: 46px;
           border-radius: 14px;
-          background: rgba(0, 122, 255, 0.12);
+          background: rgb(var(--ios-system-blue-rgb) / 0.12);
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -560,12 +560,12 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
           height: 56px;
           border-radius: 50%;
           border: none;
-          background: linear-gradient(135deg, #007aff 0%, #004ed4 100%);
+          background: linear-gradient(135deg, var(--ios-system-blue) 0%, #004ed4 100%);
           color: white;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 20px 36px rgba(0, 122, 255, 0.24);
+          box-shadow: 0 20px 36px rgb(var(--ios-system-blue-rgb) / 0.24);
           cursor: pointer;
           transition: transform 0.15s ease, box-shadow 0.15s ease;
         }

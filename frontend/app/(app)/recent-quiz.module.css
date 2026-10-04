@@ -6,6 +6,20 @@
   display: grid;
   gap: 12px;
   min-width: 0;
+  align-items: start;
+}
+
+.desktopList {
+  flex: 1;
+  min-height: 0;
+  align-content: start;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+}
+
+.desktopList::-webkit-scrollbar {
+  display: none;
 }
 
 .carousel {
@@ -15,7 +29,7 @@
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
-  padding-bottom: 6px;
+  padding-bottom: 0;
 }
 
 .carousel > .card {
@@ -23,7 +37,7 @@
   scroll-snap-stop: always;
 }
 
-.carousel:focus-visible {
+.list:focus-visible {
   outline: 2px solid var(--mac-primary);
   outline-offset: 2px;
   border-radius: 22px;
@@ -36,12 +50,15 @@
 .dots {
   display: flex;
   justify-content: center;
+  margin-top: -10px;
 }
 
 .dots .dot {
   display: grid;
   place-items: center;
-  min-width: 44px;
+  width: 24px;
+  min-width: 24px;
+  flex: 0 0 24px;
   min-height: 44px;
   padding: 0;
   border: 0;
@@ -69,7 +86,7 @@
 
 .card {
   min-width: 0;
-  padding: 20px;
+  padding: 16px;
   border: 1px solid var(--mac-border);
   border-radius: 22px;
   background: var(--mac-card-bg);
@@ -79,27 +96,41 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 18px;
+  gap: 15px;
 }
 
 .icon {
   display: grid;
   place-items: center;
-  flex: 0 0 60px;
-  height: 60px;
-  border-radius: 17px;
-  background: color-mix(in srgb, #007aff 14%, transparent);
-  color: var(--mac-primary);
+  flex: 0 0 52px;
+  height: 54px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ios-system-blue) 14%, transparent);
+  color: #0088ff;
 }
 
 .copy {
+  flex: 1;
   min-width: 0;
 }
 
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.count {
+  flex-shrink: 0;
+  color: var(--mac-text-secondary);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
 .copy h3 {
-  margin: 0 0 6px;
-  font-size: 18px;
+  margin: 0 0 3px;
+  font-size: 16px;
   line-height: 1.3;
   font-weight: 700;
   letter-spacing: -0.35px;
@@ -119,34 +150,46 @@
   display: block;
   appearance: none;
   width: 100%;
-  height: 9px;
+  height: 8px;
   border: 0;
   border-radius: 999px;
   overflow: hidden;
   background: var(--mac-card-subtle);
-  color: #409cff;
-  margin-bottom: 10px;
+  color: var(--ios-system-blue);
+  margin: 7px 0 0;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--mac-text-secondary) 20%, transparent);
 }
 
 .progress::-webkit-progress-bar { background: var(--mac-card-subtle); border-radius: 999px; }
-.progress::-webkit-progress-value { background: #409cff; border-radius: 999px; }
-.progress::-moz-progress-bar { background: #409cff; border-radius: 999px; }
+.progress::-webkit-progress-value { background: var(--ios-system-blue); border-radius: 999px; }
+.progress::-moz-progress-bar { background: var(--ios-system-blue); border-radius: 999px; }
 
 .card .resume {
+  --ui-action: var(--ios-system-blue);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  width: 100%;
+  width: auto;
+  flex-shrink: 0;
   box-sizing: border-box;
-  min-height: 50px;
-  margin-top: 18px;
-  padding: 12px;
+  min-height: 36px;
+  margin-top: 0;
+  padding: 8px 16px;
   border: 0;
-  border-radius: 16px;
-  background: #007aff;
+  border-radius: 10px;
+  background: #0088ff;
   color: #fff;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 650;
   line-height: 1.4;
   text-decoration: none;
@@ -156,8 +199,31 @@
 .resume:hover { filter: brightness(1.08); }
 .resume:focus-visible { outline: 3px solid var(--mac-primary); outline-offset: 3px; }
 
+.card > .resume { margin-top: 12px; }
+
+.desktopList .card { padding: 12px; border-radius: 16px; }
+.desktopList .header { gap: 10px; }
+.desktopList .copy h3 { font-size: 15px; }
+.desktopList .copy p,
+.desktopList .detail,
+.desktopList .count { font-size: 12px; }
+.desktopList .icon { flex-basis: 42px; height: 44px; border-radius: 12px; }
+.desktopList .icon svg { width: 26px; height: 26px; }
+.desktopList .progress { height: 6px; margin-top: 5px; }
+.desktopList .footer { margin-top: 8px; padding-top: 8px; }
+.desktopList .resume {
+  --ui-font-body: 12px;
+  min-height: 34px;
+  padding: 6px 12px !important;
+  border-radius: 9px;
+}
+
 @media (max-width: 360px) {
-  .card { padding: 16px; }
-  .header { gap: 12px; }
-  .icon { flex-basis: 50px; height: 50px; border-radius: 14px; }
+  .card { padding: 12px; }
+  .header { gap: 10px; }
+  .icon { flex-basis: 44px; height: 48px; border-radius: 12px; }
+  .titleRow { gap: 6px; }
+  .copy h3 { font-size: 15px; }
+  .detail { font-size: 12px; }
+  .card .resume { padding-inline: 12px; }
 }

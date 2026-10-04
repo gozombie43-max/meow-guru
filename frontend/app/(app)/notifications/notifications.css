@@ -7,16 +7,16 @@
   --notif-bg: var(--dark-canvas);
   --notif-card: var(--dark-surface);
   --notif-border: rgba(255, 255, 255, 0.12);
-  --notif-border-hover: rgba(10, 132, 255, 0.45);
+  --notif-border-hover: rgb(var(--ios-system-blue-rgb) / 0.45);
   --notif-text: #ffffff;
   --notif-muted: rgba(235, 235, 245, 0.65);
   --notif-soft: var(--dark-surface-muted);
   --notif-accent: var(--dark-accent);
   --notif-accent-strong: #0070e0;
-  --notif-accent-soft: rgba(10, 132, 255, 0.16);
+  --notif-accent-soft: rgb(var(--ios-system-blue-rgb) / 0.16);
   --notif-unread-dot: var(--dark-accent);
   --notif-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.55);
-  --notif-shadow-hover: 0 10px 30px -4px rgba(10, 132, 255, 0.25);
+  --notif-shadow-hover: 0 10px 30px -4px rgb(var(--ios-system-blue-rgb) / 0.25);
 }
 
 html.theme-dark,
@@ -24,16 +24,16 @@ body.theme-dark {
   --notif-bg: var(--dark-canvas, #000000);
   --notif-card: var(--dark-surface, #1c1c1e);
   --notif-border: var(--dark-border, rgba(255, 255, 255, 0.12));
-  --notif-border-hover: rgba(10, 132, 255, 0.45);
+  --notif-border-hover: rgb(var(--ios-system-blue-rgb) / 0.45);
   --notif-text: var(--dark-text, #ffffff);
   --notif-muted: var(--dark-text-muted, rgba(235, 235, 245, 0.65));
   --notif-soft: var(--dark-surface-muted, #2c2c2e);
-  --notif-accent: var(--dark-accent, #0a84ff);
+  --notif-accent: var(--dark-accent, var(--ios-system-blue));
   --notif-accent-strong: #0070e0;
-  --notif-accent-soft: var(--dark-accent-soft, rgba(10, 132, 255, 0.16));
-  --notif-unread-dot: var(--dark-accent, #0a84ff);
+  --notif-accent-soft: var(--dark-accent-soft, rgb(var(--ios-system-blue-rgb) / 0.16));
+  --notif-unread-dot: var(--dark-accent, var(--ios-system-blue));
   --notif-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.55);
-  --notif-shadow-hover: 0 10px 30px -4px rgba(10, 132, 255, 0.25);
+  --notif-shadow-hover: 0 10px 30px -4px rgb(var(--ios-system-blue-rgb) / 0.25);
 }
 
 html.theme-light,
@@ -45,12 +45,12 @@ body.theme-light {
   --notif-text: #111827;
   --notif-muted: #6b7280;
   --notif-soft: #f1f3f9;
-  --notif-accent: #0066cc;
+  --notif-accent: var(--ios-system-blue);
   --notif-accent-strong: #0052a3;
   --notif-accent-soft: #e8f2ff;
-  --notif-unread-dot: #0066cc;
+  --notif-unread-dot: var(--ios-system-blue);
   --notif-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
-  --notif-shadow-hover: 0 10px 28px -4px rgba(0, 102, 204, 0.14), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --notif-shadow-hover: 0 10px 28px -4px rgb(var(--ios-system-blue-rgb) / 0.14), 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* ==========================================================================
@@ -290,7 +290,7 @@ html.theme-dark .notif-fixed-top {
   left: 0;
   right: 0;
   height: 2.5px;
-  background: #2563EB;
+  background: var(--ios-system-blue);
   border-radius: 2px;
 }
 
@@ -425,11 +425,11 @@ html.theme-dark .notif-fixed-top {
   place-items: center;
   color: #ffffff;
   background: linear-gradient(135deg, var(--notif-accent), var(--notif-accent-strong));
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+  box-shadow: 0 4px 12px rgb(var(--ios-system-blue-rgb) / 0.2);
 }
 
 .notif-icon-wrap.type-battle {
-  background: linear-gradient(135deg, #007aff, #0052cc);
+  background: linear-gradient(135deg, var(--ios-system-blue), #0052cc);
 }
 
 .notif-icon-wrap.type-mock {
@@ -534,7 +534,7 @@ html.theme-dark .notif-fixed-top {
 .notif-cta-btn:hover:not(:disabled) {
   background: var(--notif-accent-strong);
   transform: translateY(-0.5px);
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.25);
+  box-shadow: 0 4px 12px rgb(var(--ios-system-blue-rgb) / 0.25);
 }
 
 .notif-cta-btn:disabled {
@@ -737,4 +737,18 @@ html.theme-dark .notif-fixed-top {
     align-items: flex-end;
     gap: 8px;
   }
+}
+
+/* Quieter mobile cards with legible metadata and explicit unread emphasis. */
+@media (max-width: 767px) {
+  html.theme-dark .notif-page { --notif-muted: var(--dark-text-secondary); --notif-shadow: none; --notif-shadow-hover: none; }
+  html.theme-dark .notif-card { border-color: transparent; padding: 18px 16px; }
+  html.theme-dark .notif-card.is-unread { border-left-color: var(--dark-accent); }
+  html.theme-dark .notif-card.is-read { opacity: 1; }
+  html.theme-dark .notif-card:hover { transform: none; background: var(--oled-hover); }
+  html.theme-dark .notif-empty { border: 0; border-radius: 20px; padding: 32px 20px; }
+  html.theme-dark .notif-empty p { color: var(--dark-text-secondary); }
+  html.theme-dark .notif-empty-actions { flex-wrap: wrap; }
+  html.theme-dark .notif-empty-link { min-height: 44px; }
+  html.theme-dark .notif-search-input { font-size: 16px; }
 }
