@@ -1,10 +1,16 @@
 import { defineConfig } from "vitest/config";
+import { createRequire } from "node:module";
 import path from "node:path";
+
+const resolveModule = createRequire(import.meta.url);
 
 export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname),
+      // Next resolves this marker for server modules; Vitest needs the same
+      // empty module to transform and cover them outside the Next compiler.
+      "server-only": resolveModule.resolve("next/dist/compiled/server-only/empty.js"),
     },
   },
   test: {

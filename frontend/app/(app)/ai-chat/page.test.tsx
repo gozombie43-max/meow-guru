@@ -41,13 +41,16 @@ describe('AI chat draft isolation', () => {
   it('does not reparse existing responses while typing, and clears the draft for a new chat', async () => {
     render(<AiChatPage />);
     fireEvent.click(await screen.findByRole('button', { name: 'Saved math' }));
-    // The production renderer loads through next/dynamic; allow its cold module
-    // transform to finish before measuring subsequent draft renders.
-    await waitFor(() => expect(probes.markdown).toHaveBeenCalledTimes(10), { timeout: 10_000 });
+    // Suspense can render replies before committing them, then replay that work.
+    // Measure draft updates only after all lazy-rendered replies are in the DOM.
+    await waitFor(() => expect(screen.getAllByText(/^Existing reply \d+:/)).toHaveLength(10), { timeout: 10_000 });
+    probes.markdown.mockClear();
     const input = screen.getByRole('textbox', { name: 'Ask ChatGPT' });
-    for (const text of ['e', 'ex', 'exp', 'expl', 'explain']) fireEvent.change(input, { target: { value: text } });
+    for (const text of ['e', 'ex', 'exp', 'expl', 'explain']) {
+      fireEvent.change(input, { target: { value: text } });
+      expect(probes.markdown).not.toHaveBeenCalled();
+    }
     expect(input).toHaveValue('explain');
-    expect(probes.markdown).toHaveBeenCalledTimes(10);
     fireEvent.keyDown(input, { key: 'Enter', shiftKey: true });
     expect(probes.post).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'New chat' }));
