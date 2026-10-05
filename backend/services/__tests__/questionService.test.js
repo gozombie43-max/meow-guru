@@ -470,6 +470,56 @@ describe('MongoDB-backed question writes', () => {
     expect(results[0].value.id).not.toBe('duplicate-id');
   });
 
+  it('bulk imports invalid rows and preserves idempotency metadata', async () => {
+    const collection = {
+      bulkWrite: vi.fn(async () => ({ acknowledged: true })),
+    };
+    getQuestionsCollectionMock.mockReturnValue(collection);
+
+    const results = await createQuestionsBulk(
+      [null, { quizSubject: 'English', quizTopic: 'Vocabulary' }],
+      { importId: 'import-1' },
+    );
+
+    expect(results[0]).toEqual({
+      status: 'rejected',
+      reason: { code: 'INVALID_ROW', message: 'Question must be an object' },
+    });
+    expect(results[1]).toMatchObject({ status: 'fulfilled' });
+    expect(collection.bulkWrite).toHaveBeenCalledWith(
+      [
+        {
+          updateOne: {
+            filter: {
+              ingestionKey: expect.any(String),
+              ingestionHash: expect.any(String),
+            },
+            update: { $setOnInsert: expect.objectContaining({ id: expect.stringMatching(/^q_/) }) },
+            upsert: true,
+          },
+        },
+      ],
+      { ordered: false },
+    );
+  });
+
+  it('returns rejected results for non-duplicate bulk write failures', async () => {
+    const collection = {
+      bulkWrite: vi.fn().mockRejectedValueOnce(
+        Object.assign(new Error('validation failed'), {
+          code: 121,
+          result: {},
+          writeErrors: [{ index: 0, code: 121, errmsg: 'validation failed' }],
+        }),
+      ),
+    };
+    getQuestionsCollectionMock.mockReturnValue(collection);
+
+    await expect(createQuestionsBulk([{ id: 'invalid-row' }])).resolves.toEqual([
+      { status: 'rejected', reason: { code: 121, message: 'validation failed' } },
+    ]);
+  });
+
   it('updates by id and topic while preserving the stored id and hiding _id', async () => {
     const existing = {
       _id: 'mongo-id',
@@ -506,6 +556,30 @@ describe('MongoDB-backed question writes', () => {
     expect(result).toEqual({ ...ineligibleAlgebra, id: 'q457', questionUid: undefined, topic: 'algebra', question: 'After', topicKey: 'algebra', subjectKey: '', quizKey: '', modeKey: 'concept', keyVersion: 1 });
   });
 
+  it('returns null or false when a write target does not exist', async () => {
+    const collection = {
+      find: vi.fn(() => createCursor([])),
+    };
+    getQuestionsCollectionMock.mockReturnValue(collection);
+
+    await expect(modifyQuestion('missing-id', { question: 'After' })).resolves.toBeNull();
+    await expect(removeQuestion('missing-id')).resolves.toBe(false);
+  });
+
+  it('uses update metadata when the existing question has no topic', async () => {
+    const existing = { _id: 'mongo-id', id: 'q457', question: 'Before' };
+    const collection = {
+      find: vi.fn(() => createCursor([existing])),
+      updateOne: vi.fn(async () => ({ modifiedCount: 1 })),
+    };
+    getQuestionsCollectionMock.mockReturnValue(collection);
+
+    await expect(modifyQuestion('q457', { chapter: 'Algebra' })).resolves.toMatchObject({
+      id: 'q457',
+      topic: 'Algebra',
+    });
+  });
+
   it('resolves a unique document before deleting with or without a topic', async () => {
     const collection = {
       deleteOne: vi.fn(async () => ({ deletedCount: 1 })),
@@ -519,6 +593,24 @@ describe('MongoDB-backed question writes', () => {
 
     expect(collection.deleteOne).toHaveBeenCalledWith({ _id: 'q457' });
     expect(collection.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it('returns false when a resolved question is not deleted', async () => {
+    const collection = {
+      find: vi.fn(() => createCursor([{ _id: 'mongo-id', id: 'q457' }])),
+      deleteOne: vi.fn(async () => ({ deletedCount: 0 })),
+    };
+    getQuestionsCollectionMock.mockReturnValue(collection);
+
+    await expect(removeQuestion('q457')).resolves.toBe(false);
+  });
+
+  it('returns empty results for empty bulk deletion and duplicate checks', async () => {
+    getQuestionsCollectionMock.mockReturnValue({ find: vi.fn() });
+
+    await expect(removeQuestionsBulk()).resolves.toEqual({ deleted: 0, failed: 0, total: 0 });
+    await expect(removeQuestionsBulk([' ', ''])).resolves.toEqual({ deleted: 0, failed: 0, total: 0 });
+    await expect(checkDuplicates([{ question: '   ' }, {}])).resolves.toEqual([]);
   });
 
   it('bulk deletes unique ids and preserves the controller result contract', async () => {
