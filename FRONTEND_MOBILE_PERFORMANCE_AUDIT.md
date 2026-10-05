@@ -1,6 +1,6 @@
 # Frontend mobile performance audit
 
-**Implementation update:** This document preserves the pre-fix audit snapshot. The four selected first-phase improvements are implemented and verified in [FRONTEND_MOBILE_PERFORMANCE_PHASE1.md](FRONTEND_MOBILE_PERFORMANCE_PHASE1.md), with [new measurement evidence](FRONTEND_MOBILE_PERFORMANCE_PHASE1_EVIDENCE.json). Findings 1, 2, 3, 5 and 6 are addressed there; findings 4 and 7–18 remain outside that phase.
+**Implementation update:** This document preserves the pre-fix audit snapshot. [Phase one](FRONTEND_MOBILE_PERFORMANCE_PHASE1.md) addresses findings 1, 2, 3, 5 and 6, with [measurement evidence](FRONTEND_MOBILE_PERFORMANCE_PHASE1_EVIDENCE.json). [Phase two](FRONTEND_MOBILE_PERFORMANCE_PHASE2.md) implements the remaining findings 4 and 7–18, with [local verification evidence](FRONTEND_MOBILE_PERFORMANCE_PHASE2_EVIDENCE.json). All eighteen findings now have local implementations; production/real-device limits are recorded in those reports.
 
 Audited on 2026-10-05 against local commit `46fec69b`. Target conditions: mid-range Android, slow 4G, 360–390px viewport, and long quiz sessions. Application source was not changed.
 

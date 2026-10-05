@@ -1,6 +1,6 @@
 # Frontend mobile performance: completed first phase
 
-Completed locally on 2026-10-05 against base commit `46fec69b`. Scope follows the pasted request's four selected improvements: chat rendering, lazy quiz AI, deferred tutor schemas, and mathematics route/responsive separation. This resolves original audit findings **1, 2, 3, 5 and 6**. The other thirteen findings remain outside this phase.
+Completed locally on 2026-10-05 against base commit `46fec69b`. Scope follows the pasted request's four selected improvements: chat rendering, lazy quiz AI, deferred tutor schemas, and mathematics route/responsive separation. This resolves original audit findings **1, 2, 3, 5 and 6**. The other thirteen findings are subsequently implemented in [phase two](FRONTEND_MOBILE_PERFORMANCE_PHASE2.md); the measurements below preserve the first-phase snapshot.
 
 The original [audit](FRONTEND_MOBILE_PERFORMANCE_AUDIT.md) and [baseline evidence](FRONTEND_MOBILE_PERFORMANCE_EVIDENCE.json) record the pre-fix state. [Phase-one evidence](FRONTEND_MOBILE_PERFORMANCE_PHASE1_EVIDENCE.json) preserves the new requested chunk sets, API traces, DOM observations, typing measurements, and validation results.
 

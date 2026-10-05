@@ -10,6 +10,7 @@ interface SessionResponse {
   nextCursor: string | null;
   hasMore: boolean;
   totalCount?: number;
+  startIndex?: number;
 }
 
 const fetcher = async (url: string): Promise<SessionResponse> => {
@@ -27,9 +28,11 @@ export function useQuizSession(params: {
   exam?: string;
   concept?: string;
   enabled?: boolean;
+  anchor?: string;
+  resumeIndex?: number;
   includeTotal?: boolean;
 }) {
-  const { subject, topic, mode, limit = 50, letter, exam, concept, enabled = true, includeTotal = false } = params;
+  const { subject, topic, mode, limit = 50, letter, exam, concept, enabled = true, includeTotal = false, anchor, resumeIndex } = params;
 
   const [revision] = useState(getQuestionSessionRevision);
   const query = new URLSearchParams();
@@ -40,6 +43,8 @@ export function useQuizSession(params: {
   if (letter) query.set("letter", letter);
   if (exam) query.set("exam", exam);
   if (concept) query.set("concept", concept);
+  if (anchor) query.set('anchor', anchor);
+  if (resumeIndex !== undefined) query.set('resumeIndex', String(resumeIndex));
   query.set("limit", String(limit));
   query.set("includeTotal", String(includeTotal));
 
@@ -57,6 +62,8 @@ export function useQuizSession(params: {
           return null;
         if (pageIndex === 0) return url;
         const nextPage = new URL(url, 'http://localhost');
+        nextPage.searchParams.delete('anchor');
+        nextPage.searchParams.delete('resumeIndex');
         nextPage.searchParams.set('cursor', previousPage!.nextCursor!);
         nextPage.searchParams.set('includeTotal', 'false');
         return `${url.split('?')[0]}?${nextPage.searchParams}`;
@@ -86,16 +93,47 @@ export function useQuizSession(params: {
       pending.current = false;
     }
   }, [hasMore, isValidating, error, setSize]);
-  const questions = useMemo(
-    () => data?.flatMap((page) => page.questions) ?? [],
-    [data],
-  );
+  const [extraPages, setExtraPages] = useState<Record<string, SessionResponse>>({});
+  const windowRequests = useRef(new Map<string, Promise<void>>());
+  const questions = useMemo(() => {
+    if (!data?.[0]) return [];
+    const start = data[0].startIndex ?? 0;
+    const rows = data.flatMap(page => page.questions);
+    const prefix = Array.from({ length: start }, (_, index) => ({
+      id: `unloaded:${index}`, question: '', options: [], sessionPlaceholder: true,
+    } as unknown as Question));
+    const result = [...prefix, ...rows];
+    for (const [key, page] of Object.entries(extraPages)) {
+      if (!key.startsWith(`${url}|`)) continue;
+      for (let i = 0; i < page.questions.length; i++) result[(page.startIndex ?? 0) + i] = page.questions[i];
+    }
+    return result;
+  }, [data, extraPages, url]);
+  const ensureQuestion = useCallback(async (index: number) => {
+    if (!url || !questions[index]?.sessionPlaceholder) return;
+    const offset = Math.floor(index / limit) * limit;
+    const key = `${url}|${offset}`;
+    let pendingWindow = windowRequests.current.get(key);
+    if (!pendingWindow) {
+      const windowUrl = new URL(url, 'http://localhost');
+      windowUrl.searchParams.delete('anchor');
+      windowUrl.searchParams.delete('resumeIndex');
+      windowUrl.searchParams.set('windowOffset', String(offset));
+      windowUrl.searchParams.set('includeTotal', 'false');
+      pendingWindow = fetcher(`${url.split('?')[0]}?${windowUrl.searchParams}`).then(page => {
+        setExtraPages(previous => ({ ...previous, [key]: page }));
+      }).finally(() => windowRequests.current.delete(key));
+      windowRequests.current.set(key, pendingWindow);
+    }
+    await pendingWindow;
+  }, [url, questions, limit]);
 
   const totalCount = data?.[0]?.totalCount ?? 0;
   const isInitialLoading = Boolean(isLoading || (!data?.[0] && isValidating));
 
   return {
     questions,
+    ensureQuestion,
     isLoading: isInitialLoading,
     isError: error,
     hasMore,

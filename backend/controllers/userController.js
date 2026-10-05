@@ -6,7 +6,9 @@ import {
   updateUser,
   updateUserProgress,
   trackStudyUsage,
+  mutateUserList,
 } from '../repositories/userRepository.js';
+import { profileProjection, chatSummary, appendChatMessages, mergeQuizEntry } from '../services/userHistory.js';
 import {
   computeNextDailyReminder,
   isValidTimezone,
@@ -56,7 +58,7 @@ const studyGoalSchema = z.object({
 
 export const getMe = async (req, res) => {
   try {
-    const user = await getUser(req.user.id);
+    const user = await getUser(req.user.id, profileProjection);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const { passwordHash, _id, _cosmosRid, ...safeUser } = user;
@@ -88,7 +90,7 @@ export const updateProfile = async (req, res) => {
       await updateUser(user.id, fieldsToUpdate);
     }
 
-    const updatedUser = await getUser(req.user.id);
+    const updatedUser = await getUser(req.user.id, profileProjection);
     const { passwordHash, _id, _cosmosRid, ...safeUser } = updatedUser;
     safeUser.role = safeUser.role || req.user.role || 'user';
     res.json({ message: 'Profile updated ✅', user: safeUser });
@@ -163,48 +165,26 @@ export const updateProgress = async (req, res) => {
   }
 };
 
-export const updateRecentQuizzes = async (req, res) => {
-  const {
-    quizKey, title, subject, slug, href, mode, currentIndex, totalQuestions,
-    selectedAnswers, submittedQuestions, results, status,
-  } = req.body;
+export const getRecentQuiz = async (req, res) => {
   try {
-    const user = await getUser(req.user.id);
+    const user = await getUser(req.user.id, { recentQuizzes: 1 });
     if (!user) return res.status(404).json({ error: 'User not found' });
+    const quiz = user.recentQuizzes?.find(entry => entry.quizKey === req.params.quizKey);
+    if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
+    return res.json({ quiz });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+};
 
-    const updatedAt = new Date().toISOString();
-    const safeIndex = Number.isFinite(currentIndex) ? Math.max(0, currentIndex) : 0;
-    const safeTotal = Number.isFinite(totalQuestions) ? Math.max(0, totalQuestions) : 0;
-    const safeSelected = selectedAnswers && typeof selectedAnswers === 'object' ? selectedAnswers : {};
-    const safeSubmitted = Array.isArray(submittedQuestions) ? submittedQuestions : [];
-    const safeResults = Array.isArray(results) ? results : [];
-    const safeStatus = status === 'completed' ? 'completed' : 'in-progress';
-
-    const entry = {
-      quizKey, title, subject, slug: slug || '', href, mode: mode || 'mixed',
-      currentIndex: safeIndex, totalQuestions: safeTotal, selectedAnswers: safeSelected,
-      submittedQuestions: safeSubmitted, results: safeResults, status: safeStatus, updatedAt,
-    };
-
-    let recentQuizzes = user.recentQuizzes || [];
-    const existingIndex = recentQuizzes.findIndex((q) => q.quizKey === quizKey);
-
-    if (existingIndex >= 0) {
-      recentQuizzes[existingIndex] = { ...recentQuizzes[existingIndex], ...entry };
-    } else {
-      recentQuizzes.unshift(entry);
-    }
-
-    recentQuizzes = recentQuizzes
-      .filter((q) => q && q.quizKey)
-      .sort((a, b) => (Date.parse(b.updatedAt || '') || 0) - (Date.parse(a.updatedAt || '') || 0))
-      .slice(0, 12);
-
-    await updateUser(user.id, { recentQuizzes });
-    res.json({ message: 'Recent quizzes updated ✅', recentQuizzes });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+export const updateRecentQuizzes = async (req, res) => {
+  try {
+    const recentQuizzes = await mutateUserList(req.user.id, 'recentQuizzes', entries => {
+      const previous = entries.find(entry => entry.quizKey === req.body.quizKey);
+      const entry = mergeQuizEntry(previous, req.body);
+      return [entry, ...entries.filter(row => row.quizKey !== entry.quizKey)].slice(0, 12);
+    });
+    if (!recentQuizzes) return res.status(404).json({ error: 'User not found' });
+    return res.json({ saved: true });
+  } catch (error) { return res.status(error.statusCode || 500).json({ error: error.message }); }
 };
 
 export const updateUsage = async (req, res) => {
@@ -227,7 +207,7 @@ export const updateUsage = async (req, res) => {
 
 export const getAiChats = async (req, res) => {
   try {
-    const user = await getUser(req.user.id);
+    const user = await getUser(req.user.id, { aiChats: 1 });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const aiChats = Array.isArray(user.aiChats) ? user.aiChats : [];
@@ -236,10 +216,41 @@ export const getAiChats = async (req, res) => {
       .sort((a, b) => (Date.parse(b.updatedAt || '') || 0) - (Date.parse(a.updatedAt || '') || 0))
       .slice(0, 30);
 
-    res.json({ aiChats: safeChats });
+    res.json({ aiChats: safeChats.map(chatSummary) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+};
+
+export const getAiChat = async (req, res) => {
+  try {
+    const user = await getUser(req.user.id, { aiChats: 1 });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const chat = user.aiChats?.find(entry => entry.id === req.params.chatId);
+    if (!chat) return res.status(404).json({ error: 'Chat not found' });
+    return res.json({ aiChat: { ...chat, revision: chat.revision ?? chat.messages.length } });
+  } catch (error) { return res.status(500).json({ error: error.message }); }
+};
+
+const appendMessagesSchema = z.object({
+  title: z.string().trim().max(80).optional(),
+  sequence: z.number().int().positive(),
+  messages: z.array(z.object({ role: z.enum(['user', 'bot']), content: z.string().max(12000) })).min(1).max(80),
+});
+
+export const appendAiMessages = async (req, res) => {
+  const parsed = appendMessagesSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid chat messages' });
+  try {
+    let revision;
+    const chats = await mutateUserList(req.user.id, 'aiChats', entries => {
+      const result = appendChatMessages(entries, req.params.chatId, parsed.data);
+      revision = result.revision;
+      return result.chats;
+    });
+    if (!chats) return res.status(404).json({ error: 'User not found' });
+    return res.json({ saved: true, revision });
+  } catch (error) { return res.status(error.statusCode || 500).json({ error: error.message }); }
 };
 
 export const updateAiChat = async (req, res) => {
@@ -268,24 +279,11 @@ export const updateAiChat = async (req, res) => {
     const updatedAt = new Date().toISOString();
     const safeTitle = typeof title === 'string' && title.trim() ? title.trim().slice(0, 80) : 'New chat';
 
-    const entry = { id: String(chatId), title: safeTitle, messages: safeMessages, updatedAt };
+    const entry = { id: String(chatId), title: safeTitle, messages: safeMessages, revision: safeMessages.length, updatedAt };
 
-    let aiChats = Array.isArray(user.aiChats) ? user.aiChats : [];
-    const existingIndex = aiChats.findIndex((chat) => chat.id === entry.id);
-
-    if (existingIndex >= 0) {
-      aiChats[existingIndex] = { ...aiChats[existingIndex], ...entry };
-    } else {
-      aiChats.unshift(entry);
-    }
-
-    aiChats = aiChats
-      .filter((chat) => chat && chat.id && Array.isArray(chat.messages))
-      .sort((a, b) => (Date.parse(b.updatedAt || '') || 0) - (Date.parse(a.updatedAt || '') || 0))
-      .slice(0, 30);
-
-    await updateUser(user.id, { aiChats });
-    res.json({ message: 'AI chat saved ✅', aiChat: entry, aiChats });
+    await mutateUserList(user.id, 'aiChats', chats =>
+      [entry, ...chats.filter(chat => chat && chat.id && chat.id !== entry.id && Array.isArray(chat.messages))].slice(0, 30));
+    res.json({ saved: true, revision: safeMessages.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -296,15 +294,11 @@ export const deleteAiChat = async (req, res) => {
   if (!chatId) return res.status(400).json({ error: 'chatId is required' });
 
   try {
-    const user = await getUser(req.user.id);
+    const user = await getUser(req.user.id, { aiChats: 1 });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const aiChats = (Array.isArray(user.aiChats) ? user.aiChats : [])
-      .filter((chat) => chat && chat.id !== chatId)
-      .slice(0, 30);
-
-    await updateUser(user.id, { aiChats });
-    res.json({ message: 'AI chat deleted ✅', aiChats });
+    await mutateUserList(req.user.id, 'aiChats', chats => chats.filter(chat => chat && chat.id !== chatId).slice(0, 30));
+    res.json({ saved: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

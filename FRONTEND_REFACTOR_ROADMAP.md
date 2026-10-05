@@ -1,5 +1,9 @@
 # Frontend refactoring: verified roadmap
 
+## Mobile performance follow-up — 5 October 2026
+
+The remaining thirteen findings from the mobile-performance review are implemented locally. [Phase-two report](FRONTEND_MOBILE_PERFORMANCE_PHASE2.md) records the lean history APIs, incremental persistence, direct quiz resume, mock countdown/autosave changes, responsive images, PDF request deduplication, reconnect/polling fixes and KaTeX/Iconify cleanup, with [verification evidence](FRONTEND_MOBILE_PERFORMANCE_PHASE2_EVIDENCE.json). Together with [phase one](FRONTEND_MOBILE_PERFORMANCE_PHASE1.md), this covers all eighteen original findings. Deployment and real-device measurement limits remain explicit in the reports.
+
 ## Implementation update — 14 September 2026
 
 The local implementation now covers all six priorities below. The original verified review is retained after this update as the historical baseline.

@@ -24,6 +24,10 @@ export interface MockQuestion {
   options?: Array<string | MockOption>;
   image?: string;
   questionImage?: string;
+  questionImageWidth?: number;
+  questionImageHeight?: number;
+  solutionImageWidth?: number;
+  solutionImageHeight?: number;
   solution?: string;
   solutionImage?: string;
 }

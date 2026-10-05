@@ -276,6 +276,7 @@ router.post(
                   0,
                   8
                 )}`;
+              const dimensions = await sharp(webpBuffer).metadata();
 
               /*
                * New storage path:
@@ -298,6 +299,8 @@ router.post(
                * questionImageKey.
                */
               const doc = {
+                questionImageWidth: dimensions.width,
+                questionImageHeight: dimensions.height,
                 id:
                   questionId,
 

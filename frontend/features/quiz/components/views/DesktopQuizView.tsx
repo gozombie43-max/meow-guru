@@ -235,6 +235,8 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
                 {hasQuestionText && (
                   <div className="mac-series-prompt">
                     <RichContent
+                      criticalImages
+                      imageDimensions={{ width: currentQ.questionImageWidth, height: currentQ.questionImageHeight }}
                       text={displayedQuestion}
                       renderText={renderQuestionLine}
                     />

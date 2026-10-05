@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { saveRecentQuiz } from "@/lib/userApi";
+import { useEffect, useMemo, useRef } from "react";
+import { createResumeSaver } from '../model/resumeDelta';
 import type { SessionResult, Difficulty, QuizQuestion } from "@/features/quiz/model/types";
 
 export function useQuizSync({
@@ -24,6 +24,7 @@ export function useQuizSync({
   examFilter,
   selectedClassificationConcepts,
   difficulty,
+  sessionFilters,
 }: {
   token: string | null;
   started: boolean;
@@ -46,15 +47,21 @@ export function useQuizSync({
   examFilter: string | null;
   selectedClassificationConcepts: Set<string>;
   difficulty: Difficulty;
+  sessionFilters?: { exam?: string; concept?: string; letter?: string };
 }): void {
+  const saver = useMemo(() => createResumeSaver(token, `${quizKey}:${mode}`), [token, quizKey, mode]);
+  const localFlush = useRef<(() => void) | null>(null);
+  const serverFlush = useRef<(() => void) | null>(null);
+  useEffect(() => () => { localFlush.current?.(); serverFlush.current?.(); }, []);
   useEffect(() => {
+    serverFlush.current = null;
     if (!token || !started || showAnalytics) return;
     if (questions.length === 0) return;
     if (resumeRequested && !resumeAppliedRef.current) return;
 
     const submittedList = Array.from(submittedQuestions);
-    const saveTimeout = window.setTimeout(() => {
-      saveRecentQuiz(token, {
+    const save = () => {
+      saver.save({
         quizKey,
         title,
         subject: subjectId,
@@ -62,15 +69,22 @@ export function useQuizSync({
         href: quizHref,
         mode,
         currentIndex,
+        questionAnchor: questions[currentIndex]?.sessionAnchor,
+        sessionFilters,
         totalQuestions: questions.length,
         selectedAnswers,
         submittedQuestions: submittedList,
         results,
         status: "in-progress",
       }).catch(() => {});
-    }, 600);
+    };
+    const saveTimeout = window.setTimeout(save, 600);
+    serverFlush.current = save;
+    const hidden = () => { if (document.visibilityState === 'hidden') save(); };
+    document.addEventListener('visibilitychange', hidden);
+    window.addEventListener('pagehide', save);
 
-    return () => window.clearTimeout(saveTimeout);
+    return () => { window.clearTimeout(saveTimeout); document.removeEventListener('visibilitychange', hidden); window.removeEventListener('pagehide', save); };
   }, [
     currentIndex,
     mode,
@@ -88,6 +102,9 @@ export function useQuizSync({
     token,
     showAnalytics,
     subjectId,
+    saver,
+    questions,
+    sessionFilters,
   ]);
 
   useEffect(() => {
@@ -95,7 +112,7 @@ export function useQuizSync({
     if (questions.length === 0) return;
 
     const submittedList = Array.from(submittedQuestions);
-    saveRecentQuiz(token, {
+    const save = () => saver.save({
       quizKey,
       title,
       subject: subjectId,
@@ -103,12 +120,16 @@ export function useQuizSync({
       href: quizHref,
       mode,
       currentIndex,
+      questionAnchor: questions[currentIndex]?.sessionAnchor,
+      sessionFilters,
       totalQuestions: questions.length,
       selectedAnswers,
       submittedQuestions: submittedList,
       results,
       status: "completed",
     }).catch(() => {});
+    serverFlush.current = save;
+    void save();
   }, [
     currentIndex,
     mode,
@@ -123,9 +144,13 @@ export function useQuizSync({
     token,
     showAnalytics,
     subjectId,
+    saver,
+    questions,
+    sessionFilters,
   ]);
 
   useEffect(() => {
+    localFlush.current = null;
     if (typeof window === "undefined" || !started || questions.length === 0)
       return;
     if (submittedQuestions.size === 0) return;
@@ -135,6 +160,7 @@ export function useQuizSync({
       submittedQuestions: Array.from(submittedQuestions),
       currentIndex,
       mode,
+      questionAnchor: questions[currentIndex]?.sessionAnchor,
       conceptFilter,
       examFilter,
       selectedClassificationConcepts: Array.from(
@@ -142,9 +168,15 @@ export function useQuizSync({
       ),
       difficulty,
     };
-    try {
-      window.localStorage.setItem(storageKey, JSON.stringify(stateToSave));
-    } catch {}
+    const persist = () => {
+      try { window.localStorage.setItem(storageKey, JSON.stringify(stateToSave)); } catch {}
+    };
+    localFlush.current = persist;
+    const timer = window.setTimeout(persist, 250);
+    const hidden = () => { if (document.visibilityState === 'hidden') persist(); };
+    document.addEventListener('visibilitychange', hidden);
+    window.addEventListener('pagehide', persist);
+    return () => { clearTimeout(timer); document.removeEventListener('visibilitychange', hidden); window.removeEventListener('pagehide', persist); };
   }, [
     started,
     questions.length,
@@ -157,5 +189,6 @@ export function useQuizSync({
     selectedClassificationConcepts,
     difficulty,
     storageKey,
+    questions,
   ]);
 }

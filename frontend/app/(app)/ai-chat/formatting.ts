@@ -8,6 +8,8 @@ export type ChatSession = {
   title: string;
   messages: ChatMessage[];
   updatedAt: string;
+  revision?: number;
+  messageCount?: number;
 };
 
 export const ASSISTANT_CONTEXT = `You are a friendly AI study partner for SSC CGL and CHSL aspirants.

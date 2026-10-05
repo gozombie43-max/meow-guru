@@ -6,6 +6,7 @@ export interface ResumeData {
   selectedAnswers?: Record<number, number>;
   submittedQuestions?: number[];
   currentIndex?: number;
+  questionAnchor?: string;
   conceptFilter?: string;
   examFilter?: string;
   selectedClassificationConcepts?: string[];
@@ -16,6 +17,7 @@ export function isResumeData(value: unknown): value is ResumeData {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const row = value as Record<string, unknown>;
   if (row.currentIndex !== undefined && !index(row.currentIndex)) return false;
+  if (row.questionAnchor !== undefined && typeof row.questionAnchor !== 'string') return false;
   if (row.selectedAnswers !== undefined && (!row.selectedAnswers || typeof row.selectedAnswers !== 'object' || Array.isArray(row.selectedAnswers) || !Object.entries(row.selectedAnswers).every(([key, value]) => index(Number(key)) && index(value)))) return false;
   if (row.submittedQuestions !== undefined && (!Array.isArray(row.submittedQuestions) || !row.submittedQuestions.every(index))) return false;
   if (row.selectedClassificationConcepts !== undefined && (!Array.isArray(row.selectedClassificationConcepts) || !row.selectedClassificationConcepts.every(value => typeof value === 'string'))) return false;

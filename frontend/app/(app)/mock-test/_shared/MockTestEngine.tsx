@@ -3,7 +3,9 @@ import { X } from "lucide-react";
 import MathRenderer from '@/components/MathRenderer';
 import { useAuth } from '@/context/AuthContext';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import Image from 'next/image';
+import QuestionImage from '@/components/QuestionImage';
+import MockCountdown from './MockCountdown';
+import { createCoalescedSave } from '@/lib/coalesced-save';
 import BackButton from "@/components/BackButton";
 import { useQuizLeaveGuard } from "@/hooks/useAppNavigation";
 import { useRouter,useSearchParams } from 'next/navigation';
@@ -46,12 +48,12 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
   
-  const [globalTimeLeft, setGlobalTimeLeft] = useState<number>(0);
+  const [deadline, setDeadline] = useState(0);
   
   const autosaveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const saveRevisionRef = useRef(0);
-  const deadlineRef = useRef(0);
-  const saveChainRef = useRef<Promise<unknown>>(Promise.resolve());
+  const attemptIdRef = useRef(resumeAttemptId || '');
+
   const conflictRef = useRef(false);
   const autoSubmitAttemptedRef = useRef(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -60,6 +62,31 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confidential, setConfidential] = useState(false);
 
+
+  const writeProgress = useCallback(async (progress: Omit<AttemptProgress, 'revision'>) => {
+    if (conflictRef.current) throw new Error('Reload this attempt to resolve the save conflict.');
+    const baseRevision = saveRevisionRef.current;
+    setSaveStatus('Saving…');
+    try {
+      const result = await autosaveAttempt(attemptIdRef.current, { ...progress, baseRevision, revision: baseRevision + 1 }, token!);
+      saveRevisionRef.current = result.revision ?? baseRevision + 1;
+      setSaveStatus('Progress saved');
+    } catch (error) {
+      if (error instanceof Error && 'conflict' in error && error.conflict) { conflictRef.current = true; setHasConflict(true); }
+      setSaveStatus(error instanceof Error ? error.message : 'Progress could not be saved.');
+      throw error;
+    }
+  }, [token]);
+  const saverRef = useRef<{ token: string | null; value: ReturnType<typeof createCoalescedSave<Omit<AttemptProgress, 'revision'>>> } | null>(null);
+  const getSaver = useCallback(() => {
+    if (!saverRef.current || saverRef.current.token !== token) {
+      saverRef.current = { token, value: createCoalescedSave(writeProgress,
+        (a, b) => a.answers === b.answers && a.questionStatuses === b.questionStatuses
+          && a.currentSection === b.currentSection && a.currentQuestion === b.currentQuestion) };
+    }
+    return saverRef.current.value;
+  }, [token, writeProgress]);
+  const saveProgress = useCallback((progress: Omit<AttemptProgress, 'revision'>) => getSaver().save(progress), [getSaver]);
 
   const loadData = useCallback(async () => {
     if (!token) return;
@@ -73,6 +100,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         let startKey = sessionStorage.getItem(storageKey);
         if (!startKey) { startKey = crypto.randomUUID(); sessionStorage.setItem(storageKey, startKey); }
         data = await startTest(examSlug, testId, token, startKey);
+        attemptIdRef.current = data.attemptId;
         setAttemptId(data.attemptId);
       }
       if (data.status === 'completed') {
@@ -85,10 +113,13 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       if (!nextPaper?.sections?.length) throw new Error('Attempt did not include a valid paper');
       setPaper(nextPaper);
       const remaining = data.timeLeft ?? (nextPaper.totalDurationMin ?? 60) * 60;
-      deadlineRef.current = Date.now() + remaining * 1000;
-      setGlobalTimeLeft(remaining);
-      if (data.answers) setAnswers(data.answers);
-      if (data.questionStatuses) setQuestionStatuses(data.questionStatuses);
+      setDeadline(Date.now() + remaining * 1000);
+      const loadedAnswers = data.answers ?? {};
+      const loadedStatuses = data.questionStatuses ?? {};
+      getSaver().seed({ answers: loadedAnswers, questionStatuses: loadedStatuses,
+        currentSection: data.currentSection ?? 0, currentQuestion: data.currentQuestion ?? 0 });
+      setAnswers(loadedAnswers);
+      setQuestionStatuses(loadedStatuses);
       setCurrentSection(data.currentSection ?? 0);
       setCurrentQuestion(data.currentQuestion ?? 0);
       saveRevisionRef.current = data.revision ?? 0;
@@ -99,26 +130,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       console.error('Failed to load test', e);
       setLoadError(e instanceof Error ? e.message : 'Failed to load test');
     }
-  }, [examSlug, testId, token, resumeAttemptId, router]);
+  }, [examSlug, testId, token, resumeAttemptId, router, getSaver]);
 
-  const saveProgress = useCallback((progress: Omit<AttemptProgress, 'revision'>) => {
-    const save = saveChainRef.current.catch(() => {}).then(async () => {
-      if (conflictRef.current) throw new Error('Reload this attempt to resolve the save conflict.');
-      const baseRevision = saveRevisionRef.current;
-      setSaveStatus('Saving…');
-      try {
-        const result = await autosaveAttempt(attemptId, { ...progress, baseRevision, revision: baseRevision + 1 }, token!);
-        saveRevisionRef.current = result.revision ?? baseRevision + 1;
-        setSaveStatus('Progress saved');
-      } catch (error) {
-        if (error instanceof Error && 'conflict' in error && error.conflict) { conflictRef.current = true; setHasConflict(true); }
-        setSaveStatus(error instanceof Error ? error.message : 'Progress could not be saved.');
-        throw error;
-      }
-    });
-    saveChainRef.current = save;
-    return save;
-  }, [attemptId, token]);
 
   useEffect(() => {
     // Fetching the attempt is the external synchronization boundary for this screen.
@@ -153,7 +166,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  useQuizLeaveGuard(Boolean(paper) && globalTimeLeft > 0 && !isSubmitting,
+  useQuizLeaveGuard(Boolean(paper) && deadline > 0 && !isSubmitting,
     `/mock-test/${examSlug}`,
     "Leave this mock test? Saved progress is retained, but the exam timer will continue.");
 
@@ -191,27 +204,10 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     saveProgress,
   ]);
 
-  useEffect(() => {
-    if (!paper) return;
-    const timer = window.setInterval(() => {
-      setGlobalTimeLeft(Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000)));
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [paper]);
-
-  useEffect(() => {
-    if (!paper || globalTimeLeft > 0 || isSubmitting || autoSubmitAttemptedRef.current) return;
+  const handleExpire = () => {
+    if (!paper || isSubmitting || autoSubmitAttemptedRef.current) return;
     autoSubmitAttemptedRef.current = true;
-    // The exam timer reaching zero is an external event that must submit immediately.
     void handleFinalSubmit();
-  }, [globalTimeLeft, handleFinalSubmit, isSubmitting, paper, showSubmitModal]);
-
-  const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0) return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   const updateStatus = (qId: string, status: QuestionStatus) => {
@@ -332,7 +328,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         <div data-ui-chrome="header" className={styles.topBar}>
           <BackButton href={`/mock-test/${examSlug}`} label="Leave mock test" />
           <div className={styles.examName}>{examSlug.toUpperCase()}</div>
-          <div className={styles.timer}>{formatTime(globalTimeLeft)}</div>
+          <div className={styles.timer}><MockCountdown deadline={deadline} onExpire={handleExpire} /></div>
           <button data-ui-button="primary" className={styles.submitBtn} onClick={() => setShowSubmitModal(true)}>Submit Test</button>
         </div>
       ) : (
@@ -340,7 +336,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
           <BackButton href={`/mock-test/${examSlug}`} label="Leave mock test" />
           <div className={styles.examName} style={{fontSize: '1rem'}}>{examSlug.toUpperCase()}</div>
           <div style={{display: 'flex', gap: '1rem', alignItems: 'center'}}>
-            <div className={styles.timer} style={{fontSize: '1rem'}}>{formatTime(globalTimeLeft)}</div>
+            <div className={styles.timer} style={{fontSize: '1rem'}}><MockCountdown deadline={deadline} onExpire={handleExpire} /></div>
             <button data-ui-button="state" className={styles.mobilePill} onClick={() => setShowPalette(true)}>Q {currentQGlobalIndex}/{totalQuestions}</button>
           </div>
         </div>
@@ -400,14 +396,14 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
           <div className={styles.questionContent}>
             <div className={styles.qNumber}>Question {currentQuestion + 1}</div>
             <div className={styles.qText}>{renderMath(currentQ.text ?? currentQ.question ?? '')}</div>
-            {currentQ.image && (
-              <Image
-                src={currentQ.image}
+            {(currentQ.image || currentQ.questionImage) && (
+              <QuestionImage
+                src={(currentQ.image || currentQ.questionImage)!}
                 alt="Question figure"
                 className={styles.qImage}
-                width={800}
-                height={450}
-                unoptimized
+                width={currentQ.questionImageWidth}
+                height={currentQ.questionImageHeight}
+                critical
               />
             )}
             
@@ -454,7 +450,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       )}
 
       {/* Mobile Bottom Sheet Palette */}
-      {!isDesktop && (
+      {!isDesktop && showPalette && (
         <>
           <button type="button" className={`${styles.backdrop} ${showPalette ? styles.show : ''}`} onClick={() => setShowPalette(false)} aria-label="Close question palette" />
           <div className={`${styles.bottomSheet} ${showPalette ? styles.show : ''}`}>

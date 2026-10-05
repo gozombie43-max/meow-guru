@@ -32,6 +32,14 @@ export declare const recentQuizPatchSchema: z.ZodObject<{
     selectedAnswers: z.ZodDefault<z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnion<readonly [z.ZodString, z.ZodNumber, z.ZodBoolean, z.ZodNull]>>>>;
     submittedQuestions: z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodNumber>>>;
     results: z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodAny>>>;
+    delta: z.ZodOptional<z.ZodBoolean>;
+    removedAnswers: z.ZodOptional<z.ZodArray<z.ZodNumber>>;
+    questionAnchor: z.ZodOptional<z.ZodString>;
+    sessionFilters: z.ZodOptional<z.ZodObject<{
+        exam: z.ZodOptional<z.ZodString>;
+        concept: z.ZodOptional<z.ZodString>;
+        letter: z.ZodOptional<z.ZodString>;
+    }, z.core.$strip>>;
     status: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
         completed: "completed";
         "in-progress": "in-progress";

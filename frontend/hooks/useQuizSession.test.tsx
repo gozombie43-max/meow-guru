@@ -5,6 +5,25 @@ import { useQuizSession } from "./useQuizSession";
 
 const fetchMock = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/api/http", () => ({ fetchWithRetry: fetchMock }));
+it('loads a later resume window first and deduplicates earlier-question navigation', async () => {
+  fetchMock.mockReset();
+  fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ startIndex: 200,
+    questions: Array.from({ length: 50 }, (_, i) => ({ id: String(200 + i) })), nextCursor: null, hasMore: false }) })
+    .mockResolvedValueOnce({ ok: true, json: async () => ({ startIndex: 100,
+      questions: Array.from({ length: 100 }, (_, i) => ({ id: String(100 + i) })), nextCursor: 'prior', hasMore: true }) });
+  const { result } = renderHook(() => useQuizSession({ subject: 'mathematics', topic: 'resume-test', resumeIndex: 240, limit: 100 }), {
+    wrapper: ({ children }) => <SWRConfig value={{ provider: () => new Map() }}>{children}</SWRConfig>,
+  });
+  await waitFor(() => expect(result.current.questions[240]?.id).toBe('240'));
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(fetchMock.mock.calls[0][0]).toContain('resumeIndex=240');
+  expect(result.current.questions[199].sessionPlaceholder).toBe(true);
+  await act(async () => { await Promise.all([result.current.ensureQuestion(199), result.current.ensureQuestion(199)]); });
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(fetchMock.mock.calls[1][0]).toContain('windowOffset=100');
+  expect(result.current.questions[199].id).toBe('199');
+  expect(result.current.questions[240].id).toBe('240');
+});
 const page = (id: string, cursor: string | null) => ({
   ok: true,
   json: async () => ({

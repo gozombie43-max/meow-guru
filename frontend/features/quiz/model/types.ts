@@ -51,6 +51,10 @@ import type { GeometryDiagram } from '@/components/geometry/diagramSchema';
 
 export interface QuizQuestion {
   id: number | string;
+  sessionAnchor?: string;
+  sessionPlaceholder?: boolean;
+  questionImageWidth?: number;
+  questionImageHeight?: number;
   concept: string;
   formula: string;
   question: string;

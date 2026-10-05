@@ -205,6 +205,8 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
               <div className="ios-series-prompt">
                 <RichContent
                   text={displayedQuestion}
+                  criticalImages
+                  imageDimensions={{ width: currentQ.questionImageWidth, height: currentQ.questionImageHeight }}
                   renderText={renderQuestionLine}
                 />
               </div>

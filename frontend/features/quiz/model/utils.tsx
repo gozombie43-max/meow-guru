@@ -259,6 +259,10 @@ export function toQuizQuestion(
 
   return {
     id,
+    sessionAnchor: question.sessionAnchor,
+    sessionPlaceholder: question.sessionPlaceholder,
+    questionImageWidth: question.questionImageWidth,
+    questionImageHeight: question.questionImageHeight,
     concept,
     formula: "",
     question: questionContent,
@@ -369,7 +373,7 @@ export function getQuestionStatus({
 
   if (index === currentIndex) return "current";
   if (selected === undefined || !question) return "not-answered";
-  if (!submittedQuestions.has(index)) return "answered";
+  if (!submittedQuestions.has(index) || question.sessionPlaceholder) return "answered";
   if (selected === question.correctAnswer) return "correct";
   return "wrong";
 }

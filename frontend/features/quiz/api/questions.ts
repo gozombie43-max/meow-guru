@@ -3,6 +3,12 @@ import { API_BASE } from "@/lib/api-base";
 import { request,requestResponse } from "@/shared/api/request";
 export interface Question {
   id: string;
+  sessionAnchor?: string;
+  sessionPlaceholder?: boolean;
+  questionImageWidth?: number;
+  questionImageHeight?: number;
+  solutionImageWidth?: number;
+  solutionImageHeight?: number;
   topic: string;
   subject: string;
   chapter: string;

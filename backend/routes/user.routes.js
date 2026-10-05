@@ -11,6 +11,9 @@ import {
 } from '../schemas/apiSchemas.js';
 import {
   getMe,
+  getRecentQuiz,
+  getAiChat,
+  appendAiMessages,
   updateProfile,
   updateBookmarks,
   updateProgress,
@@ -44,6 +47,7 @@ router.patch('/me/bookmarks', protect, validateBody(bookmarkPatchSchema), update
 router.patch('/me/progress', protect, validateBody(progressPatchSchema), updateProgress);
 
 // ── PATCH /users/me/recent-quizzes ─────────────────────
+router.get('/me/recent-quizzes/:quizKey', protect, getRecentQuiz);
 router.patch('/me/recent-quizzes', protect, validateBody(recentQuizPatchSchema), updateRecentQuizzes);
 
 // ── PATCH /users/me/usage ──────────────────────────────
@@ -53,6 +57,8 @@ router.patch('/me/usage', protect, validateBody(studyTimePatchSchema), updateUsa
 router.get('/me/ai-chats', protect, getAiChats);
 
 // ── PUT /users/me/ai-chats/:chatId ─────────────────────
+router.get('/me/ai-chats/:chatId', protect, getAiChat);
+router.post('/me/ai-chats/:chatId/messages', protect, appendAiMessages);
 router.put('/me/ai-chats/:chatId', protect, updateAiChat);
 
 // ── DELETE /users/me/ai-chats/:chatId ──────────────────

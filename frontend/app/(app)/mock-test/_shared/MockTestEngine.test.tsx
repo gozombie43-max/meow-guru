@@ -3,12 +3,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import MockTestEngine from './MockTestEngine';
 import { autosaveAttempt, startTest, submitAttempt } from './api';
 
-const { replace } = vi.hoisted(() => ({ replace: vi.fn() }));
+const { replace, renderQuestion } = vi.hoisted(() => ({ replace: vi.fn(), renderQuestion: vi.fn() }));
 const router = { replace };
 vi.mock('next/navigation', () => ({ useRouter: () => router, useSearchParams: () => null }));
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ token: 'test-token' }) }));
 vi.mock('@/hooks/useMediaQuery', () => ({ useMediaQuery: () => true }));
-vi.mock('@/components/MathRenderer', () => ({ default: ({ text }: { text: string }) => <span>{text}</span> }));
+vi.mock('@/components/MathRenderer', () => ({ default: ({ text }: { text: string }) => {
+  renderQuestion(text);
+  return <span>{text}</span>;
+} }));
 vi.mock('./api', () => ({ startTest: vi.fn(), getAttempt: vi.fn(), autosaveAttempt: vi.fn(), submitAttempt: vi.fn() }));
 
 beforeEach(() => {
@@ -50,11 +53,20 @@ describe('test attempt persistence and expiry', () => {
 
   it('surfaces multi-tab conflicts and stops further saves until reload', async () => {
     await mount();
+    fireEvent.click(screen.getAllByRole('radio')[0]);
     vi.mocked(autosaveAttempt).mockRejectedValueOnce(Object.assign(new Error('Another tab saved'), { conflict: true }));
     await act(async () => { vi.advanceTimersByTime(20000); });
     expect(screen.getByRole('button', { name: 'Reload saved attempt' })).toBeVisible();
     await act(async () => { vi.advanceTimersByTime(20000); });
     expect(autosaveAttempt).toHaveBeenCalledTimes(1);
+  });
+  it('does not autosave an unchanged attempt or rerender question content for clock ticks', async () => {
+    await mount();
+    renderQuestion.mockClear();
+    await act(async () => { vi.advanceTimersByTime(40000); });
+    expect(autosaveAttempt).not.toHaveBeenCalled();
+    expect(renderQuestion).not.toHaveBeenCalled();
+    expect(screen.getByText('00:20')).toBeVisible();
   });
   it('saves current answers after 20 seconds even when the student keeps changing them', async () => {
     await mount();

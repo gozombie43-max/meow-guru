@@ -12,6 +12,10 @@ export interface RecentQuizPayload {
   href: string;
   mode?: string;
   currentIndex?: number;
+  questionAnchor?: string;
+  sessionFilters?: { exam?: string; concept?: string; letter?: string };
+  delta?: boolean;
+  removedAnswers?: number[];
   totalQuestions?: number;
   selectedAnswers?: Record<number, number>;
   submittedQuestions?: number[];

@@ -122,6 +122,7 @@ export const uploadImageQuestion = async (req, res) => {
       .resize({ width: 1400, withoutEnlargement: true })
       .webp({ quality: 92 })
       .toBuffer();
+    const dimensions = await sharp(compressed).metadata();
 
     /*
      * Existing Azure object: questionId/question.webp
@@ -162,6 +163,8 @@ export const uploadImageQuestion = async (req, res) => {
       chapter: normalizedChapter,
       difficulty: difficulty || "medium",
       questionImage: questionImageUrl,
+      questionImageWidth: dimensions.width,
+      questionImageHeight: dimensions.height,
       // Keep the key in case the URL format changes later.
       questionImageKey: key,
       optionRegions: regions,
@@ -207,6 +210,7 @@ export const bulkUpload = async (req, res) => {
             .resize({ width: 1400, withoutEnlargement: true })
             .webp({ quality: 90 })
             .toBuffer();
+          const dimensions = await sharp(compressed).metadata();
 
           const key = `${QUESTION_PREFIX}/${id}/question.webp`;
 
@@ -222,6 +226,8 @@ export const bulkUpload = async (req, res) => {
             questionType: "image_mcq",
             topic: "visual_reasoning",
             questionImage: imageUrl,
+            questionImageWidth: dimensions.width,
+            questionImageHeight: dimensions.height,
             questionImageKey: key,
             optionRegions: {},
             correctLetter: "a",

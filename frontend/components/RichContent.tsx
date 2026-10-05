@@ -1,6 +1,6 @@
 import React from "react";
 import MathText from "@/components/MathText";
-import { API_BASE } from "@/lib/api-base";
+import QuestionImage, { resolveQuestionImage } from './QuestionImage';
 
 type ContentPart =
   | { type: "text"; value: string }
@@ -10,27 +10,11 @@ type RichContentProps = {
   text: string;
   className?: string;
   renderText?: (line: string) => React.ReactNode;
+  criticalImages?: boolean;
+  imageDimensions?: { width?: number; height?: number };
 };
 
 const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
-
-function resolveImageSrc(src: string): string {
-  const trimmed = (src || "").trim();
-  if (!trimmed) return "";
-  if (/^(https?:)?\/\//i.test(trimmed)) {
-    // Legacy mass solution uploads stored blob URLs without the container segment.
-    // Normalize "...blob.core.windows.net/solutions/..." to ".../questions/solutions/...".
-    const normalized = trimmed.replace(
-      /^(https?:\/\/[^/]+\.blob\.core\.windows\.net)\/solutions\//i,
-      "$1/questions/solutions/"
-    );
-    return normalized;
-  }
-  if (trimmed.startsWith("data:") || trimmed.startsWith("blob:")) return trimmed;
-
-  if (trimmed.startsWith("/")) return `${API_BASE}${trimmed}`;
-  return `${API_BASE}/${trimmed}`;
-}
 
 function splitContent(text: string): ContentPart[] {
   const parts: ContentPart[] = [];
@@ -67,6 +51,8 @@ export default function RichContent({
   text,
   className = "",
   renderText,
+  criticalImages = false,
+  imageDimensions,
 }: RichContentProps) {
   if (!text) return null;
 
@@ -91,22 +77,17 @@ export default function RichContent({
           );
         }
 
-        const resolvedSrc = resolveImageSrc(part.src);
+        const resolvedSrc = part.src.trim() ? resolveQuestionImage(part.src) : '';
         if (!resolvedSrc) return null;
 
         return (
-          <img
+          <QuestionImage
             key={`img-${index}`}
             src={resolvedSrc}
             alt={part.alt || "Question image"}
-            style={{
-              width: "100%",
-              maxWidth: "100%",
-              height: "auto",
-              borderRadius: "12px",
-              border: "1px solid rgba(15, 23, 42, 0.12)",
-            }}
-            loading="lazy"
+            width={imageDimensions?.width}
+            height={imageDimensions?.height}
+            critical={criticalImages && index === parts.findIndex(part => part.type === 'image')}
           />
         );
       })}

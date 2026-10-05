@@ -30,6 +30,8 @@ interface RecentQuizEntry {
   href: string;
   mode?: string;
   currentIndex?: number;
+  questionAnchor?: string;
+  sessionFilters?: { exam?: string; concept?: string; letter?: string };
   totalQuestions?: number;
   selectedAnswers?: Record<number, number>;
   submittedQuestions?: number[];

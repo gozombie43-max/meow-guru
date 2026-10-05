@@ -37,6 +37,10 @@ export const recentQuizPatchSchema = z.object({
   selectedAnswers: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])).refine((value) => Object.keys(value).length <= 500).optional().default({}),
   submittedQuestions: z.array(z.number().int().nonnegative()).max(500).optional().default([]),
   results: z.array(z.any()).max(500).optional().default([]),
+  delta: z.boolean().optional(),
+  removedAnswers: z.array(z.number().int().nonnegative()).max(500).optional(),
+  questionAnchor: z.string().max(200).optional(),
+  sessionFilters: z.object({ exam: z.string().optional(), concept: z.string().optional(), letter: z.string().optional() }).optional(),
   status: z.enum(['in-progress', 'completed']).optional().default('in-progress'),
 });
 

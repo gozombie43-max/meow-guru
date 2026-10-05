@@ -99,7 +99,8 @@ export function mergeSolutionContent(
 export async function patchSolutionImage(
   questionId,
   solutionImage,
-  solutionImageKey
+  solutionImageKey,
+  dimensions = {}
 ) {
   const questions =
     getQuestionsCollection();
@@ -127,6 +128,7 @@ export async function patchSolutionImage(
     },
     {
       $set: {
+        ...dimensions,
         solutionImage,
         solutionImageKey,
         solution,

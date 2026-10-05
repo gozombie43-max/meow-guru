@@ -3,6 +3,7 @@
 const QUESTION_FIELDS = [
   'id', 'text', 'question', 'questionHindi', 'questionType', 'options',
   'image', 'questionImage', 'optionImages', 'optionAImage', 'optionBImage',
+  'questionImageWidth', 'questionImageHeight',
   'optionCImage', 'optionDImage', 'passage', 'sectionKey', 'subject', 'topic',
 ];
 

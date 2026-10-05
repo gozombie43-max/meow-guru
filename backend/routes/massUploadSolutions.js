@@ -438,7 +438,8 @@ router.post(
         await patchSolutionImage(
           questionId,
           url,
-          key
+          key,
+          await sharp(webpBuffer).metadata().then(({ width, height }) => ({ solutionImageWidth: width, solutionImageHeight: height }))
         );
 
 

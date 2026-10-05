@@ -48,7 +48,7 @@ export function useQuizController({
   const resumeRequested = searchParams.get("resume") === "1";
   const jumpIdRaw = searchParams.get("qid");
 
-  const filters = useQuizFilters({ subjectConfig, slug, questionTopic, mode, initialLetterParam: searchParams.get("letter") });
+  const filters = useQuizFilters({ subjectConfig, slug, questionTopic, mode, resumeRequested, initialLetterParam: searchParams.get("letter") });
   const {
     selectedClassificationConcepts,
     setSelectedClassificationConcepts,

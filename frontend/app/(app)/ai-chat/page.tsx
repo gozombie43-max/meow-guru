@@ -63,6 +63,8 @@ function AiChatPageContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     activeChatId,
+    cancelSessionLoad,
+    loadSession,
     chatSessions,
     isHistoryLoading,
     isLoading,
@@ -96,6 +98,8 @@ function AiChatPageContent() {
   }, [attachmentPreview]);
 
   const startNewChat = () => {
+    if (isLoading) return;
+    cancelSessionLoad();
     setActiveChatId(null);
     setMessages([]);
     composerRef.current?.clear();
@@ -104,8 +108,9 @@ function AiChatPageContent() {
   };
 
   const openChat = (session: ChatSession) => {
+    if (isLoading) return;
     setActiveChatId(session.id);
-    setMessages(session.messages);
+    void loadSession(session);
     composerRef.current?.clear();
     setCopiedIndex(null);
     if (typeof window !== 'undefined' && window.innerWidth <= 900) {
@@ -131,14 +136,15 @@ function AiChatPageContent() {
     if (!activeChatId) setActiveChatId(chatId);
     composerRef.current?.clear();
     removeAttachment();
-    setMessages(userMessages);
-    saveSessionMessages(chatId, userMessages, text || fileToSend?.name || 'Attached question');
+    setMessages(userMessages.slice(-80));
+    void saveSessionMessages(chatId, userMessages, text || fileToSend?.name || 'Attached question');
     setIsLoading(true);
 
     try {
       const { tutorRequestSchema, tutorReplySchema, tutorJobResponseSchema } = await import('@meow/contracts/tutor');
       tutorRequestSchema.parse({ context, message: text || 'Please solve the attached question.', history: previousMessages.slice(-16) });
       let reply = '';
+      let queuedJob = false;
       if (fileToSend) {
         const formData = new FormData();
         formData.append('context', context);
@@ -151,12 +157,12 @@ function AiChatPageContent() {
           timeout: 60000,
         });
         if (response.data?.jobId) {
+          queuedJob = true;
           tutorJobResponseSchema.parse(response.data);
           if (pendingKey) sessionStorage.setItem(pendingKey, JSON.stringify({ jobId: response.data.jobId, chatId, title: text || fileToSend.name, messages: userMessages }));
           pollingRef.current = new AbortController();
           const { waitForTutorJob } = await import('@/lib/tutor-jobs');
           reply = await waitForTutorJob(response.data.jobId, pollingRef.current.signal);
-          if (pendingKey) sessionStorage.removeItem(pendingKey);
         } else reply = tutorReplySchema.parse(response.data).reply;
       } else {
         const response = await api.post(
@@ -174,8 +180,9 @@ function AiChatPageContent() {
       }
 
       const nextMessages = [...userMessages, { role: 'bot' as const, content: normalizeSimpleTables(reply) }];
-      setMessages(nextMessages);
-      saveSessionMessages(chatId, nextMessages, text || fileToSend?.name || 'Attached question');
+      setMessages(nextMessages.slice(-80));
+      const saved = await saveSessionMessages(chatId, nextMessages, text || fileToSend?.name || 'Attached question');
+      if (queuedJob && saved && pendingKey) sessionStorage.removeItem(pendingKey);
     } catch (err: unknown) {
       if ((err instanceof Error && err.name === 'AbortError') || (isAxiosError(err) && err.code === 'ERR_CANCELED')) return;
       if (err instanceof TutorJobError && err.terminal && pendingKey) sessionStorage.removeItem(pendingKey);
@@ -190,8 +197,8 @@ function AiChatPageContent() {
           content: errorMessage,
         },
       ];
-      setMessages(nextMessages);
-      saveSessionMessages(chatId, nextMessages, text || fileToSend?.name || 'Attached question');
+      setMessages(nextMessages.slice(-80));
+      void saveSessionMessages(chatId, nextMessages, text || fileToSend?.name || 'Attached question');
     } finally {
       setIsLoading(false);
     }

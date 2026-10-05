@@ -1,3 +1,4 @@
+import { useAuth } from '@/context/AuthContext';
 import type { SubjectConfig } from "@/features/quiz/model/types";
 import {
   ClassificationGroup,
@@ -21,25 +22,32 @@ export function useQuizFilters({
   questionTopic,
   mode,
   initialLetterParam,
+  resumeRequested = false,
 }: {
   subjectConfig: SubjectConfig;
   slug: string;
   questionTopic?: string;
   mode: QuizMode;
   initialLetterParam: string | null;
+  resumeRequested?: boolean;
 }) {
+  const { user, loading: authLoading } = useAuth();
+  const [resumeEntry, setResumeEntry] = useState(() => resumeRequested
+    ? user?.recentQuizzes?.find(entry => entry.quizKey === `${subjectConfig.subjectId}:${slug}` && entry.status !== 'completed') : undefined);
+  const [resumeWindow, setResumeWindow] = useState<{ index?: number; anchor?: string; filters?: { exam?: string; concept?: string; letter?: string } }>(() => ({ index: resumeEntry?.currentIndex, anchor: resumeEntry?.questionAnchor }));
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [selectedClassificationConcepts, setSelectedClassificationConcepts] =
-    useState<Set<string>>(() => new Set());
-  const [examFilter, setExamFilter] = useState<string>("");
+    useState<Set<string>>(() => new Set(resumeEntry?.sessionFilters?.concept?.split(',').filter(Boolean) ?? []));
+  const [examFilter, setExamFilter] = useState<string>(resumeEntry?.sessionFilters?.exam ?? '');
   const [classificationSearch, setClassificationSearch] = useState("");
   const [classificationCategory, setClassificationCategory] = useState<
     "All" | string
   >("All");
 
   const [selectedLetters, setSelectedLetters] = useState<Set<string>>(() => {
-    if (initialLetterParam) {
-      const letters = initialLetterParam
+    const letterParam = resumeEntry?.sessionFilters?.letter ?? initialLetterParam;
+    if (letterParam) {
+      const letters = letterParam
         .split(",")
         .map((l) => l.trim().toUpperCase())
         .filter((l) => /^[A-Z]$/.test(l));
@@ -47,6 +55,15 @@ export function useQuizFilters({
     }
     return new Set();
   });
+  const restoredEntry = resumeRequested ? user?.recentQuizzes?.find(entry => entry.quizKey === `${subjectConfig.subjectId}:${slug}` && entry.status !== 'completed') : undefined;
+  if (!resumeEntry && restoredEntry) {
+    // Auth restoration preserves this component. Initialize before enabling its first session query.
+    setResumeEntry(restoredEntry);
+    setResumeWindow({ index: restoredEntry.currentIndex, anchor: restoredEntry.questionAnchor });
+    setExamFilter(restoredEntry.sessionFilters?.exam ?? '');
+    setSelectedClassificationConcepts(new Set(restoredEntry.sessionFilters?.concept?.split(',').filter(Boolean) ?? []));
+    setSelectedLetters(new Set((restoredEntry.sessionFilters?.letter ?? initialLetterParam ?? '').split(',').filter(Boolean)));
+  }
 
   const { meta } = useQuestionsMeta({
     subject: subjectConfig.subjectId,
@@ -61,9 +78,14 @@ export function useQuizFilters({
     if (matches.length === 0) return examFilter; // Fallback to raw filter if no matches
     return matches.join(",");
   }, [examFilter, meta?.exams]);
+  const savedFilters = resumeWindow.filters ?? resumeEntry?.sessionFilters;
+  const matchesResumeFilters = (examFilter || '') === (savedFilters?.exam || '')
+    && Array.from(selectedClassificationConcepts).join(',') === (savedFilters?.concept || '')
+    && Array.from(selectedLetters).join(',') === (savedFilters?.letter || initialLetterParam || '');
 
   const {
     questions: apiQuestions,
+    ensureQuestion,
     hasMore,
     isFetchingMore,
     fetchMore,
@@ -74,6 +96,9 @@ export function useQuizFilters({
     topic: questionTopic ?? slug,
     mode,
     limit: 100,
+    enabled: !authLoading && (!restoredEntry || Boolean(resumeEntry)),
+    resumeIndex: matchesResumeFilters ? resumeWindow.index : undefined,
+    anchor: matchesResumeFilters ? resumeWindow.anchor : undefined,
     // Unfiltered totals already arrive in metadata. Filter combinations need an exact count.
     includeTotal: Boolean(selectedRawExams || selectedClassificationConcepts.size || selectedLetters.size),
     exam: selectedRawExams,
@@ -171,6 +196,8 @@ export function useQuizFilters({
   const availableCount = hasActiveFilters ? (apiTotalCount ?? 0) : (apiTotalCount || (meta?.total ?? 0));
 
   return {
+    setResumeWindow,
+    ensureQuestion,
     conceptFilter,
     setConceptFilter,
     selectedClassificationConcepts,

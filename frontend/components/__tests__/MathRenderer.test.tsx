@@ -3,8 +3,17 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import MathRenderer from '../MathRenderer';
 import MathRendererContent from '../MathRendererContent';
+import TutorMarkdown from '../QuizChatbot/TutorMarkdown';
 
 describe('MathRenderer Component', () => {
+  it('keeps fractions, matrices and untrusted commands consistent across both math paths', () => {
+    const formula = String.raw`\frac{1}{2}+\sqrt{x}+\begin{pmatrix}1&2\\3&4\end{pmatrix}`;
+    const { container } = render(<><MathRendererContent text={`$${formula}$`} /><TutorMarkdown content={`$${formula}$`} /></>);
+    expect(container.querySelectorAll('.katex')).toHaveLength(2);
+    expect(container.querySelector('.katex-error')).toBeNull();
+    const unsafe = render(<><MathRendererContent text={String.raw`$\href{javascript:alert(1)}{click}$`} /><TutorMarkdown content={String.raw`$\href{javascript:alert(1)}{click}$`} /></>);
+    expect(unsafe.container.querySelector('a')).toBeNull();
+  });
   it('keeps imported prose numerals sans serif without changing equations', () => {
     const { container } = render(<MathRendererContent text={String.raw`Increase by $15\%$ to $19,320$. Solve $x + 2 = 5$.`} />);
     expect(container.textContent).toContain('Increase by 15% to 19,320.');

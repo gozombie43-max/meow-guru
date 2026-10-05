@@ -26,13 +26,14 @@ vi.mock('next/dynamic', async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   sessionStorage.clear();
-  probes.get.mockResolvedValue({ data: { aiChats: [{ id: 'saved', title: 'Saved math', messages:
+  const saved = { id: 'saved', title: 'Saved math', messages:
     Array.from({ length: 10 }, (_, i) => [
       { role: 'user', content: `Question ${i}` },
       { role: 'bot', content: `Existing reply ${i}: $x=${i}$` },
     ]).flat(),
-  }] } });
-  probes.post.mockResolvedValue({ data: { success: true, reply: 'Validated reply' } });
+  };
+  probes.get.mockImplementation(async (url: string) => ({ data: url.endsWith('/saved') ? { aiChat: saved } : { aiChats: [{ ...saved, messages: undefined, revision: 20 }] } }));
+  probes.post.mockImplementation(async (url: string) => ({ data: url.endsWith('/messages') ? { saved: true } : { success: true, reply: 'Validated reply' } }));
   probes.put.mockResolvedValue({ data: {} });
   probes.delete.mockResolvedValue({ data: {} });
 });
@@ -66,7 +67,7 @@ describe('AI chat draft isolation', () => {
     await screen.findByText('Validated reply');
     expect(probes.post).toHaveBeenCalledWith('/api/ai/tutor-chat', expect.objectContaining({ message: 'Explain percentages' }), expect.anything());
     expect(input).toHaveValue('');
-    probes.post.mockResolvedValueOnce({ data: { success: false, reply: 'Invalid reply must not render' } });
+    probes.post.mockImplementation(async (url: string) => ({ data: url.endsWith('/messages') ? { saved: true } : { success: false, reply: 'Invalid reply must not render' } }));
     fireEvent.change(input, { target: { value: 'Next question' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
     await waitFor(() => expect(document.body.textContent).toContain('expected true'));

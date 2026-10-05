@@ -8,6 +8,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useCallback,useEffect,useMemo,useRef,useReducer } from "react";
 import { useQuizAnswerLifecycle } from "./useQuizAnswerLifecycle";
 import { initialQuizSession, quizSessionReducer } from "../model/sessionReducer";
+import useSWR from 'swr';
+import api from '@/shared/api/client';
 
 export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, routeBase, resumeRequested,
   jumpIdRaw, filters, closePalette }: {
@@ -17,7 +19,7 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
 }) {
   const jumpId = Number.parseInt(jumpIdRaw ?? "", 10);
   const { questions, hasMore, fetchMore, conceptFilter, setConceptFilter, examFilter, setExamFilter,
-    selectedClassificationConcepts, setSelectedClassificationConcepts } = filters;
+    selectedClassificationConcepts, setSelectedClassificationConcepts, ensureQuestion } = filters;
   const [state, dispatch] = useReducer(quizSessionReducer, undefined, initialQuizSession);
   const { currentIndex, selectedAnswers, submittedQuestions, difficulty, results } = state;
   const started = state.phase !== 'idle';
@@ -32,23 +34,33 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   const { user, token, refreshUser } = useAuth();
   const quizKey = `${subjectConfig.subjectId}:${slug}`;
   const quizHref = `${routeBase ?? `/${subjectConfig.subjectId}/${slug}`}/quiz`;
-  const resumeEntry = useMemo(() => {
+  const resumeSummary = useMemo(() => {
     if (!resumeRequested) return null;
     return (
       user?.recentQuizzes?.find((entry) => entry.quizKey === quizKey) ?? null
     );
   }, [quizKey, resumeRequested, user?.recentQuizzes]);
+  const { data: resumeDetail } = useSWR(resumeSummary && !resumeSummary.selectedAnswers
+    ? `/users/me/recent-quizzes/${encodeURIComponent(quizKey)}` : null,
+    async (url: string) => (await api.get(url)).data.quiz as NonNullable<typeof resumeSummary>,
+    { revalidateOnFocus: false });
+  const resumeEntry = resumeSummary?.selectedAnswers ? resumeSummary : resumeDetail;
   const resumeAppliedRef = useRef(false);
 
-  const currentQ = questions[currentIndex];
+  const currentQ = questions[currentIndex]?.sessionPlaceholder ? undefined : questions[currentIndex];
+  useEffect(() => {
+    if (!started || !questions[currentIndex]?.sessionPlaceholder || !ensureQuestion) return;
+    void ensureQuestion(currentIndex).catch(() => dispatch({ type: 'ERROR', message: 'Could not load this question. Please try again.' }));
+  }, [started, currentIndex, questions, ensureQuestion]);
   useEffect(() => {
     if (started && !showAnalytics && hasMore && currentIndex >= questions.length - 3) void fetchMore();
   }, [started, showAnalytics, hasMore, currentIndex, questions.length, fetchMore]);
   const answers = useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch });
   const initialization = state.restored;
-  const savedIndex = resumeEntry?.currentIndex ?? 0;
+  const anchorIndex = resumeEntry?.questionAnchor ? questions.findIndex(question => question.sessionAnchor === resumeEntry.questionAnchor) : -1;
+  const savedIndex = anchorIndex >= 0 ? anchorIndex : resumeEntry?.currentIndex ?? 0;
   const readyResume = resumeRequested && resumeEntry && resumeEntry.status !== "completed"
-    && questions.length > 0 && (savedIndex < questions.length || !hasMore);
+    && questions.length > 0 && (savedIndex < questions.length || !hasMore) && !questions[savedIndex]?.sessionPlaceholder;
   const targetIndex = jumpIdRaw && Number.isFinite(jumpId)
     ? questions.findIndex(question => question.id === jumpId) : -1;
   useEffect(() => {
@@ -71,6 +83,10 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
       || (!resumeRequested && jumpIdRaw && Number.isFinite(jumpId) && targetIndex < 0)) void fetchMore();
   }, [initialization, hasMore, questions.length, resumeRequested, resumeEntry?.status, savedIndex, jumpIdRaw, jumpId, targetIndex, fetchMore]);
 
+  const sessionFilters = useMemo(() => ({ exam: examFilter || undefined,
+    concept: Array.from(selectedClassificationConcepts).join(',') || undefined,
+    letter: Array.from(filters.selectedLetters ?? []).join(',') || undefined,
+  }), [examFilter, selectedClassificationConcepts, filters.selectedLetters]);
   useQuizSync({
     token,
     started,
@@ -93,6 +109,7 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     examFilter,
     selectedClassificationConcepts,
     difficulty,
+    sessionFilters,
   });
 
   function handleStart() {
@@ -103,6 +120,8 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
 
   function handleResume() {
     if (resumeData) {
+      filters.setResumeWindow?.({ index: resumeData.currentIndex, anchor: resumeData.questionAnchor,
+        filters: { exam: resumeData.examFilter, concept: resumeData.selectedClassificationConcepts?.join(',') } });
       dispatch({ type: 'RESTORE', snapshot: resumeData });
       if (resumeData.conceptFilter) setConceptFilter(resumeData.conceptFilter);
       if (resumeData.examFilter) setExamFilter(resumeData.examFilter);
@@ -117,6 +136,7 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   }
 
   function handleRestartFromPopup() {
+    filters.setResumeWindow?.({ index: 0 });
     clearResume();
     dispatch({ type: 'START' });
     startTimer();
@@ -127,13 +147,23 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   }
 
 
+  const navigationRequest = useRef(0);
   const showQuestion = useCallback((index: number) => {
     if (!questions.length) return;
     const safeIndex = Math.max(0, Math.min(index, questions.length - 1));
-    stopTimer();
-    dispatch({ type: 'NAVIGATE', index: safeIndex, count: questions.length });
-    if (started && !showAnalytics && !submittedQuestions.has(safeIndex)) startTimer();
-  }, [questions.length, stopTimer, started, showAnalytics, submittedQuestions, startTimer, dispatch]);
+    const request = ++navigationRequest.current;
+    const navigate = () => {
+      if (request !== navigationRequest.current) return;
+      stopTimer();
+      dispatch({ type: 'NAVIGATE', index: safeIndex, count: questions.length });
+      if (started && !showAnalytics && !submittedQuestions.has(safeIndex)) startTimer();
+    };
+    if (questions[safeIndex]?.sessionPlaceholder && ensureQuestion) {
+      void ensureQuestion(safeIndex).then(navigate).catch(() => dispatch({ type: 'ERROR', message: 'Could not load this question. Please try again.' }));
+      return;
+    }
+    navigate();
+  }, [questions, ensureQuestion, stopTimer, started, showAnalytics, submittedQuestions, startTimer, dispatch]);
   const goToQuestion = useCallback((number: number) => showQuestion(number - 1), [showQuestion]);
   const handlePrev = useCallback(() => { if (currentIndex > 0) showQuestion(currentIndex - 1); }, [currentIndex, showQuestion]);
   function handleNext() {

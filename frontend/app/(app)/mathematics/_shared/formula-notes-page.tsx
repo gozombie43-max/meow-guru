@@ -13,6 +13,8 @@ import { ChevronLeft,ChevronRight,FileText,Plus,Search,X } from "lucide-react";
 import { useParams,useRouter } from "next/navigation";
 import { useCallback,useEffect,useMemo,useRef,useState } from "react";
 
+const pendingPdfs = new Map<string, Promise<TopicPdf[]>>();
+
 const tabs = ["Notes", "Formula", "Extra", "DPP"];
 const nameCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
@@ -143,6 +145,7 @@ export default function FormulaNotesPage({
   const topicLabel = topicLabelProp || getTopicLabel(topic);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const requestRef = useRef(0);
   const cacheRef = useRef<Record<string, TopicPdf[]>>({});
   const [activeTab, setActiveTab] = useState("Notes");
   const [pdfs, setPdfs] = useState<TopicPdf[]>([]);
@@ -160,7 +163,7 @@ export default function FormulaNotesPage({
 
   const getCachedPdfs = useCallback(
     (cat: string): TopicPdf[] | null => {
-      if (cacheRef.current[cat] !== undefined) return cacheRef.current[cat];
+      if (cacheRef.current[`${topic}:${cat}`] !== undefined) return cacheRef.current[`${topic}:${cat}`];
       if (typeof window !== "undefined") {
         try {
           const stored =
@@ -169,7 +172,7 @@ export default function FormulaNotesPage({
           if (stored) {
             const parsed = JSON.parse(stored) as TopicPdf[];
             if (Array.isArray(parsed)) {
-              cacheRef.current[cat] = parsed;
+              cacheRef.current[`${topic}:${cat}`] = parsed;
               return parsed;
             }
           }
@@ -184,7 +187,7 @@ export default function FormulaNotesPage({
 
   const setCachedPdfs = useCallback(
     (cat: string, data: TopicPdf[]) => {
-      cacheRef.current[cat] = data;
+      cacheRef.current[`${topic}:${cat}`] = data;
       if (typeof window !== "undefined") {
         try {
           const serialized = JSON.stringify(data);
@@ -198,98 +201,46 @@ export default function FormulaNotesPage({
     [topic]
   );
 
-  const fetchCategoryPdfs = useCallback(
-    async (tab: string, bypassCache = false) => {
-      if (!topic) return;
-      const category = categoryFromTab(tab);
+  const requestCategory = useCallback((tab: string) => {
+    const category = categoryFromTab(tab);
+    const url = apiUrl(`/api/pdfs?topic=${encodeURIComponent(topic)}&category=${encodeURIComponent(category)}`);
+    let pending = pendingPdfs.get(url);
+    if (!pending) {
+      pending = fetchWithRetry(url, {}, { timeoutMs: 8000, retries: 1 }).then(async response => {
+        if (!response.ok) throw new Error(`PDF fetch failed: ${response.status}`);
+        const data = await response.json() as { pdfs?: TopicPdf[] };
+        return sortByName(data.pdfs ?? []);
+      }).finally(() => pendingPdfs.delete(url));
+      pendingPdfs.set(url, pending);
+    }
+    return pending.then(files => { setCachedPdfs(category, files); return files; });
+  }, [apiUrl, categoryFromTab, setCachedPdfs, topic]);
 
-      const cached = getCachedPdfs(category);
-      if (cached !== null && !bypassCache) {
-        setPdfs(cached);
-        setLoading(false);
-        setNotice("");
-        // Quiet background revalidation (stale-while-revalidate)
-        fetch(
-          apiUrl(`/api/pdfs?topic=${encodeURIComponent(topic)}&category=${encodeURIComponent(category)}`)
-        )
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d: { pdfs?: TopicPdf[] } | null) => {
-            if (d?.pdfs) {
-              const sorted = sortByName(d.pdfs);
-              setCachedPdfs(category, sorted);
-              setPdfs(sorted);
-            }
-          })
-          .catch(() => {});
-        return;
-      }
-
-      setPdfs([]);
-      setLoading(true);
-      setNotice("");
-      try {
-        const res = await fetchWithRetry(
-          apiUrl(`/api/pdfs?topic=${encodeURIComponent(topic)}&category=${encodeURIComponent(category)}`),
-          {},
-          { timeoutMs: 8000, retries: 1 }
-        );
-        if (!res.ok) {
-          if (res.status === 429) {
-            const fallbackCached = getCachedPdfs(category);
-            if (fallbackCached) {
-              setPdfs(fallbackCached);
-              setLoading(false);
-              return;
-            }
-            setNotice("Server busy. Please wait a moment.");
-            setLoading(false);
-            return;
-          }
-          throw new Error(`PDF fetch failed: ${res.status}`);
-        }
-        const data = (await res.json()) as { pdfs?: TopicPdf[] };
-        const sorted = sortByName(data.pdfs || []);
-        setCachedPdfs(category, sorted);
-        setPdfs(sorted);
-      } catch (err) {
-        console.warn("Could not load PDFs:", err);
-        const fallbackCached = getCachedPdfs(category);
-        if (fallbackCached) {
-          setPdfs(fallbackCached);
-        } else {
-          setNotice("Unable to load PDFs.");
-        }
-      } finally {
-        setLoading(false);
-      }
-    },
-    [apiUrl, categoryFromTab, getCachedPdfs, setCachedPdfs, topic]
-  );
+  const fetchCategoryPdfs = useCallback(async (tab: string, bypassCache = false) => {
+    if (!topic) return;
+    const request = ++requestRef.current;
+    const cached = bypassCache ? null : getCachedPdfs(categoryFromTab(tab));
+    setPdfs(cached ?? []);
+    setLoading(cached === null);
+    setNotice('');
+    try {
+      const files = await requestCategory(tab);
+      if (request === requestRef.current) setPdfs(files);
+    } catch (error) {
+      if (request === requestRef.current && cached === null) setNotice('Unable to load PDFs. Please try again.');
+      console.warn('Could not load PDFs:', error);
+    } finally { if (request === requestRef.current) setLoading(false); }
+  }, [topic, getCachedPdfs, categoryFromTab, requestCategory]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => void fetchCategoryPdfs(activeTab), 0);
-    return () => window.clearTimeout(timer);
+    const invalidate = () => { requestRef.current++; };
+    return () => { window.clearTimeout(timer); invalidate(); };
   }, [activeTab, fetchCategoryPdfs]);
 
-  // Prefetch other categories quietly in background on mount
-  useEffect(() => {
-    if (!topic) return;
-    const remainingTabs = tabs.filter((t) => t !== activeTab);
-    remainingTabs.forEach((t) => {
-      const cat = categoryFromTab(t);
-      if (getCachedPdfs(cat) === null) {
-        fetch(apiUrl(`/api/pdfs?topic=${encodeURIComponent(topic)}&category=${encodeURIComponent(cat)}`))
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d: { pdfs?: TopicPdf[] } | null) => {
-            if (d?.pdfs) {
-              setCachedPdfs(cat, sortByName(d.pdfs));
-            }
-          })
-          .catch(() => {});
-      }
-    });
-  }, [activeTab, apiUrl, categoryFromTab, getCachedPdfs, setCachedPdfs, topic]);
-
+  const prefetchTab = (tab: string) => {
+    if (getCachedPdfs(categoryFromTab(tab)) === null) void requestCategory(tab).catch(() => {});
+  };
 
   const formatDate = (value?: string) => {
     if (!value) return "";
@@ -487,6 +438,8 @@ export default function FormulaNotesPage({
               {tabs.map((tab) => (
                 <button data-ui-button="state"
                   key={tab}
+                  onPointerEnter={() => prefetchTab(tab)}
+                  onFocus={() => prefetchTab(tab)}
                   type="button"
                   className={styleClasses(`fn-tab-pill ${tab === activeTab ? "active" : ""}`)}
                   onClick={() => {

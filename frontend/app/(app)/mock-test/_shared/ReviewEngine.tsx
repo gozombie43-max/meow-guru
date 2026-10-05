@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { ArrowLeft,CheckCircle2,ChevronLeft,ChevronRight,XCircle } from 'lucide-react';
-import Image from 'next/image';
+import QuestionImage from '@/components/QuestionImage';
 import { useRouter } from 'next/navigation';
 import { useEffect,useMemo,useState } from 'react';
 import {
@@ -245,12 +245,12 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                 <p className={styles.questionText}>{currentQ.question ?? currentQ.text}</p>
                 {currentQ.questionImage && (
                   <div className={styles.qImageWrap}>
-                    <Image
+                    <QuestionImage
                       src={currentQ.questionImage}
                       alt="Question diagram"
-                      width={800}
-                      height={450}
-                      unoptimized
+                      width={currentQ.questionImageWidth}
+                      height={currentQ.questionImageHeight}
+                      critical
                     />
                   </div>
                 )}
@@ -286,12 +286,11 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                   {currentQ.solution && <p className={styles.solutionText}>{currentQ.solution}</p>}
                   {currentQ.solutionImage && (
                     <div className={styles.solImageWrap}>
-                      <Image
+                      <QuestionImage
                         src={currentQ.solutionImage}
                         alt="Detailed solution"
-                        width={800}
-                        height={450}
-                        unoptimized
+                        width={currentQ.solutionImageWidth}
+                        height={currentQ.solutionImageHeight}
                       />
                     </div>
                   )}

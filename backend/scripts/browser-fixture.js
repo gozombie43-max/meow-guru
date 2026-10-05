@@ -31,7 +31,7 @@ const { default: auth } = await import('../routes/auth.routes.js');
 const { default: mocktest } = await import('../routes/mocktest.js');
 const { default: progress } = await import('../routes/progress.routes.js');
 const { protect } = await import('../middleware/protect.js');
-const { getAiChats, updateAiChat, deleteAiChat } = await import('../controllers/userController.js');
+const { getMe, getRecentQuiz, updateRecentQuizzes, getAiChats, getAiChat, appendAiMessages, updateAiChat, deleteAiChat } = await import('../controllers/userController.js');
 const passwordHash = await bcrypt.hash('Browser-fixture-123!', 4);
 await db.collection('users').insertMany(['desktop', 'mobile', 'lighthouse', 'performance-desktop', 'performance-mobile', 'admin', 'superadmin'].map(device => ({ id: `browser-${device}`, name: 'Browser Student', email: `browser-${device}@example.test`, passwordHash, role: ['admin', 'superadmin'].includes(device) ? device : 'student', progress: {}, bookmarks: [], recentQuizzes: [{ quizKey: 'mathematics:algebra', currentIndex: 0, status: 'in-progress', selectedAnswers: {}, submittedQuestions: [] }] })));
 const { normalizedQuestionKeys } = await import('../services/questions/questionNormalizer.js');
@@ -83,9 +83,12 @@ app.get('/api/questions/topic-counts', async (req, res) => {
   }
 });
 app.patch('/users/me/usage', protect, (_req, res) => res.json({ ok: true }));
-app.patch('/users/me/recent-quizzes', protect, (_req, res) => res.json({ ok: true }));
-app.get('/users/me', protect, async (req, res) => res.json(await db.collection('users').findOne({ id: req.user.id }, { projection: { passwordHash: 0, _id: 0 } })));
+app.patch('/users/me/recent-quizzes', protect, updateRecentQuizzes);
+app.get('/users/me/recent-quizzes/:quizKey', protect, getRecentQuiz);
+app.get('/users/me', protect, getMe);
 app.get('/users/me/ai-chats', protect, getAiChats);
+app.get('/users/me/ai-chats/:chatId', protect, getAiChat);
+app.post('/users/me/ai-chats/:chatId/messages', protect, appendAiMessages);
 app.put('/users/me/ai-chats/:chatId', protect, updateAiChat);
 app.delete('/users/me/ai-chats/:chatId', protect, deleteAiChat);
 app.use((_req, res) => res.status(404).json({ error: 'Fixture route not found' }));

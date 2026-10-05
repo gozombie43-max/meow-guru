@@ -62,8 +62,9 @@ export default function AppRecovery() {
 
       sessionStorage.removeItem(OFFLINE_DETECTED_KEY);
       sessionStorage.removeItem(PENDING_RELOAD_KEY);
-      announceFeedback("Connection restored. Refreshing the app.", "info");
-      window.setTimeout(reloadApp, 700);
+      announceFeedback(hasPendingReload ? "Connection restored. Refreshing the app." : "Connection restored.", "info");
+      // SWR already revalidates on reconnect. Preserve mounted study state.
+      if (hasPendingReload) window.setTimeout(reloadApp, 700);
     };
 
     const recoverOrDefer = () => {

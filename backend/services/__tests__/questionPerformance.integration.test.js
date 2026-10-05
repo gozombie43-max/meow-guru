@@ -31,6 +31,25 @@ beforeEach(async () => {
 afterAll(async () => { await disconnectMongoDB(); await server?.stop(); vi.unstubAllEnvs(); });
 
 describe('bounded question reads', () => {
+  it('opens question 241 with one slim resume window, then supports previous windows and stable anchors', async () => {
+    await db.collection('questions').updateOne({ id: 'q240' }, { $set: { trainingSecret: 'hidden', trainingMetadataVersion: 99,
+      questionImage: '/figure.webp', questionImageWidth: 1200, questionImageHeight: 800 } });
+    const resumed = await fetchQuestionsSession({ topic: 'algebra', resumeIndex: '240', limit: 100 });
+    expect(resumed.startIndex).toBe(200);
+    expect(resumed.questions[40]).toMatchObject({ id: 'q240', questionImageWidth: 1200, questionImageHeight: 800 });
+    expect(resumed.questions[40]).not.toHaveProperty('trainingMetadataVersion');
+    expect(resumed.questions[40]).not.toHaveProperty('topicKey');
+    expect(resumed.questions[40]).not.toHaveProperty('trainingSecret');
+    const anchored = await fetchQuestionsSession({ topic: 'algebra', anchor: resumed.questions[40].sessionAnchor, resumeIndex: '0', limit: 100 });
+    expect(anchored.questions.map(row => row.id)).toEqual(resumed.questions.map(row => row.id));
+    const previous = await fetchQuestionsSession({ topic: 'algebra', windowOffset: '100', limit: 100 });
+    expect(previous.questions[99].id).toBe('q199');
+    const next = await fetchQuestionsSession({ topic: 'algebra', cursor: resumed.nextCursor, limit: 100 });
+    expect(next.questions[0].id).toBe('q300');
+    const filtered = await fetchQuestionsSession({ topic: 'algebra', exam: 'SSC CHSL', resumeIndex: '40', limit: 100 });
+    expect(filtered.questions[40].id).toBe('q290');
+    await expect(fetchQuestionsSession({ resumeIndex: '-1' })).rejects.toMatchObject({ statusCode: 400 });
+  });
   it('supports last and previous admin pages without offsets', async () => {
     const last = await fetchQuestions({ pagination: 'cursor', sort: 'asc', limit: 50, last: 'true', questionType: 'all' });
     expect(last.questions.map(q => q.id)).toEqual(['q450']);

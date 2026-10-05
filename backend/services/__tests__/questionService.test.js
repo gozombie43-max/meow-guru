@@ -555,6 +555,7 @@ describe('MongoDB-backed question writes', () => {
     const mockDocs = [{ _id: 'id1', id: 'anto_syno_1', letter: 'A' }, { _id: 'id2', id: 'anto_syno_2', letter: 'B' }];
     
     const cursor = {
+      project: vi.fn().mockReturnThis(),
       sort: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
       toArray: vi.fn().mockResolvedValue(mockDocs),
