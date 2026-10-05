@@ -11,7 +11,7 @@ export function trainingQuestionMetadata(row) {
   const labels = [row.exam, row.examName, row.exams].flatMap(value => Array.isArray(value) ? value : [value]);
   const examSlugs = ['ssc-cgl', 'ssc-chsl', 'cat'].filter(exam => labels.some(label => typeof label === 'string' && trainingExamPattern(exam).test(label)));
   const q = normalizeQuestion(row);
-  const candidate = q ? Object.fromEntries(['id', 'subject', 'topic', 'subtopic', 'concepts', 'difficulty', 'expectedTime', 'targetSource', 'sourceType', 'discrimination'].map(key => [key, q[key]])) : null;
+  const candidate = q ? Object.fromEntries(['id', 'questionUid', 'legacyId', 'subject', 'topic', 'subtopic', 'concepts', 'difficulty', 'expectedTime', 'targetSource', 'sourceType', 'discrimination'].map(key => [key, q[key]])) : null;
   return {
     trainingMetadataVersion: TRAINING_METADATA_VERSION,
     trainingExamSlugs: examSlugs,

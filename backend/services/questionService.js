@@ -1,3 +1,4 @@
+import { canonicalQuestionUid } from './questions/questionIdentity.js';
 // Stable public API; implementations are grouped by responsibility.
 export { buildQuestionsCacheKey, questionCountsCache, questionsQueryCache, invalidateQuestionCacheRevision, getQuestionRevision } from './questions/questionCache.js';
 export { fetchQuestionCounts,fetchQuestionsMeta } from './questions/questionMetadataService.js';
@@ -9,12 +10,10 @@ export { checkDuplicates,createQuestion,createQuestionsBulk,modifyQuestion,remov
 import { findAnsweredQuestion, recordQuestionAnswer } from '../repositories/questionProgressRepository.js';
 import { invalidateTopicProgress } from './questions/topicProgressCache.js';
 
-export const processUserAnswer = async (userId, questionId, providedAnswer, submissionId) => {
+export const processUserAnswer = async (userId, questionId, providedAnswer, submissionId, context = {}) => {
   
   // 1. Find the question to get the correct answer and topic
-  const numericId = Number(questionId);
-  const queryId = !Number.isNaN(numericId) ? numericId : questionId;
-  const question = await findAnsweredQuestion(questionId, queryId);
+  const question = await findAnsweredQuestion(questionId, context);
   if (!question) {
     const error = new Error('Question not found');
     error.statusCode = 404;
@@ -32,7 +31,7 @@ export const processUserAnswer = async (userId, questionId, providedAnswer, subm
   const topic = question.topic || question.chapter || question.subject || 'unknown';
   
   // 2. Use a transaction to safely update both collections
-  const result = await recordQuestionAnswer(userId, queryId, topic, isCorrect);
+  const result = await recordQuestionAnswer(userId, canonicalQuestionUid(question), topic, isCorrect, question.id);
   if (result.isFirstTime || result.becameMastered) await invalidateTopicProgress(userId);
   return result;
 };

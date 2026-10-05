@@ -129,7 +129,7 @@ const addQuestion = async (req, res) => {
     res.status(201).json({ message: 'Question added ✅', question: resource });
 
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -140,7 +140,7 @@ const getQuestions = async (req, res) => {
     res.set("Cache-Control", "no-store, max-age=0");
     res.json(result);
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -151,7 +151,7 @@ const getQuestionCounts = async (req, res) => {
     res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
     res.json(counts);
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -168,7 +168,7 @@ const generatePracticeTest = async (req, res) => {
       questions:      questions,
     });
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -182,7 +182,7 @@ const runAnalysis = async (req, res) => {
     const analysis = await questionService.analyzeAnswers(answers);
     res.json(analysis);
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -198,7 +198,7 @@ const getQuestionById = async (req, res) => {
     res.set("Cache-Control", "no-store, max-age=0");
     res.json(question);
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -209,7 +209,7 @@ const updateQuestion = async (req, res) => {
     if (!updated) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Updated ✅', question: updated });
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -220,7 +220,7 @@ const deleteQuestion = async (req, res) => {
     if (!success) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Deleted ✅' });
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -241,7 +241,7 @@ const bulkCreateQuestions = async (req, res) => {
 
     return res.json({ inserted, failed, total: questions.length, results: results.map((result, index) => ({ index, status: result.status, ...(result.status === 'fulfilled' ? { id: result.value.id } : { error: result.reason }) })) });
   } catch (err) {
-    return res.status(err.statusCode || err.status || 500).json({ error: err.message });
+    return res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -256,7 +256,7 @@ const bulkDeleteQuestions = async (req, res) => {
     const result = await questionService.removeQuestionsBulk(ids);
     return res.json({ message: `Deleted ${result.deleted} questions`, ...result });
   } catch (err) {
-    return res.status(err.statusCode || err.status || 500).json({ error: err.message });
+    return res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -271,7 +271,7 @@ const checkDuplicates = async (req, res) => {
     const duplicates = await questionService.checkDuplicates(questions);
     return res.json({ results: duplicates });
   } catch (err) {
-    return res.status(err.statusCode || err.status || 500).json({ error: err.message });
+    return res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -282,7 +282,7 @@ const getImageQuestions = async (req, res) => {
     const result = await questionService.fetchImageQuestions(topic, limit);
     res.json(result);
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -293,7 +293,7 @@ const getQuestionsSession = async (req, res) => {
     res.set('Cache-Control', 'public, max-age=10, stale-while-revalidate=30');
     res.json(result);
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -304,7 +304,7 @@ const getQuestionsMeta = async (req, res) => {
     res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
     res.json(result);
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 };
 
@@ -315,16 +315,17 @@ const submitAnswer = async (req, res) => {
     if (!parsed.success) {
       return res.status(400).json({ error: 'Valid answer required' });
     }
-    const { answer, submissionId } = parsed.data;
+    const { answer, submissionId, questionUid, topic } = parsed.data;
     const result = await questionService.processUserAnswer(
-      req.user._id || req.user.id,
+      req.user.id,
       req.params.id,
       answer,
-      submissionId
+      submissionId,
+      { questionUid, topic }
     );
     res.json(result);
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
   }
 }
 

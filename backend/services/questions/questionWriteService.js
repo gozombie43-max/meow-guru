@@ -1,3 +1,5 @@
+import { battleQuestionMetadata } from './battleQuestionMetadata.js';
+import { assignQuestionIdentity, resolveQuestion } from './questionIdentity.js';
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
 import crypto from "crypto";
 import { invalidateQuestionMetadata } from "./questionMetadataCache.js";
@@ -9,14 +11,14 @@ import { trainingQuestionMetadata } from '../training/domain/questionMetadata.js
 
 export async function createQuestion(newQuestion) {
   const collection = getQuestionsCollection();
-  const item = { ...newQuestion };
+  const item = assignQuestionIdentity({ ...newQuestion, questionUid: undefined });
 
   if (!item.topic) {
     item.topic = item.chapter || item.subject || item.category || "misc";
   }
   item.topic = String(item.topic).trim() || "misc";
 
-  Object.assign(item, normalizedQuestionKeys(item), trainingQuestionMetadata(item));
+  Object.assign(item, normalizedQuestionKeys(item), trainingQuestionMetadata(item), battleQuestionMetadata(item));
   await collection.insertOne(item);
   questionsQueryCache.clear();
   questionCountsCache.clear();
@@ -71,7 +73,7 @@ export async function createQuestionsBulk(questionsData, { importId } = {}) {
       item.ingestionHash = digest(JSON.stringify(q));
       if (!q.id) item.id = `q_${item.ingestionKey}`;
     }
-    return Object.assign(item, normalizedQuestionKeys(item), trainingQuestionMetadata(item));
+    return Object.assign(assignQuestionIdentity(item), normalizedQuestionKeys(item), trainingQuestionMetadata(item), battleQuestionMetadata(item));
   });
 
   const results = new Array(normalizedQuestions.length);
@@ -119,16 +121,10 @@ export async function createQuestionsBulk(questionsData, { importId } = {}) {
 
 export async function modifyQuestion(id, updates, topic = undefined) {
   const collection = getQuestionsCollection();
-  const filter = { id: String(id) };
-
-  if (topic !== undefined && topic !== "") {
-    filter.topic = topic;
-  }
-
-  const existing = await collection.findOne(filter);
+  const existing = await resolveQuestion(collection, id, { topic });
   if (!existing) return null;
 
-  const updated = { ...existing, ...updates, id: existing.id };
+  const updated = { ...existing, ...updates, id: existing.id, questionUid: existing.questionUid };
   delete updated._id;
 
   if (!updated.topic) {
@@ -136,7 +132,7 @@ export async function modifyQuestion(id, updates, topic = undefined) {
       existing.topic || updates.chapter || updates.subject || "misc";
   }
 
-  Object.assign(updated, normalizedQuestionKeys(updated), trainingQuestionMetadata(updated));
+  Object.assign(updated, normalizedQuestionKeys(updated), trainingQuestionMetadata(updated), battleQuestionMetadata(updated));
   await collection.updateOne({ _id: existing._id }, { $set: updated });
   questionsQueryCache.clear();
   questionCountsCache.clear();
@@ -147,16 +143,9 @@ export async function modifyQuestion(id, updates, topic = undefined) {
 
 export async function removeQuestion(id, topic = undefined) {
   const collection = getQuestionsCollection();
-  const filter = { id: String(id) };
-
-  if (topic !== undefined && topic !== "") {
-    filter.topic = topic;
-  }
-
-  const result =
-    topic !== undefined && topic !== ""
-      ? await collection.deleteOne(filter)
-      : await collection.deleteMany(filter);
+  const existing = await resolveQuestion(collection, id, { topic });
+  if (!existing) return false;
+  const result = await collection.deleteOne({ _id: existing._id });
 
   questionsQueryCache.clear();
   questionCountsCache.clear();
@@ -180,7 +169,12 @@ export async function removeQuestionsBulk(ids) {
   }
 
   try {
-    const result = await collection.deleteMany({ id: { $in: uniqueIds } });
+    const resolved = [];
+    for (const id of uniqueIds) {
+      const question = await resolveQuestion(collection, id);
+      if (question) resolved.push(question._id);
+    }
+    const result = await collection.deleteMany({ _id: { $in: resolved } });
     questionsQueryCache.clear();
     questionCountsCache.clear();
     await invalidateQuestionMetadata();
@@ -191,6 +185,7 @@ export async function removeQuestionsBulk(ids) {
       total: uniqueIds.length,
     };
   } catch (err) {
+    if (err.statusCode === 409) throw err;
     runtimeLog.error("removeQuestionsBulk error:", err);
 
     return {

@@ -2,7 +2,8 @@ import { mockAnswerIndex } from "../../mockAnswer.js";
 
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 
-export function normalizeQuestion(q) {
+export function normalizeQuestion(source) {
+  const q = { ...source, id: source.questionUid || source.id };
   if (
     !Array.isArray(q.options) ||
     !/^[a-zA-Z0-9_-]{1,200}$/.test(String(q.id || "")) ||
@@ -37,6 +38,8 @@ export function normalizeQuestion(q) {
   const examYears = [...new Set(examName?.match(/\b(?:19|20)\d{2}\b/g) || [])];
   return {
     id: String(q.id),
+    questionUid: source.questionUid || null,
+    legacyId: source.id || null,
     text: String(text),
     options,
     correctIndex,

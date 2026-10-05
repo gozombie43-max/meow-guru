@@ -1,5 +1,6 @@
+import { cachedNotificationUnread, invalidateNotificationUnread } from '../services/notificationUnreadCache.js';
 import { ObjectId } from "mongodb";
-import { readKeysetPage } from '../infrastructure/keysetPage.js';
+import { boundedLegacyOffset, readKeysetPage } from '../infrastructure/keysetPage.js';
 import {
   getPushDevicesCollection,
   getNotificationHistoryCollection,
@@ -82,13 +83,21 @@ export const insertNotificationHistory = async (doc) => {
   return history.insertOne(doc);
 };
 
-export const getNotificationHistoryList = async (page, limit) => {
+export const getNotificationHistoryList = async (page, limit, cursor) => {
   const collection = getNotificationHistoryCollection();
-  const [items, total] = await Promise.all([
-    collection.find({}).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).toArray(),
-    collection.countDocuments(),
-  ]);
-  return { items, total };
+  if (cursor || page === 1) {
+    const result = await readKeysetPage(collection, {
+      scope: 'notification-history',
+      cursor,
+      limit,
+      includeTotal: false
+    });
+    return { items: result.items, hasMore: result.hasMore, nextCursor: result.nextCursor };
+  } else {
+    // Legacy fallback for page > 1 without cursor
+    const items = await collection.find({}).sort({ createdAt: -1 }).skip(boundedLegacyOffset(page, limit)).limit(limit).toArray();
+    return { items };
+  }
 };
 
 export const insertScheduledNotification = async (doc) => {
@@ -96,17 +105,37 @@ export const insertScheduledNotification = async (doc) => {
   return collection.insertOne(doc);
 };
 
-export const getScheduledNotificationsList = async (filter, sort, page, limit) => {
+export const getScheduledNotificationsList = async (filter, sort, page, limit, cursor) => {
   const collection = getScheduledNotificationsCollection();
-  const [items, total, pendingCount, sentCount, failedCount, cancelledCount] = await Promise.all([
-    collection.find(filter).sort(sort).skip((page - 1) * limit).limit(limit).toArray(),
-    collection.countDocuments(filter),
+  
+  // We can optimize the counts by caching them if needed, but for now we'll just omit them or keep them if they are small scale.
+  // Actually, item 19 says "Remove exact counts from page requests". So we omit total from the list request.
+  let items, hasMore, nextCursor;
+  if (cursor || page === 1) {
+    const result = await readKeysetPage(collection, {
+      filter,
+      filterScope: filter, // used to ensure cursor stability across same filters
+      scope: 'scheduled-notifications',
+      field: Object.keys(sort)[0] || 'createdAt',
+      direction: Object.values(sort)[0] || -1,
+      cursor,
+      limit,
+      includeTotal: false
+    });
+    items = result.items;
+    hasMore = result.hasMore;
+    nextCursor = result.nextCursor;
+  } else {
+    items = await collection.find(filter).sort(sort).skip(boundedLegacyOffset(page, limit)).limit(limit).toArray();
+  }
+  
+  const [pendingCount, sentCount, failedCount, cancelledCount] = await Promise.all([
     collection.countDocuments({ status: "pending" }),
     collection.countDocuments({ status: "sent" }),
     collection.countDocuments({ status: "failed" }),
     collection.countDocuments({ status: "cancelled" }),
   ]);
-  return { items, total, pendingCount, sentCount, failedCount, cancelledCount };
+  return { items, hasMore, nextCursor, pendingCount, sentCount, failedCount, cancelledCount };
 };
 
 export const cancelScheduledNotification = async (id, userId, email) => {
@@ -153,7 +182,7 @@ export const getUserLastReadAllAt = async (userId) => {
   return user?.notificationState?.lastReadAllAt ? new Date(user.notificationState.lastReadAllAt) : new Date(0);
 };
 
-export const getInboxUnreadCount = async (userId, lastReadAllAt, now) => {
+const computeInboxUnreadCount = async (userId, lastReadAllAt, now) => {
   const feed = getNotificationFeedCollection();
   const result = await feed.aggregate([
     {
@@ -186,10 +215,15 @@ export const getInboxUnreadCount = async (userId, lastReadAllAt, now) => {
       },
     },
     { $match: { readReceipt: { $eq: [] } } },
-    { $count: "count" },
-  ]).toArray();
-  return result[0]?.count ?? 0;
+    { $group: { _id: null, count: { $sum: 1 }, nextExpiry: { $min: "$expiresAt" } } },
+  ], { maxTimeMS: 5000 }).toArray();
+  return result[0] || { count: 0 };
 };
+
+export const getInboxUnreadCount = (userId, _lastReadAllAt, _now, options) => cachedNotificationUnread(userId, async () => {
+  const lastReadAllAt = await getUserLastReadAllAt(userId);
+  return computeInboxUnreadCount(userId, lastReadAllAt, new Date());
+}, options);
 
 export const getInboxItems = async (userId, lastReadAllAt, now, page, limit, pagination) => {
   const feed = getNotificationFeedCollection();
@@ -200,44 +234,14 @@ export const getInboxItems = async (userId, lastReadAllAt, now, page, limit, pag
     ],
   };
 
-  const cursorPage = pagination ? await readKeysetPage(feed, { filter: visibleFilter, scope: `inbox:${userId}`, cursor: pagination.cursor, limit, includeTotal: !pagination.cursor }) : null;
+  const cursorPage = pagination ? await readKeysetPage(feed, { filter: visibleFilter, filterScope: { userId }, scope: `inbox:${userId}`, cursor: pagination.cursor, limit, includeTotal: false }) : null;
   const [items, total] = cursorPage ? [cursorPage.items, cursorPage.total] : await Promise.all([
-    feed.find(visibleFilter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).toArray(),
+    feed.find(visibleFilter).sort({ createdAt: -1 }).skip(boundedLegacyOffset(page, limit)).limit(limit).toArray(),
     feed.countDocuments(visibleFilter),
   ]);
 
-  const unreadResult = await feed.aggregate([
-    {
-      $match: {
-        ...visibleFilter,
-        createdAt: { $gt: lastReadAllAt },
-      },
-    },
-    {
-      $lookup: {
-        from: "notificationReceipts",
-        let: { notificationId: "$_id" },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ["$notificationId", "$$notificationId"] },
-                  { $eq: ["$userId", userId] },
-                ],
-              },
-            },
-          },
-          { $limit: 1 },
-        ],
-        as: "readReceipt",
-      },
-    },
-    { $match: { readReceipt: { $eq: [] } } },
-    { $count: "count" },
-  ]).toArray();
-
-  return { items, total, unreadCount: unreadResult[0]?.count ?? 0, ...(cursorPage ? { nextCursor: cursorPage.nextCursor, hasMore: cursorPage.hasMore } : {}) };
+  const unreadCount = await getInboxUnreadCount(userId, undefined, undefined, { reconcile: true });
+  return { items, total, unreadCount, ...(cursorPage ? { nextCursor: cursorPage.nextCursor, hasMore: cursorPage.hasMore } : {}) };
 };
 
 export const getReadReceiptsForIds = async (userId, ids) => {
@@ -256,7 +260,7 @@ export const getNotificationForUser = async (id, userId) => {
 
 export const upsertReadReceipt = async (userId, notificationId) => {
   const receipts = getNotificationReceiptsCollection();
-  return receipts.updateOne(
+  const result = await receipts.updateOne(
     { userId, notificationId },
     {
       $set: { readAt: new Date() },
@@ -264,14 +268,18 @@ export const upsertReadReceipt = async (userId, notificationId) => {
     },
     { upsert: true }
   );
+  await invalidateNotificationUnread(userId);
+  return result;
 };
 
 export const setAllReadForUser = async (userId, now) => {
   const users = getUsersCollection();
-  return users.updateOne(
+  const result = await users.updateOne(
     { id: userId },
     { $set: { "notificationState.lastReadAllAt": now } }
   );
+  await invalidateNotificationUnread(userId);
+  return result;
 };
 
 export const insertEngagement = async (doc) => {

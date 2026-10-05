@@ -1,3 +1,4 @@
+import { resolveQuestion } from './questionIdentity.js';
 import { fetchQuestionCursorPage } from "./questionCursorService.js";
 import { logger } from '../../infrastructure/logger.js';
 import { getQuestionsCollection } from "../../config/mongodb.js";
@@ -431,19 +432,9 @@ export async function analyzeAnswers(answers) {
 export async function fetchQuestionById(id, topic = undefined) {
   const collection = getQuestionsCollection();
 
-  const filter = {
-    id: String(id),
-  };
-
-  if (topic !== undefined && topic !== "") {
-    filter.topic = String(topic);
-  }
-
-  const question = await collection.findOne(filter, {
-    projection: {
-      _id: 0,
-    },
-  });
+  const row = await resolveQuestion(collection, id, { topic });
+  if (!row) return null;
+  const { _id, ...question } = row;
 
   return question;
 }

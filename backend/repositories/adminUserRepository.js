@@ -1,3 +1,6 @@
+import { boundedLegacyOffset, readKeysetPage } from '../infrastructure/keysetPage.js';
+import { getUser } from './userRepository.js';
+import { deleteSeparatedHistory } from './userHistoryRepository.js';
 import { getUsersCollection, getAuditLogCollection, getPushDevicesCollection } from '../config/mongodb.js';
 export function insertAdminAudit(adminId, adminEmail, action, targetUserId, details, reason) { return getAuditLogCollection().insertOne({
       adminId,
@@ -34,10 +37,14 @@ export function findAndroidUserIds() { return getPushDevicesCollection().distinc
         platform: 'android',
       }); }
 
+export function findAdminUserCursor(filter, projection, sort, pagination) {
+  const [field, direction] = Object.entries(sort)[0];
+  return readKeysetPage(getUsersCollection(), { filter, projection, field, direction, scope: 'admin-users', ...pagination });
+}
 export function findAdminUserPage(filter, USER_PROJECTION, sortObj, skip, limitNum) { return getUsersCollection()
         .find(filter, { projection: USER_PROJECTION })
         .sort(sortObj)
-        .skip(skip)
+        .skip(boundedLegacyOffset(skip / limitNum + 1, limitNum))
         .limit(limitNum)
         .toArray(); }
 
@@ -62,10 +69,7 @@ export function findAndroidDevicesForUser(id) { return getPushDevicesCollection(
       )
       .toArray(); }
 
-export function findAdminUserStatistics(id) { return getUsersCollection().findOne(
-      { id: String(id), type: { $ne: 'email_lock' } },
-      { projection: { progress: 1, studyTime: 1, recentQuizzes: 1, failureMap: 1 } }
-    ); }
+export function findAdminUserStatistics(id) { return getUser(id, { progress: 1, studyTime: 1, recentQuizzes: 1, failureMap: 1 }); }
 
 export function findUserForRoleChange(id) { return getUsersCollection().findOne(
       { id: String(id), type: { $ne: 'email_lock' } },
@@ -92,7 +96,11 @@ export function findUserForDeletion(id) { return getUsersCollection().findOne(
       { projection: { role: 1, id: 1, name: 1, email: 1 } }
     ); }
 
-export function deleteAdminUserRecord(id) { return getUsersCollection().deleteOne({ id: String(id) }); }
+export async function deleteAdminUserRecord(id) {
+  const result = await getUsersCollection().deleteOne({ id: String(id) });
+  await deleteSeparatedHistory(id);
+  return result;
+}
 
 export function findUserForNotification(id) { return getUsersCollection().findOne(
       { id: String(id), type: { $ne: 'email_lock' } },

@@ -26,6 +26,11 @@ vi.mock("../../config/mongodb.js", () => ({
     insertOne: vi.fn().mockResolvedValue({ insertedId: "feed_1" }),
     updateOne: mockFeedUpdateOne,
   }),
+  getMongoDB: () => ({
+    collection: () => ({
+      updateOne: vi.fn().mockResolvedValue({ modifiedCount: 1 })
+    })
+  })
 }));
 
 // Mock firebase

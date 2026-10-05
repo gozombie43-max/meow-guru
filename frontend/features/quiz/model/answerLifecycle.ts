@@ -8,7 +8,7 @@ export function nextDifficulty(results: SessionResult[], difficulty: Difficulty,
 }
 
 export function recordAnswer(results: SessionResult[], question: QuizQuestion, index: number, selected: number, timeTaken: number): SessionResult[] {
-  const result: SessionResult = { questionId: question.id, questionIndex: index, selected,
+  const result: SessionResult = { questionId: question.id, questionUid: question.questionUid, questionIndex: index, selected,
     correct: question.correctAnswer, isCorrect: selected === question.correctAnswer,
     timeTaken, concept: question.concept, difficulty: question.difficulty };
   const existing = results.findIndex(entry => entry.questionIndex === index);

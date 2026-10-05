@@ -45,7 +45,9 @@ export const claimMission = async (req, res, next) => {
 
 export const getCompetitiveHealth = async (req, res, next) => {
   try {
-    return res.json(await getBattleCompetitiveHealth(req.query.days));
+    const result = await getBattleCompetitiveHealth(req.query.days);
+    if (result.pending) res.set("Retry-After", String(result.retryAfter));
+    return res.status(result.pending ? 202 : 200).json(result);
   } catch (error) {
     next(error);
   }

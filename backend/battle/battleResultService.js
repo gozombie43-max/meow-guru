@@ -1,3 +1,4 @@
+import { enqueueBattleAnalytics } from './battleAnalyticsService.js';
 import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { getBattleMatchesCollection, getBattleProfilesCollection, getBattleRoomsCollection, getBattleSeasonProfilesCollection, withMongoTransaction } from "../config/mongodb.js";
 import { calculateElo, DEFAULT_BATTLE_RATING } from "./battleRatingService.js";
@@ -25,7 +26,7 @@ export async function settleBattleResult(room) {
   if (!room || room.status !== "finished" || room.players?.length !== 2) return null;
   const [a, b] = room.players;
   if (!a.userId || !b.userId || a.userId === b.userId) return null;
-  const settlement = await withMongoTransaction(async ({ session }) => {
+  const settlement = await withMongoTransaction(async ({ session, db }) => {
     const matches = getBattleMatchesCollection(), profiles = getBattleProfilesCollection(), seasonProfiles = getBattleSeasonProfilesCollection();
     const existing = await matches.findOne({ roomCode: room.code }, { session });
     if (existing) return { alreadyRecorded: true, match: existing };
@@ -41,6 +42,7 @@ export async function settleBattleResult(room) {
     const playerRecord = (player, outcomeValue, life, lifeChange, season, seasonChange, tierBefore, tier) => ({ userId: player.userId, name: player.name, score: player.score || 0, result: outcomeValue, ratingBefore: life.rating, ratingAfter: lifeChange.newRatingA, ratingDelta: lifeChange.deltaA, seasonRatingBefore: season?.rating ?? null, seasonRatingAfter: seasonChange?.newRatingA ?? null, seasonRatingDelta: seasonChange?.deltaA ?? null, seasonTierBefore: tierBefore?.name ?? null, seasonTierAfter: tier?.name ?? null, answerLog: Array.isArray(player.answerLog) ? player.answerLog.map((entry) => ({ questionIndex: entry.questionIndex, selectedIndex: entry.selectedIndex ?? null, correct: Boolean(entry.correct), timedOut: Boolean(entry.timedOut), responseTimeMs: Number.isFinite(entry.responseTimeMs) ? entry.responseTimeMs : null })) : [] });
     const match = { roomCode: room.code, matchmakingId: room.matchmakingId || null, seasonKey: room.seasonKey || null, subject: room.subject, topic: room.topic, questionCount: room.questionCount, finishReason: room.finishReason || "completed", rated: result.rated, players: [playerRecord(a, result.a, lifeA, lifeElo, seasonA, seasonElo, tierBeforeA, tierA), playerRecord(b, result.b, lifeB, { newRatingA: lifeElo.newRatingB, deltaA: lifeElo.deltaB }, seasonB, seasonElo && { newRatingA: seasonElo.newRatingB, deltaA: seasonElo.deltaB }, tierBeforeB, tierB)], createdAt: room.createdAt ? new Date(room.createdAt) : now, finishedAt: room.finishedAt ? new Date(room.finishedAt) : now, recordedAt: now };
     const inserted = await matches.insertOne(match, { session });
+    await enqueueBattleAnalytics(7, { db, session, now });
     await profiles.updateOne({ userId: a.userId }, { $set: { displayName: a.name, ...lifeStatsA, updatedAt: now }, $setOnInsert: { userId: a.userId, createdAt: now } }, { session, upsert: true });
     await profiles.updateOne({ userId: b.userId }, { $set: { displayName: b.name, ...lifeStatsB, updatedAt: now }, $setOnInsert: { userId: b.userId, createdAt: now } }, { session, upsert: true });
     if (room.seasonKey && result.a !== "abandoned") {

@@ -205,13 +205,20 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
       }
 
       try {
-        const res = await fetchWithRetry(`${API}/api/notes?topic=${encodeURIComponent(topic)}`);
-        if (!res.ok) {
-          setApiNotes([]);
-          return;
-        }
-
-        const data = (await res.json()) as ApiNote[];
+        const data: ApiNote[] = [];
+        let cursor: string | null = null;
+        const seen = new Set<string>();
+        do {
+          const query = new URLSearchParams({ topic, pagination: 'cursor', limit: '100' });
+          if (cursor) query.set('cursor', cursor);
+          const res = await fetchWithRetry(`${API}/api/notes?${query}`);
+          if (!res.ok) throw new Error('Unable to load notes');
+          const page = await res.json();
+          data.push(...(Array.isArray(page) ? page : page.items || []));
+          cursor = Array.isArray(page) ? null : page.nextCursor;
+          if (cursor && seen.has(cursor)) throw new Error('Invalid notes cursor');
+          if (cursor) seen.add(cursor);
+        } while (cursor);
         setApiNotes(data);
       } catch (err) {
         console.error("Failed to load notes", err);

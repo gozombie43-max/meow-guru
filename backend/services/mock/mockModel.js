@@ -57,5 +57,5 @@ export function summarizeSlot(slot) {
 
 export function stripAnswer(q) {
   const { correctAnswer, answer, ...rest } = q;
-  return rest;
+  return { ...rest, legacyId: q.legacyId || q.id, id: q.questionUid || q.id };
 }

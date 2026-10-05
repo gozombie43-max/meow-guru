@@ -20,26 +20,34 @@ export default function NotesPage() {
   const [filterType, setFilterType] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  const fetchNotes = useCallback(async (signal?: AbortSignal) => {
+  const fetchNotes = useCallback(async (signal?: AbortSignal, cursor?: string) => {
     setLoading(true);
     setError("");
     try {
-      const params = new URLSearchParams();
+      const params = new URLSearchParams({ pagination: "cursor", limit: "50" });
+      if (cursor) params.set("cursor", cursor);
+      if (search.trim()) params.set("search", search.trim());
       if (filterTopic.trim()) params.set("topic", filterTopic.trim());
       if (filterType) params.set("type", filterType);
       const response = await fetchWithRetry(`${API}/api/notes?${params}`, { signal });
       if (!response.ok) throw new Error("Unable to load notes");
       const data: unknown = await response.json();
-      if (!Array.isArray(data)) throw new Error("Invalid notes response");
-      if (!signal?.aborted) setNotes(data);
+      const page = Array.isArray(data) ? { items: data as Note[], nextCursor: null } : data as { items?: Note[]; nextCursor?: string | null };
+      if (!Array.isArray(page?.items)) throw new Error("Invalid notes response");
+      if (!signal?.aborted) {
+        const items = page.items;
+        setNotes(previous => cursor ? [...previous, ...items] : items);
+        setNextCursor(page.nextCursor || null);
+      }
     } catch {
       if (!signal?.aborted) setError("Your notes could not be loaded. Please try again.");
     } finally {
       if (!signal?.aborted) setLoading(false);
     }
-  }, [filterTopic, filterType]);
+  }, [filterTopic, filterType, search]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -108,6 +116,7 @@ export default function NotesPage() {
             </div>
           </>
         )}
+        {nextCursor && !loading && !error && <button data-ui-button="secondary" onClick={() => void fetchNotes(undefined, nextCursor)}>Load more notes</button>}
       </div>
     </main>
   );

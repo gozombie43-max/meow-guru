@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useMemo,
   useState,
+  useRef,
 } from "react";
 
 import {
@@ -67,41 +68,30 @@ export function NotificationCenterProvider({
   ] =
     useState(0);
 
-  const refreshUnreadCount =
-    useCallback(
-      async () => {
-        if (!user) {
-          setUnreadCount(
-            0
-          );
-
-          return;
-        }
-
-        try {
-          const count =
-            await fetchUnreadNotificationCount();
-
-          setUnreadCount(
-            Math.max(
-              0,
-              count
-            )
-          );
-
-        } catch {
-          // Badge refresh is
-          // best-effort.
-        }
-      },
-      [
-        user,
-      ]
-    );
+  const activeUser = useRef(user?.id);
+  const pending = useRef<{ owner: string; promise: Promise<void> } | null>(null);
+  const badgeRevision = useRef(0);
+  useEffect(() => { activeUser.current = user?.id; badgeRevision.current++; }, [user?.id]);
+  const refreshUnreadCount = useCallback(async () => {
+    if (!user) { setUnreadCount(0); return; }
+    const owner = user.id;
+    if (pending.current?.owner === owner) return pending.current.promise;
+    const revision = badgeRevision.current;
+    const promise = (async () => {
+      try {
+        const count = await fetchUnreadNotificationCount();
+        if (activeUser.current === owner && revision === badgeRevision.current) setUnreadCount(Math.max(0, count));
+      } catch { /* Badge refresh is best effort; polling will retry. */ }
+    })();
+    const entry = { owner, promise };
+    pending.current = entry;
+    try { await promise; } finally { if (pending.current === entry) pending.current = null; }
+  }, [user]);
 
   const decrementUnread =
     useCallback(
       () => {
+        badgeRevision.current++;
         setUnreadCount(
           (current) =>
             Math.max(
@@ -116,6 +106,7 @@ export function NotificationCenterProvider({
   const clearUnread =
     useCallback(
       () => {
+        badgeRevision.current++;
         setUnreadCount(
           0
         );
@@ -167,13 +158,17 @@ export function NotificationCenterProvider({
      * Azure instance when Socket.IO has
      * no distributed adapter yet.
      */
-    const interval =
-      window.setInterval(
-        () => {
-          void refreshUnreadCount();
-        },
-        30_000
-      );
+    let stopped = false;
+    let pollTimer: number | undefined;
+    const schedulePoll = () => {
+      window.clearTimeout(pollTimer);
+      if (stopped || document.visibilityState !== 'visible') return;
+      pollTimer = window.setTimeout(async () => {
+        if (document.visibilityState === 'visible') await refreshUnreadCount();
+        schedulePoll();
+      }, 60_000 + Math.floor(Math.random() * 60_000));
+    };
+    schedulePoll();
 
     const handleFocus =
       () => {
@@ -182,6 +177,7 @@ export function NotificationCenterProvider({
 
     const handleVisibility =
       () => {
+        schedulePoll();
         if (
           document
             .visibilityState ===
@@ -202,15 +198,14 @@ export function NotificationCenterProvider({
     );
 
     return () => {
+      stopped = true;
       window.clearTimeout(initialTimer);
       socket.off(
         "notification:new",
         handleNewNotification
       );
 
-      window.clearInterval(
-        interval
-      );
+      window.clearTimeout(pollTimer);
 
       window.removeEventListener(
         "focus",

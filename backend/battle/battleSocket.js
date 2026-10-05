@@ -1,3 +1,4 @@
+import { selectBattleQuestions } from './battleQuestionSelection.js';
 import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { assertSession } from '../auth/sessions.js';
 import { tracedSocketListener } from '../infrastructure/tracing.js';
@@ -31,25 +32,6 @@ import { setBattleRealtimeServer } from './battleRealtime.js';
 import { joinMatchmakingQueue, cancelMatchmakingQueue } from './matchmakingService.js';
 import { recordBattleIntegritySignal } from './battleIntegrityService.js';
 import { canCreateBattle, canUseMatchmaking } from './battleFeatureGuards.js';
-
-function normalizeSearchKey(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '');
-}
-
-function matchesNormalizedTopic(question, normalizedTopic) {
-  const candidates = [
-    question.topic,
-    question.chapter,
-    question.subject,
-    question.quizTopic,
-    question.quizName,
-    question.source,
-  ];
-  return candidates.some((field) => normalizeSearchKey(field) === normalizedTopic);
-}
 
 const REVEAL_DELAY  = 5000; // ms to show results before next question (5 sec timer)
 const ROOM_CREATE_COOLDOWN_MS = 10_000; // per-socket room creation throttle
@@ -606,83 +588,11 @@ async function startGame(io, code) {
   try {
     const questions = getQuestionsCollection();
 
-    const mongoFilter = {};
-
-    // Preserve previous case-insensitive exact subject match
-    if (room.subject) {
-      mongoFilter.subject = {
-        $regex: `^${String(room.subject)
-          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
-        $options: 'i',
-      };
-    }
-
-    const normalizedTopic =
-      room.topic && room.topic !== 'all'
-        ? normalizeSearchKey(room.topic)
-        : null;
-
-    /*
-     * Preserve previous Cosmos behaviour:
-     * when topic is specified, first perform an exact
-     * case-insensitive topic match in the database.
-     */
-    if (normalizedTopic && room.topic) {
-      mongoFilter.topic = {
-        $regex: `^${String(room.topic)
-          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
-        $options: 'i',
-      };
-    }
-
-    let resources = await questions
-      .find(mongoFilter)
-      .toArray();
-
-    /*
-     * Keep your existing normalized cross-field validation.
-     */
-    if (normalizedTopic) {
-      resources = resources.filter((question) =>
-        matchesNormalizedTopic(
-          question,
-          normalizedTopic
-        )
-      );
-    }
-
-    if (resources.length === 0) {
-      const filterLabel =
-        room.topic &&
-        room.topic !== 'all'
-          ? `topic: ${room.topic}`
-          : `subject: ${room.subject || 'all'}`;
-
-      io.to(code).emit('room:error', {
-        message:
-          `No questions found for ${filterLabel}`,
-      });
-
+    const shuffled = await selectBattleQuestions(questions, room);
+    if (!shuffled.length) {
+      io.to(code).emit('room:error', { message: 'No playable questions found for this battle. Try another topic.' });
       return;
     }
-
-    // Shuffle and select requested count
-    const playableResources = resources.filter((question) =>
-      Array.isArray(question.options)
-      && question.options.length >= 2
-      && getCorrectAnswerIndex(question) !== null
-    );
-
-    if (playableResources.length === 0) {
-      io.to(code).emit('room:error', {
-        message: 'No playable questions found for this battle. Try another topic.',
-      });
-      return;
-    }
-
-    const shuffled = playableResources
-      .sort(() => Math.random() - 0.5)
-      .slice(0, room.questionCount);
 
     const activeRoom = await setQuestions(code, shuffled);
     if (!activeRoom) return;

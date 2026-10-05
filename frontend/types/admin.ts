@@ -42,6 +42,8 @@ export interface AdminUserStats {
 }
 
 export interface AdminUsersResponse {
+  nextCursor?: string | null;
+  hasMore?: boolean;
   users: AdminUser[];
   total: number;
   page: number;
@@ -57,6 +59,8 @@ export interface AdminDashboardStats {
 }
 
 export interface AdminUsersQueryParams {
+  cursor?: string;
+  pagination?: "cursor";
   page?: number;
   limit?: number;
   search?: string;

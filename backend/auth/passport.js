@@ -1,3 +1,4 @@
+import { findUserByEmail, normalizeAccountEmail, authUserProjection } from '../repositories/authRegistrationRepository.js';
 // backend/auth/passport.js
 
 import passport from 'passport';
@@ -24,40 +25,13 @@ function cleanUser(user) {
   return clean;
 }
 
-async function findUserByEmail(email) {
-  const users = getUsersCollection();
-
-  const user = await users.findOne(
-    {
-      email: String(email)
-        .trim()
-        .toLowerCase(),
-
-      type: {
-        $ne: 'email_lock',
-      },
-    },
-    {
-      projection: {
-        _id: 0,
-        _cosmosRid: 0,
-      },
-    }
-  );
-
-  return user || null;
-}
-
 async function findUserById(id) {
   const users = getUsersCollection();
 
   const user = await users.findOne(
     { id },
     {
-      projection: {
-        _id: 0,
-        _cosmosRid: 0,
-      },
+      projection: authUserProjection,
     }
   );
 
@@ -124,8 +98,10 @@ export const initPassport = () => {
           const users =
             getUsersCollection();
 
-          const email =
-            profile.emails?.[0]?.value;
+          const email = normalizeAccountEmail(profile.emails?.[0]?.value);
+          if (!(profile.emails?.[0]?.verified === true || profile._json?.email_verified === true)) {
+            return done(new Error('Google email must be verified'));
+          }
 
           if (!email) {
             return done(
@@ -157,6 +133,9 @@ export const initPassport = () => {
                 email,
 
               email,
+              emailNormalized: email,
+              accountRecord: true,
+              historyStorageVersion: 1,
 
               role:
                 'user',
@@ -182,17 +161,19 @@ export const initPassport = () => {
                 new Date().toISOString(),
             };
 
-            await users.insertOne(
-              newUser
-            );
-
-            user =
-              cleanUser(newUser);
+            try {
+              await users.insertOne(newUser);
+              user = cleanUser(newUser);
+            } catch (error) {
+              if (error.code !== 11000) throw error;
+              user = await findUserByEmail(email);
+              if (!user || (user.googleId && user.googleId !== profile.id)) throw error;
+            }
           }
 
           // ── Update Google profile if necessary ────────
 
-          else if (
+          if (
             user.avatar !==
               googleAvatar ||
 

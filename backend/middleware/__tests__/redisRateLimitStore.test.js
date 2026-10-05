@@ -30,14 +30,14 @@ it('uses a namespaced hashed Redis key and returns the atomic count and reset ti
   expect(fallback.increment).not.toHaveBeenCalled();
 });
 
-it('falls back to MongoDB when Redis is unavailable or a command fails', async () => {
+it('uses conservative local counts without MongoDB on Redis failure', async () => {
   const store = new RedisRateLimitStore('auth');
   store.init({ windowMs: 9000 });
   getRedisClient.mockResolvedValueOnce(null);
   expect((await store.increment('ip')).totalHits).toBe(2);
   redis.eval.mockRejectedValueOnce(new Error('connection lost'));
-  expect((await store.increment('ip')).totalHits).toBe(2);
-  expect(fallback.increment).toHaveBeenCalledTimes(2);
+  expect((await store.increment('ip')).totalHits).toBe(4);
+  expect(fallback.increment).not.toHaveBeenCalled();
 });
 
 it('decrements in Redis and clears both backends on reset', async () => {
@@ -47,5 +47,6 @@ it('decrements in Redis and clears both backends on reset', async () => {
   await store.resetKey('ip');
   expect(redis.eval).toHaveBeenCalledTimes(1);
   expect(redis.del).toHaveBeenCalledTimes(1);
-  expect(fallback.resetKey).toHaveBeenCalledWith('ip');
+  expect(store.fallback.entries.size).toBe(0);
+  expect(fallback.resetKey).not.toHaveBeenCalled();
 });

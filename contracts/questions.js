@@ -5,5 +5,7 @@ export const publicTopicCountsSchema = z.object({
 });
 export const questionAnswerRequestSchema = z.object({
   answer: z.number().int().nonnegative().max(20),
+  questionUid: z.string().regex(/^q_[a-f0-9]{32}$/).optional(),
+  topic: z.string().max(200).optional(),
   submissionId: z.string().min(1).max(200).optional(),
 });

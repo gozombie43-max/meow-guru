@@ -1,4 +1,4 @@
-import { insertAdminAudit, countAllAdminUsers, countActiveAdminUsers, countNewAdminUsers, countSuspendedAdminUsers, findAndroidUserIds, findAdminUserPage, countFilteredAdminUsers, findAndroidDevicesForUsers, findAdminUserDetail, findAndroidDevicesForUser, findAdminUserStatistics, findUserForRoleChange, persistUserRole, findUserForStatusChange, persistUserStatus, findUserForDeletion, deleteAdminUserRecord, findUserForNotification } from '../repositories/adminUserRepository.js';
+import { findAdminUserCursor, insertAdminAudit, countAllAdminUsers, countActiveAdminUsers, countNewAdminUsers, countSuspendedAdminUsers, findAndroidUserIds, findAdminUserPage, countFilteredAdminUsers, findAndroidDevicesForUsers, findAdminUserDetail, findAndroidDevicesForUser, findAdminUserStatistics, findUserForRoleChange, persistUserRole, findUserForStatusChange, persistUserStatus, findUserForDeletion, deleteAdminUserRecord, findUserForNotification } from '../repositories/adminUserRepository.js';
 import { runtimeLog } from '../infrastructure/runtimeLog.js';
 // backend/controllers/adminUsers.controller.js
 
@@ -64,7 +64,7 @@ export async function getDashboardStats(req, res) {
     res.json({ totalUsers, activeToday, newThisWeek, suspendedCount });
   } catch (err) {
     runtimeLog.error('getDashboardStats error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message });
   }
 }
 
@@ -130,7 +130,9 @@ export async function getUsers(req, res) {
 
 
 
-    const [docs, total] = await Promise.all([
+    const cursorMode = req.query.pagination === 'cursor' || req.query.cursor;
+    const cursorPage = cursorMode ? await findAdminUserCursor(filter, USER_PROJECTION, sortObj, { cursor: req.query.cursor, limit: limitNum }) : null;
+    const [docs, total] = cursorPage ? [cursorPage.items, undefined] : await Promise.all([
       findAdminUserPage(filter, USER_PROJECTION, sortObj, skip, limitNum),
       countFilteredAdminUsers(filter),
     ]);
@@ -171,11 +173,12 @@ export async function getUsers(req, res) {
       total,
       page: pageNum,
       limit: limitNum,
-      totalPages: Math.ceil(total / limitNum),
+      totalPages: total === undefined ? undefined : Math.ceil(total / limitNum),
+      ...(cursorPage ? { nextCursor: cursorPage.nextCursor, hasMore: cursorPage.hasMore } : {}),
     });
   } catch (err) {
     runtimeLog.error('getUsers error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message });
   }
 }
 
@@ -209,7 +212,7 @@ export async function getUserById(req, res) {
     });
   } catch (err) {
     runtimeLog.error('getUserById error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message });
   }
 }
 
@@ -274,7 +277,7 @@ export async function getUserStats(req, res) {
     });
   } catch (err) {
     runtimeLog.error('getUserStats error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message });
   }
 }
 
@@ -331,7 +334,7 @@ export async function updateUserRole(req, res) {
     res.json({ message: 'Role updated ✅', role: newRole });
   } catch (err) {
     runtimeLog.error('updateUserRole error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message });
   }
 }
 
@@ -392,7 +395,7 @@ export async function updateUserStatus(req, res) {
     res.json({ message: `User ${status} ✅`, status });
   } catch (err) {
     runtimeLog.error('updateUserStatus error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message });
   }
 }
 
@@ -439,7 +442,7 @@ export async function deleteUser(req, res) {
     res.json({ message: 'User deleted ✅' });
   } catch (err) {
     runtimeLog.error('deleteUser error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message });
   }
 }
 
@@ -514,6 +517,6 @@ export async function sendNotification(req, res) {
     });
   } catch (err) {
     runtimeLog.error('sendNotification error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message });
   }
 }

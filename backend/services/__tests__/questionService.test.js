@@ -368,14 +368,11 @@ describe('MongoDB-backed question reads', () => {
 
   it('fetches a question by id and optional topic without exposing _id', async () => {
     const question = { id: 'q457', topic: 'algebra', question: 'Example' };
-    const collection = { findOne: vi.fn(async () => question) };
+    const collection = { find: vi.fn(() => createCursor([{ ...question, _id: "mongo-id" }])) };
     getQuestionsCollectionMock.mockReturnValue(collection);
 
     await expect(fetchQuestionById('q457', 'algebra')).resolves.toEqual(question);
-    expect(collection.findOne).toHaveBeenCalledWith(
-      { id: 'q457', topic: 'algebra' },
-      { projection: { _id: 0 } }
-    );
+    expect(collection.find).toHaveBeenCalledWith({ id: { $in: ['q457'] }, topic: 'algebra' });
   });
 
   it('detects duplicate ids before duplicate question text using MongoDB', async () => {
@@ -416,7 +413,7 @@ describe('MongoDB-backed question reads', () => {
 });
 
 describe('MongoDB-backed question writes', () => {
-  const ineligibleAlgebra = { trainingMetadataVersion: 1, trainingCandidate: null, trainingEligible: false,
+  const ineligibleAlgebra = { battleEligible: false, battleSelectionKey: expect.any(String), trainingMetadataVersion: 1, trainingCandidate: null, trainingEligible: false,
     trainingExamSlugs: [], trainingSubjectSlug: 'unclassified', trainingTopicSlug: 'algebra' };
   it('creates a normalized question, clears cache, and hides _id', async () => {
     const collection = {
@@ -436,6 +433,7 @@ describe('MongoDB-backed question writes', () => {
     expect(result).toEqual({
       ...ineligibleAlgebra,
       id: 'new-id',
+      questionUid: expect.stringMatching(/^q_[a-f0-9]{32}$/),
       chapter: ' Algebra ',
       topic: 'Algebra',
       topicKey: 'algebra',
@@ -480,7 +478,7 @@ describe('MongoDB-backed question writes', () => {
       question: 'Before',
     };
     const collection = {
-      findOne: vi.fn(async () => existing),
+      find: vi.fn(() => createCursor([existing])),
       updateOne: vi.fn(async () => ({ modifiedCount: 1 })),
     };
     getQuestionsCollectionMock.mockReturnValue(collection);
@@ -491,25 +489,27 @@ describe('MongoDB-backed question writes', () => {
       'algebra'
     );
 
-    expect(collection.findOne).toHaveBeenCalledWith({ id: 'q457', topic: 'algebra' });
+    expect(collection.find).toHaveBeenCalledWith({ id: { $in: ['q457'] }, topic: 'algebra' });
     expect(collection.updateOne).toHaveBeenCalledWith(
       { _id: 'mongo-id' },
       {
         $set: {
           ...ineligibleAlgebra,
           id: 'q457',
+          questionUid: undefined,
           topic: 'algebra',
           question: 'After',
           topicKey: 'algebra', subjectKey: '', quizKey: '', modeKey: 'concept', keyVersion: 1,
         },
       }
     );
-    expect(result).toEqual({ ...ineligibleAlgebra, id: 'q457', topic: 'algebra', question: 'After', topicKey: 'algebra', subjectKey: '', quizKey: '', modeKey: 'concept', keyVersion: 1 });
+    expect(result).toEqual({ ...ineligibleAlgebra, id: 'q457', questionUid: undefined, topic: 'algebra', question: 'After', topicKey: 'algebra', subjectKey: '', quizKey: '', modeKey: 'concept', keyVersion: 1 });
   });
 
-  it('uses deleteOne with a topic and deleteMany without one', async () => {
+  it('resolves a unique document before deleting with or without a topic', async () => {
     const collection = {
       deleteOne: vi.fn(async () => ({ deletedCount: 1 })),
+      find: vi.fn(filter => createCursor([{ _id: filter.id.$in[0], id: filter.id.$in[0] }])),
       deleteMany: vi.fn(async () => ({ deletedCount: 2 })),
     };
     getQuestionsCollectionMock.mockReturnValue(collection);
@@ -517,24 +517,26 @@ describe('MongoDB-backed question writes', () => {
     await expect(removeQuestion('q457', 'algebra')).resolves.toBe(true);
     await expect(removeQuestion('q457')).resolves.toBe(true);
 
-    expect(collection.deleteOne).toHaveBeenCalledWith({ id: 'q457', topic: 'algebra' });
-    expect(collection.deleteMany).toHaveBeenCalledWith({ id: 'q457' });
+    expect(collection.deleteOne).toHaveBeenCalledWith({ _id: 'q457' });
+    expect(collection.deleteMany).not.toHaveBeenCalled();
   });
 
   it('bulk deletes unique ids and preserves the controller result contract', async () => {
     const collection = {
+      find: vi.fn(filter => createCursor([{ _id: filter.id.$in[0], id: filter.id.$in[0] }])),
       deleteMany: vi.fn(async () => ({ deletedCount: 2 })),
     };
     getQuestionsCollectionMock.mockReturnValue(collection);
 
     const result = await removeQuestionsBulk([' q1 ', 'q1', 'q2']);
 
-    expect(collection.deleteMany).toHaveBeenCalledWith({ id: { $in: ['q1', 'q2'] } });
+    expect(collection.deleteMany).toHaveBeenCalledWith({ _id: { $in: ['q1', 'q2'] } });
     expect(result).toEqual({ deleted: 2, failed: 0, total: 2 });
   });
 
   it('reports every requested id as failed when bulk deletion throws', async () => {
     const collection = {
+      find: vi.fn(filter => createCursor([{ _id: filter.id.$in[0] }])),
       deleteMany: vi.fn(async () => {
         throw new Error('write failed');
       }),

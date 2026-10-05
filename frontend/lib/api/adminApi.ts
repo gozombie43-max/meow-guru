@@ -23,6 +23,8 @@ export async function fetchAdminUsers(
   params: AdminUsersQueryParams = {}
 ): Promise<AdminUsersResponse> {
   const query = new URLSearchParams();
+  if (params.pagination) query.set("pagination", params.pagination);
+  if (params.cursor) query.set("cursor", params.cursor);
   if (params.page) query.set('page', String(params.page));
   if (params.limit) query.set('limit', String(params.limit));
   if (params.search) query.set('search', params.search);

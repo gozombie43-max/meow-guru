@@ -48,10 +48,12 @@ export function applySessionToLearnerState(state, completed) {
     const risky = !correct || answer.confidence === 'guess' || answer.confidence === 'unsure' ||
       answer.seconds > question.expectedTime * 1.5;
     const questionId = String(question.id);
-    const exposure = state.exposures.get(questionId) || { questionId: question.id, timesSeen: 0, timesCorrect: 0 };
+    const exposure = state.exposures.get(questionId) || { questionId: question.id,
+      ...(question.questionUid ? { questionUid: question.questionUid } : {}), timesSeen: 0, timesCorrect: 0 };
     state.exposures.set(questionId, {
       ...exposure,
       questionId: question.id,
+      ...(question.questionUid ? { questionUid: question.questionUid } : {}),
       timesSeen: (exposure.timesSeen || 0) + 1,
       timesCorrect: (exposure.timesCorrect || 0) + Number(correct),
       lastSeenAt: completedAt,
@@ -68,6 +70,7 @@ export function applySessionToLearnerState(state, completed) {
       state.reviews.set(questionId, {
         ...existingReview,
         questionId: question.id,
+      ...(question.questionUid ? { questionUid: question.questionUid } : {}),
         topic: question.topic,
         stage,
         dueAt: new Date(new Date(completedAt).getTime() + REVIEW_INTERVALS[stage] * DAY).toISOString(),
@@ -110,7 +113,7 @@ export function learnerStateDocuments(state, userId, exam, now = new Date()) {
   });
   return {
     skillRows: [...state.skills.values()].map(row => stamp({ ...row, _id: `${userId}:${exam}:${row.key}` })),
-    reviewRows: [...state.reviews.values()].map(row => stamp({ ...row, _id: `${userId}:${exam}:${row.questionId}` })),
+    reviewRows: [...state.reviews.values()].map(row => stamp({ ...row, _id: row._id ?? `${userId}:${exam}:${row.questionId}` })),
     // Exposure rows created before durable learner state used Mongo ObjectIds.
     // Preserve that identity so their natural unique key is updated, not reinserted.
     exposureRows: [...state.exposures.values()].map(row => stamp({

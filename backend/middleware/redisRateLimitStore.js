@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { getRedisClient, redisKey, reportRedisFailure } from '../config/redis.js';
-import { MongoRateLimitStore } from './mongoRateLimitStore.js';
+import { LocalRateLimitStore } from './localRateLimitStore.js';
 
 const INCREMENT = `
 local hits = redis.call('INCR', KEYS[1])
@@ -22,7 +22,9 @@ export class RedisRateLimitStore {
 
   constructor(prefix) {
     this.prefix = prefix;
-    this.fallback = new MongoRateLimitStore(prefix);
+    this.fallback = new LocalRateLimitStore();
+    const multiplier = Number(process.env.RATE_LIMIT_OUTAGE_MULTIPLIER ?? 0.5);
+    this.outageMultiplier = Number.isFinite(multiplier) && multiplier > 0 && multiplier <= 1 ? multiplier : 0.5;
   }
 
   init(options) {
@@ -36,27 +38,30 @@ export class RedisRateLimitStore {
   }
 
   async increment(key) {
+    const local = this.fallback.increment(key);
     try {
       const redis = await getRedisClient();
       if (redis) {
         const [totalHits, remaining] = await redis.eval(INCREMENT, {
           keys: [this.key(key)], arguments: [String(this.windowMs)],
         });
-        return { totalHits: Number(totalHits), resetTime: new Date(Date.now() + Number(remaining)) };
+        const result = { totalHits: Number(totalHits), resetTime: new Date(Date.now() + Number(remaining)) };
+        this.fallback.observe(key, result);
+        return { ...result, totalHits: Math.max(result.totalHits, local.totalHits) };
       }
     } catch {
       reportRedisFailure();
-      // Preserve distributed abuse protection while Redis is unavailable.
+      // Protect the API without moving outage traffic into MongoDB.
     }
-    return this.fallback.increment(key);
+    return { ...local, totalHits: Math.min(Number.MAX_SAFE_INTEGER, Math.ceil(local.totalHits / this.outageMultiplier)) };
   }
 
   async decrement(key) {
+    this.fallback.decrement(key);
     try {
       const redis = await getRedisClient();
       if (redis) return void await redis.eval(DECREMENT, { keys: [this.key(key)], arguments: [] });
     } catch { reportRedisFailure(); }
-    await this.fallback.decrement(key);
   }
 
   async resetKey(key) {

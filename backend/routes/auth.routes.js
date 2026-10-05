@@ -212,6 +212,7 @@ router.post(
         });
 
     } catch (err) {
+      if (err.code === 11000) return res.status(409).json({ error: 'Account already exists', code: 'ACCOUNT_EXISTS' });
       runtimeLog.error(
         'Registration error:',
         err

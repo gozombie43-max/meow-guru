@@ -7,5 +7,7 @@ export declare const publicTopicCountsSchema: z.ZodObject<{
 }, z.core.$strip>;
 export declare const questionAnswerRequestSchema: z.ZodObject<{
     answer: z.ZodNumber;
+    questionUid: z.ZodOptional<z.ZodString>;
+    topic: z.ZodOptional<z.ZodString>;
     submissionId: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;

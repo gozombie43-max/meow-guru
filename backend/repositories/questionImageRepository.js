@@ -1,3 +1,4 @@
+import { resolveQuestion } from '../services/questions/questionIdentity.js';
 
 
 import { getQuestionsCollection } from "../config/mongodb.js";
@@ -33,9 +34,7 @@ export async function patchQuestionImage(
   const questions =
     getQuestionsCollection();
 
-  const doc = await questions.findOne({
-    id: questionId,
-  });
+  const doc = await resolveQuestion(questions, questionId);
 
   if (!doc) {
     throw new Error(
@@ -106,9 +105,7 @@ export async function patchSolutionImage(
     getQuestionsCollection();
 
   const doc =
-    await questions.findOne({
-      id: questionId,
-    });
+    await resolveQuestion(questions, questionId);
 
   if (!doc) {
     throw new Error(
@@ -147,4 +144,4 @@ export async function patchSolutionImage(
     solution,
   };
 }
-export const findQuestionForSolution = questionId => getQuestionsCollection().findOne({ id: questionId });
+export const findQuestionForSolution = questionId => resolveQuestion(getQuestionsCollection(), questionId);

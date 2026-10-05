@@ -45,11 +45,9 @@ async function applyCompletedSessionLearning(db, completed, mongoSession) {
   const { userId, exam } = completed;
   const { questionIds, skillIds } = learnerStateKeysForSession(completed);
   if (!questionIds.length) return;
-  const [skillRows, reviewRows, exposureRows] = await Promise.all([
-    db.collection('trainingSkillState').find({ _id: { $in: skillIds } }, { session: mongoSession }).toArray(),
-    db.collection('trainingReviewState').find({ userId, exam, questionId: { $in: questionIds } }, { session: mongoSession }).toArray(),
-    db.collection('trainingQuestionExposure').find({ userId, exam, questionId: { $in: questionIds } }, { session: mongoSession }).toArray(),
-  ]);
+  const skillRows = await db.collection('trainingSkillState').find({ _id: { $in: skillIds } }, { session: mongoSession }).toArray();
+  const reviewRows = await db.collection('trainingReviewState').find({ userId, exam, questionId: { $in: questionIds } }, { session: mongoSession }).toArray();
+  const exposureRows = await db.collection('trainingQuestionExposure').find({ userId, exam, questionId: { $in: questionIds } }, { session: mongoSession }).toArray();
   const durable = learnerStateDocuments(
     applySessionToLearnerState(createLearnerState({ skillRows, reviewRows, exposureRows }), completed),
     userId,
@@ -183,7 +181,7 @@ export async function trainingDashboardData(userId, exam) {
 export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics = []) {
   const indexed = process.env.TRAINING_INDEXED_QUESTIONS === 'true';
   const and = [indexed ? { trainingExamSlugs: config.exam, trainingEligible: true, trainingMetadataVersion: 1 } : examFilter(config.exam)];
-  const projection = indexed ? { id: 1, trainingCandidate: 1 } : {};
+  const projection = indexed ? { id: 1, questionUid: 1, trainingCandidate: 1 } : {};
   const query = filter => getQuestionsCollection().find(filter).project(projection);
   if (config.subject) and.push(indexed ? { trainingSubjectSlug: normalizeTrainingSubject(config.subject) } : trainingSubjectFilter(config.subject));
   if (config.topic && indexed) {
@@ -192,7 +190,7 @@ export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics
     and.push({ $or: [{ topic: config.topic }, { questionTopic: config.topic }] });
   }
   if (config.mode === 'review') {
-    and.push({ id: { $in: dueIds } });
+    and.push({ $or: [{ questionUid: { $in: dueIds } }, { id: { $in: dueIds }, questionUid: { $exists: false } }] });
     return query({ $and: and })
       .sort({ updatedAt: -1, _id: 1 })
       .limit(500)
@@ -201,7 +199,7 @@ export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics
   const recent = new Set(recentIds.map(String));
   const reserve = [0, 25, 50, 100, 200, 400].find(size => size >= recent.size);
   const shared = indexed && reserve !== undefined;
-  if (!shared && recentIds.length) and.push({ id: { $nin: recentIds } });
+  if (!shared && recentIds.length) and.push({ questionUid: { $nin: recentIds }, id: { $nin: recentIds } });
   const base = { $and: and };
   const weakFilter = weakTopics.length
     ? { $and: [...and, indexed
@@ -228,15 +226,15 @@ export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics
   };
   const lists = sharedKey ? await cachedTrainingPool(getMongoDB(), sharedKey, build) : await build();
   const [latest, oldest, quality, weak] = shared
-    ? lists.map((rows, index) => rows.filter(row => !recent.has(String(row.id))).slice(0, [900, 450, 900, 1200][index]))
+    ? lists.map((rows, index) => rows.filter(row => !recent.has(String(row.questionUid || row.id))).slice(0, [900, 450, 900, 1200][index]))
     : lists;
-  return [...new Map([...weak, ...quality, ...latest, ...oldest].map(q => [String(q.id), q])).values()];
+  return [...new Map([...weak, ...quality, ...latest, ...oldest].map(q => [String(q.questionUid || q.id), q])).values()];
 }
 
 export const dueTrainingQuestions = (exam, ids) =>
   getQuestionsCollection()
-    .find({ $and: [process.env.TRAINING_INDEXED_QUESTIONS === 'true' ? { trainingExamSlugs: exam, trainingEligible: true, trainingMetadataVersion: 1 } : examFilter(exam), { id: { $in: ids } }] })
-    .project(process.env.TRAINING_INDEXED_QUESTIONS === 'true' ? { id: 1, trainingCandidate: 1 } : {})
+    .find({ $and: [process.env.TRAINING_INDEXED_QUESTIONS === 'true' ? { trainingExamSlugs: exam, trainingEligible: true, trainingMetadataVersion: 1 } : examFilter(exam), { $or: [{ questionUid: { $in: ids } }, { id: { $in: ids }, questionUid: { $exists: false } }] }] })
+    .project(process.env.TRAINING_INDEXED_QUESTIONS === 'true' ? { id: 1, questionUid: 1, trainingCandidate: 1 } : {})
     .limit(500)
     .toArray();
 

@@ -8,7 +8,7 @@ it('coalesces reads, isolates databases, expires and invalidates uploads', async
   expect(build).toHaveBeenCalledTimes(1);
   await cachedTrainingCatalog({}, 'ssc-cgl', build);
   expect(build).toHaveBeenCalledTimes(2);
-  vi.advanceTimersByTime(300001);
+  vi.advanceTimersByTime(1800001);
   await cachedTrainingCatalog(db, 'ssc-cgl', build);
   expect(build).toHaveBeenCalledTimes(3);
   invalidateTrainingCatalog();

@@ -16,6 +16,8 @@ vi.mock('../../config/mongodb.js', () => ({
     updateOne: (...args) => mockSlotUpdateOne(...args),
   }),
   getQuestionsCollection: () => ({
+    find: vi.fn().mockReturnValue({ limit: () => ({ toArray: async () => [{ id: "mock_question", type: "multiple_choice", _id: "q" }] }) }),
+    findOne: vi.fn().mockResolvedValue({ id: "mock_question", type: "multiple_choice", _id: "q" }),
     bulkWrite: (...args) => mockQuestionsBulkWrite(...args),
     updateOne: vi.fn().mockResolvedValue({ acknowledged: true }),
   }),

@@ -6,7 +6,7 @@ async function run() {
   const userQuestionProgress = getUserQuestionProgressCollection();
   const userTopicProgress = getUserTopicProgressCollection();
 
-  await userQuestionProgress.createIndex({ userId: 1, questionId: 1 }, { unique: true });
+  await userQuestionProgress.createIndex({ userId: 1, questionUid: 1 }, { unique: true, partialFilterExpression: { questionUid: { $type: "string" } }, name: "canonical_user_question_progress" });
   await userQuestionProgress.createIndex({ userId: 1, topic: 1 });
   await userTopicProgress.createIndex({ userId: 1, topic: 1 }, { unique: true });
 

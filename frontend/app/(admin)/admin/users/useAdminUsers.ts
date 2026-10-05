@@ -20,6 +20,7 @@ const [roleFilter, setRoleFilter] = useState<UserRole | ''>('');
 const [pushFilter, setPushFilter] = useState<'android' | 'none' | ''>('');
 const [sort, setSort] = useState('-createdAt');
 const [page, setPage] = useState(1);
+const cursorPages = useRef<Record<string, Record<number, string>>>({});
 const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 const [userStats, setUserStats] = useState<AdminUserStats | null>(null);
 const [drawerLoading, setDrawerLoading] = useState(false);
@@ -59,7 +60,8 @@ const loadUsers = useCallback(async () => {
     setError('');
     try {
       const params: AdminUsersQueryParams = {
-        page,
+        pagination: "cursor",
+        cursor: cursorPages.current[JSON.stringify([debouncedSearch, statusFilter, roleFilter, pushFilter, sort])]?.[page],
         limit: 25,
         search: debouncedSearch || undefined,
         status: statusFilter || undefined,
@@ -68,7 +70,10 @@ const loadUsers = useCallback(async () => {
         sort,
       };
       const res = await fetchAdminUsers(params);
-      setData(res);
+      const scope = JSON.stringify([debouncedSearch, statusFilter, roleFilter, pushFilter, sort]);
+      cursorPages.current[scope] ??= {};
+      if (res.nextCursor) cursorPages.current[scope][page + 1] = res.nextCursor;
+      setData({ ...res, page, totalPages: page + Number(!!res.hasMore), total: (page - 1) * 25 + res.users.length });
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: string } } })?.response?.data

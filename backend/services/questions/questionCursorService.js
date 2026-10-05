@@ -1,3 +1,4 @@
+import { cachedQuestionPage } from './questionCache.js';
 import { ObjectId } from 'mongodb';
 import { createHash } from 'node:crypto';
 import { readQuestionFacets } from './questionFacets.js';
@@ -7,7 +8,7 @@ import { caseInsensitiveExact, combineMongoConditions, buildStudyModeMatchCondit
 import { isNormalizedQuestionKeysEnabled, questionsQueryCache, revisionedQuestionCacheKey } from './questionCache.js';
 
 // Opt-in canonical listing. Legacy offset clients retain their existing contract.
-export async function fetchQuestionCursorPage(params) {
+async function buildfetchQuestionCursorPage(params) {
   const collection = getQuestionsCollection();
   const normalized = isNormalizedQuestionKeysEnabled();
   const conditions = [];
@@ -102,4 +103,8 @@ export async function fetchQuestionCursorPage(params) {
   if (params.includeFacets === 'true') result.facets = await readQuestionFacets();
   if (cacheKey) questionsQueryCache.set(cacheKey, result);
   return result;
+}
+
+export function fetchQuestionCursorPage(params) {
+  return cachedQuestionPage("fetchQuestionCursorPage", params, () => buildfetchQuestionCursorPage(params));
 }

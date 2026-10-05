@@ -1,3 +1,4 @@
+import { startBattleAnalyticsWorker, stopBattleAnalyticsWorker, waitForBattleAnalyticsIdle } from '../battle/battleAnalyticsWorker.js';
 import {
   startScheduledNotificationWorker,
   stopScheduledNotificationWorker,
@@ -57,6 +58,7 @@ const scheduledNames = new Set(['ConceptGrouping', 'ScheduledNotification', 'Dai
 const pollInterval = (name, fallback) => { const value = Number(process.env[name]); return Number.isFinite(value) && value > 0 ? value : fallback; };
 
 const workers = [
+  { name: 'BattleAnalytics', start: startBattleAnalyticsWorker, stop: stopBattleAnalyticsWorker, idle: waitForBattleAnalyticsIdle },
   { name: 'NoteImageCleanup', start: startNoteImageCleanup, stop: stopNoteImageCleanup, idle: waitForNoteImageCleanupIdle },
   { name: "ConceptGrouping", start: startConceptGroupingWorker, stop: stopConceptGroupingWorker, idle: waitForConceptGroupingWorkerIdle },
   { name: "ScheduledNotification", start: startScheduledNotificationWorker, stop: stopScheduledNotificationWorker, idle: waitForScheduledNotificationWorkerIdle },

@@ -1,3 +1,4 @@
+import { cachedQuestionPage } from './questionCache.js';
 import { getQuestionsCollection } from "../../config/mongodb.js";
 import { isNormalizedQuestionKeysEnabled, questionsQueryCache, revisionedQuestionCacheKey } from "./questionCache.js";
 import { normalizeSearchKey } from "./questionNormalizer.js";
@@ -9,7 +10,7 @@ import {
   combineMongoConditions,
 } from "./questionQueryBuilder.js";
 
-export async function fetchQuestionsSession(params) {
+async function buildfetchQuestionsSession(params) {
   const collection = getQuestionsCollection();
   const { topic, subject, mode, limit = 50, cursor: cursorId, letter, exam, concept } = params;
   const useNormalizedKeys = isNormalizedQuestionKeysEnabled();
@@ -149,4 +150,8 @@ export async function fetchQuestionsSession(params) {
 
   if (cacheKey) questionsQueryCache.set(cacheKey, result);
   return result;
+}
+
+export function fetchQuestionsSession(params) {
+  return cachedQuestionPage("fetchQuestionsSession", params, () => buildfetchQuestionsSession(params));
 }

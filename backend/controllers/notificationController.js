@@ -175,15 +175,16 @@ export const getHistory = async (req, res, next) => {
   try {
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+    const cursor = req.query.after || req.query.cursor;
 
-    const { items, total } = await repo.getNotificationHistoryList(page, limit);
+    const { items, total, hasMore, nextCursor } = await repo.getNotificationHistoryList(page, limit, cursor);
 
     return res.json({
       items,
-      total,
+      ...(total !== undefined ? { total, totalPages: Math.ceil(total / limit) } : {}),
+      ...(hasMore !== undefined ? { hasNextPage: hasMore, nextCursor } : {}),
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
     next(error);
@@ -230,14 +231,15 @@ export const getScheduledNotifications = async (req, res, next) => {
     const filter = status === "all" ? {} : { status };
     const sort = status === "pending" ? { sendAt: 1 } : { createdAt: -1 };
 
-    const { items, total, pendingCount, sentCount, failedCount, cancelledCount } = await repo.getScheduledNotificationsList(filter, sort, page, limit);
+    const cursor = req.query.after || req.query.cursor;
+    const { items, total, pendingCount, sentCount, failedCount, cancelledCount, hasMore, nextCursor } = await repo.getScheduledNotificationsList(filter, sort, page, limit, cursor);
 
     return res.json({
       items,
-      total,
+      ...(total !== undefined ? { total, totalPages: Math.ceil(total / limit) } : {}),
+      ...(hasMore !== undefined ? { hasNextPage: hasMore, nextCursor } : {}),
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
       counts: {
         pending: pendingCount,
         sent: sentCount,
@@ -304,8 +306,7 @@ export const retryScheduledNotification = async (req, res, next) => {
 
 export const getInboxUnreadCountHandler = async (req, res, next) => {
   try {
-    const lastReadAllAt = await repo.getUserLastReadAllAt(req.user.id);
-    const unreadCount = await repo.getInboxUnreadCount(req.user.id, lastReadAllAt, new Date());
+    const unreadCount = await repo.getInboxUnreadCount(req.user.id);
     return res.json({ unreadCount });
   } catch (error) {
     next(error);

@@ -1,3 +1,5 @@
+import { assignQuestionIdentity, resolveQuestion } from '../questions/questionIdentity.js';
+import { battleQuestionMetadata } from '../questions/battleQuestionMetadata.js';
 import { fetchSlotById } from './mockSlotService.js';
 import { shuffleArray, exactCI, stripAnswer } from './mockModel.js';
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
@@ -77,6 +79,12 @@ export async function uploadFullPaper({ slotData, questions }) {
     };
   });
 
+  for (const question of normalizedQuestions) {
+    const existing = slotData.assessmentMode === 'confidential' ? null : await resolveQuestion(questionsCollection, question.id, { topic: question.topic });
+    const identity = existing?.questionUid || assignQuestionIdentity({ ingestionKey: `mock:${slotData.examSlug}:${slotData.id}:${question.id}` }).questionUid;
+    question.questionUid = identity;
+  }
+
   validateQuestions(normalizedQuestions);
   validateConfidentialUpload(slotData, normalizedQuestions);
   if (slotData.assessmentMode === 'confidential') {
@@ -128,11 +136,10 @@ export async function uploadFullPaper({ slotData, questions }) {
     try {
       await questionsCollection.updateOne(
         {
-          id: q.id,
-          topic: q.topic,
+          questionUid: q.questionUid,
         },
         {
-          $set: { ...q, ...normalizedQuestionKeys(q), ...trainingQuestionMetadata(q) },
+          $set: { ...q, ...normalizedQuestionKeys(q), ...trainingQuestionMetadata(q), ...battleQuestionMetadata(q) },
         },
         {
           upsert: true,
@@ -192,7 +199,7 @@ export async function buildPaper({ examSlug, testId }) {
       if (sectionQuestions.length === 0) sectionQuestions.push(...unassigned.splice(0, section.questionCount));
 
       for (const q of sectionQuestions) {
-        answerKey[q.id] = q.correctAnswer ?? q.answer ?? null;
+        answerKey[q.questionUid || q.id] = q.correctAnswer ?? q.answer ?? null;
       }
 
       sections.push({
@@ -256,7 +263,7 @@ export async function buildPaper({ examSlug, testId }) {
             .toArray();
 
         allQuestions =
-          resources;
+          resources.map(q => ({ ...q, legacyId: q.id, id: q.questionUid || q.id }));
       } catch (err) {
         runtimeLog.warn(`Query for topics [${topicList.join(', ')}] failed:`, err.message);
       }
@@ -295,7 +302,7 @@ export async function buildPaper({ examSlug, testId }) {
     selected = shuffleArray(selected).slice(0, section.questionCount);
 
     for (const q of selected) {
-      answerKey[q.id] = q.correctAnswer ?? q.answer ?? null;
+      answerKey[q.questionUid || q.id] = q.correctAnswer ?? q.answer ?? null;
     }
 
     sections.push({

@@ -74,12 +74,14 @@ export interface QuizQuestion {
   letter?: string;
   chapter?: string;
   rawId?: string;
+  questionUid?: string;
   diagram?: GeometryDiagram;
   needs_diagram?: boolean;
 }
 
 export interface SessionResult {
   questionId: string | number;
+  questionUid?: string;
   questionIndex: number;
   selected: number | null;
   correct: number;

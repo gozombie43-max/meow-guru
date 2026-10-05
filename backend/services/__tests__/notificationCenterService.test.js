@@ -8,6 +8,11 @@ vi.mock('../../config/mongodb.js', () => ({
     insertOne: (...args) => mockInsertOne(...args),
     findOne: (...args) => mockFindOne(...args),
   }),
+  getMongoDB: () => ({
+    collection: () => ({
+      updateOne: vi.fn().mockResolvedValue({ modifiedCount: 1 })
+    })
+  })
 }));
 
 const mockEmitNotificationToUser = vi.fn();

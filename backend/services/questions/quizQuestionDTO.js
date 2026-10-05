@@ -1,6 +1,6 @@
 // Session-only contract. Admin/training reads keep their own metadata.
 export const quizQuestionProjection = Object.fromEntries([
-  '_id', 'id', 'topic', 'subject', 'chapter', 'concept', 'difficulty', 'exam', 'formula',
+  '_id', 'id', 'questionUid', 'topic', 'subject', 'chapter', 'concept', 'difficulty', 'exam', 'formula',
   'question', 'options', 'correctAnswer', 'correctLetter', 'solution', 'solutionImage',
   'quizName', 'questionType', 'questionImage', 'questionImageWidth', 'questionImageHeight',
   'solutionImageWidth', 'solutionImageHeight', 'optionRegions', 'diagram', 'needs_diagram',

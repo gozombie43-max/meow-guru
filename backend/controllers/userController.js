@@ -1,3 +1,5 @@
+import { resolveQuestion, canonicalQuestionUid } from '../services/questions/questionIdentity.js';
+import { getQuestionsCollection } from '../config/mongodb.js';
 // backend/controllers/userController.js
 import { z } from 'zod';
 import { DateTime, IANAZone } from 'luxon';
@@ -102,18 +104,15 @@ export const updateProfile = async (req, res) => {
 export const updateBookmarks = async (req, res) => {
   const { questionId, action, meta } = req.body;
   try {
-    const user = await getUser(req.user.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
     const now = new Date().toISOString();
-    const safeId = String(questionId);
+    const question = await resolveQuestion(getQuestionsCollection(), req.body.questionUid || questionId, meta || {});
+    if (!question) return res.status(404).json({ error: "Question not found" });
+    const safeId = canonicalQuestionUid(question);
     const metaObj = meta && typeof meta === 'object' ? meta : null;
-
-    let bookmarks = user.bookmarks || [];
-    let bookmarkEntries = Array.isArray(user.bookmarkEntries) ? user.bookmarkEntries : [];
 
     const patch = {
       questionId: safeId,
+      questionUid: safeId,
       updatedAt: now,
     };
 
@@ -129,28 +128,34 @@ export const updateBookmarks = async (req, res) => {
       }
     }
 
-    if (action === 'add') {
-      if (!bookmarks.includes(safeId)) bookmarks.push(safeId);
-      const existingIndex = bookmarkEntries.findIndex((b) => b.questionId === safeId);
-      if (existingIndex >= 0) {
-        bookmarkEntries[existingIndex] = { ...bookmarkEntries[existingIndex], ...patch };
-      } else {
-        bookmarkEntries.unshift(patch);
+    const bookmarkEntries = await mutateUserList(req.user.id, 'bookmarkEntries', entries => {
+      let next = [...entries];
+      if (action === 'add') {
+        const existingIndex = next.findIndex((b) => b.questionId === safeId);
+        if (existingIndex >= 0) {
+          next[existingIndex] = { ...next[existingIndex], ...patch };
+        } else {
+          next.unshift(patch);
+        }
+      } else if (action === 'remove') {
+        next = next.filter((b) => b.questionId !== safeId);
       }
-    } else if (action === 'remove') {
-      bookmarks = bookmarks.filter(id => id !== safeId);
-      bookmarkEntries = bookmarkEntries.filter((b) => b.questionId !== safeId);
-    }
+      return next
+        .filter((b) => b && b.questionId)
+        .sort((a, b) => (Date.parse(b.updatedAt || '') || 0) - (Date.parse(a.updatedAt || '') || 0))
+        .slice(0, 60);
+    });
 
-    bookmarkEntries = bookmarkEntries
-      .filter((b) => b && b.questionId)
-      .sort((a, b) => (Date.parse(b.updatedAt || '') || 0) - (Date.parse(a.updatedAt || '') || 0))
-      .slice(0, 60);
-
-    await updateUser(user.id, { bookmarks, bookmarkEntries });
+    if (!bookmarkEntries) return res.status(404).json({ error: 'User not found' });
+    
+    const bookmarks = bookmarkEntries.map(e => e.questionId);
+    
+    // Also sync the simple bookmarks array just for the users collection
+    await updateUser(req.user.id, { bookmarks });
+    
     res.json({ message: 'Bookmarks updated ✅', bookmarks, bookmarkEntries });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message, code: err.code });
   }
 };
 

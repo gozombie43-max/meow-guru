@@ -1,7 +1,8 @@
-import { getUsersCollection } from '../config/mongodb.js';
+import { getUser } from './userRepository.js';
+import { getMongoDB, getUsersCollection } from '../config/mongodb.js';
 
 export async function getCognitiveProfile(id) {
-  return getUsersCollection().findOne({ id: String(id), type: { $ne: 'email_lock' } });
+  return getUser(id, { id: 1, recentQuizzes: 1, failureMap: 1, masteryMap: 1, timePerQuestion: 1 });
 }
 export async function appendCognitiveFailures(profile, tags, fields) {
   const increments = {}, updates = { ...fields };
@@ -13,7 +14,8 @@ export async function appendCognitiveFailures(profile, tags, fields) {
     }
     updates[`failureMap.${key}.lastSeen`] = tag.taggedAt;
   }
-  const result = await getUsersCollection().updateOne({ _id: profile._id }, { $inc: increments, $set: updates });
-  if (result.matchedCount !== 1) throw new Error('Cognitive profile no longer exists');
+  const target = profile.historyStorageVersion === 1 ? getMongoDB().collection('userAnalytics') : getUsersCollection();
+  const result = await target.updateOne(profile.historyStorageVersion === 1 ? { userId: String(profile.id) } : { _id: profile._id }, { $inc: increments, $set: updates }, { upsert: profile.historyStorageVersion === 1 });
+  if (result.matchedCount !== 1 && !result.upsertedCount) throw new Error('Cognitive profile no longer exists');
   return result;
 }

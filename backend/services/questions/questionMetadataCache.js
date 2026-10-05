@@ -11,8 +11,8 @@ import { isNormalizedQuestionKeysEnabled } from './questionCache.js';
 // Recovery for imports performed outside the application write services.
 const MAX_AGE_MS = 60 * 60 * 1000;
 const pending = new Map();
-const metadataCache = createTieredCache();
-onCacheInvalidation(() => { invalidateTrainingCatalog(); invalidateQuestionCacheRevision(); });
+const metadataCache = createTieredCache({ freshMs: 300000, staleMs: 300000 });
+onCacheInvalidation(type => { if (type === 'question.changed') { invalidateTrainingCatalog(); invalidateQuestionCacheRevision(); } });
 
 export async function invalidateQuestionMetadata() {
   invalidateTrainingCatalog();

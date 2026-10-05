@@ -1,14 +1,15 @@
+import { resolveQuestion } from '../services/questions/questionIdentity.js';
 import { withMongoTransaction, getQuestionsCollection, getUserTopicProgressCollection } from '../config/mongodb.js';
-export const findAnsweredQuestion = (questionId, queryId) => getQuestionsCollection().findOne({ $or: [{ id: questionId }, { id: queryId }] });
+export const findAnsweredQuestion = (questionId, context = {}) => resolveQuestion(getQuestionsCollection(), questionId, context);
 export const readUserTopicProgress = userId => getUserTopicProgressCollection().find({ userId }).toArray();
-export async function recordQuestionAnswer(userId, queryId, topic, isCorrect) {
+export async function recordQuestionAnswer(userId, questionUid, topic, isCorrect, legacyId) {
  return withMongoTransaction(async ({ db, session }) => {
     const uqpColl = db.collection('userQuestionProgress');
     const utpColl = db.collection('userTopicProgress');
 
     const now = new Date();
 
-    const existingDoc = await uqpColl.findOne({ userId: String(userId), questionId: queryId }, { session });
+    const existingDoc = await uqpColl.findOne({ userId: String(userId), questionUid }, { session });
 
     let isFirstTime = false;
     let becameMastered = false;
@@ -17,7 +18,8 @@ export async function recordQuestionAnswer(userId, queryId, topic, isCorrect) {
        isFirstTime = true;
        await uqpColl.insertOne({
          userId: String(userId),
-         questionId: queryId,
+         questionUid,
+         questionId: legacyId,
          topic,
          firstAttemptedAt: now,
          lastAttemptedAt: now,

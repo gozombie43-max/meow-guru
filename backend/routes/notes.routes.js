@@ -4,7 +4,7 @@ import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import express from "express";
 import { v4 as uuidv4 } from "uuid";
 
-import { listNotes, findNoteById, insertNote, patchNoteDocument, deleteNoteById } from '../repositories/notesRepository.js';
+import { listNotePage, listNotes, findNoteById, insertNote, patchNoteDocument, deleteNoteById } from '../repositories/notesRepository.js';
 
 import adminAuth from "../middleware/auth.js";
 import { noteImageKeys } from '../services/notes/imageKeys.js';
@@ -81,8 +81,15 @@ router.get("/", async (req, res) => {
         );
     }
 
-    const notes =
-      await listNotes(filter);
+    if (typeof req.query.search === 'string' && req.query.search.trim()) {
+      const search = new RegExp(escapeRegex(req.query.search.trim().slice(0, 100)), 'i');
+      filter.$or = [{ title: search }, { topic: search }, { tags: search }];
+    }
+    if (req.query.pagination === 'cursor' || req.query.cursor) {
+      const page = await listNotePage(filter, { cursor: req.query.cursor, limit: req.query.limit });
+      return res.json({ ...page, items: page.items.map(sanitizeNote) });
+    }
+    const notes = (await listNotes(filter)).map(sanitizeNote);
 
     return res.json(notes);
 
@@ -93,7 +100,7 @@ router.get("/", async (req, res) => {
     );
 
     return res
-      .status(500)
+      .status(err.statusCode || 500)
       .json({
         error:
           "Failed to fetch notes",
@@ -129,7 +136,7 @@ router.get("/:id", async (req, res) => {
     );
 
     return res
-      .status(500)
+      .status(err.statusCode || 500)
       .json({
         error:
           "Failed to fetch note",
@@ -313,7 +320,7 @@ router.delete(
       );
 
       return res
-        .status(500)
+        .status(err.statusCode || 500)
         .json({
           error:
             "Failed to delete note",

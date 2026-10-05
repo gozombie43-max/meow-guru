@@ -232,7 +232,7 @@ export function toQuizQuestion(
     "General";
 
   const rawId = String(question.id ?? "");
-  const id = rawId || (index + 1);
+  const id = question.questionUid || rawId || (index + 1);
 
   const rawAnswer = String(question.correctAnswer ?? "").trim();
   const answer = /^[a-z]$/i.test(rawAnswer)
@@ -259,6 +259,7 @@ export function toQuizQuestion(
 
   return {
     id,
+    questionUid: question.questionUid,
     sessionAnchor: question.sessionAnchor,
     sessionPlaceholder: question.sessionPlaceholder,
     questionImageWidth: question.questionImageWidth,

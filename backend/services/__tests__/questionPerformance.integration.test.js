@@ -4,7 +4,7 @@ import { connectMongoDB, disconnectMongoDB } from '../../config/mongodb.js';
 import { fetchQuestions } from '../questions/questionReadService.js';
 import { fetchQuestionsSession } from '../questions/questionSessionService.js';
 import { normalizedQuestionKeys } from '../questions/questionNormalizer.js';
-import { questionsQueryCache, questionCountsCache, revisionedQuestionCacheKey } from '../questions/questionCache.js';
+import { questionsQueryCache, questionCountsCache, revisionedQuestionCacheKey, clearQuestionRevisionCache } from '../questions/questionCache.js';
 import { up as createBrowserIndex } from '../../migrations/011-question-browser-sort.js';
 
 let server, db;
@@ -137,9 +137,11 @@ describe('bounded question reads', () => {
     await db.collection('questions').updateOne({ id: first.questions[0].id }, { $set: { question: 'Updated by another worker' } });
     expect((await fetchQuestions(params)).questions[0].question).toBe(first.questions[0].question);
     await db.collection('questionMetadata').updateOne({ _id: 'revision' }, { $inc: { revision: 1 } }, { upsert: true });
+    clearQuestionRevisionCache();
     expect((await fetchQuestions(params)).questions[0].question).toBe('Updated by another worker');
     const oldKey = await revisionedQuestionCacheKey('race');
     await db.collection('questionMetadata').updateOne({ _id: 'revision' }, { $inc: { revision: 1 } });
+    clearQuestionRevisionCache();
     questionsQueryCache.set(oldKey, { stale: true });
     expect(questionsQueryCache.get(await revisionedQuestionCacheKey('race'))).toBeUndefined();
     questionsQueryCache.set('too-large', { text: 'x'.repeat(1024 * 1024 + 1) });
