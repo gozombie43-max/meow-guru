@@ -3,16 +3,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useModalSurface } from "@/components/ui/Dialog";
 import TutorMarkdown from "./TutorMarkdown";
+import { TutorComposer, type TutorComposerHandle } from "./TutorComposer";
+import { MessageWindow } from "@/components/chat/MessageWindow";
 import {
   Sun,
   Moon,
-  Plus,
   Zap,
   CheckCircle2,
   FileText,
   AlertTriangle,
   Sparkles,
-  ArrowUp,
   ArrowLeft,
   Check,
   ChevronDown,
@@ -207,8 +207,15 @@ export default function QuizChatbot({
   theme,
   activeLang = "en",
   renderTrigger,
+  open: controlledOpen,
+  onOpenChange,
 }: QuizChatbotProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [localOpen, setLocalOpen] = useState(false);
+  const isOpen = controlledOpen ?? localOpen;
+  const setIsOpen = useCallback((open: boolean) => {
+    if (controlledOpen === undefined) setLocalOpen(open);
+    onOpenChange?.(open);
+  }, [controlledOpen, onOpenChange]);
   const [isDark, setIsDark] = useState(theme === "dark");
 
   const initialLang: SupportedLang = activeLang === "hi" || activeLang === "bn" ? activeLang : "en";
@@ -224,7 +231,8 @@ export default function QuizChatbot({
   }, [theme]);
 
   const [isChatView, setIsChatView] = useState(false);
-  const [input, setInput] = useState("");
+  const composerRef = useRef<TutorComposerHandle>(null);
+  const [savedDraft, setSavedDraft] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -237,7 +245,6 @@ export default function QuizChatbot({
   const overlayRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelMenuRef = useRef<HTMLDivElement>(null);
   const modelButtonRef = useRef<HTMLButtonElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
@@ -245,7 +252,10 @@ export default function QuizChatbot({
   const addMenuRef = useRef<HTMLDivElement>(null);
   const addButtonRef = useRef<HTMLButtonElement>(null);
 
-  const handleClose = useCallback(() => setIsOpen(false), []);
+  const handleClose = useCallback(() => {
+    setSavedDraft(composerRef.current?.getDraft() ?? '');
+    setIsOpen(false);
+  }, [setIsOpen]);
   useModalSurface(modalRef, isOpen, handleClose, { initialFocus: ":scope" });
 
   // Follow the visible viewport when the mobile keyboard reduces available space.
@@ -269,13 +279,6 @@ export default function QuizChatbot({
   }, [isOpen]);
 
   const currentContent = LOCALIZED_CONTENT[selectedLang] || LOCALIZED_CONTENT.en;
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(Math.max(textareaRef.current.scrollHeight, 26), 120)}px`;
-    }
-  }, [input]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -324,10 +327,11 @@ export default function QuizChatbot({
   if (!isVisible || !question) return null;
 
   async function sendMessage(nextText?: string) {
-    const text = (nextText ?? input).trim();
+    const text = (nextText ?? '').trim();
     if (!text || isLoading) return;
 
-    setInput("");
+    composerRef.current?.clear();
+    setIsChatView(true);
     setIsAddMenuOpen(false);
     setIsModelMenuOpen(false);
     setMessages((prev) => [...prev, { role: "user", content: text }]);
@@ -382,14 +386,6 @@ export default function QuizChatbot({
     },
   ];
 
-  const hasInput = input.trim().length > 0;
-
-  const handleSend = () => {
-    if (!hasInput || isLoading) return;
-    if (!isChatView) setIsChatView(true);
-    sendMessage();
-  };
-
   const handleCopy = async (content: string, index: number) => {
     try {
       await navigator.clipboard.writeText(content);
@@ -400,73 +396,7 @@ export default function QuizChatbot({
     }
   };
 
-  const renderInputCard = () => (
-    <div className="tutor-composer-card">
-      {isAddMenuOpen && (
-        <div className="tutor-quick-menu" ref={addMenuRef}>
-          <div className="tutor-menu-header">{currentContent.quickPrompts}</div>
-          {currentContent.landingOptions.map((option) => (
-            <button data-ui-button="state"
-              key={option.title}
-              type="button"
-              className="tutor-menu-item"
-              onClick={() => {
-                setIsAddMenuOpen(false);
-                if (!isChatView) setIsChatView(true);
-                sendMessage(option.prompt);
-              }}
-              disabled={isLoading}
-            >
-              <span className="tutor-menu-icon">{ICONS_BY_TONE[option.tone] || <Sparkles className="w-5 h-5 shrink-0" />}</span>
-              <span className="tutor-menu-text">{option.title}</span>
-            </button>
-          ))}
-        </div>
-      )}
 
-      <div className="tutor-input-bar">
-        <button data-ui-button="state"
-          ref={addButtonRef}
-          type="button"
-          className={`tutor-plus-btn${isAddMenuOpen ? " active" : ""}`}
-          onClick={() => setIsAddMenuOpen((prev) => !prev)}
-          aria-expanded={isAddMenuOpen}
-          aria-label="Quick prompts"
-          title="Quick prompts"
-        >
-          <Plus className="w-4 h-4" strokeWidth={2.2} />
-        </button>
-
-        <div className="tutor-input-capsule">
-          <textarea
-            ref={textareaRef}
-            className="tutor-textarea"
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
-                event.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder={currentContent.placeholder}
-            rows={1}
-            disabled={isLoading}
-            aria-label={currentContent.placeholder}
-          />
-          <button data-ui-button="state"
-            type="button"
-            className={`tutor-send-btn${hasInput && !isLoading ? " ready" : ""}`}
-            onClick={handleSend}
-            aria-label="Send message"
-            disabled={isLoading || !hasInput}
-          >
-            <ArrowUp className="w-3.5 h-3.5 text-white" strokeWidth={3} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <>
@@ -672,7 +602,8 @@ export default function QuizChatbot({
                       <div className="sbody"><TutorMarkdown content={question.question} /></div>
                     </details>
                     {messages.length > 0 && <div className="chat-divider">Start of conversation</div>}
-                    {messages.map((message, index) => {
+                    <MessageWindow messages={messages}>
+                    {(message, index) => {
                       if (message.role === "user") {
                         return (
                           <div className="mu" key={`${message.role}-${index}`}>
@@ -728,7 +659,8 @@ export default function QuizChatbot({
                           </div>}
                         </div>
                       );
-                    })}
+                    }}
+                    </MessageWindow>
 
                     <div className={`typing${isLoading ? "" : " hidden"}`} role="status" aria-label="Tutor is thinking">
                       <span />
@@ -741,7 +673,9 @@ export default function QuizChatbot({
               </div>
 
               <footer className="bbar">
-                {renderInputCard()}
+                <TutorComposer ref={composerRef} initialDraft={savedDraft} isLoading={isLoading} currentContent={currentContent}
+                  isAddMenuOpen={isAddMenuOpen} setIsAddMenuOpen={setIsAddMenuOpen}
+                  addMenuRef={addMenuRef} addButtonRef={addButtonRef} iconsByTone={ICONS_BY_TONE} onSend={sendMessage} />
               </footer>
             </div>
           </section>

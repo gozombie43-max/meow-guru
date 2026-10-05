@@ -8,24 +8,18 @@ import { useBackLayer } from "@/hooks/useAppNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useThemeMode } from '@/hooks/useTheme';
 import api from '@/shared/api/client';
-import { tutorRequestSchema, tutorReplySchema, tutorJobResponseSchema } from '@meow/contracts/tutor';
 import { announceFeedback } from '@/lib/feedback';
-import { TutorJobError,waitForTutorJob } from '@/lib/tutor-jobs';
+import { TutorJobError } from '@/lib/tutor-job-error';
 import { isAxiosError } from 'axios';
 import {
-ArrowUp,
 Copy,
-FileText,
-Image as ImageIcon,
 Menu,
-Mic,
 PanelLeft,
 Plus,
 Search,
 Trash2,
 X
 } from 'lucide-react';
-import NextImage from 'next/image';
 import { useEffect,useMemo,useRef,useState,type ChangeEvent,type MouseEvent as ReactMouseEvent } from 'react';
 import styles from './AiChat.module.css';
 import { bindStyleClasses } from '@/lib/styleClasses';
@@ -33,6 +27,8 @@ import './AiChat.globals.css';
 
 const styleClasses = bindStyleClasses(styles);
 import { useAiChatHistory } from './useAiChatHistory';
+import { ChatComposer, type ChatComposerHandle } from './ChatComposer';
+import { MessageWindow } from '@/components/chat/MessageWindow';
 import dynamic from 'next/dynamic';
 
 const VisualResponse = dynamic(() => import('@/components/ai/VisualResponse'), {
@@ -49,7 +45,8 @@ type ChatSession,
 } from './formatting';
 function AiChatPageContent() {
   const { theme } = useThemeMode();
-  const [input, setInput] = useState('');
+  const [hasDraft, setHasDraft] = useState(false);
+  const composerRef = useRef<ChatComposerHandle>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   // The media-query hook starts with the same value during SSR and hydration.
@@ -101,7 +98,7 @@ function AiChatPageContent() {
   const startNewChat = () => {
     setActiveChatId(null);
     setMessages([]);
-    setInput('');
+    composerRef.current?.clear();
     setCopiedIndex(null);
     clearAttachment();
   };
@@ -109,7 +106,7 @@ function AiChatPageContent() {
   const openChat = (session: ChatSession) => {
     setActiveChatId(session.id);
     setMessages(session.messages);
-    setInput('');
+    composerRef.current?.clear();
     setCopiedIndex(null);
     if (typeof window !== 'undefined' && window.innerWidth <= 900) {
       setSidebarOpen(false);
@@ -117,7 +114,7 @@ function AiChatPageContent() {
   };
 
   async function sendMessage(nextText?: string) {
-    const text = (nextText ?? input).trim();
+    const text = (nextText ?? '').trim();
     const fileToSend = attachmentFile;
     if ((!text && !fileToSend) || isLoading) return;
 
@@ -132,13 +129,14 @@ function AiChatPageContent() {
     const userMessages = [...previousMessages, { role: 'user' as const, content: displayText }];
 
     if (!activeChatId) setActiveChatId(chatId);
-    setInput('');
+    composerRef.current?.clear();
     removeAttachment();
     setMessages(userMessages);
     saveSessionMessages(chatId, userMessages, text || fileToSend?.name || 'Attached question');
     setIsLoading(true);
 
     try {
+      const { tutorRequestSchema, tutorReplySchema, tutorJobResponseSchema } = await import('@meow/contracts/tutor');
       tutorRequestSchema.parse({ context, message: text || 'Please solve the attached question.', history: previousMessages.slice(-16) });
       let reply = '';
       if (fileToSend) {
@@ -156,6 +154,7 @@ function AiChatPageContent() {
           tutorJobResponseSchema.parse(response.data);
           if (pendingKey) sessionStorage.setItem(pendingKey, JSON.stringify({ jobId: response.data.jobId, chatId, title: text || fileToSend.name, messages: userMessages }));
           pollingRef.current = new AbortController();
+          const { waitForTutorJob } = await import('@/lib/tutor-jobs');
           reply = await waitForTutorJob(response.data.jobId, pollingRef.current.signal);
           if (pendingKey) sessionStorage.removeItem(pendingKey);
         } else reply = tutorReplySchema.parse(response.data).reply;
@@ -205,16 +204,10 @@ function AiChatPageContent() {
     'Cloze test strategy',
   ];
 
-  const hasInput = input.trim().length > 0 || Boolean(attachmentFile);
   const hasMessages = messages.length > 0;
   const visibleSessions = chatSessions.filter((session) =>
     session.title.toLowerCase().includes(searchTerm.trim().toLowerCase())
   );
-
-  const handleSend = () => {
-    if (!hasInput || isLoading) return;
-    sendMessage();
-  };
 
   const handleStarterPrompt = (event: ReactMouseEvent<HTMLButtonElement>) => {
     void sendMessage(event.currentTarget.dataset.prompt);
@@ -371,7 +364,7 @@ function AiChatPageContent() {
               </div>
             </div>
           </div>
-          <button data-ui-button="secondary" className={styleClasses("clear-btn")} type="button" onClick={handleClear} disabled={!hasMessages && !input}>
+          <button data-ui-button="secondary" className={styleClasses("clear-btn")} type="button" onClick={handleClear} disabled={!hasMessages && !hasDraft}>
             <Trash2 size={16} />
             Clear
           </button>
@@ -385,7 +378,8 @@ function AiChatPageContent() {
             </section>
           ) : (
             <div className={styleClasses("message-list")}>
-              {messages.map((message, index) => {
+              <MessageWindow messages={messages} key={activeChatId ?? 'new'}>
+              {(message, index) => {
                 if (message.role === 'user') {
                   return (
                     <article className={styleClasses("message-row user-row")} key={`${message.role}-${index}`}>
@@ -418,7 +412,8 @@ function AiChatPageContent() {
                     </div>
                   </article>
                 );
-              })}
+              }}
+              </MessageWindow>
 
               {isLoading && (
                 <article className={styleClasses("message-row assistant-row")}>
@@ -434,93 +429,19 @@ function AiChatPageContent() {
           )}
         </div>
 
-        <form
-          className={styleClasses("composer-wrap")}
-          onSubmit={(event) => {
-            event.preventDefault();
-            handleSend();
-          }}
-        >
-          <div className={styleClasses("composer")}>
-            {(attachmentFile || attachmentError) && (
-              <div className={styleClasses("attachment-panel")}>
-                {attachmentFile && (
-                  <div className={styleClasses("attachment-chip")}>
-                    {attachmentPreview ? (
-                      <div className={styleClasses("image-preview-wrapper")} onClick={() => setIsPreviewModalOpen(true)} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
-                        <NextImage
-                          className={styleClasses("attachment-thumb")}
-                          src={attachmentPreview}
-                          alt=""
-                          width={60}
-                          height={60}
-                          unoptimized
-                        />
-                        <button data-ui-button="state" data-ui-shape="icon" type="button" className={styleClasses("remove-image-btn")} onClick={(e) => { e.stopPropagation(); removeAttachment(); }} aria-label="Remove attachment">
-                          <X size={12} strokeWidth={3} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className={styleClasses("file-preview-wrapper")}>
-                        <span className={styleClasses("file-icon")}>
-                          {attachmentFile.type === 'application/pdf' ? <FileText size={24} /> : <ImageIcon size={24} />}
-                        </span>
-                        <div className={styleClasses("file-info")}>
-                          <strong>{attachmentFile.name}</strong>
-                          <span>{attachmentFile.type === 'application/pdf' ? 'PDF document' : 'Question image'}</span>
-                        </div>
-                        <button data-ui-button="state" data-ui-shape="icon" type="button" className={styleClasses("remove-file-btn")} onClick={removeAttachment} aria-label="Remove attachment">
-                          <X size={16} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-                {attachmentError && <div className={styleClasses("attachment-error")}>{attachmentError}</div>}
-              </div>
-            )}
-            
-            <div className={styleClasses("composer-row")}>
-              <input
-                ref={fileInputRef}
-                className={styleClasses("file-input")}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,application/pdf"
-                onChange={handleAttachmentChange}
-               aria-label="Choose file"/>
-              <button data-ui-button="state" data-ui-shape="icon"
-                className={styleClasses("composer-tool clip-btn")}
-                type="button"
-                aria-label="Attach question image or PDF"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading}
-                title="Attach image or PDF"
-              >
-                <Plus size={22} />
-              </button>
-              <textarea
-                data-custom-focus
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();
-                    handleSend();
-                  }
-                }}
-                placeholder="Ask ChatGPT"
-                rows={1}
-                disabled={isLoading}
-               aria-label="Ask ChatGPT"/>
-              <button data-ui-button="state" data-ui-shape="icon" className={styleClasses("composer-tool mic-btn")} type="button" aria-label="Voice input">
-                <Mic size={20} />
-              </button>
-              <button data-ui-button="primary" data-ui-shape="icon" className={styleClasses("send-btn")} type="submit" disabled={!hasInput || isLoading} aria-label="Send message">
-                <ArrowUp size={20} className={styleClasses("send-icon")} strokeWidth={2.5} />
-              </button>
-            </div>
-          </div>
-        </form>
+        <ChatComposer
+          ref={composerRef}
+          isLoading={isLoading}
+          attachmentFile={attachmentFile}
+          attachmentPreview={attachmentPreview}
+          attachmentError={attachmentError}
+          fileInputRef={fileInputRef}
+          onAttachmentChange={handleAttachmentChange}
+          onRemoveAttachment={removeAttachment}
+          onPreview={() => setIsPreviewModalOpen(true)}
+          onSend={sendMessage}
+          onDraftPresenceChange={setHasDraft}
+        />
       </section>
 
       {isPreviewModalOpen && attachmentPreview && (

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useState } from "react";
 import { LangToggle } from "@/components/LangToggle";
 import { Settings, ArrowLeft, ArrowRight, BookOpenText } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -97,8 +97,8 @@ function MobileQuizFooterControls({
   hideViewSolution = false,
   hideAiTutor = false,
 }: FooterProps) {
-  const openChatbotRef = useRef<(() => void) | null>(null);
-  const pendingOpenRef = useRef(false);
+  const [tutorLoaded, setTutorLoaded] = useState(false);
+  const [tutorOpen, setTutorOpen] = useState(false);
 
   const handleNextOrSubmit = () => {
     if (isCurrentSubmitted) {
@@ -115,20 +115,16 @@ function MobileQuizFooterControls({
 
   const handleOpenAiTutor = () => {
     if (!isCurrentSubmitted || hideAiTutor) return;
-    if (openChatbotRef.current) {
-      openChatbotRef.current();
-    } else {
-      pendingOpenRef.current = true;
-      document.getElementById("mobile-quiz-chatbot-trigger")?.click();
-    }
+    setTutorLoaded(true);
+    setTutorOpen(true);
   };
 
   const showPill = !(hideViewSolution && hideAiTutor);
 
   return (
     <footer data-ui-chrome="footer" className="ios-series-footer">
-      {/* Render the actual QuizChatbot outside so it can be triggered programmatically */}
-      {!hideAiTutor && isCurrentSubmitted && currentQ && (
+      {/* Retain the conversation after its first opening; submission alone loads nothing. */}
+      {tutorLoaded && !hideAiTutor && isCurrentSubmitted && currentQ && (
         <QuizChatbot
           key={`ios-chat-${currentQ.id}`}
           isVisible={isCurrentSubmitted}
@@ -137,22 +133,9 @@ function MobileQuizFooterControls({
           question={currentQ}
           theme={theme}
           activeLang={activeLang}
-          renderTrigger={(onOpen) => {
-            openChatbotRef.current = onOpen;
-            if (pendingOpenRef.current) {
-              pendingOpenRef.current = false;
-              setTimeout(onOpen, 0);
-            }
-            return (
-              <button
-                id="mobile-quiz-chatbot-trigger"
-                type="button"
-                style={{ display: 'none' }}
-                onClick={onOpen}
-                aria-hidden="true"
-              />
-            );
-          }}
+          open={tutorOpen}
+          onOpenChange={setTutorOpen}
+          renderTrigger={() => null}
         />
       )}
 

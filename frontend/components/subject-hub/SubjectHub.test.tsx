@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import SubjectHub from "./SubjectHub";
 import { Calculator } from "lucide-react";
 import {
@@ -14,6 +14,19 @@ const routerMock = vi.hoisted(() => ({
   replace: vi.fn(),
   back: vi.fn(),
 }));
+const countsQuery = vi.hoisted(() => vi.fn());
+let desktop = false;
+let updateViewport: (() => void) | undefined;
+beforeEach(() => {
+  desktop = false;
+  countsQuery.mockClear();
+  vi.stubGlobal('matchMedia', vi.fn(() => ({
+    get matches() { return desktop; },
+    addEventListener: (_event: string, listener: () => void) => { updateViewport = listener; },
+    removeEventListener: vi.fn(),
+  })));
+});
+afterEach(() => { vi.unstubAllGlobals(); updateViewport = undefined; });
 
 vi.mock("next/navigation", () => ({
   useRouter: () => routerMock,
@@ -42,7 +55,7 @@ vi.mock("next/link", () => ({
 }));
 
 vi.mock("@/hooks/useQuestionCounts", () => ({
-  useQuestionCounts: () => ({
+  useQuestionCounts: (params: unknown) => { countsQuery(params); return {
     counts: {
       concept: 10,
       formula: 5,
@@ -55,7 +68,7 @@ vi.mock("@/hooks/useQuestionCounts", () => ({
     isLoading: false,
     isError: null,
     mutate: vi.fn(),
-  }),
+  }; },
 }));
 
 const mockConfig = {
@@ -72,6 +85,19 @@ const mockConfig = {
 };
 
 describe("SubjectHub", () => {
+  it('mounts only the active viewport and enables counts only for desktop', async () => {
+    const { container } = render(<SubjectHub config={mockConfig} />);
+    expect(container.querySelector('[class*="desktopContainer"]')).toBeNull();
+    expect(countsQuery).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false }));
+    act(() => { desktop = true; updateViewport?.(); });
+    await waitFor(() => expect(container.querySelector('[class*="desktopContainer"]')).not.toBeNull());
+    expect(container.querySelector('[data-hub-part="mobileTopbar"]')).toBeNull();
+    expect(countsQuery).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: true }));
+    act(() => { desktop = false; updateViewport?.(); });
+    expect(container.querySelector('[class*="desktopContainer"]')).toBeNull();
+    expect(container.querySelector('[data-hub-part="mobileTopbar"]')).not.toBeNull();
+    expect(countsQuery).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false }));
+  });
   it("keeps all topics available with OLED filters, including the English Low group", () => {
     const topics = TOPICS.map((topic, index) => ({ ...topic, priority: index === 0 ? "low" : topic.priority }));
     const { container } = render(<SubjectHub config={{ ...mockConfig, topics, mobileAppearance: "oled", categories: [...CATEGORIES, { id: "low", label: "Low", icon: Calculator }] }} />);

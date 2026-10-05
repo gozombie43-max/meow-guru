@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/context/AuthContext';
 import api from '@/shared/api/client';
-import { TutorJobError, waitForTutorJob } from '@/lib/tutor-jobs';
+import { TutorJobError } from '@/lib/tutor-job-error';
 import { useEffect, useRef, useState } from 'react';
 import { getChatTitle, type ChatMessage, type ChatSession } from './formatting';
 
@@ -41,6 +41,8 @@ export function useAiChatHistory() {
         setIsLoading(true);
         pollingRef.current = new AbortController();
         try {
+          const { waitForTutorJob } = await import('@/lib/tutor-jobs');
+          if (cancelled) return;
           const reply = await waitForTutorJob(saved.jobId, pollingRef.current.signal);
           if (cancelled) return;
           const updated: ChatSession = {

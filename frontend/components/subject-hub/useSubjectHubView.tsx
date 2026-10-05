@@ -12,7 +12,7 @@ import type { SubjectHubConfig } from "./types";
 const EMPTY_STUDY_TOPICS = new Set<string>();
 type SubjectHubSort = "default" | "questions-desc" | "questions-asc" | "alpha";
 
-export function useSubjectHubView({ config }: { config: SubjectHubConfig }) {
+export function useSubjectHubView({ config, enableDesktop = false }: { config: SubjectHubConfig; enableDesktop?: boolean }) {
 const {
     topics: TOPICS,
     categories: CATEGORIES,
@@ -149,6 +149,7 @@ const targetQuestionTopic = isChapterMode ? (selectedChapter ? selectedChapter.t
 const { counts: modeQuestionCounts } = useQuestionCounts({
     topic: targetQuestionTopic,
     subject: config.subjectId,
+    enabled: enableDesktop,
   });
 const topicPracticeModes = useMemo(() => {
     return PRACTICE_MODES.map((pm) => {

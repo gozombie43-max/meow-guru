@@ -1,0 +1,25 @@
+.navigation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0 16px;
+  font-size: 12px;
+}
+
+.navigation button {
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--line, var(--border));
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.navigation button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

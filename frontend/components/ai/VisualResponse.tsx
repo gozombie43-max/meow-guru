@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { memo } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
@@ -441,7 +442,7 @@ function DiagramVisual({ block }: { block: VisualDiagram }) {
   );
 }
 
-export default function VisualResponse({ content, normalizeMarkdown }: VisualResponseProps) {
+const VisualResponse = memo(function VisualResponse({ content, normalizeMarkdown }: VisualResponseProps) {
   const { markdown, visuals } = extractVisuals(content);
 
   return (
@@ -624,4 +625,6 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
       `}</style>
     </>
   );
-}
+});
+
+export default VisualResponse;

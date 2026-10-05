@@ -1,9 +1,7 @@
 import api from '@/shared/api/client';
 import { tutorJobResponseSchema, tutorReplySchema } from '@meow/contracts/tutor';
-
-export class TutorJobError extends Error {
-  constructor(message: string, public terminal = true) { super(message); }
-}
+import { TutorJobError } from './tutor-job-error';
+export { TutorJobError } from './tutor-job-error';
 
 export async function waitForTutorJob(jobId: string, signal?: AbortSignal): Promise<string> {
   const deadline = Date.now() + 10 * 60 * 1000;

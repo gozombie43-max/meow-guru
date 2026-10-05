@@ -1,4 +1,5 @@
 import ReactMarkdown from "react-markdown";
+import { memo } from "react";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import remarkMath from "remark-math";
@@ -6,7 +7,7 @@ import remarkGfm from "remark-gfm";
 import { normalizeTutorMarkdown } from "./utils";
 
 /** Shared readable rendering for tutor answers and question context. */
-export default function TutorMarkdown({ content }: { content: string }) {
+const TutorMarkdown = memo(function TutorMarkdown({ content }: { content: string }) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkMath, remarkGfm]}
@@ -24,4 +25,6 @@ export default function TutorMarkdown({ content }: { content: string }) {
       {normalizeTutorMarkdown(content)}
     </ReactMarkdown>
   );
-}
+});
+
+export default TutorMarkdown;

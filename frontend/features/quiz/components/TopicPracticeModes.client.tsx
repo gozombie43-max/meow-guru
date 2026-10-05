@@ -83,6 +83,9 @@ export default function TopicPracticeModes({
           <Link
             key={mode.title}
             href={mode.href}
+            // Keep the separated mathematics quiz bundle off the topic page
+            // until a mode is selected, especially on mobile connections.
+            prefetch={subject === "mathematics" ? false : undefined}
             className="sg-card"
             style={{
               "--card-gradient": mode.gradient,

@@ -107,10 +107,10 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
   const { isCurrentSubmitted, selectedAnswer, handleSelectAnswer, submitError, handleSubmitCurrent, canSubmit, timerRef, results } = answer;
   const { openSolution, isSolutionOpen, closeSolution } = solution;
 
-  // Load as soon as Solution becomes available, before the first tap. Keep it
-  // mounted afterwards so dismissal can finish before focus is restored.
+  // Import the optional sheet on opening, then retain it so dismissal can
+  // finish before focus is restored without downloading it on submission.
   const [solutionLoaded, setSolutionLoaded] = useState(false);
-  if ((isCurrentSubmitted || isSolutionOpen) && !solutionLoaded) setSolutionLoaded(true);
+  if (isSolutionOpen && !solutionLoaded) setSolutionLoaded(true);
 
   if (!currentQ) return null;
 

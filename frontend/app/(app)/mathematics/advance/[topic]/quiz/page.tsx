@@ -1,9 +1,10 @@
-import { mathematicsStaticParams, renderMathematicsPage, type MathematicsPageProps } from "@/app/(app)/mathematics/_shared/route-page";
+import { mathematicsStaticParams, type MathematicsPageProps } from "@/app/(app)/mathematics/_shared/route-page";
+import { renderMathematicsQuizPage } from "@/app/(app)/mathematics/_shared/quiz-route-page";
 
 export function generateStaticParams() {
   return mathematicsStaticParams("advance");
 }
 
 export default function Page(props: MathematicsPageProps) {
-  return renderMathematicsPage(props, "advance", "quiz");
+  return renderMathematicsQuizPage(props, "advance");
 }

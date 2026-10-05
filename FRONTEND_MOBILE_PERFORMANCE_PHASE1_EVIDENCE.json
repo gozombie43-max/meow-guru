@@ -1,0 +1,1357 @@
+{
+  "measuredDate": "2026-10-05",
+  "baseCommit": "46fec69b",
+  "applicationSourceModified": true,
+  "selectedScope": [
+    "AI chat draft isolation and bounded message rendering",
+    "Quiz tutor import only on opening",
+    "Defer runtime tutor schemas",
+    "Separate mathematics topic/quiz and mobile/desktop trees"
+  ],
+  "resolvedAuditFindings": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "otherFindingsRemainOutsideThisPhase": [
+    4,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+  ],
+  "buildId": "G3WrWkKpbhsOo5wTqH6VN",
+  "validation": {
+    "typecheck": "passed",
+    "tests": {
+      "files": 93,
+      "tests": 425,
+      "passed": true
+    },
+    "lint": "passed with zero warnings",
+    "productionBuild": {
+      "passed": true,
+      "generatedPages": 802
+    },
+    "interfaceChecks": "passed",
+    "entryJavaScriptBudget": "passed",
+    "browserReplayScenarios": 12
+  },
+  "environment": "Production static HTML and assets replayed using Playwright route.fulfill. Disposable local API fixture; no live frontend server, middleware, CDN, or slow-4G network measurements. Chromium CPU throttled 4x.",
+  "limitations": [
+    "No live frontend server: automatic approval review rejected startup with blocked by policy.",
+    "No slow-4G network shaping or real Android device. Gzip sizes computed locally, not observed wire sizes.",
+    "Not field INP, LCP, CLS or Lighthouse TBT. No controlled retained-heap or battery measurements.",
+    "Saved chat content and mathematical question were synthetic. External services aborted; answer/progress UI requests intercepted.",
+    "Dynamic mock-test routes received source/bundle inspection, not this browser replay.",
+    "Some dynamic or parent RSC routes are unavailable in static replay. Missing prefetched responses and repeated prefetch requests in this harness are not evidence of production 404s or production request counts."
+  ],
+  "testRunNote": "The first check run alongside the build passed 424 of 425 tests; the cold dynamic renderer exceeded the default assertion wait. The isolated test passed; its dynamic import wait was made explicit and the full check rerun without a competing build.",
+  "probeScriptSha256": "67e03f4c11717efbc564947c62cff85930d9e5d4eb2f099780c3fd7e09ca1e7c",
+  "deferredZodChunk": {
+    "file": "static/chunks/08yc2zv5r30f9.js",
+    "rawBytes": 391594,
+    "gzipBytes": 91127,
+    "requestedInAiChatInitialScenarios": []
+  },
+  "mathematicsClientReferenceEntries": [
+    {
+      "route": "/(app)/mathematics/advance/[topic]/page",
+      "files": [
+        "static/chunks/24t4052m7k1gn.js",
+        "static/chunks/0qhhnu6sdz_mv.js",
+        "static/chunks/07wet_c0e5zm5.js",
+        "static/chunks/1u_jmozi2ifbm.js",
+        "static/chunks/1a0zpfhjm_a6b.js",
+        "static/chunks/04y23c5963ek8.js"
+      ],
+      "gzipBytes": 52245,
+      "quizEngineReferences": []
+    },
+    {
+      "route": "/(app)/mathematics/advance/[topic]/quiz/page",
+      "files": [
+        "static/chunks/24t4052m7k1gn.js",
+        "static/chunks/0qhhnu6sdz_mv.js",
+        "static/chunks/07wet_c0e5zm5.js",
+        "static/chunks/1u_jmozi2ifbm.js",
+        "static/chunks/1a0zpfhjm_a6b.js",
+        "static/chunks/29vp7z9_ywvni.js",
+        "static/chunks/2t3bg1ksugc4p.js",
+        "static/chunks/0bi0jrasvihzx.js"
+      ],
+      "gzipBytes": 99863,
+      "quizEngineReferences": [
+        "[project]/frontend/app/(app)/mathematics/_shared/quiz-engine.tsx"
+      ]
+    }
+  ],
+  "disposableFixtureCleanup": {
+    "apiStorageAndMongoProcessesStopped": true,
+    "portsReleased": [
+      3111,
+      3112,
+      56895,
+      9229
+    ],
+    "temporaryMongoDirectory": "D:\\mongo-mem-wUqVIb",
+    "temporaryMongoDirectoryRemovedByFixtureStop": true,
+    "note": "Verified the owned fixture shutdown handler completed and its temporary directory disappeared. The earlier audit directory D:\\mongo-mem-PPyw8a remains under its original automatic approval review rejection."
+  },
+  "scenarios": [
+    {
+      "route": "/play",
+      "variant": {},
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javaScriptRequestedBeforeTypingOrSubmission": {
+        "files": [
+          "static/chunks/42gazttc-k497.js",
+          "static/chunks/3quj6o5p45y-u.js",
+          "static/chunks/1l_7ryrq2nb6d.js",
+          "static/chunks/1qi9cvfcycon1.js",
+          "static/chunks/turbopack-3wj3hdcq6u9n_.js",
+          "static/chunks/24t4052m7k1gn.js",
+          "static/chunks/0qhhnu6sdz_mv.js",
+          "static/chunks/0bo09sfnvv_1l.js",
+          "static/chunks/07wet_c0e5zm5.js",
+          "static/chunks/1u_jmozi2ifbm.js",
+          "static/chunks/1a0zpfhjm_a6b.js",
+          "static/chunks/3sahf8zdwv9k3.js",
+          "static/chunks/3t8yihgp954l0.js",
+          "static/chunks/1mt2olw1y-5il.js",
+          "static/chunks/03q3v5ljw-7u2.js"
+        ],
+        "rawBytes": 629742,
+        "gzipBytes": 199623,
+        "rawKiB": 615,
+        "gzipKiB": 194.9
+      },
+      "dom": {
+        "elements": 393,
+        "mathExpressions": 0,
+        "desktopElements": 0,
+        "desktopDisplay": null,
+        "mobileElements": 0,
+        "horizontalOverflowPx": 0
+      },
+      "baseline": {
+        "initialGzipKiB": 194.9,
+        "dom": {
+          "elements": 393,
+          "mathExpressions": 0,
+          "hiddenDesktopElements": 0,
+          "desktopDisplay": null
+        }
+      },
+      "apiRequests": [
+        {
+          "path": "/backend-api/auth/refresh",
+          "method": "POST",
+          "startEpochMs": 1791190194599,
+          "endEpochMs": 1791190194610,
+          "bodyBytes": 2
+        },
+        {
+          "path": "/backend-api/users/me",
+          "method": "GET",
+          "startEpochMs": 1791190194826,
+          "endEpochMs": 1791190194836,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/training/capabilities",
+          "method": "GET",
+          "startEpochMs": 1791190194964,
+          "endEpochMs": 1791190194970,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/training/dashboard?exam=ssc-cgl",
+          "method": "GET",
+          "startEpochMs": 1791190194966,
+          "endEpochMs": 1791190194990,
+          "bodyBytes": 0
+        }
+      ],
+      "missingAssets": [],
+      "uncaughtPageErrors": []
+    },
+    {
+      "route": "/play?exam=cat",
+      "variant": {},
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javaScriptRequestedBeforeTypingOrSubmission": {
+        "files": [
+          "static/chunks/42gazttc-k497.js",
+          "static/chunks/3quj6o5p45y-u.js",
+          "static/chunks/1l_7ryrq2nb6d.js",
+          "static/chunks/1qi9cvfcycon1.js",
+          "static/chunks/turbopack-3wj3hdcq6u9n_.js",
+          "static/chunks/24t4052m7k1gn.js",
+          "static/chunks/0qhhnu6sdz_mv.js",
+          "static/chunks/0bo09sfnvv_1l.js",
+          "static/chunks/07wet_c0e5zm5.js",
+          "static/chunks/1u_jmozi2ifbm.js",
+          "static/chunks/1a0zpfhjm_a6b.js",
+          "static/chunks/3sahf8zdwv9k3.js",
+          "static/chunks/3t8yihgp954l0.js",
+          "static/chunks/1mt2olw1y-5il.js",
+          "static/chunks/03q3v5ljw-7u2.js"
+        ],
+        "rawBytes": 629742,
+        "gzipBytes": 199623,
+        "rawKiB": 615,
+        "gzipKiB": 194.9
+      },
+      "dom": {
+        "elements": 393,
+        "mathExpressions": 0,
+        "desktopElements": 0,
+        "desktopDisplay": null,
+        "mobileElements": 0,
+        "horizontalOverflowPx": 0
+      },
+      "baseline": {
+        "initialGzipKiB": 194.9,
+        "dom": {
+          "elements": 393,
+          "mathExpressions": 0,
+          "hiddenDesktopElements": 0,
+          "desktopDisplay": null
+        }
+      },
+      "apiRequests": [
+        {
+          "path": "/backend-api/auth/refresh",
+          "method": "POST",
+          "startEpochMs": 1791190197554,
+          "endEpochMs": 1791190197563,
+          "bodyBytes": 2
+        },
+        {
+          "path": "/backend-api/users/me",
+          "method": "GET",
+          "startEpochMs": 1791190197738,
+          "endEpochMs": 1791190197746,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/training/capabilities",
+          "method": "GET",
+          "startEpochMs": 1791190197872,
+          "endEpochMs": 1791190197879,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/training/dashboard?exam=cat",
+          "method": "GET",
+          "startEpochMs": 1791190197872,
+          "endEpochMs": 1791190197894,
+          "bodyBytes": 0
+        }
+      ],
+      "missingAssets": [],
+      "uncaughtPageErrors": []
+    },
+    {
+      "route": "/mathematics",
+      "variant": {},
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javaScriptRequestedBeforeTypingOrSubmission": {
+        "files": [
+          "static/chunks/42gazttc-k497.js",
+          "static/chunks/3quj6o5p45y-u.js",
+          "static/chunks/1l_7ryrq2nb6d.js",
+          "static/chunks/1qi9cvfcycon1.js",
+          "static/chunks/turbopack-3wj3hdcq6u9n_.js",
+          "static/chunks/24t4052m7k1gn.js",
+          "static/chunks/0qhhnu6sdz_mv.js",
+          "static/chunks/0bo09sfnvv_1l.js",
+          "static/chunks/0o82-gfo19izs.js",
+          "static/chunks/1mt2olw1y-5il.js",
+          "static/chunks/07wet_c0e5zm5.js",
+          "static/chunks/1u_jmozi2ifbm.js",
+          "static/chunks/1a0zpfhjm_a6b.js",
+          "static/chunks/3g-ihi2ulq_a-.js",
+          "static/chunks/0uel9wavsstgv.js",
+          "static/chunks/3cno_hd4v-nl-.js",
+          "static/chunks/03q3v5ljw-7u2.js"
+        ],
+        "rawBytes": 683830,
+        "gzipBytes": 215681,
+        "rawKiB": 667.8,
+        "gzipKiB": 210.6
+      },
+      "dom": {
+        "elements": 302,
+        "mathExpressions": 0,
+        "desktopElements": 0,
+        "desktopDisplay": null,
+        "mobileElements": 223,
+        "horizontalOverflowPx": 0
+      },
+      "baseline": {
+        "initialGzipKiB": 213.7,
+        "dom": {
+          "elements": 634,
+          "mathExpressions": 0,
+          "hiddenDesktopElements": 330,
+          "desktopDisplay": "none"
+        }
+      },
+      "apiRequests": [
+        {
+          "path": "/backend-api/auth/refresh",
+          "method": "POST",
+          "startEpochMs": 1791190200508,
+          "endEpochMs": 1791190200516,
+          "bodyBytes": 2
+        },
+        {
+          "path": "/backend-api/users/me",
+          "method": "GET",
+          "startEpochMs": 1791190200744,
+          "endEpochMs": 1791190200754,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/progress/topics?subject=mathematics",
+          "method": "GET",
+          "startEpochMs": 1791190200871,
+          "endEpochMs": 1791190200881,
+          "bodyBytes": 0
+        }
+      ],
+      "missingAssets": [],
+      "uncaughtPageErrors": []
+    },
+    {
+      "route": "/mathematics/advance/algebra",
+      "variant": {},
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javaScriptRequestedBeforeTypingOrSubmission": {
+        "files": [
+          "static/chunks/42gazttc-k497.js",
+          "static/chunks/3quj6o5p45y-u.js",
+          "static/chunks/1l_7ryrq2nb6d.js",
+          "static/chunks/1qi9cvfcycon1.js",
+          "static/chunks/turbopack-3wj3hdcq6u9n_.js",
+          "static/chunks/24t4052m7k1gn.js",
+          "static/chunks/0qhhnu6sdz_mv.js",
+          "static/chunks/0bo09sfnvv_1l.js",
+          "static/chunks/0o82-gfo19izs.js",
+          "static/chunks/07wet_c0e5zm5.js",
+          "static/chunks/1u_jmozi2ifbm.js",
+          "static/chunks/1a0zpfhjm_a6b.js",
+          "static/chunks/04y23c5963ek8.js",
+          "static/chunks/1mt2olw1y-5il.js",
+          "static/chunks/3g-ihi2ulq_a-.js",
+          "static/chunks/03q3v5ljw-7u2.js"
+        ],
+        "rawBytes": 627915,
+        "gzipBytes": 199703,
+        "rawKiB": 613.2,
+        "gzipKiB": 195
+      },
+      "dom": {
+        "elements": 201,
+        "mathExpressions": 0,
+        "desktopElements": 0,
+        "desktopDisplay": null,
+        "mobileElements": 0,
+        "horizontalOverflowPx": 0
+      },
+      "baseline": {
+        "initialGzipKiB": 244.1,
+        "dom": {
+          "elements": 205,
+          "mathExpressions": 0,
+          "hiddenDesktopElements": 0,
+          "desktopDisplay": null
+        }
+      },
+      "apiRequests": [
+        {
+          "path": "/backend-api/auth/refresh",
+          "method": "POST",
+          "startEpochMs": 1791190203480,
+          "endEpochMs": 1791190203488,
+          "bodyBytes": 2
+        },
+        {
+          "path": "/backend-api/users/me",
+          "method": "GET",
+          "startEpochMs": 1791190203657,
+          "endEpochMs": 1791190203666,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/questions/counts?topic=algebra&subject=mathematics",
+          "method": "GET",
+          "startEpochMs": 1791190203793,
+          "endEpochMs": 1791190203806,
+          "bodyBytes": 0
+        }
+      ],
+      "missingAssets": [
+        "/mathematics/advance?_rsc=84-JVUOzxVqPKZ2P",
+        "/mathematics/advance/algebra/formula-notes?_rsc=84-JVUOzxVqPKZ2P"
+      ],
+      "uncaughtPageErrors": []
+    },
+    {
+      "route": "/mathematics/advance/algebra/quiz?resume=1",
+      "variant": {},
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javaScriptRequestedBeforeTypingOrSubmission": {
+        "files": [
+          "static/chunks/42gazttc-k497.js",
+          "static/chunks/3quj6o5p45y-u.js",
+          "static/chunks/1l_7ryrq2nb6d.js",
+          "static/chunks/1qi9cvfcycon1.js",
+          "static/chunks/turbopack-3wj3hdcq6u9n_.js",
+          "static/chunks/24t4052m7k1gn.js",
+          "static/chunks/0qhhnu6sdz_mv.js",
+          "static/chunks/0bo09sfnvv_1l.js",
+          "static/chunks/0o82-gfo19izs.js",
+          "static/chunks/1mt2olw1y-5il.js",
+          "static/chunks/07wet_c0e5zm5.js",
+          "static/chunks/1u_jmozi2ifbm.js",
+          "static/chunks/1a0zpfhjm_a6b.js",
+          "static/chunks/3g-ihi2ulq_a-.js",
+          "static/chunks/29vp7z9_ywvni.js",
+          "static/chunks/2t3bg1ksugc4p.js",
+          "static/chunks/0bi0jrasvihzx.js",
+          "static/chunks/03q3v5ljw-7u2.js"
+        ],
+        "rawBytes": 786758,
+        "gzipBytes": 247321,
+        "rawKiB": 768.3,
+        "gzipKiB": 241.5
+      },
+      "javaScriptRequestedAfterSubmissionBeforeOpeningTutor": {
+        "files": [],
+        "rawBytes": 0,
+        "gzipBytes": 0,
+        "rawKiB": 0,
+        "gzipKiB": 0
+      },
+      "javaScriptRequestedAfterOpeningTutor": {
+        "files": [
+          "static/chunks/1i211pymfmdd_.js",
+          "static/chunks/3b-25f174ph7i.js",
+          "static/chunks/2g3gbq-quuj-u.js"
+        ],
+        "rawBytes": 452894,
+        "gzipBytes": 135050,
+        "rawKiB": 442.3,
+        "gzipKiB": 131.9
+      },
+      "javaScriptRequestedAfterReopeningTutor": {
+        "files": [],
+        "rawBytes": 0,
+        "gzipBytes": 0,
+        "rawKiB": 0,
+        "gzipKiB": 0
+      },
+      "javaScriptRequestedAfterOpeningSolution": {
+        "files": [
+          "static/chunks/1uhj420ihr55i.js",
+          "static/chunks/1b1g4xh5wfx-s.js"
+        ],
+        "rawBytes": 140409,
+        "gzipBytes": 46249,
+        "rawKiB": 137.1,
+        "gzipKiB": 45.2
+      },
+      "javaScriptRequestedAfterReopeningSolution": {
+        "files": [],
+        "rawBytes": 0,
+        "gzipBytes": 0,
+        "rawKiB": 0,
+        "gzipKiB": 0
+      },
+      "dom": {
+        "elements": 143,
+        "mathExpressions": 0,
+        "desktopElements": 0,
+        "desktopDisplay": null,
+        "mobileElements": 0,
+        "horizontalOverflowPx": 0
+      },
+      "baseline": {
+        "initialGzipKiB": 244.1,
+        "dom": {
+          "elements": 144,
+          "mathExpressions": 0,
+          "hiddenDesktopElements": 0,
+          "desktopDisplay": null
+        }
+      },
+      "apiRequests": [
+        {
+          "path": "/backend-api/auth/refresh",
+          "method": "POST",
+          "startEpochMs": 1791190206593,
+          "endEpochMs": 1791190206601,
+          "bodyBytes": 2
+        },
+        {
+          "path": "/backend-api/users/me",
+          "method": "GET",
+          "startEpochMs": 1791190206701,
+          "endEpochMs": 1791190206708,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/questions/meta?topic=algebra&subject=mathematics&mode=concept",
+          "method": "GET",
+          "startEpochMs": 1791190206884,
+          "endEpochMs": 1791190206895,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/questions/session?subject=mathematics&topic=algebra&mode=concept&limit=100&includeTotal=false",
+          "method": "GET",
+          "startEpochMs": 1791190206885,
+          "endEpochMs": 1791190206918,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/users/me/recent-quizzes",
+          "method": "PATCH",
+          "startEpochMs": 1791190208267,
+          "endEpochMs": 1791190208271,
+          "bodyBytes": 271
+        },
+        {
+          "path": "/backend-api/users/me/progress",
+          "method": "PATCH",
+          "startEpochMs": 1791190208977,
+          "endEpochMs": 1791190208979,
+          "bodyBytes": 46
+        },
+        {
+          "path": "/backend-api/api/questions/fixture-0/answer",
+          "method": "POST",
+          "startEpochMs": 1791190208978,
+          "endEpochMs": 1791190208979,
+          "bodyBytes": 66
+        },
+        {
+          "path": "/backend-api/users/me/recent-quizzes",
+          "method": "PATCH",
+          "startEpochMs": 1791190209631,
+          "endEpochMs": 1791190209637,
+          "bodyBytes": 418
+        }
+      ],
+      "missingAssets": [],
+      "uncaughtPageErrors": []
+    },
+    {
+      "route": "/ai-chat",
+      "variant": {},
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javaScriptRequestedBeforeTypingOrSubmission": {
+        "files": [
+          "static/chunks/42gazttc-k497.js",
+          "static/chunks/3quj6o5p45y-u.js",
+          "static/chunks/1l_7ryrq2nb6d.js",
+          "static/chunks/1qi9cvfcycon1.js",
+          "static/chunks/turbopack-3wj3hdcq6u9n_.js",
+          "static/chunks/24t4052m7k1gn.js",
+          "static/chunks/0qhhnu6sdz_mv.js",
+          "static/chunks/0bo09sfnvv_1l.js",
+          "static/chunks/0o82-gfo19izs.js",
+          "static/chunks/1mt2olw1y-5il.js",
+          "static/chunks/07wet_c0e5zm5.js",
+          "static/chunks/1u_jmozi2ifbm.js",
+          "static/chunks/1a0zpfhjm_a6b.js",
+          "static/chunks/3-r73263hpkt5.js",
+          "static/chunks/1d-bgcx_xches.js",
+          "static/chunks/0fg12sezt4ink.js",
+          "static/chunks/44_a_5812bxm3.js",
+          "static/chunks/03q3v5ljw-7u2.js"
+        ],
+        "rawBytes": 718420,
+        "gzipBytes": 230539,
+        "rawKiB": 701.6,
+        "gzipKiB": 225.1
+      },
+      "dom": {
+        "elements": 130,
+        "mathExpressions": 0,
+        "desktopElements": 0,
+        "desktopDisplay": null,
+        "mobileElements": 0,
+        "horizontalOverflowPx": 0
+      },
+      "typing": {
+        "text": "explain the next step",
+        "perKeyDelayMs": 30,
+        "finalWaitMs": 500,
+        "wallMs": 1613,
+        "longTaskCount": 0,
+        "medianObservedLongTaskMs": null,
+        "maxLongTaskMs": null,
+        "maxObservedEventDurationMs": 56,
+        "observedLongTaskDurationsMs": []
+      },
+      "baseline": {
+        "initialGzipKiB": 313.9,
+        "dom": {
+          "elements": 130,
+          "mathExpressions": 0,
+          "hiddenDesktopElements": 0,
+          "desktopDisplay": null
+        },
+        "typing": {
+          "text": "explain the next step",
+          "perKeyDelayMs": 30,
+          "finalWaitMs": 500,
+          "wallMs": 1850,
+          "longTaskCount": 0,
+          "medianObservedLongTaskMs": null,
+          "maxLongTaskMs": null,
+          "maxObservedEventDurationMs": 56,
+          "observedLongTaskDurationsMs": []
+        }
+      },
+      "apiRequests": [
+        {
+          "path": "/backend-api/auth/refresh",
+          "method": "POST",
+          "startEpochMs": 1791190214029,
+          "endEpochMs": 1791190214037,
+          "bodyBytes": 2
+        },
+        {
+          "path": "/backend-api/users/me",
+          "method": "GET",
+          "startEpochMs": 1791190214238,
+          "endEpochMs": 1791190214248,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/users/me/ai-chats",
+          "method": "GET",
+          "startEpochMs": 1791190214332,
+          "endEpochMs": 1791190214338,
+          "bodyBytes": 0
+        }
+      ],
+      "missingAssets": [],
+      "uncaughtPageErrors": []
+    },
+    {
+      "route": "/mathematics/advance/algebra/quiz?resume=1",
+      "variant": {
+        "resumeIndex": 240,
+        "width": 360
+      },
+      "viewport": {
+        "width": 360,
+        "height": 844
+      },
+      "javaScriptRequestedBeforeTypingOrSubmission": {
+        "files": [
+          "static/chunks/42gazttc-k497.js",
+          "static/chunks/3quj6o5p45y-u.js",
+          "static/chunks/1l_7ryrq2nb6d.js",
+          "static/chunks/1qi9cvfcycon1.js",
+          "static/chunks/turbopack-3wj3hdcq6u9n_.js",
+          "static/chunks/24t4052m7k1gn.js",
+          "static/chunks/0qhhnu6sdz_mv.js",
+          "static/chunks/0bo09sfnvv_1l.js",
+          "static/chunks/0o82-gfo19izs.js",
+          "static/chunks/1mt2olw1y-5il.js",
+          "static/chunks/07wet_c0e5zm5.js",
+          "static/chunks/1u_jmozi2ifbm.js",
+          "static/chunks/1a0zpfhjm_a6b.js",
+          "static/chunks/3g-ihi2ulq_a-.js",
+          "static/chunks/29vp7z9_ywvni.js",
+          "static/chunks/2t3bg1ksugc4p.js",
+          "static/chunks/0bi0jrasvihzx.js",
+          "static/chunks/03q3v5ljw-7u2.js"
+        ],
+        "rawBytes": 786758,
+        "gzipBytes": 247321,
+        "rawKiB": 768.3,
+        "gzipKiB": 241.5
+      },
+      "dom": {
+        "elements": 143,
+        "mathExpressions": 0,
+        "desktopElements": 0,
+        "desktopDisplay": null,
+        "mobileElements": 0,
+        "horizontalOverflowPx": 0
+      },
+      "baseline": {
+        "initialGzipKiB": 244.1,
+        "dom": {
+          "elements": 144,
+          "mathExpressions": 0,
+          "hiddenDesktopElements": 0,
+          "desktopDisplay": null
+        }
+      },
+      "apiRequests": [
+        {
+          "path": "/backend-api/auth/refresh",
+          "method": "POST",
+          "startEpochMs": 1791190218422,
+          "endEpochMs": 1791190218434,
+          "bodyBytes": 2
+        },
+        {
+          "path": "/backend-api/users/me",
+          "method": "GET",
+          "startEpochMs": 1791190218549,
+          "endEpochMs": 1791190218558,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/questions/meta?topic=algebra&subject=mathematics&mode=concept",
+          "method": "GET",
+          "startEpochMs": 1791190218741,
+          "endEpochMs": 1791190218753,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/questions/session?subject=mathematics&topic=algebra&mode=concept&limit=100&includeTotal=false",
+          "method": "GET",
+          "startEpochMs": 1791190218743,
+          "endEpochMs": 1791190218754,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/questions/session?subject=mathematics&topic=algebra&mode=concept&limit=100&includeTotal=false&cursor=6ac360bc944d9a40c2ee6cc0",
+          "method": "GET",
+          "startEpochMs": 1791190218802,
+          "endEpochMs": 1791190218880,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/questions/session?subject=mathematics&topic=algebra&mode=concept&limit=100&includeTotal=false&cursor=6ac360bc944d9a40c2ee6d24",
+          "method": "GET",
+          "startEpochMs": 1791190218908,
+          "endEpochMs": 1791190218953,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/users/me/recent-quizzes",
+          "method": "PATCH",
+          "startEpochMs": 1791190220152,
+          "endEpochMs": 1791190220156,
+          "bodyBytes": 273
+        }
+      ],
+      "missingAssets": [],
+      "uncaughtPageErrors": []
+    },
+    {
+      "route": "/mathematics",
+      "variant": {
+        "width": 1366
+      },
+      "viewport": {
+        "width": 1366,
+        "height": 844
+      },
+      "javaScriptRequestedBeforeTypingOrSubmission": {
+        "files": [
+          "static/chunks/42gazttc-k497.js",
+          "static/chunks/3quj6o5p45y-u.js",
+          "static/chunks/1l_7ryrq2nb6d.js",
+          "static/chunks/1qi9cvfcycon1.js",
+          "static/chunks/turbopack-3wj3hdcq6u9n_.js",
+          "static/chunks/24t4052m7k1gn.js",
+          "static/chunks/0qhhnu6sdz_mv.js",
+          "static/chunks/0bo09sfnvv_1l.js",
+          "static/chunks/0o82-gfo19izs.js",
+          "static/chunks/1mt2olw1y-5il.js",
+          "static/chunks/07wet_c0e5zm5.js",
+          "static/chunks/1u_jmozi2ifbm.js",
+          "static/chunks/1a0zpfhjm_a6b.js",
+          "static/chunks/3g-ihi2ulq_a-.js",
+          "static/chunks/0uel9wavsstgv.js",
+          "static/chunks/3cno_hd4v-nl-.js",
+          "static/chunks/03q3v5ljw-7u2.js",
+          "static/chunks/3s0wqxsk8ulny.js"
+        ],
+        "rawBytes": 706870,
+        "gzipBytes": 221393,
+        "rawKiB": 690.3,
+        "gzipKiB": 216.2
+      },
+      "dom": {
+        "elements": 411,
+        "mathExpressions": 0,
+        "desktopElements": 330,
+        "desktopDisplay": "flex",
+        "mobileElements": 0,
+        "horizontalOverflowPx": 0
+      },
+      "apiRequests": [
+        {
+          "path": "/backend-api/auth/refresh",
+          "method": "POST",
+          "startEpochMs": 1791190221188,
+          "endEpochMs": 1791190221197,
+          "bodyBytes": 2
+        },
+        {
+          "path": "/backend-api/users/me",
+          "method": "GET",
+          "startEpochMs": 1791190221466,
+          "endEpochMs": 1791190221474,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/questions/counts?topic=percentages&subject=mathematics",
+          "method": "GET",
+          "startEpochMs": 1791190221601,
+          "endEpochMs": 1791190221614,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/progress/topics?subject=mathematics",
+          "method": "GET",
+          "startEpochMs": 1791190221954,
+          "endEpochMs": 1791190221965,
+          "bodyBytes": 0
+        }
+      ],
+      "missingAssets": [],
+      "uncaughtPageErrors": []
+    },
+    {
+      "route": "/ai-chat",
+      "variant": {
+        "chatTurns": 10
+      },
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javaScriptRequestedBeforeTypingOrSubmission": {
+        "files": [
+          "static/chunks/42gazttc-k497.js",
+          "static/chunks/3quj6o5p45y-u.js",
+          "static/chunks/1l_7ryrq2nb6d.js",
+          "static/chunks/1qi9cvfcycon1.js",
+          "static/chunks/turbopack-3wj3hdcq6u9n_.js",
+          "static/chunks/24t4052m7k1gn.js",
+          "static/chunks/0qhhnu6sdz_mv.js",
+          "static/chunks/0bo09sfnvv_1l.js",
+          "static/chunks/0o82-gfo19izs.js",
+          "static/chunks/1mt2olw1y-5il.js",
+          "static/chunks/07wet_c0e5zm5.js",
+          "static/chunks/1u_jmozi2ifbm.js",
+          "static/chunks/1a0zpfhjm_a6b.js",
+          "static/chunks/3-r73263hpkt5.js",
+          "static/chunks/1d-bgcx_xches.js",
+          "static/chunks/0fg12sezt4ink.js",
+          "static/chunks/44_a_5812bxm3.js",
+          "static/chunks/03q3v5ljw-7u2.js",
+          "static/chunks/1u18u8rsrnc7k.js",
+          "static/chunks/3b-25f174ph7i.js"
+        ],
+        "rawBytes": 1150163,
+        "gzipBytes": 358214,
+        "rawKiB": 1123.2,
+        "gzipKiB": 349.8
+      },
+      "dom": {
+        "elements": 6590,
+        "mathExpressions": 80,
+        "desktopElements": 0,
+        "desktopDisplay": null,
+        "mobileElements": 0,
+        "horizontalOverflowPx": 0
+      },
+      "typing": {
+        "text": "explain the next step",
+        "perKeyDelayMs": 30,
+        "finalWaitMs": 500,
+        "wallMs": 1665,
+        "longTaskCount": 2,
+        "medianObservedLongTaskMs": 71,
+        "maxLongTaskMs": 84,
+        "maxObservedEventDurationMs": 88,
+        "observedLongTaskDurationsMs": [
+          84,
+          58
+        ]
+      },
+      "baseline": {
+        "initialGzipKiB": 438.5,
+        "dom": {
+          "elements": 6590,
+          "mathExpressions": 80,
+          "hiddenDesktopElements": 0,
+          "desktopDisplay": null
+        },
+        "typing": {
+          "text": "explain the next step",
+          "perKeyDelayMs": 30,
+          "finalWaitMs": 500,
+          "wallMs": 12625,
+          "longTaskCount": 22,
+          "medianObservedLongTaskMs": 495,
+          "maxLongTaskMs": 649,
+          "maxObservedEventDurationMs": 752,
+          "observedLongTaskDurationsMs": [
+            649,
+            641,
+            57,
+            632,
+            644,
+            534,
+            479,
+            492,
+            514,
+            490,
+            501,
+            529,
+            495,
+            589,
+            462,
+            456,
+            460,
+            492,
+            511,
+            472,
+            449,
+            455
+          ]
+        }
+      },
+      "apiRequests": [
+        {
+          "path": "/backend-api/auth/refresh",
+          "method": "POST",
+          "startEpochMs": 1791190224109,
+          "endEpochMs": 1791190224118,
+          "bodyBytes": 2
+        },
+        {
+          "path": "/backend-api/users/me",
+          "method": "GET",
+          "startEpochMs": 1791190224369,
+          "endEpochMs": 1791190224378,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/users/me/ai-chats",
+          "method": "GET",
+          "startEpochMs": 1791190224462,
+          "endEpochMs": 1791190224464,
+          "bodyBytes": 0
+        }
+      ],
+      "missingAssets": [],
+      "uncaughtPageErrors": []
+    },
+    {
+      "route": "/ai-chat",
+      "variant": {
+        "chatTurns": 30
+      },
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javaScriptRequestedBeforeTypingOrSubmission": {
+        "files": [
+          "static/chunks/42gazttc-k497.js",
+          "static/chunks/3quj6o5p45y-u.js",
+          "static/chunks/1l_7ryrq2nb6d.js",
+          "static/chunks/1qi9cvfcycon1.js",
+          "static/chunks/turbopack-3wj3hdcq6u9n_.js",
+          "static/chunks/24t4052m7k1gn.js",
+          "static/chunks/0qhhnu6sdz_mv.js",
+          "static/chunks/0bo09sfnvv_1l.js",
+          "static/chunks/0o82-gfo19izs.js",
+          "static/chunks/1mt2olw1y-5il.js",
+          "static/chunks/07wet_c0e5zm5.js",
+          "static/chunks/1u_jmozi2ifbm.js",
+          "static/chunks/1a0zpfhjm_a6b.js",
+          "static/chunks/3-r73263hpkt5.js",
+          "static/chunks/1d-bgcx_xches.js",
+          "static/chunks/0fg12sezt4ink.js",
+          "static/chunks/44_a_5812bxm3.js",
+          "static/chunks/03q3v5ljw-7u2.js",
+          "static/chunks/1u18u8rsrnc7k.js",
+          "static/chunks/3b-25f174ph7i.js"
+        ],
+        "rawBytes": 1150163,
+        "gzipBytes": 358214,
+        "rawKiB": 1123.2,
+        "gzipKiB": 349.8
+      },
+      "dom": {
+        "elements": 6594,
+        "mathExpressions": 80,
+        "desktopElements": 0,
+        "desktopDisplay": null,
+        "mobileElements": 0,
+        "horizontalOverflowPx": 0
+      },
+      "typing": {
+        "text": "explain the next step",
+        "perKeyDelayMs": 30,
+        "finalWaitMs": 500,
+        "wallMs": 1646,
+        "longTaskCount": 1,
+        "medianObservedLongTaskMs": 72,
+        "maxLongTaskMs": 72,
+        "maxObservedEventDurationMs": 80,
+        "observedLongTaskDurationsMs": [
+          72
+        ]
+      },
+      "historyNavigation": "Earlier and latest replies remain accessible",
+      "baseline": {
+        "initialGzipKiB": 438.5,
+        "dom": {
+          "elements": 19530,
+          "mathExpressions": 240,
+          "hiddenDesktopElements": 0,
+          "desktopDisplay": null
+        },
+        "typing": {
+          "text": "explain the next step",
+          "perKeyDelayMs": 30,
+          "finalWaitMs": 500,
+          "wallMs": 34273,
+          "longTaskCount": 23,
+          "medianObservedLongTaskMs": 1423,
+          "maxLongTaskMs": 1923,
+          "maxObservedEventDurationMs": 2128,
+          "observedLongTaskDurationsMs": [
+            1923,
+            142,
+            1691,
+            117,
+            1506,
+            1346,
+            1337,
+            1559,
+            1606,
+            1423,
+            1478,
+            1303,
+            1358,
+            1518,
+            1417,
+            1424,
+            1405,
+            1356,
+            1600,
+            1396,
+            1416,
+            1608,
+            1470
+          ]
+        }
+      },
+      "apiRequests": [
+        {
+          "path": "/backend-api/auth/refresh",
+          "method": "POST",
+          "startEpochMs": 1791190232163,
+          "endEpochMs": 1791190232172,
+          "bodyBytes": 2
+        },
+        {
+          "path": "/backend-api/users/me",
+          "method": "GET",
+          "startEpochMs": 1791190232386,
+          "endEpochMs": 1791190232395,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/users/me/ai-chats",
+          "method": "GET",
+          "startEpochMs": 1791190232475,
+          "endEpochMs": 1791190232477,
+          "bodyBytes": 0
+        }
+      ],
+      "missingAssets": [],
+      "uncaughtPageErrors": []
+    },
+    {
+      "route": "/ai-chat",
+      "variant": {
+        "chatTurns": 30,
+        "width": 360
+      },
+      "viewport": {
+        "width": 360,
+        "height": 844
+      },
+      "javaScriptRequestedBeforeTypingOrSubmission": {
+        "files": [
+          "static/chunks/42gazttc-k497.js",
+          "static/chunks/3quj6o5p45y-u.js",
+          "static/chunks/1l_7ryrq2nb6d.js",
+          "static/chunks/1qi9cvfcycon1.js",
+          "static/chunks/turbopack-3wj3hdcq6u9n_.js",
+          "static/chunks/24t4052m7k1gn.js",
+          "static/chunks/0qhhnu6sdz_mv.js",
+          "static/chunks/0bo09sfnvv_1l.js",
+          "static/chunks/0o82-gfo19izs.js",
+          "static/chunks/1mt2olw1y-5il.js",
+          "static/chunks/07wet_c0e5zm5.js",
+          "static/chunks/1u_jmozi2ifbm.js",
+          "static/chunks/1a0zpfhjm_a6b.js",
+          "static/chunks/3-r73263hpkt5.js",
+          "static/chunks/1d-bgcx_xches.js",
+          "static/chunks/0fg12sezt4ink.js",
+          "static/chunks/44_a_5812bxm3.js",
+          "static/chunks/03q3v5ljw-7u2.js",
+          "static/chunks/1u18u8rsrnc7k.js",
+          "static/chunks/3b-25f174ph7i.js"
+        ],
+        "rawBytes": 1150163,
+        "gzipBytes": 358214,
+        "rawKiB": 1123.2,
+        "gzipKiB": 349.8
+      },
+      "dom": {
+        "elements": 6594,
+        "mathExpressions": 80,
+        "desktopElements": 0,
+        "desktopDisplay": null,
+        "mobileElements": 0,
+        "horizontalOverflowPx": 0
+      },
+      "typing": {
+        "text": "explain the next step",
+        "perKeyDelayMs": 30,
+        "finalWaitMs": 500,
+        "wallMs": 1645,
+        "longTaskCount": 0,
+        "medianObservedLongTaskMs": null,
+        "maxLongTaskMs": null,
+        "maxObservedEventDurationMs": 88,
+        "observedLongTaskDurationsMs": []
+      },
+      "historyNavigation": "Earlier and latest replies remain accessible",
+      "apiRequests": [
+        {
+          "path": "/backend-api/auth/refresh",
+          "method": "POST",
+          "startEpochMs": 1791190244390,
+          "endEpochMs": 1791190244399,
+          "bodyBytes": 2
+        },
+        {
+          "path": "/backend-api/users/me",
+          "method": "GET",
+          "startEpochMs": 1791190244587,
+          "endEpochMs": 1791190244595,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/users/me/ai-chats",
+          "method": "GET",
+          "startEpochMs": 1791190244666,
+          "endEpochMs": 1791190244668,
+          "bodyBytes": 0
+        }
+      ],
+      "missingAssets": [],
+      "uncaughtPageErrors": []
+    },
+    {
+      "route": "/mathematics/advance/algebra/quiz?resume=1",
+      "variant": {
+        "mathQuestion": true
+      },
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "javaScriptRequestedBeforeTypingOrSubmission": {
+        "files": [
+          "static/chunks/42gazttc-k497.js",
+          "static/chunks/3quj6o5p45y-u.js",
+          "static/chunks/1l_7ryrq2nb6d.js",
+          "static/chunks/1qi9cvfcycon1.js",
+          "static/chunks/turbopack-3wj3hdcq6u9n_.js",
+          "static/chunks/24t4052m7k1gn.js",
+          "static/chunks/0qhhnu6sdz_mv.js",
+          "static/chunks/0bo09sfnvv_1l.js",
+          "static/chunks/0o82-gfo19izs.js",
+          "static/chunks/1mt2olw1y-5il.js",
+          "static/chunks/07wet_c0e5zm5.js",
+          "static/chunks/1u_jmozi2ifbm.js",
+          "static/chunks/1a0zpfhjm_a6b.js",
+          "static/chunks/3g-ihi2ulq_a-.js",
+          "static/chunks/29vp7z9_ywvni.js",
+          "static/chunks/2t3bg1ksugc4p.js",
+          "static/chunks/0bi0jrasvihzx.js",
+          "static/chunks/03q3v5ljw-7u2.js",
+          "static/chunks/3bxz824j76ujh.js",
+          "static/chunks/20dwflpiyg6l_.js"
+        ],
+        "rawBytes": 1054640,
+        "gzipBytes": 326125,
+        "rawKiB": 1029.9,
+        "gzipKiB": 318.5
+      },
+      "javaScriptRequestedAfterSubmissionBeforeOpeningTutor": {
+        "files": [],
+        "rawBytes": 0,
+        "gzipBytes": 0,
+        "rawKiB": 0,
+        "gzipKiB": 0
+      },
+      "javaScriptRequestedAfterOpeningTutor": {
+        "files": [
+          "static/chunks/1i211pymfmdd_.js",
+          "static/chunks/3b-25f174ph7i.js",
+          "static/chunks/2g3gbq-quuj-u.js"
+        ],
+        "rawBytes": 452894,
+        "gzipBytes": 135050,
+        "rawKiB": 442.3,
+        "gzipKiB": 131.9
+      },
+      "javaScriptRequestedAfterReopeningTutor": {
+        "files": [],
+        "rawBytes": 0,
+        "gzipBytes": 0,
+        "rawKiB": 0,
+        "gzipKiB": 0
+      },
+      "javaScriptRequestedAfterOpeningSolution": {
+        "files": [
+          "static/chunks/1uhj420ihr55i.js",
+          "static/chunks/1b1g4xh5wfx-s.js"
+        ],
+        "rawBytes": 140409,
+        "gzipBytes": 46249,
+        "rawKiB": 137.1,
+        "gzipKiB": 45.2
+      },
+      "javaScriptRequestedAfterReopeningSolution": {
+        "files": [],
+        "rawBytes": 0,
+        "gzipBytes": 0,
+        "rawKiB": 0,
+        "gzipKiB": 0
+      },
+      "dom": {
+        "elements": 233,
+        "mathExpressions": 2,
+        "desktopElements": 0,
+        "desktopDisplay": null,
+        "mobileElements": 0,
+        "horizontalOverflowPx": 0
+      },
+      "baseline": {
+        "initialGzipKiB": 321.1,
+        "dom": {
+          "elements": 234,
+          "mathExpressions": 2,
+          "hiddenDesktopElements": 0,
+          "desktopDisplay": null
+        }
+      },
+      "apiRequests": [
+        {
+          "path": "/backend-api/auth/refresh",
+          "method": "POST",
+          "startEpochMs": 1791190268192,
+          "endEpochMs": 1791190268203,
+          "bodyBytes": 2
+        },
+        {
+          "path": "/backend-api/users/me",
+          "method": "GET",
+          "startEpochMs": 1791190268305,
+          "endEpochMs": 1791190268315,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/questions/meta?topic=algebra&subject=mathematics&mode=concept",
+          "method": "GET",
+          "startEpochMs": 1791190268496,
+          "endEpochMs": 1791190268504,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/api/questions/session?subject=mathematics&topic=algebra&mode=concept&limit=100&includeTotal=false",
+          "method": "GET",
+          "startEpochMs": 1791190268497,
+          "endEpochMs": 1791190268530,
+          "bodyBytes": 0
+        },
+        {
+          "path": "/backend-api/users/me/recent-quizzes",
+          "method": "PATCH",
+          "startEpochMs": 1791190269736,
+          "endEpochMs": 1791190269740,
+          "bodyBytes": 271
+        },
+        {
+          "path": "/backend-api/users/me/progress",
+          "method": "PATCH",
+          "startEpochMs": 1791190270592,
+          "endEpochMs": 1791190270594,
+          "bodyBytes": 46
+        },
+        {
+          "path": "/backend-api/api/questions/fixture-0/answer",
+          "method": "POST",
+          "startEpochMs": 1791190270592,
+          "endEpochMs": 1791190270594,
+          "bodyBytes": 66
+        },
+        {
+          "path": "/backend-api/users/me/recent-quizzes",
+          "method": "PATCH",
+          "startEpochMs": 1791190271274,
+          "endEpochMs": 1791190271280,
+          "bodyBytes": 418
+        }
+      ],
+      "missingAssets": [],
+      "uncaughtPageErrors": []
+    }
+  ]
+}

@@ -30,6 +30,8 @@ export interface QuizChatbotProps {
   theme?: string;
   activeLang?: "en" | "hi" | "bn" | string;
   renderTrigger?: (onClick: () => void) => React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function resolveCorrectAnswer(question?: QuizChatbotQuestion) {

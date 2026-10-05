@@ -1,9 +1,10 @@
-import { mathematicsStaticParams, renderMathematicsPage, type MathematicsPageProps } from "@/app/(app)/mathematics/_shared/route-page";
+import { mathematicsStaticParams, type MathematicsPageProps } from "@/app/(app)/mathematics/_shared/route-page";
+import { renderMathematicsTopicPage } from "@/app/(app)/mathematics/_shared/topic-route-page";
 
 export function generateStaticParams() {
   return mathematicsStaticParams("advance");
 }
 
 export default function Page(props: MathematicsPageProps) {
-  return renderMathematicsPage(props, "advance", "topic");
+  return renderMathematicsTopicPage(props, "advance");
 }
