@@ -2,10 +2,13 @@
 // imports made outside this process; application writes invalidate immediately.
 import { createHash } from 'node:crypto';
 import { createTieredCache } from '../../infrastructure/tieredCache.js';
-import { getQuestionRevision } from '../questions/questionCache.js';
+import { getQuestionRevision, clearQuestionRevisionCache } from '../questions/questionCache.js';
 
 let databases = new WeakMap();
-export function invalidateTrainingCatalog() { databases = new WeakMap(); }
+export function invalidateTrainingCatalog() {
+  databases = new WeakMap();
+  clearQuestionRevisionCache();
+}
 export async function cachedTrainingCatalog(db, key, build) {
   let entries = databases.get(db);
   if (!entries) { entries = new Map(); databases.set(db, entries); }

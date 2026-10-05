@@ -80,7 +80,7 @@ it('returns an error when Mongo fails without exposing its message', async () =>
   const { Collection } = await import('mongodb');
   const original = Collection.prototype.findOne;
   const read = vi.spyOn(Collection.prototype, 'findOne').mockImplementation(function (...args) {
-    if (this.collectionName === collection.collectionName && !args[1]?.projection) throw new Error('private database details');
+    if (this.collectionName === collection.collectionName && (!args[1]?.projection || args[1]?.projection?.failureMap)) throw new Error('private database details');
     return original.apply(this, args);
   });
   try { const response = await post('tag-failure', payload); expect(response.status).toBe(500); expect(await response.text()).not.toContain('private database details'); }

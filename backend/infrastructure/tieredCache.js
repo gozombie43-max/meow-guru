@@ -7,6 +7,7 @@ const unlock = "if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call(
 const renew = "if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('PEXPIRE', KEYS[1], ARGV[2]) end return 0";
 const caches = new Set();
 export function clearSharedLocalCaches() { for (const ref of caches) { const cache = ref.deref(); if (cache) cache.clear(); else caches.delete(ref); } }
+export function registerSharedLocalCache(cache) { caches.add(new WeakRef(cache)); }
 
 export function createTieredCache({ freshMs = 300000, staleMs = 1800000, localMs = 10000, lockMs = 15000, waitMs = 5000, now = Date.now, random = Math.random, getShared = redisGetJson, setShared = redisSetJson } = {}) {
   const local = new LRUCache({ max: 300, maxSize: 20 * 1024 * 1024, sizeCalculation: value => Buffer.byteLength(JSON.stringify(value)), ttl: staleMs });

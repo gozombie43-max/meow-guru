@@ -89,6 +89,12 @@ vi.mock("../../config/mongodb.js", () => ({
     findOne: (...args) => mockUsersFindOne(...args),
     updateOne: (...args) => mockUsersUpdateOne(...args),
   }),
+  getMongoDB: () => ({
+    collection: () => ({
+      findOne: vi.fn().mockResolvedValue({ revision: '1' }),
+      updateOne: vi.fn().mockResolvedValue({ acknowledged: true }),
+    }),
+  }),
 }));
 
 import notificationRouter from "../notifications.routes.js";

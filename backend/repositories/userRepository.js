@@ -1,6 +1,10 @@
 import { readSeparatedHistory, mutateSeparatedHistory, analyticsFields } from './userHistoryRepository.js';
 // backend/repositories/userRepository.js
-import { getMongoDB, getUsersCollection, getStudyActivityDailyCollection } from '../config/mongodb.js';
+import { getMongoDB, getUsersCollection, getStudyActivityDailyCollection, getQuestionsCollection } from '../config/mongodb.js';
+import { resolveQuestion } from '../services/questions/questionIdentity.js';
+
+export const findQuestionForBookmark = (questionId, context = {}) =>
+  resolveQuestion(getQuestionsCollection(), questionId, context);
 
 export const getUser = async (id, projection) => {
   const include = projection && Object.entries(projection).some(([key, value]) => key !== '_id' && value === 1);

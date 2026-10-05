@@ -1,6 +1,6 @@
 import { LRUCache } from "lru-cache";
 import { readQuestionRevision } from '../../repositories/questionMetadataRepository.js';
-import { createTieredCache } from '../../infrastructure/tieredCache.js';
+import { createTieredCache, registerSharedLocalCache } from '../../infrastructure/tieredCache.js';
 import { createHash } from 'node:crypto';
 
 let cachedRevision = { value: 0, expires: 0 };
@@ -21,6 +21,8 @@ export function clearQuestionRevisionCache() {
   cachedRevision = { value: 0, expires: 0 };
   revisionGeneration++;
 }
+const revisionCacheEntry = { clear: clearQuestionRevisionCache };
+registerSharedLocalCache(revisionCacheEntry);
 
 export async function getQuestionRevision() {
   if (cachedRevision.expires > Date.now()) return cachedRevision.value;

@@ -6,7 +6,11 @@ export async function readKeysetPage(collection, { filter = {}, filterScope = fi
   const size = Math.max(1, Math.min(100, Math.floor(Number(limit)) || 20));
   if (typeof scope !== 'string' || !scope) throw new Error('A stable cursor scope is required');
   if (![1, -1].includes(direction)) throw new Error('Invalid sort direction');
-  const fingerprint = createHash('sha256').update(JSON.stringify([scope, field, direction, filterScope], (_key, value) => value instanceof RegExp ? { regex: value.source, flags: value.flags } : value)).digest('hex').slice(0, 24);
+  const fingerprint = createHash('sha256').update(JSON.stringify([scope, field, direction, filterScope], (key, value) => {
+    if (key === 'expiresAt') return undefined;
+    if (value instanceof RegExp) return { regex: value.source, flags: value.flags };
+    return value;
+  })).digest('hex').slice(0, 24);
   let match = filter;
   if (cursor) {
     let boundary;

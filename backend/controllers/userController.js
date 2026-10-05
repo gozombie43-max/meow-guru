@@ -1,5 +1,4 @@
-import { resolveQuestion, canonicalQuestionUid } from '../services/questions/questionIdentity.js';
-import { getQuestionsCollection } from '../config/mongodb.js';
+import { canonicalQuestionUid } from '../services/questions/questionIdentity.js';
 // backend/controllers/userController.js
 import { z } from 'zod';
 import { DateTime, IANAZone } from 'luxon';
@@ -9,6 +8,7 @@ import {
   updateUserProgress,
   trackStudyUsage,
   mutateUserList,
+  findQuestionForBookmark,
 } from '../repositories/userRepository.js';
 import { profileProjection, chatSummary, appendChatMessages, mergeQuizEntry } from '../services/userHistory.js';
 import {
@@ -105,7 +105,7 @@ export const updateBookmarks = async (req, res) => {
   const { questionId, action, meta } = req.body;
   try {
     const now = new Date().toISOString();
-    const question = await resolveQuestion(getQuestionsCollection(), req.body.questionUid || questionId, meta || {});
+    const question = await findQuestionForBookmark(req.body.questionUid || questionId, meta || {});
     if (!question) return res.status(404).json({ error: "Question not found" });
     const safeId = canonicalQuestionUid(question);
     const metaObj = meta && typeof meta === 'object' ? meta : null;

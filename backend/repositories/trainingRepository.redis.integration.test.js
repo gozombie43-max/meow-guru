@@ -71,5 +71,6 @@ it('reloads candidates after an authoritative question revision changes', async 
   expect((await trainingQuestionPool(config, [], [])).some(row => row.id === 'q0')).toBe(true);
   await db.collection('questions').updateOne({ id: 'q0' }, { $set: { trainingEligible: false } });
   await db.collection('questionMetadata').updateOne({ _id: 'revision' }, { $inc: { revision: 1 } }, { upsert: true });
+  clearSharedLocalCaches();
   expect((await trainingQuestionPool(config, [], [])).some(row => row.id === 'q0')).toBe(false);
 });

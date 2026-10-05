@@ -6,7 +6,10 @@ vi.mock('../../config/redis.js', () => ({
   redisGetJson: vi.fn(async key => state.shared.get(key) ?? null),
   redisSetJson: vi.fn(async (key, value) => { state.shared.set(key, value); }),
 }));
-vi.mock('../questions/questionCache.js', () => ({ getQuestionRevision: vi.fn(async () => state.revision) }));
+vi.mock('../questions/questionCache.js', () => ({
+  getQuestionRevision: vi.fn(async () => state.revision),
+  clearQuestionRevisionCache: vi.fn(),
+}));
 
 import { cachedTrainingCatalog, invalidateTrainingCatalog } from './catalogCache.js';
 

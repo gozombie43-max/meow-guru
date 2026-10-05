@@ -85,7 +85,7 @@ export const insertNotificationHistory = async (doc) => {
 
 export const getNotificationHistoryList = async (page, limit, cursor) => {
   const collection = getNotificationHistoryCollection();
-  if (cursor || page === 1) {
+  if (cursor) {
     const result = await readKeysetPage(collection, {
       scope: 'notification-history',
       cursor,
@@ -94,9 +94,11 @@ export const getNotificationHistoryList = async (page, limit, cursor) => {
     });
     return { items: result.items, hasMore: result.hasMore, nextCursor: result.nextCursor };
   } else {
-    // Legacy fallback for page > 1 without cursor
-    const items = await collection.find({}).sort({ createdAt: -1 }).skip(boundedLegacyOffset(page, limit)).limit(limit).toArray();
-    return { items };
+    const [items, total] = await Promise.all([
+      collection.find({}).sort({ createdAt: -1 }).skip(boundedLegacyOffset(page, limit)).limit(limit).toArray(),
+      collection.countDocuments(),
+    ]);
+    return { items, total };
   }
 };
 
@@ -108,10 +110,8 @@ export const insertScheduledNotification = async (doc) => {
 export const getScheduledNotificationsList = async (filter, sort, page, limit, cursor) => {
   const collection = getScheduledNotificationsCollection();
   
-  // We can optimize the counts by caching them if needed, but for now we'll just omit them or keep them if they are small scale.
-  // Actually, item 19 says "Remove exact counts from page requests". So we omit total from the list request.
-  let items, hasMore, nextCursor;
-  if (cursor || page === 1) {
+  let items, total, hasMore, nextCursor;
+  if (cursor) {
     const result = await readKeysetPage(collection, {
       filter,
       filterScope: filter, // used to ensure cursor stability across same filters
@@ -126,7 +126,10 @@ export const getScheduledNotificationsList = async (filter, sort, page, limit, c
     hasMore = result.hasMore;
     nextCursor = result.nextCursor;
   } else {
-    items = await collection.find(filter).sort(sort).skip(boundedLegacyOffset(page, limit)).limit(limit).toArray();
+    [items, total] = await Promise.all([
+      collection.find(filter).sort(sort).skip(boundedLegacyOffset(page, limit)).limit(limit).toArray(),
+      collection.countDocuments(filter),
+    ]);
   }
   
   const [pendingCount, sentCount, failedCount, cancelledCount] = await Promise.all([
@@ -135,7 +138,7 @@ export const getScheduledNotificationsList = async (filter, sort, page, limit, c
     collection.countDocuments({ status: "failed" }),
     collection.countDocuments({ status: "cancelled" }),
   ]);
-  return { items, hasMore, nextCursor, pendingCount, sentCount, failedCount, cancelledCount };
+  return { items, total, hasMore, nextCursor, pendingCount, sentCount, failedCount, cancelledCount };
 };
 
 export const cancelScheduledNotification = async (id, userId, email) => {
