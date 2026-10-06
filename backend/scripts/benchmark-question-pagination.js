@@ -26,7 +26,7 @@ try {
   const questions = db.collection('questions');
   for (const migration of ['011-question-browser-sort', '012-normalized-question-query-indexes']) await (await import(`../migrations/${migration}.js`)).up(db);
   const { fetchQuestionCursorPage } = await import('../services/questions/questionCursorService.js');
-  const { questionsQueryCache } = await import('../services/questions/questionCache.js');
+  const { invalidateQuestionCacheRevision } = await import('../services/questions/questionCache.js');
   Collection.prototype.find = function (...args) {
     const cursor = originalFind.apply(this, args);
     if (this.collectionName !== 'questions') return cursor;
@@ -38,7 +38,7 @@ try {
     const elapsed = [], stats = [];
     let result;
     for (let run = 0; run < repetitions; run++) {
-      questionsQueryCache.clear();
+      invalidateQuestionCacheRevision();
       pageCursors = [];
       const started = performance.now();
       result = await work();
