@@ -133,10 +133,10 @@ export function useTranslatedQuestion<T extends TranslatableQuestion>(
   let displayedOptions = currentQ?.options ?? [];
   let displayedSolution = currentQ?.solution ?? "";
 
-  if (activeLang !== "en" && !skipTranslation && nativeTranslation) {
-    displayedQuestion = hasNativeQuestion ? nativeTranslation.question! : fallbackDisplayed[0];
-    displayedOptions = hasNativeOptions ? nativeTranslation.options! : fallbackDisplayed.slice(1, fallbackDisplayed.length - 1);
-    displayedSolution = hasNativeSolution ? nativeTranslation.solution! : fallbackDisplayed[fallbackDisplayed.length - 1];
+  if (activeLang !== "en" && !skipTranslation) {
+    displayedQuestion = hasNativeQuestion ? nativeTranslation!.question! : fallbackDisplayed[0];
+    displayedOptions = hasNativeOptions ? nativeTranslation!.options! : fallbackDisplayed.slice(1, fallbackDisplayed.length - 1);
+    displayedSolution = hasNativeSolution ? nativeTranslation!.solution! : fallbackDisplayed[fallbackDisplayed.length - 1];
   }
 
   return {
