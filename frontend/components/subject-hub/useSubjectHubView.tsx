@@ -82,7 +82,7 @@ const mobileTopics = useMemo(() => {
       return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
     }
     return filtered;
-  }, [oledMobile, TOPICS, searchQuery, mobileCategory, sortBy, config.mobileTopicDetails]);
+  }, [TOPICS, searchQuery, mobileCategory, sortBy, config.mobileTopicDetails]);
 const isChapterMode = !!config.getChapterGroup;
 const filteredTopics = useMemo(() => {
     if (isChapterMode) {
