@@ -34,6 +34,10 @@ export interface Question {
   meanings?: Array<{ pos?: string; definition?: string; translation?: string }>;
   synonyms?: Array<{ word?: string; translation?: string }>;
   antonyms?: Array<{ word?: string; translation?: string }>;
+  translations?: {
+    bn?: import("@/features/quiz/model/types").LocalizedQuestionContent;
+    hi?: import("@/features/quiz/model/types").LocalizedQuestionContent;
+  };
 }
 
 export function isStudyModeQuestion(q: Partial<Question> | null | undefined): boolean {

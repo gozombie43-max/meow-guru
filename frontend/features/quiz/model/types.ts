@@ -49,6 +49,12 @@ export type ConceptColour = { border: string; bg: string; text: string };
 
 import type { GeometryDiagram } from '@/components/geometry/diagramSchema';
 
+export interface LocalizedQuestionContent {
+  question?: string;
+  options?: string[];
+  solution?: string;
+}
+
 export interface QuizQuestion {
   id: number | string;
   sessionAnchor?: string;
@@ -77,6 +83,10 @@ export interface QuizQuestion {
   questionUid?: string;
   diagram?: GeometryDiagram;
   needs_diagram?: boolean;
+  translations?: {
+    bn?: LocalizedQuestionContent;
+    hi?: LocalizedQuestionContent;
+  };
 }
 
 export interface SessionResult {

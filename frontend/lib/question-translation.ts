@@ -6,10 +6,10 @@ export type QuestionTranslationPlan = {
 };
 
 export function planQuestionTranslation(
-  question: { question?: string; options?: string[] },
+  question: { question?: string; options?: string[]; solution?: string },
   context = "",
 ): QuestionTranslationPlan {
-  const source = [question.question ?? "", ...(question.options ?? [])];
+  const source = [question.question ?? "", ...(question.options ?? []), question.solution ?? ""];
   const literalAnswers = /\b(?:coding|decoding|code language|coded|letters?|alphabet(?:ical)?|word formation|word rearrangement|anagrams?|dictionary order|case.sensitive|spelling|synonyms?|antonyms?|grammar)\b/i.test(`${context} ${source[0]}`)
     || /^english\b/i.test(context.trim());
   const literals: string[] = [];

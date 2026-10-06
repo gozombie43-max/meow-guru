@@ -104,6 +104,7 @@ export function useQuizController({
     isTranslating,
     displayedQuestion,
     displayedOptions,
+    displayedSolution,
   } = useTranslatedQuestion(currentQ, isImageQuestion, questions.slice(currentIndex + 1, currentIndex + 4), `${subjectConfig.subjectId} ${slug}`);
 
   useEffect(() => {
@@ -207,6 +208,7 @@ export function useQuizController({
     displayedQuestion,
     renderQuestionLine,
     displayedOptions,
+    displayedSolution,
     handleSelectAnswer,
     submitError,
     handlePrev,

@@ -44,6 +44,7 @@ export type DesktopQuizFields = Pick<
   | "displayedQuestion"
   | "renderQuestionLine"
   | "displayedOptions"
+  | "displayedSolution"
   | "selectedAnswer"
   | "handleSelectAnswer"
   | "submitError"
@@ -75,7 +76,7 @@ export type DesktopQuizFields = Pick<
 };
 export interface DesktopQuizViewProps {
   configuration: Pick<DesktopQuizFields, "routeBase" | "slug" | "subjectConfig" | "theme" | "themeStyles" | "title" | "modeLabels" | "mode" | "toggleTheme">;
-  question: Pick<DesktopQuizFields, "activeLang" | "isTranslating" | "setActiveLang" | "currentQ" | "conceptColours" | "handleBookmark" | "bookmarked" | "hasQuestionText" | "displayedQuestion" | "renderQuestionLine" | "displayedOptions">;
+  question: Pick<DesktopQuizFields, "activeLang" | "isTranslating" | "setActiveLang" | "currentQ" | "conceptColours" | "handleBookmark" | "bookmarked" | "hasQuestionText" | "displayedQuestion" | "renderQuestionLine" | "displayedOptions" | "displayedSolution">;
   navigation: Pick<DesktopQuizFields, "questions" | "currentIndex" | "selectedAnswers" | "submittedQuestions" | "activeMacBtnRef" | "goToQuestion" | "handlePrev" | "handleNext">;
   answer: Pick<DesktopQuizFields, "isCurrentSubmitted" | "selectedAnswer" | "handleSelectAnswer" | "submitError" | "canViewSolution" | "handleSubmitCurrent" | "canSubmit">;
   solution: Pick<DesktopQuizFields, "openSolution" | "isSolutionOpen" | "closeSolution">;
@@ -84,7 +85,7 @@ export interface DesktopQuizViewProps {
 export function DesktopQuizView({ configuration, question, navigation, answer, solution, settings }: DesktopQuizViewProps) {
   "use no memo"; // Virtualizer methods read mutable scroll state.
   const { routeBase, slug, subjectConfig, theme, themeStyles, title, modeLabels, mode, toggleTheme } = configuration;
-  const { activeLang, isTranslating, setActiveLang, currentQ, conceptColours, handleBookmark, bookmarked, hasQuestionText, displayedQuestion, renderQuestionLine, displayedOptions } = question;
+  const { activeLang, isTranslating, setActiveLang, currentQ, conceptColours, handleBookmark, bookmarked, hasQuestionText, displayedQuestion, renderQuestionLine, displayedOptions, displayedSolution } = question;
   const { questions, currentIndex, selectedAnswers, submittedQuestions, activeMacBtnRef, goToQuestion, handlePrev, handleNext } = navigation;
   const { isCurrentSubmitted, selectedAnswer, handleSelectAnswer, submitError, canViewSolution, handleSubmitCurrent, canSubmit } = answer;
   const { openSolution, isSolutionOpen, closeSolution } = solution;
@@ -363,7 +364,7 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
       </div>
       <SolutionBottomSheet
         isOpen={isSolutionOpen}
-        solution={currentQ.solution ?? ""}
+        solution={displayedSolution ?? currentQ.solution ?? ""}
         questionNumber={currentIndex + 1}
         correctOptionIndex={currentQ.correctAnswer}
         correctOptionText={

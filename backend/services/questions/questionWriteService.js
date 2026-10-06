@@ -8,10 +8,12 @@ import { getQuestionsCollection } from "../../config/mongodb.js";
 import { questionCountsCache, questionsQueryCache } from "./questionCache.js";
 import { normalizedQuestionKeys } from "./questionNormalizer.js";
 import { trainingQuestionMetadata } from '../training/domain/questionMetadata.js';
+import { normalizeLocalizedQuestion } from "./questionLocalization.js";
 
 export async function createQuestion(newQuestion) {
   const collection = getQuestionsCollection();
-  const item = assignQuestionIdentity({ ...newQuestion, questionUid: undefined });
+  const normalizedInput = normalizeLocalizedQuestion(newQuestion);
+  const item = assignQuestionIdentity({ ...normalizedInput, questionUid: undefined });
 
   if (!item.topic) {
     item.topic = item.chapter || item.subject || item.category || "misc";
@@ -36,7 +38,9 @@ export async function createQuestionsBulk(questionsData, { importId } = {}) {
 
   const normalizedQuestions = questionsData.map((q, idx) => {
     if (!q || typeof q !== 'object' || Array.isArray(q)) { invalid.add(idx); return null; }
-    const item = q && typeof q === "object" ? { ...q } : { value: q };
+    const item = normalizeLocalizedQuestion(
+      q && typeof q === "object" ? { ...q } : { value: q }
+    );
 
     if (item.id !== undefined && item.id !== null) {
       item.id = String(item.id).trim();
@@ -124,7 +128,8 @@ export async function modifyQuestion(id, updates, topic = undefined) {
   const existing = await resolveQuestion(collection, id, { topic });
   if (!existing) return null;
 
-  const updated = { ...existing, ...updates, id: existing.id, questionUid: existing.questionUid };
+  const normalizedUpdates = normalizeLocalizedQuestion(updates);
+  const updated = { ...existing, ...normalizedUpdates, id: existing.id, questionUid: existing.questionUid };
   delete updated._id;
 
   if (!updated.topic) {
@@ -203,8 +208,10 @@ export async function checkDuplicates(questions) {
     .map((q) => String(q.id || q._id || q.questionId || ""))
     .filter(Boolean);
 
-  const getQuestionText = (q) =>
-    String(q?.question ?? q?.questionText ?? q?.q ?? "").trim();
+  const getQuestionText = (q) => {
+    const normalized = normalizeLocalizedQuestion(q || {});
+    return String(normalized?.question ?? normalized?.questionText ?? normalized?.q ?? "").trim();
+  };
   const incomingTexts = questions.map(getQuestionText).filter(Boolean);
   const uniqueIds = Array.from(new Set(ids));
   const uniqueTexts = Array.from(new Set(incomingTexts));

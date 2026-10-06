@@ -51,7 +51,11 @@ function muValidateRecordShape(q: RecordItem): string[] {
 
 function muGetDisplayText(q: RecordItem) {
   if (muIsStudyModeRecord(q)) return String(q.word || '').trim();
-  return String(q.question || q.questionText || q.q || q.word || '').trim();
+  const qv = q.question || q.questionText || q.q || q.word || '';
+  if (qv && typeof qv === 'object' && !Array.isArray(qv)) {
+    return String((qv as Record<string, string>).en || (qv as Record<string, string>).bn || '').trim();
+  }
+  return String(qv).trim();
 }
 
 export default function BulkQuestionUpload({}: { backLink?: ReactNode }) {
