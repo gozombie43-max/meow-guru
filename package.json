@@ -25,7 +25,8 @@
     "typecheck": "npm run typecheck --workspace @meow/contracts && npm run typecheck --workspace backend && npm run typecheck --workspace frontend",
     "check": "npm run typecheck && npm run lint && npm run test",
     "start": "npm run start --workspace backend",
-    "build:contracts": "npm run build --workspace @meow/contracts"
+    "build:contracts": "npm run build --workspace @meow/contracts",
+    "test:coverage": "npm run test:coverage --workspace frontend && npm run test:coverage --workspace backend"
   },
   "overrides": {
     "@next/eslint-plugin-next@16.3.6": {

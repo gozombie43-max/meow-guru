@@ -50,10 +50,9 @@ const sortOptions: Array<{ id: SubjectHubSort; label: string }> = [
     { id: "questions-asc", label: "Least questions" },
     { id: "alpha", label: "A → Z" },
   ];
-const oledMobile = config.mobileAppearance === "oled";
-const mobileStyles = oledMobile ? defaultStyles : styles;
+const oledMobile = true;
+const mobileStyles = defaultStyles;
 const mobileTopics = useMemo(() => {
-    if (!oledMobile) return null;
     const query = searchQuery.trim().toLowerCase();
     const filtered = TOPICS.filter((topic) => {
       return (

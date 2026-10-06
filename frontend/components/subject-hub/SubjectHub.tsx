@@ -12,9 +12,9 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
  // Phones retain their server-rendered mobile view without mounting desktop UI.
  const isDesktop = useMediaQuery('(min-width: 768px)');
  const view = useSubjectHubView({ config, enableDesktop: isDesktop });
- const { styles, oledMobile } = view;
+ const { styles } = view;
  return (
-    <div className={styles.pageRoot} data-subject={config.subjectId} data-topic-layout={oledMobile ? "compact" : undefined}>
+    <div className={styles.pageRoot} data-subject={config.subjectId} data-topic-layout="compact">
       {isDesktop ? <SubjectHubDesktop view={view} /> : <SubjectHubMobile view={view} />}
     </div>
   );
