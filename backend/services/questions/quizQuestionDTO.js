@@ -4,7 +4,7 @@ export const quizQuestionProjection = Object.fromEntries([
   'question', 'options', 'correctAnswer', 'correctLetter', 'solution', 'solutionImage',
   'quizName', 'questionType', 'questionImage', 'questionImageWidth', 'questionImageHeight',
   'solutionImageWidth', 'solutionImageHeight', 'optionRegions', 'diagram', 'needs_diagram',
-  'word', 'letter', 'source', 'quizId', 'meanings', 'synonyms', 'antonyms',
+  'word', 'letter', 'source', 'quizId', 'meanings', 'synonyms', 'antonyms', 'translations'
 ].map(field => [field, 1]));
 
 export function toQuizQuestionDTO(item) {

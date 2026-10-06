@@ -287,6 +287,7 @@ export function toQuizQuestion(
     word,
     letter,
     chapter,
+    translations: question.translations,
     rawId,
   };
 }
