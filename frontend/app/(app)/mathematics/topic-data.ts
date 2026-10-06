@@ -24,6 +24,11 @@ import {
   Users2,
   Variable,
   Zap,
+  Asterisk,
+  Layers,
+  History,
+  Droplets,
+  CalendarDays,
   type LucideIcon,
 } from "lucide-react";
 
@@ -44,7 +49,7 @@ export interface Topic {
   expectedMarks: string;
 }
 
-// ── 18 SSC Mathematics Topics with Distinctly Colored SVG Icons ───────────────
+// ── 23 SSC Mathematics Topics with Distinctly Colored SVG Icons ───────────────
 export const TOPICS: Topic[] = [
   {
     id: 1,
@@ -279,6 +284,71 @@ export const TOPICS: Topic[] = [
     expectedMarks: "2-4 Marks",
     description: "Mean, median, mode, standard deviation, variance, coefficient of variation, simple event probability, and DI charts.",
     subtopics: ["Mean, Median & Mode Formula", "Variance & Standard Deviation", "Classical Probability & Dice/Cards", "Bar Charts & Pie Charts Interpretation"],
+  },
+  {
+    id: 19,
+    priority: "high",
+    icon: Asterisk,
+    color: "#a3e635",
+    name: "Simplification",
+    slug: "simplification",
+    routeBase: mathematicsTopicRoute("simplification"),
+    questions: "2-3",
+    expectedMarks: "4-6 Marks",
+    description: "BODMAS rule, algebraic identities applications, fraction and decimal calculations, and numeric simplification.",
+    subtopics: ["BODMAS Rule", "Algebraic Simplification", "Fractions & Decimals"],
+  },
+  {
+    id: 20,
+    priority: "high",
+    icon: Layers,
+    color: "#34d399",
+    name: "LCM & HCF",
+    slug: "lcm-and-hcf",
+    routeBase: mathematicsTopicRoute("lcm-and-hcf"),
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Finding LCM and HCF of numbers, fractions, polynomials, and solving related word problems.",
+    subtopics: ["Basic LCM & HCF", "Fractions & Polynomials", "LCM & HCF Word Problems"],
+  },
+  {
+    id: 21,
+    priority: "medium",
+    icon: History,
+    color: "#fb923c",
+    name: "Problems on Ages",
+    slug: "problems-on-ages",
+    routeBase: mathematicsTopicRoute("problems-on-ages"),
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Formulating and solving linear equations and ratio-based problems to find ages of individuals.",
+    subtopics: ["Linear Equation Models", "Ratio Based Models"],
+  },
+  {
+    id: 22,
+    priority: "medium",
+    icon: Droplets,
+    color: "#60a5fa",
+    name: "Pipes & Cisterns",
+    slug: "pipes-and-cisterns",
+    routeBase: mathematicsTopicRoute("pipes-and-cisterns"),
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Time required to fill or empty tanks, combining pipes of different efficiencies, and leak problems.",
+    subtopics: ["Filling & Emptying", "Leak Problems", "Efficiency based calculations"],
+  },
+  {
+    id: 23,
+    priority: "low",
+    icon: CalendarDays,
+    color: "#a78bfa",
+    name: "Calendar & Clock",
+    slug: "calendar-and-clock",
+    routeBase: mathematicsTopicRoute("calendar-and-clock"),
+    questions: "1",
+    expectedMarks: "2 Marks",
+    description: "Calculations based on odd days, leap years, finding the day of the week, and angle between clock hands.",
+    subtopics: ["Odd Days & Leap Years", "Angle between Clock Hands", "Faulty Clocks"],
   },
 ];
 

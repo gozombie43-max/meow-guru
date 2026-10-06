@@ -147,6 +147,46 @@ export const MATHEMATICS_TOPICS = {
     aliases: [],
     mensurationModes: false,
   },
+  simplification: {
+    slug: "simplification",
+    label: "Simplification",
+    group: "arithmetic",
+    route: "/mathematics/arithmetic/simplification",
+    aliases: [],
+    mensurationModes: false,
+  },
+  "lcm-and-hcf": {
+    slug: "lcm-and-hcf",
+    label: "LCM & HCF",
+    group: "arithmetic",
+    route: "/mathematics/arithmetic/lcm-and-hcf",
+    aliases: [],
+    mensurationModes: false,
+  },
+  "problems-on-ages": {
+    slug: "problems-on-ages",
+    label: "Problems on Ages",
+    group: "arithmetic",
+    route: "/mathematics/arithmetic/problems-on-ages",
+    aliases: [],
+    mensurationModes: false,
+  },
+  "pipes-and-cisterns": {
+    slug: "pipes-and-cisterns",
+    label: "Pipes & Cisterns",
+    group: "arithmetic",
+    route: "/mathematics/arithmetic/pipes-and-cisterns",
+    aliases: [],
+    mensurationModes: false,
+  },
+  "calendar-and-clock": {
+    slug: "calendar-and-clock",
+    label: "Calendar & Clock",
+    group: "arithmetic",
+    route: "/mathematics/arithmetic/calendar-and-clock",
+    aliases: [],
+    mensurationModes: false,
+  },
 } as const;
 export type MathematicsRouteGroup = "advance" | "arithmetic" | "top-level";
 

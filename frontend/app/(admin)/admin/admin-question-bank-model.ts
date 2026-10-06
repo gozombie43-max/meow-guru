@@ -110,6 +110,10 @@ const TOPIC_LABEL_OVERRIDES: Record<string, string> = {
   "general-science": "General Science",
   "current-affairs": "Current Affairs",
   "static-gk": "Static GK",
+  "lcm-and-hcf": "LCM & HCF",
+  "problems-on-ages": "Problems on Ages",
+  "pipes-and-cisterns": "Pipes & Cisterns",
+  "calendar-and-clock": "Calendar & Clock",
 };
 
 const toTopicLabel = (slug: string) => {
@@ -141,6 +145,11 @@ const MATH_TOPICS = [
   "square-roots",
   "time-and-distance",
   "time-and-work",
+  "simplification",
+  "lcm-and-hcf",
+  "problems-on-ages",
+  "pipes-and-cisterns",
+  "calendar-and-clock",
 ];
 
 const REASONING_TOPICS = [
