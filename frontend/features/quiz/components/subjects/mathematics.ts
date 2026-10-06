@@ -24,6 +24,11 @@ export const mathematicsConfig: SubjectConfig = {
     "square-roots": ["Perfect Squares & Cubes", "Root Simplification", "Estimation of Roots", "Radical Operations", "Surds Expressions"],
     "time-and-distance": ["Speed, Distance & Time", "Relative Speed & Trains", "Average Speed", "Boats & Streams", "Races & Circular Motion"],
     "time-and-work": ["Work Rate & Efficiency", "Combined Work & Alternating Days", "Pipe & Cisterns", "Man-Day Formula", "Wages & Shares"],
+    simplification: ["BODMAS Rule", "Algebraic Simplification", "Fractions & Decimals", "Square Roots & Cubes", "Indices & Surds", "Approximation"],
+    "lcm-and-hcf": ["Basic LCM & HCF", "Fractions & Polynomials", "LCM & HCF Word Problems", "Remainder Theorems", "Co-prime Numbers"],
+    "problems-on-ages": ["Linear Equation Models", "Ratio Based Models", "Past & Future Ages", "Family Age Problems"],
+    "pipes-and-cisterns": ["Filling & Emptying", "Leak Problems", "Efficiency Based Calculations", "Alternate Pipes", "Inlet & Outlet Ratios"],
+    "calendar-and-clock": ["Odd Days & Leap Years", "Angle between Clock Hands", "Faulty Clocks", "Matching Calendar Years", "Coinciding Hands"],
   },
   classificationCategories: [
     { id: "num", label: "Number Based", icon: "123", accent: "#fb923c", bg: "rgba(251, 146, 60, 0.1)", border: "rgba(251, 146, 60, 0.28)" },

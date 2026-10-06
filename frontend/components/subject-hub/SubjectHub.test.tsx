@@ -99,7 +99,7 @@ describe("SubjectHub", () => {
     expect(countsQuery).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false }));
   });
   it("keeps all topics available with OLED filters, including the English Low group", () => {
-    const topics = TOPICS.map((topic, index) => ({ ...topic, priority: index === 0 ? "low" : topic.priority }));
+    const topics = TOPICS.map((topic, index) => ({ ...topic, priority: index === 0 ? "low" : "high" }));
     const { container } = render(<SubjectHub config={{ ...mockConfig, topics, mobileAppearance: "oled", categories: [...CATEGORIES, { id: "low", label: "Low", icon: Calculator }] }} />);
     const filters = within(container.querySelector('[data-hub-part="mobileTabsScroll"]') as HTMLElement);
     expect(container.querySelectorAll('[data-hub-part="mobileTopicRow"]')).toHaveLength(topics.length);

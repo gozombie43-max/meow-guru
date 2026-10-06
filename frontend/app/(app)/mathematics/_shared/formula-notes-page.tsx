@@ -38,6 +38,11 @@ const TOPIC_LABELS: Record<string, string> = {
   "time-and-work": "Time & Work",
   trigonometry: "Trigonometry",
   "coding-decoding": "Coding & Decoding",
+  simplification: "Simplification",
+  "lcm-and-hcf": "LCM & HCF",
+  "problems-on-ages": "Problems on Ages",
+  "pipes-and-cisterns": "Pipes & Cisterns",
+  "calendar-and-clock": "Calendar & Clock",
 };
 
 type TopicPdf = {

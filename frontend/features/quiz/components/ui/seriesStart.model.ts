@@ -1,6 +1,6 @@
 
 
-import { Lock, Brain, Puzzle, TrendingUp, ArrowLeftRight, Filter, Users2, Compass, CircleDot, Scale, Calculator, Trophy, FileCheck, HelpCircle, Swords, Shapes, Scissors, FlipHorizontal, Box, Table2, SpellCheck, Heart, Share2, Type, FileQuestion, Sparkles, Zap, Target, Search, Flame, Shuffle, BookOpenCheck, Percent, Divide, Clock, Gauge, Variable, Orbit, Hash, BarChart3, Tag, FlaskConical, Radical, PieChart, Globe, Atom, Languages, Landmark, Coins, BookMarked, MessageSquare, Edit3, FileSpreadsheet, Newspaper, RefreshCw, MessageCircle, Navigation, FileText, Link2, Volume2, Layout, CheckSquare, UserCheck, AlignLeft, type LucideIcon } from "lucide-react";
+import { Lock, Brain, Puzzle, TrendingUp, ArrowLeftRight, Filter, Users2, Compass, CircleDot, Scale, Calculator, Trophy, FileCheck, HelpCircle, Swords, Shapes, Scissors, FlipHorizontal, Box, Table2, SpellCheck, Heart, Share2, Type, FileQuestion, Sparkles, Zap, Target, Search, Flame, Shuffle, BookOpenCheck, Percent, Divide, Clock, Gauge, Variable, Orbit, Hash, BarChart3, Tag, FlaskConical, Radical, PieChart, Globe, Atom, Languages, Landmark, Coins, BookMarked, MessageSquare, Edit3, FileSpreadsheet, Newspaper, RefreshCw, MessageCircle, Navigation, FileText, Link2, Volume2, Layout, CheckSquare, UserCheck, AlignLeft, Asterisk, Layers, History, Droplets, CalendarDays, type LucideIcon } from "lucide-react";
 
 import { SubjectConfig, ClassificationGroup, QuizMode } from "@/features/quiz/model/types";
 
@@ -9,7 +9,7 @@ export const TOPIC_ICONS: Record<string, LucideIcon> = {
   "coding-decoding": Lock,
   "syllogism-inferences": Brain,
   "puzzle-seating-arrangement": Puzzle,
-  series: TrendingUp,
+  "series": TrendingUp,
   analogy: ArrowLeftRight,
   "classification-odd-one-out": Filter,
   "blood-relations": Users2,
@@ -52,6 +52,11 @@ export const TOPIC_ICONS: Record<string, LucideIcon> = {
   partnership: Users2,
   "square-roots": Radical,
   "statistics-probability": PieChart,
+  simplification: Asterisk,
+  "lcm-and-hcf": Layers,
+  "problems-on-ages": History,
+  "pipes-and-cisterns": Droplets,
+  "calendar-and-clock": CalendarDays,
 
   // English topics
   "synonyms-antonyms": ArrowLeftRight,

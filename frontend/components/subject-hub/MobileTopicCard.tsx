@@ -20,6 +20,11 @@ import {
   TrendingUp,
   Users2,
   Waves,
+  Asterisk,
+  Layers,
+  History,
+  Droplets,
+  CalendarDays,
 } from "lucide-react";
 import styles from "./mobile-topic-card.module.css";
 
@@ -72,6 +77,16 @@ function renderTopicIcon(slug: string, FallbackIcon?: LucideIcon) {
       return <Radical {...iconProps} />;
     case "statistics-probability":
       return <PieChart {...iconProps} />;
+    case "simplification":
+      return <Asterisk {...iconProps} />;
+    case "lcm-and-hcf":
+      return <Layers {...iconProps} />;
+    case "problems-on-ages":
+      return <History {...iconProps} />;
+    case "pipes-and-cisterns":
+      return <Droplets {...iconProps} />;
+    case "calendar-and-clock":
+      return <CalendarDays {...iconProps} />;
     default:
       if (FallbackIcon) return <FallbackIcon {...iconProps} />;
       return <Percent {...iconProps} />;

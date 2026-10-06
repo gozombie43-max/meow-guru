@@ -10,6 +10,8 @@ const SUBJECT_TOPICS = {
     "compound-interest", "time-and-work", "time-and-distance", "algebra", "geometry",
     "mensuration", "trigonometry", "number-system", "averages", "discount",
     "mixture-and-alligation", "partnership", "square-roots", "statistics-probability",
+    "simplification", "lcm-and-hcf", "problems-on-ages", "pipes-and-cisterns",
+    "calendar-and-clock",
   ],
   reasoning: [
     "coding-decoding", "syllogism-inferences", "puzzle-seating-arrangement", "series",

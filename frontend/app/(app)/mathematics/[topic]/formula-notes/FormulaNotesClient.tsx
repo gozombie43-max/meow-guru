@@ -29,6 +29,11 @@ const TOPIC_LABELS: Record<string, string> = {
   trigonometry: "Trigonometry",
   "statistics-probability": "Statistics & Probability",
   "number-system": "Number System",
+  simplification: "Simplification",
+  "lcm-and-hcf": "LCM & HCF",
+  "problems-on-ages": "Problems on Ages",
+  "pipes-and-cisterns": "Pipes & Cisterns",
+  "calendar-and-clock": "Calendar & Clock",
 };
 
 const TOPIC_DEFAULT_NOTES: Record<string, ApiNote[]> = {
