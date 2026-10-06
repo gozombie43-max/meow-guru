@@ -134,9 +134,9 @@ export function useTranslatedQuestion<T extends TranslatableQuestion>(
   let displayedSolution = currentQ?.solution ?? "";
 
   if (activeLang !== "en" && !skipTranslation) {
-    displayedQuestion = hasNativeQuestion ? nativeTranslation!.question! : fallbackDisplayed[0];
-    displayedOptions = hasNativeOptions ? nativeTranslation!.options! : fallbackDisplayed.slice(1, fallbackDisplayed.length - 1);
-    displayedSolution = hasNativeSolution ? nativeTranslation!.solution! : fallbackDisplayed[fallbackDisplayed.length - 1];
+    displayedQuestion = hasNativeQuestion ? (nativeTranslation?.question as string) : fallbackDisplayed[0];
+    displayedOptions = hasNativeOptions ? (nativeTranslation?.options as string[]) : fallbackDisplayed.slice(1, fallbackDisplayed.length - 1);
+    displayedSolution = hasNativeSolution ? (nativeTranslation?.solution as string) : fallbackDisplayed[fallbackDisplayed.length - 1];
   }
 
   return {
