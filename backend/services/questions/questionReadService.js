@@ -1,5 +1,6 @@
 import { resolveQuestion } from './questionIdentity.js';
 import { fetchQuestionCursorPage } from "./questionCursorService.js";
+import { readQuestionFacets } from "./questionFacets.js";
 import { logger } from '../../infrastructure/logger.js';
 import { getQuestionsCollection } from "../../config/mongodb.js";
 import { questionsQueryCache, questionCountsCache, revisionedQuestionCacheKey } from "./questionCache.js";
@@ -126,7 +127,14 @@ export async function fetchQuestions(params) {
   const conditions = [];
 
   if (!topic && subject) {
-    conditions.push(useNormalizedKeys ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) });
+    const subKey = normalizeSearchKey(subject);
+    conditions.push(useNormalizedKeys ? { subjectKey: subKey } : (
+      subKey === 'reasoning'
+        ? { subject: { $in: [/^reasoning$/i, /^logical reasoning$/i] } }
+        : subKey === 'generalawareness'
+          ? { subject: { $in: [/^general awareness$/i, /^general-awareness$/i] } }
+          : { subject: caseInsensitiveExact(subject) }
+    ));
   }
   if (chapter) {
     conditions.push(useNormalizedKeys ? { chapter } : { chapter: caseInsensitiveExact(chapter) });
@@ -282,17 +290,7 @@ export async function fetchQuestions(params) {
   if (params.includeFacets === 'true') {
     // Compact filter choices, never full question documents. Keep choices stable
     // across pages so values outside the current page remain selectable.
-    const facetsKey = await revisionedQuestionCacheKey('admin-question-facets');
-    let facets = questionCountsCache.get(facetsKey);
-    if (!facets) {
-      [facets] = await collection.aggregate([
-      { $match: buildExcludeStudyModeCondition() },
-      { $group: { _id: null, topics: { $addToSet: '$topic' }, exams: { $addToSet: '$exam' }, quizNames: { $addToSet: { $ifNull: ['$quizName', '$source'] } } } },
-      { $project: { _id: 0 } },
-      ], { maxTimeMS: 5000 }).toArray();
-      if (facets) questionCountsCache.set(facetsKey, facets);
-    }
-    result.facets = facets || { topics: [], exams: [], quizNames: [] };
+    result.facets = await readQuestionFacets(params.subject);
   }
   if (cacheKey) questionsQueryCache.set(cacheKey, result);
   return result;

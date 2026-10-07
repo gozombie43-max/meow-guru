@@ -222,3 +222,47 @@ export const SUBJECT_TOPIC_OPTIONS: Record<SubjectKey, TopicOption[]> = {
   english: ENGLISH_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
   "general-awareness": GA_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
 };
+
+export const normalizeTopicKey = (t: string) =>
+  String(t || "").toLowerCase().replace(/[-_\s]/g, "");
+
+export const normalizeSubjectKey = (s: string) =>
+  String(s || "").toLowerCase().replace(/[-_\s]/g, "");
+
+const ALL_SUBJECT_TOPICS: Record<string, string[]> = {
+  mathematics: [...MATH_TOPICS, "mathematical-symbolic-operations"],
+  reasoning: REASONING_TOPICS,
+  english: ENGLISH_TOPICS,
+  generalawareness: GA_TOPICS,
+};
+
+export function isTopicAllowedForSubject(topic: string, subject: string): boolean {
+  if (!subject) return true;
+  const subKey = normalizeSubjectKey(subject);
+  if (!subKey) return true;
+
+  const topKey = normalizeTopicKey(topic);
+  if (!topKey) return false;
+
+  const currentSubjectTopics = ALL_SUBJECT_TOPICS[subKey];
+  if (currentSubjectTopics?.some((t) => normalizeTopicKey(t) === topKey)) {
+    return true;
+  }
+
+  const otherSubjects = Object.keys(ALL_SUBJECT_TOPICS).filter((k) => k !== subKey);
+  const belongsToOther = otherSubjects.some((otherKey) =>
+    ALL_SUBJECT_TOPICS[otherKey].some((t) => normalizeTopicKey(t) === topKey)
+  );
+
+  if (belongsToOther) {
+    return false;
+  }
+
+  return true;
+}
+
+export function filterTopicsForSubject(topics: string[], subject: string): string[] {
+  if (!subject) return topics;
+  return topics.filter((t) => isTopicAllowedForSubject(t, subject));
+}
+

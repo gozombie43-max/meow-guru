@@ -33,3 +33,62 @@ it('pages on the server and resets to page one for a debounced search', async ()
   expect(query.get('sort')).toBe('desc');
   expect(result.current.topics).toEqual(['algebra', 'geometry']);
 });
+
+it('filters out reasoning and english topics when subject is mathematics, and resets invalid topic', async () => {
+  fetch.mockImplementation(async (url: string) => {
+    const params = new URL(url, 'http://localhost').searchParams;
+    const subject = params.get('subject');
+    return {
+      ok: true,
+      json: async () => ({
+        questions: [{ id: 'q1', subject: subject || 'all' }],
+        count: 10,
+        total: 10,
+        facets: {
+          topics: subject === 'mathematics'
+            ? ['algebra', 'geometry']
+            : ['algebra', 'analogy', 'blood-relations', 'geometry', 'synonyms-antonyms'],
+          exams: ['SSC CGL'],
+          quizNames: ['PYQ'],
+        },
+      }),
+    };
+  });
+
+  const { result } = renderHook(useAdminQuestionBank);
+  await waitFor(() => expect(result.current.questions[0]?.id).toBe('q1'));
+
+  // Initial load without subject filter shows all topics
+  expect(result.current.topics).toEqual([
+    'algebra',
+    'analogy',
+    'blood-relations',
+    'geometry',
+    'synonyms-antonyms',
+  ]);
+
+  // Select a reasoning topic first
+  act(() => {
+    result.current.setFilterTopic('analogy');
+  });
+  expect(result.current.filterTopic).toBe('analogy');
+
+  // Change subject to mathematics: topic should automatically reset because analogy is not a math topic
+  act(() => {
+    result.current.setFilterSubject('mathematics');
+  });
+
+  expect(result.current.filterSubject).toBe('mathematics');
+  expect(result.current.filterTopic).toBe('');
+
+  // topics should now only include mathematics topics, excluding analogy, blood-relations, synonyms-antonyms
+  expect(result.current.topics).toEqual(['algebra', 'geometry']);
+
+  // Verify fetch was called with subject=mathematics
+  await waitFor(() => {
+    const latestCall = fetch.mock.calls.at(-1)?.[0];
+    const query = new URL(latestCall, 'http://localhost').searchParams;
+    expect(query.get('subject')).toBe('mathematics');
+  });
+});
+

@@ -35,7 +35,16 @@ async function buildfetchQuestionCursorPage(params) {
     const key = normalizeSearchKey(params.topic);
     const aliases = ['synonymsantonyms', 'antosynopyq'].includes(key);
     conditions.push(normalized ? { topicKey: aliases ? { $in: ['synonymsantonyms', 'antosynopyq'] } : key } : { topic: aliases ? { $in: [params.topic, 'synonyms-antonyms', 'antosynopyq'] } : params.topic });
-  } else if (params.subject) conditions.push(normalized ? { subjectKey: normalizeSearchKey(params.subject) } : { subject: caseInsensitiveExact(params.subject) });
+  } else if (params.subject) {
+    const subKey = normalizeSearchKey(params.subject);
+    conditions.push(normalized ? { subjectKey: subKey } : (
+      subKey === 'reasoning'
+        ? { subject: { $in: [/^reasoning$/i, /^logical reasoning$/i] } }
+        : subKey === 'generalawareness'
+          ? { subject: { $in: [/^general awareness$/i, /^general-awareness$/i] } }
+          : { subject: caseInsensitiveExact(params.subject) }
+    ));
+  }
   for (const field of ['chapter', 'concept', 'difficulty']) if (params[field]) conditions.push(normalized ? { [field]: field === 'difficulty' ? String(params[field]).toLowerCase() : params[field] } : { [field]: caseInsensitiveExact(params[field]) });
   if (params.quizName) {
     const regex = caseInsensitiveExact(params.quizName);
@@ -100,7 +109,7 @@ async function buildfetchQuestionCursorPage(params) {
   const hasPrevious = reverse ? moreInDirection : Boolean(params.cursor);
   const prevCursor = hasPrevious && first ? Buffer.from(JSON.stringify({ v: 1, f: fingerprint, _id: first._id.toString(), ...(sorted ? { id: first.id } : {}), fallback })).toString('base64url') : null;
   const result = { count: total ?? page.length, total, questions: page.map(({ _id, ...row }) => row), nextCursor: last ? nextCursor : null, prevCursor, hasMore: hasMore && Boolean(last) };
-  if (params.includeFacets === 'true') result.facets = await readQuestionFacets();
+  if (params.includeFacets === 'true') result.facets = await readQuestionFacets(params.subject);
   if (cacheKey) questionsQueryCache.set(cacheKey, result);
   return result;
 }
