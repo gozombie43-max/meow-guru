@@ -35,20 +35,12 @@ export function useAdminQuestionBank() {
 
   const handleSetFilterSubject = useCallback((next: string) => {
     setFilterSubject(next);
-    if (filterTopic && !isTopicAllowedForSubject(filterTopic, next)) {
-      setFilterTopic("");
-    }
+    setFilterTopic((topic) => isTopicAllowedForSubject(topic, next) ? topic : "");
     const cached = subjectFacets[next || "all"];
     if (cached) {
       setFacets(cached);
     }
-  }, [filterTopic, subjectFacets]);
-
-  useEffect(() => {
-    if (filterTopic && filterSubject && !isTopicAllowedForSubject(filterTopic, filterSubject)) {
-      setFilterTopic("");
-    }
-  }, [filterSubject, filterTopic]);
+  }, [subjectFacets]);
 
   // Pagination
   const [page, setPage] = useState(1);
