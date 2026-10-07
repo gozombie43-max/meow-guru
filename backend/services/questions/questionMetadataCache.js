@@ -7,6 +7,7 @@ import { publishCacheInvalidation, onCacheInvalidation } from '../../infrastruct
 import { invalidateTrainingCatalog } from '../training/catalogCache.js';
 import { invalidateQuestionCacheRevision, getQuestionRevision } from './questionCache.js';
 import { isNormalizedQuestionKeysEnabled } from './questionCache.js';
+import { canonicalQuestionQuery } from './questionQueryIdentity.js';
 
 // Recovery for imports performed outside the application write services.
 const MAX_AGE_MS = 60 * 60 * 1000;
@@ -29,6 +30,7 @@ export async function invalidateQuestionMetadata() {
 }
 
 export async function readQuestionMetadata(params, build) {
+  params = canonicalQuestionQuery('metadata', params);
   const key = JSON.stringify({
     topic: params.topic || "", subject: params.subject || "", mode: params.mode || "",
     normalized: isNormalizedQuestionKeysEnabled(), schema: 3,

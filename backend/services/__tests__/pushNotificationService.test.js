@@ -18,6 +18,9 @@ const mockCollection = {
 };
 
 vi.mock("../../config/mongodb.js", () => ({
+  withMongoTransaction: work => work({ session: {}, db: { collection: name => name === 'notificationFeed'
+    ? { insertOne: vi.fn(async () => ({ insertedId: 'feed_1' })) }
+    : { updateOne: vi.fn(async () => ({ modifiedCount: 1 })) } } }),
   getPushDevicesCollection: () => mockCollection,
   getUsersCollection: () => ({
     find: mockUsersFind,

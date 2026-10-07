@@ -9,6 +9,11 @@ export const httpRequests = new Counter({ name: 'meow_http_requests_total', help
 export const dependencyLatency = new Histogram({ name: 'meow_dependency_duration_seconds', help: 'Dependency operation duration', labelNames: ['dependency', 'operation'], buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.3, 0.5, 1, 5, 10], registers });
 export const dependencyErrors = new Counter({ name: 'meow_dependency_errors_total', help: 'Dependency failures', labelNames: ['dependency'], registers });
 export const mongoPoolWaiting = new Gauge({ name: 'meow_mongo_pool_waiting', help: 'Pending Mongo connection checkouts', registers });
+export const redisCacheOversized = new Counter({ name: 'meow_redis_cache_oversized_total', help: 'Cache values bypassed for exceeding byte or traversal budgets', labelNames: ['format'], registers });
+export const redisCacheValueBytes = new Histogram({ name: 'meow_redis_cache_value_bytes', help: 'Serialized cache value bytes', labelNames: ['format'], buckets: [1024, 16384, 65536, 262144, 524288, 1048576, 2097152], registers });
+export const redisCircuitState = new Gauge({ name: 'meow_redis_circuit_state', help: 'Optional Redis circuit: 0 closed, 1 open, 2 half-open', registers });
+export const redisCommandTimeouts = new Counter({ name: 'meow_redis_command_timeout_total', help: 'Redis connection or command timeouts', registers });
+export const redisFallbacks = new Counter({ name: 'meow_redis_fallback_total', help: 'Redis bypasses during unavailable connections or open circuit', registers });
 export const trainingCreateStageDuration = new Histogram({ name: 'meow_training_create_stage_duration_seconds', help: 'Training creation stage duration, including failed stages', labelNames: ['stage', 'outcome'], buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.2, 0.3, 0.5, 0.8, 1, 2, 5, 10], registers });
 
 export function recordHttp(req, res, durationMs) {

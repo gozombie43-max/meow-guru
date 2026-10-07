@@ -1,14 +1,15 @@
 import { cachedQuestionPage } from './questionCache.js';
+import { canonicalQuestionQuery } from './questionQueryIdentity.js';
 import { ObjectId } from 'mongodb';
 import { createHash } from 'node:crypto';
 import { readQuestionFacets } from './questionFacets.js';
 import { getQuestionsCollection } from '../../config/mongodb.js';
 import { normalizeSearchKey } from './questionNormalizer.js';
 import { caseInsensitiveExact, combineMongoConditions, buildStudyModeMatchCondition, buildExcludeStudyModeCondition } from './questionQueryBuilder.js';
-import { isNormalizedQuestionKeysEnabled, questionsQueryCache, revisionedQuestionCacheKey } from './questionCache.js';
+import { isNormalizedQuestionKeysEnabled } from './questionCache.js';
 
 // Opt-in canonical listing. Legacy offset clients retain their existing contract.
-async function buildfetchQuestionCursorPage(params) {
+async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
   const collection = getQuestionsCollection();
   const normalized = isNormalizedQuestionKeysEnabled();
   const conditions = [];
@@ -23,7 +24,7 @@ async function buildfetchQuestionCursorPage(params) {
     try {
       if (String(params.cursor).length > 2048) throw new Error();
       boundary = JSON.parse(Buffer.from(String(params.cursor), 'base64url').toString());
-      if (boundary.v !== 1 || boundary.f !== fingerprint || !/^[a-fA-F0-9]{24}$/.test(boundary._id) || (sorted && typeof boundary.id !== 'string')) throw new Error();
+      if (boundary.v !== 1 || ![fingerprint, legacyFingerprint].includes(boundary.f) || !/^[a-fA-F0-9]{24}$/.test(boundary._id) || (sorted && typeof boundary.id !== 'string')) throw new Error();
     } catch { throw Object.assign(new Error('Invalid question cursor'), { statusCode: 400 }); }
   }
   if (params.exam) conditions.push(normalized ? { exam: params.exam } : { exam: caseInsensitiveExact(params.exam) });
@@ -68,15 +69,6 @@ async function buildfetchQuestionCursorPage(params) {
     const comparison = direction === -1 ? '$lt' : '$gt';
     conditions.push(sorted ? { $or: [{ id: { [comparison]: boundary.id } }, { id: boundary.id, _id: { [comparison]: objectId } }] } : { _id: { $gt: objectId } });
   }
-  const shouldCache = !params.cursor && params.includeTotal !== 'true' && params.includeTotal !== true;
-  const cacheKey = shouldCache
-    ? await revisionedQuestionCacheKey('cursor:' + JSON.stringify(params))
-    : null;
-  if (cacheKey) {
-    const cached = questionsQueryCache.get(cacheKey);
-    if (cached) return cached;
-  }
-
   const limit = Math.max(1, Math.min(200, Math.floor(Number(params.limit)) || 50));
   const lastPage = params.last === 'true' || params.last === true;
   let lastTotal = lastPage ? await collection.countDocuments(countFilter, { maxTimeMS: 5000, ...(sorted ? { collation } : {}) }) : undefined;
@@ -110,10 +102,11 @@ async function buildfetchQuestionCursorPage(params) {
   const prevCursor = hasPrevious && first ? Buffer.from(JSON.stringify({ v: 1, f: fingerprint, _id: first._id.toString(), ...(sorted ? { id: first.id } : {}), fallback })).toString('base64url') : null;
   const result = { count: total ?? page.length, total, questions: page.map(({ _id, ...row }) => row), nextCursor: last ? nextCursor : null, prevCursor, hasMore: hasMore && Boolean(last) };
   if (params.includeFacets === 'true') result.facets = await readQuestionFacets(params.subject);
-  if (cacheKey) questionsQueryCache.set(cacheKey, result);
   return result;
 }
 
-export function fetchQuestionCursorPage(params) {
-  return cachedQuestionPage("fetchQuestionCursorPage", params, () => buildfetchQuestionCursorPage(params));
+export async function fetchQuestionCursorPage(params) {
+  const query = canonicalQuestionQuery('cursor', params);
+  const legacyFingerprint = createHash('sha256').update(JSON.stringify(['topic', 'subject', 'chapter', 'concept', 'difficulty', 'quizName', 'questionType', 'exam', 'search', 'sort'].map(key => params[key] || ''))).digest('hex').slice(0, 24);
+  return cachedQuestionPage("fetchQuestionCursorPage", query, () => buildfetchQuestionCursorPage(query, legacyFingerprint));
 }

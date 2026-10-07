@@ -11,6 +11,8 @@ import { checkReadiness } from './infrastructure/readiness.js';
 import { startCacheInvalidationSubscriber, closeCacheInvalidationSubscriber } from './infrastructure/cacheInvalidation.js';
 import { startRuntimeMetrics, logger } from './infrastructure/logger.js';
 import { listenServer } from './infrastructure/httpListen.js';
+import { startOptionalService, stopOptionalServices, optionalServiceReady } from './infrastructure/optionalServices.js';
+import { maintenanceQueueHealth } from './infrastructure/maintenanceQueue.js';
 
 let socketServer = null, httpServer;
 let isShuttingDown = false, isReady = false;
@@ -20,6 +22,7 @@ let stopAttachmentWorker;
 let closeBattleRedisAdapter;
 let waitForAttachmentWorkerIdle;
 let setNotificationRealtimeServer;
+let battleRedisReady = () => true;
 
 const quizOnlyMode = process.env.QUIZ_ONLY_MODE === 'true';
 validateEnvironment();
@@ -48,6 +51,7 @@ async function gracefulShutdown(signal, exitCode = 0) {
   forceTimer.unref();
 
   try {
+    await stopOptionalServices();
     if (runEmbeddedWorkers && stopWorkers && stopAttachmentWorker && waitForAttachmentWorkerIdle) {
       stopAttachmentWorker();
       const [, , attachmentIdle] = await Promise.all([
@@ -135,9 +139,6 @@ async function initWithRetry() {
     }
 
     await checkReadiness();
-    await startSessionInvalidationSubscriber();
-    await startCacheInvalidationSubscriber();
-
     initPassport();
     const { app, corsOrigin } = await createApp({
       isReady: () => isReady,
@@ -146,7 +147,7 @@ async function initWithRetry() {
     });
     httpServer = createServer(app);
 
-    if (!quizOnlyMode) {
+    const startBattle = async () => {
       const [battleSocketModule, notificationRealtimeModule] = await Promise.all([
         import('./battle/battleSocket.js'),
         import('./services/notificationRealtime.js'),
@@ -155,10 +156,14 @@ async function initWithRetry() {
       const { prepareBattleRedisAdapter } = await import('./battle/redisSocketAdapter.js');
       const battleAdapter = await prepareBattleRedisAdapter();
       closeBattleRedisAdapter = battleAdapter?.close;
+      battleRedisReady = battleAdapter?.isReady || (() => true);
       socketServer = battleSocketModule.initBattleSocket(httpServer, corsOrigin, battleAdapter?.adapter);
-    }
+    };
+    // Once Socket.IO owns the HTTP server, gracefulShutdown closes that server
+    // and its adapter before destroying Redis. Here clean only partial startup.
+    const cleanupBattle = async () => { if (!socketServer) await closeBattleRedisAdapter?.(); };
 
-    if (runEmbeddedWorkers) {
+    const startEmbeddedWorkers = async () => {
       const [workerRegistry, battleOutbox, attachmentWorker] = await Promise.all([
         import('./infrastructure/workerRegistry.js'),
         import('./infrastructure/battleOutbox.js'),
@@ -175,7 +180,8 @@ async function initWithRetry() {
         return;
       }
 
-      stopBattleOutbox = battleOutbox.startBattleOutbox({ localApi: true });
+      await startOptionalService('battle', startBattle, { enabled: !quizOnlyMode, critical: process.env.BATTLE_REDIS_CRITICAL === 'true', ready: () => battleRedisReady(), cleanup: cleanupBattle });
+      if (optionalServiceReady('battle')) stopBattleOutbox = battleOutbox.startBattleOutbox({ localApi: true });
       await attachmentWorker.startAttachmentWorker();
 
       if (isShuttingDown) {
@@ -183,11 +189,30 @@ async function initWithRetry() {
       }
 
       logger.info('Embedded maintenance and attachment workers ready');
-    }
+    };
+
+    const stopEmbeddedWorkers = async () => {
+      stopAttachmentWorker?.();
+      const [, , idle] = await Promise.all([stopWorkers?.(), stopBattleOutbox?.(), waitForAttachmentWorkerIdle?.(12000)]);
+      if (idle === false) throw new Error('Attachment worker failed to drain');
+      stopWorkers = stopBattleOutbox = stopAttachmentWorker = waitForAttachmentWorkerIdle = undefined;
+    };
+    // Explicitly critical features retain fail-closed startup. Ordinary optional
+    // integrations start after the core listener and cannot retire API readiness.
+    const battleCritical = process.env.BATTLE_REDIS_CRITICAL === 'true';
+    const workersCritical = process.env.EMBEDDED_WORKERS_CRITICAL === 'true';
+    const workersReady = () => process.env.USE_DURABLE_QUEUE !== 'true' || maintenanceQueueHealth() === 'healthy';
+    if (!quizOnlyMode && battleCritical) await startOptionalService('battle', startBattle, { critical: true, ready: () => battleRedisReady(), cleanup: cleanupBattle });
+    if (runEmbeddedWorkers && workersCritical) await startOptionalService('workers', startEmbeddedWorkers, { critical: true, ready: workersReady, cleanup: stopEmbeddedWorkers });
 
     await listenServer(httpServer, PORT);
     isReady = true;
     logger.info({ port: PORT, quizOnlyMode, embeddedWorkers: runEmbeddedWorkers }, 'server ready');
+    void startOptionalService('cacheSubscribers', async () => {
+      await Promise.all([startSessionInvalidationSubscriber(), startCacheInvalidationSubscriber()]);
+    }, { enabled: Boolean(process.env.REDIS_URL), cleanup: async () => { await closeSessionInvalidationSubscriber(); await closeCacheInvalidationSubscriber(); } });
+    if (!battleCritical || quizOnlyMode) void startOptionalService('battle', startBattle, { enabled: !quizOnlyMode, ready: () => battleRedisReady(), cleanup: cleanupBattle });
+    if (!workersCritical || !runEmbeddedWorkers) void startOptionalService('workers', startEmbeddedWorkers, { enabled: runEmbeddedWorkers, ready: workersReady, cleanup: stopEmbeddedWorkers });
   } catch (err) {
     isReady = false;
 

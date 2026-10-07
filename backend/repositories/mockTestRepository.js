@@ -1,4 +1,5 @@
-import { getMockAttemptsCollection, getMockSlotsCollection, getQuestionsCollection } from '../config/mongodb.js';
+import { getMockAttemptsCollection, getMockSlotsCollection, getQuestionsCollection, withMongoTransaction } from '../config/mongodb.js';
+import { advanceTrainingDashboardRevision } from '../services/training/dashboardCache.js';
 
 export const getOwnedAttempt = async (attemptId, userId) => {
   return getMockAttemptsCollection().findOne({ id: String(attemptId), userId: String(userId) });
@@ -21,7 +22,14 @@ export const updateAttemptProgress = async (filter, update) => {
 };
 
 export const submitAttemptUpdate = async (filter, update) => {
-  return getMockAttemptsCollection().updateOne(filter, update);
+  return withMongoTransaction(async ({ db, session }) => {
+    const collection = db.collection('mockAttempts');
+    const attempt = await collection.findOne(filter, { projection: { userId: 1, examSlug: 1 }, session });
+    if (!attempt) return { modifiedCount: 0 };
+    const result = await collection.updateOne(filter, update, { session });
+    if (result.modifiedCount) await advanceTrainingDashboardRevision(attempt.userId, attempt.examSlug, { db, session });
+    return result;
+  });
 };
 
 export const getTestHistory = async (userId, examSlug, testId) => {

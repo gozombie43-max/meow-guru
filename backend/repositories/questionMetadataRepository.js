@@ -1,10 +1,11 @@
 // @ts-check
 import { getMongoDB, getQuestionsCollection } from '../config/mongodb.js';
+import { advanceQuestionBankRevision } from './questionBankMutation.js';
 
 /** @typedef {import('mongodb').Document & { _id: string, revision?: number }} MetadataDocument */
 /** @returns {import('mongodb').Collection<MetadataDocument>} */
 const metadata = () => getMongoDB().collection('questionMetadata');
-export const advanceQuestionRevision = () => metadata().updateOne({ _id: 'revision' }, { $inc: { revision: 1 } }, { upsert: true });
+export const advanceQuestionRevision = () => advanceQuestionBankRevision(getMongoDB());
 export const readQuestionRevision = () => metadata().findOne({ _id: 'revision' }, { projection: { revision: 1 }, timeoutMS: 300 });
 /** @param {string} key */
 export const findPersistedQuestionMetadata = key => metadata().findOne({ _id: key });

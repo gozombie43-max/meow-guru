@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 const read = vi.hoisted(() => vi.fn());
 vi.mock('../../repositories/questionMetadataRepository.js', () => ({ readQuestionRevision: read }));
-import { getQuestionRevision, invalidateQuestionCacheRevision } from './questionCache.js';
+import { getQuestionRevision, invalidateQuestionCacheRevision, clearQuestionRevisionCache } from './questionCache.js';
 afterEach(() => { vi.useRealTimers(); invalidateQuestionCacheRevision(); read.mockReset(); });
 
 it('performs one Mongo read for concurrent callers and warm hits for ten seconds', async () => {
@@ -23,4 +23,15 @@ it('does not overwrite invalidation with an older in-flight revision', async () 
   release({ revision: 8 });
   expect(await old).toBe(9);
   expect(await getQuestionRevision()).toBe(9);
+});
+
+it('finishes old and new reads after a clear-only invalidation', async () => {
+  let release;
+  read.mockImplementationOnce(() => new Promise(resolve => { release = resolve; })).mockResolvedValue({ revision: 10 });
+  const old = getQuestionRevision();
+  clearQuestionRevisionCache();
+  release({ revision: 9 });
+  expect(await old).toBe(10);
+  expect(await getQuestionRevision()).toBe(10);
+  expect(read).toHaveBeenCalledTimes(2);
 });

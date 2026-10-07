@@ -19,10 +19,13 @@ export function isNormalizedQuestionKeysEnabled() {
 
 export function clearQuestionRevisionCache() {
   cachedRevision = { value: 0, expires: 0 };
+  pendingRevision = undefined;
   revisionGeneration++;
 }
-const revisionCacheEntry = { clear: clearQuestionRevisionCache };
-registerSharedLocalCache(revisionCacheEntry);
+// Exported module ownership keeps this registration alive; the registry uses
+// WeakRef so an otherwise unreferenced wrapper could disappear after GC.
+export const questionRevisionCache = { clear: clearQuestionRevisionCache };
+registerSharedLocalCache(questionRevisionCache);
 
 export async function getQuestionRevision() {
   if (cachedRevision.expires > Date.now()) return cachedRevision.value;

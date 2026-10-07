@@ -1,5 +1,6 @@
 import { withMongoTransaction } from '../config/mongodb.js';
 import { dashboardEvidence } from '../services/training/domain/dashboardEvidence.js';
+import { advanceTrainingDashboardRevision } from '../services/training/dashboardCache.js';
 export const LEARNER_STATE_EPOCH_CHANGED = 'Training learner-state completion epoch changed';
 const EPOCH_CHANGED = LEARNER_STATE_EPOCH_CHANGED;
 const META_VERSION = 1;
@@ -54,6 +55,7 @@ export async function persistRebuiltLearnerState(db, { userId, exam, meta, compl
         if (sessions.length) await db.collection('trainingSessions').bulkWrite(sessions.map(item => ({ updateOne: {
           filter: { _id: item._id }, update: { $set: { dashboardEvidence: dashboardEvidence(item) } },
         } })), { ordered: false, session: mongoSession });
+        await advanceTrainingDashboardRevision(userId, exam, { db, session: mongoSession });
       });
 }
 export async function completedLearnerPairs(db) {

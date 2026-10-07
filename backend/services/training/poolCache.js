@@ -8,7 +8,7 @@ export function cachedTrainingPool(db, key, build) {
   if (!cache) {
     // EJSON preserves Mongo ObjectIds required by selected-question hydration.
     // Revisioned keys are supplied by the repository; stale pools are never used.
-    cache = createTieredCache({ freshMs: 60000, staleMs: 60000, getShared: redisGetEjson, setShared: redisSetEjson });
+    cache = createTieredCache({ freshMs: 60000, staleMs: 60000, maxEntryBytes: 2 * 1024 * 1024, getShared: redisGetEjson, setShared: redisSetEjson });
     databases.set(db, cache);
   }
   return cache.read(key, build, { allowStale: false });

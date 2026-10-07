@@ -1,29 +1,10 @@
 import { createHash } from 'node:crypto';
-import { getRedisClient, redisGetJson, redisKey, redisSetJson, reportRedisFailure } from '../../config/redis.js';
+import { createDurableProgressCache } from '../../infrastructure/durableProgressCache.js';
 
-const owner = userId => createHash('sha256').update(String(userId)).digest('hex');
-const epochKey = userId => redisKey(`topic-progress-epoch:${owner(userId)}`);
-
-export async function readTopicProgressCache(userId) {
-  try {
-    const redis = await getRedisClient();
-    if (!redis) return null;
-    const epoch = await redis.get(epochKey(userId));
-    const key = `topic-progress:${owner(userId)}:${epoch || '0'}`;
-    return { key, value: await redisGetJson(key) };
-  } catch { reportRedisFailure(); return null; }
-}
-
-export async function writeTopicProgressCache(key, value) {
-  if (key) await redisSetJson(key, value, 10);
-}
-
-export async function invalidateTopicProgress(userId) {
-  try {
-    const redis = await getRedisClient();
-    if (!redis) return;
-    await redis.eval("local value = redis.call('INCR', KEYS[1]); redis.call('EXPIRE', KEYS[1], 30); return value", {
-      keys: [epochKey(userId)], arguments: [],
-    });
-  } catch { reportRedisFailure(); }
-}
+const cache = createDurableProgressCache('topic-progress', userId => createHash('sha256').update(String(userId)).digest('hex'), 10);
+export const readTopicProgressCache = cache.read;
+export const writeTopicProgressCache = cache.write;
+export const cachedTopicProgress = (userId, build) => cache.load([userId], build);
+// Durable generation advancement belongs inside the Mongo source transaction.
+export const advanceTopicProgressRevision = (userId, options) => cache.advance([userId], options);
+export const invalidateTopicProgress = cache.invalidate;

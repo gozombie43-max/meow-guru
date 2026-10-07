@@ -1,7 +1,9 @@
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
 import { aggregateQuestionModeCounts, aggregateQuestionFacets, findMetadataScopes } from '../../repositories/questionMetadataRepository.js';
 import { createHash } from 'node:crypto';
-import { redisGetJson, redisGetJsonMany, redisSetJson } from '../../config/redis.js';
+import { redisGetJsonMany } from '../../config/redis.js';
+import { createTieredCache } from '../../infrastructure/tieredCache.js';
+import { canonicalQuestionQuery } from './questionQueryIdentity.js';
 import { isNormalizedQuestionKeysEnabled, questionCountsCache, revisionedQuestionCacheKey } from "./questionCache.js";
 import { readQuestionMetadata } from "./questionMetadataCache.js";
 import { canonicalMode, ensureConceptGroups } from "./conceptGroupService.js";
@@ -16,42 +18,33 @@ import {
   buildModeFilter,
 } from "./questionQueryBuilder.js";
 
+const countsCache = createTieredCache({
+  freshMs: 120000, staleMs: 120000, localCache: questionCountsCache,
+  isEmpty: counts => Object.values(counts).every(count => count === 0),
+});
+const countsKey = async params => `question-counts:v3:${createHash('sha256').update(await revisionedQuestionCacheKey(JSON.stringify(params))).digest('hex')}`;
+
 export async function primeQuestionCountCaches(paramsList) {
-  const keys = await Promise.all(paramsList.map(params => revisionedQuestionCacheKey(JSON.stringify({ topic: params.topic || '', subject: params.subject || '' }))));
-  const missing = keys.filter(key => !questionCountsCache.has(key));
-  const shared = await redisGetJsonMany(missing.map(key => `question-counts:${createHash('sha256').update(key).digest('hex')}`));
-  missing.forEach((key, index) => { if (shared[index]) questionCountsCache.set(key, shared[index]); });
+  const keys = [...new Set(await Promise.all(paramsList.map(params => countsKey(canonicalQuestionQuery('counts', params)))))];
+  const missing = keys.filter(key => !countsCache.hasFresh(key));
+  const shared = await redisGetJsonMany(missing.map(key => `tiered:v2:${key}`));
+  missing.forEach((key, index) => { if (shared[index]) countsCache.prime(key, shared[index]); });
 }
 
-export async function fetchQuestionCounts(params, { sharedChecked = false } = {}) {
+export async function fetchQuestionCounts(input, { sharedChecked = false } = {}) {
+  const params = canonicalQuestionQuery('counts', input);
+  if (!params.topic && !params.subject) throw Object.assign(new Error('topic or subject is required'), { statusCode: 400 });
+  return countsCache.read(await countsKey(params), () => buildQuestionCounts(params), { allowStale: false, sharedChecked });
+}
+
+async function buildQuestionCounts(params) {
   const { topic, subject } = params;
-  if (!topic && !subject) {
-    const error = new Error("topic or subject is required");
-    error.statusCode = 400;
-    throw error;
-  }
-
-  const cacheKey = await revisionedQuestionCacheKey(JSON.stringify({
-    topic: topic || "",
-    subject: subject || "",
-  }));
-  const cached = questionCountsCache.get(cacheKey);
-  if (cached) return cached;
-  const sharedKey = `question-counts:${createHash('sha256').update(cacheKey).digest('hex')}`;
-  const shared = sharedChecked ? null : await redisGetJson(sharedKey);
-  if (shared) {
-    questionCountsCache.set(cacheKey, shared);
-    return shared;
-  }
-
   if (isNormalizedQuestionKeysEnabled()) {
     const topicKey = normalizeSearchKey(topic);
     const filter = topic ? { topicKey: ['synonymsantonyms', 'antosynopyq'].includes(topicKey) ? { $in: ['synonymsantonyms', 'antosynopyq'] } : topicKey } : { subjectKey: normalizeSearchKey(subject) };
     const grouped = await aggregateQuestionModeCounts([{ $match: filter }, { $group: { _id: '$modeKey', count: { $sum: 1 } } }]);
     const counts = { concept: 0, formula: 0, mixed: 0, aiChallenge: 0, easy: 0, hard: 0, studyMode: 0 };
     for (const row of grouped) if (Object.hasOwn(counts, row._id)) counts[row._id] += Number(row.count) || 0;
-    questionCountsCache.set(cacheKey, counts);
-    await redisSetJson(sharedKey, counts, 120);
     return counts;
   }
   const commonConditions = [];
@@ -107,12 +100,11 @@ export async function fetchQuestionCounts(params, { sharedChecked = false } = {}
     counts[mode] += Number(row?.count) || 0;
   }
 
-  questionCountsCache.set(cacheKey, counts);
-  await redisSetJson(sharedKey, counts, 120);
   return counts;
 }
 
 export async function fetchQuestionsMeta(params) {
+  params = canonicalQuestionQuery('metadata', params);
   if (!params.topic && !params.subject) {
     const error = new Error("topic or subject is required");
     error.statusCode = 400;

@@ -1,5 +1,5 @@
 import { findPersistedQuestionMetadata, saveTopicCountSnapshot } from '../../repositories/questionMetadataRepository.js';
-import { redisGetJson, redisSetJson } from '../../config/redis.js';
+import { createTieredCache } from '../../infrastructure/tieredCache.js';
 import { getQuestionRevision, isNormalizedQuestionKeysEnabled } from "./questionCache.js";
 import { fetchQuestionCounts, primeQuestionCountCaches } from "./questionMetadataService.js";
 
@@ -38,56 +38,43 @@ const SUBJECT_TOPICS = {
 };
 
 const MODES = ["concept", "formula", "mixed", "aiChallenge", "easy", "hard"];
-const pending = new Map();
+const MAX_SNAPSHOT_AGE_MS = 60 * 60 * 1000;
+const freshSnapshot = (data, revision) => {
+  const generatedAt = new Date(data?.generatedAt || data?.updatedAt).getTime();
+  const age = Date.now() - generatedAt;
+  return data?.revision === revision && Number.isFinite(age) && age >= 0 && age < MAX_SNAPSHOT_AGE_MS;
+};
+
+const snapshots = createTieredCache({
+  freshMs: 120000, staleMs: 120000,
+  validUntil: data => data ? new Date(data.generatedAt || data.updatedAt).getTime() + MAX_SNAPSHOT_AGE_MS : Infinity,
+});
 
 export async function fetchTopicCountSnapshot(subject = "mathematics") {
   const normalizedSubject = String(subject).toLowerCase();
   const topics = SUBJECT_TOPICS[normalizedSubject];
-  if (!topics) {
-    const error = new Error(`Unsupported topic-count subject: ${subject}`);
-    error.statusCode = 400;
-    throw error;
-  }
+  if (!topics) throw Object.assign(new Error(`Unsupported topic-count subject: ${subject}`), { statusCode: 400 });
   const id = `topic-counts:v2:${normalizedSubject}:${isNormalizedQuestionKeysEnabled()}`;
   for (let attempt = 0; attempt < 3; attempt++) {
     const revision = await getQuestionRevision();
-    const sharedKey = `topic-counts:${id}:${revision}`;
-    const shared = await redisGetJson(sharedKey);
-    if (shared?.revision === revision) return shared;
-    const cached = await findPersistedQuestionMetadata(id);
-    if (cached?.revision === revision) {
-      await redisSetJson(sharedKey, cached.data, 120);
-      return cached.data;
-    }
-    const key = `${id}:${revision}`;
-    if (!pending.has(key)) {
-      const work = (async () => {
-        const totals = {};
-        await primeQuestionCountCaches(topics.map(topic => ({ subject: normalizedSubject, topic })));
-        // Bounded concurrency; only runs at initialization or after question writes.
-        for (let offset = 0; offset < topics.length; offset += 4) {
-          await Promise.all(topics.slice(offset, offset + 4).map(async topic => {
-            const counts = await fetchQuestionCounts({ subject: normalizedSubject, topic }, { sharedChecked: true });
-            totals[topic] = MODES.reduce((sum, mode) => sum + (counts[mode] ?? 0), 0);
-          }));
-        }
-        if (await getQuestionRevision() !== revision) return null;
-        const data = { subject, revision, totals, updatedAt: new Date().toISOString() };
-        const snapshot = { _id: id, revision, data, kind: "topic-counts" };
-        // An older worker must never overwrite a newer snapshot.
-        await saveTopicCountSnapshot(snapshot);
-        return data;
-      })();
-      pending.set(key, work);
-      work.finally(() => pending.delete(key)).catch(() => {});
-    }
-    const data = await pending.get(key);
-    if (data && await getQuestionRevision() === data.revision) {
-      await redisSetJson(sharedKey, data, 120);
-      return data;
-    }
+    const data = await snapshots.read(`topic-counts:v3:${id}:${revision}`, async () => {
+      const cached = await findPersistedQuestionMetadata(id);
+      if (cached?.revision === revision && freshSnapshot(cached.data, revision)) return cached.data;
+      const totals = {};
+      await primeQuestionCountCaches(topics.map(topic => ({ subject: normalizedSubject, topic })));
+      for (let offset = 0; offset < topics.length; offset += 4) {
+        await Promise.all(topics.slice(offset, offset + 4).map(async topic => {
+          const counts = await fetchQuestionCounts({ subject: normalizedSubject, topic }, { sharedChecked: true });
+          totals[topic] = MODES.reduce((sum, mode) => sum + (counts[mode] ?? 0), 0);
+        }));
+      }
+      if (await getQuestionRevision() !== revision) return null;
+      const generatedAt = new Date().toISOString();
+      const result = { subject: normalizedSubject, revision, totals, generatedAt, updatedAt: generatedAt };
+      await saveTopicCountSnapshot({ _id: id, revision, data: result, kind: "topic-counts" });
+      return result;
+    }, { allowStale: false });
+    if (data && await getQuestionRevision() === data.revision) return data;
   }
-  const error = new Error("Question counts are updating; please retry");
-  error.statusCode = 503;
-  throw error;
+  throw Object.assign(new Error("Question counts are updating; please retry"), { statusCode: 503 });
 }

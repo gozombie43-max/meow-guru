@@ -50,6 +50,26 @@ beforeEach(() => {
 });
 
 describe('Question Service Helpers', () => {
+  it('coalesces equivalent legacy queries and rejects malformed inputs before source reads', async () => {
+    const cursor = createCursor([{ id: 'coalesced', subject: 'mathematics' }]);
+    const collection = { find: vi.fn(() => cursor) };
+    getQuestionsCollectionMock.mockReturnValue(collection);
+    const results = await Promise.all(Array.from({ length: 100 }, (_, index) => fetchQuestions(index % 2
+      ? { subject: ' Mathematics ', limit: '50', tracking: String(index) }
+      : { limit: 50, subject: 'mathematics', tracking: String(index) })));
+    expect(results.every(result => result.questions[0].id === 'coalesced')).toBe(true);
+    expect(collection.find).toHaveBeenCalledTimes(1);
+    await expect(fetchQuestions({ topic: ['invalid'] })).rejects.toMatchObject({ statusCode: 400 });
+    expect(collection.find).toHaveBeenCalledTimes(1);
+  });
+  it('keeps includeTotal requests separate from cached pages without totals', async () => {
+    const cursor = createCursor([{ id: 'q1', subject: 'mathematics' }]);
+    const collection = { find: vi.fn(() => cursor), countDocuments: vi.fn(async () => 250) };
+    getQuestionsCollectionMock.mockReturnValue(collection);
+    expect((await fetchQuestions({ subject: 'mathematics', limit: 50 })).total).toBeUndefined();
+    expect(await fetchQuestions({ subject: 'mathematics', limit: 50, includeTotal: true })).toMatchObject({ count: 250, total: 250 });
+    expect(collection.countDocuments).toHaveBeenCalledTimes(1);
+  });
   it('rejects retired deep offsets before issuing any question query', async () => {
     const find = vi.fn();
     getQuestionsCollectionMock.mockReturnValue({ find });

@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+import { mutateQuestionBank } from '../repositories/questionBankMutation.js';
 
 const required = (name) => {
   const value = process.env[name]?.trim();
@@ -51,28 +52,30 @@ try {
   const sourceCount = await sourceQuestions.countDocuments({});
   if (sourceCount < 100) throw new Error(`Refusing staging sync: source question count is only ${sourceCount}`);
 
-  await targetQuestions.deleteMany({});
-  const cursor = sourceQuestions.find({});
-  let batch = [];
-  let copied = 0;
-  for await (const doc of cursor) {
-    batch.push(doc);
-    if (batch.length >= 500) {
+  await mutateQuestionBank(target.db(targetDbName), async () => {
+    await targetQuestions.deleteMany({});
+    const cursor = sourceQuestions.find({});
+    let batch = [];
+    let copied = 0;
+    for await (const doc of cursor) {
+      batch.push(doc);
+      if (batch.length >= 500) {
+        await targetQuestions.insertMany(batch, { ordered: false });
+        copied += batch.length;
+        batch = [];
+      }
+    }
+    if (batch.length) {
       await targetQuestions.insertMany(batch, { ordered: false });
       copied += batch.length;
-      batch = [];
     }
-  }
-  if (batch.length) {
-    await targetQuestions.insertMany(batch, { ordered: false });
-    copied += batch.length;
-  }
 
-  const targetCount = await targetQuestions.countDocuments({});
-  if (targetCount !== sourceCount || copied !== sourceCount)
-    throw new Error(`Question sync mismatch: source=${sourceCount} copied=${copied} target=${targetCount}`);
+    const targetCount = await targetQuestions.countDocuments({});
+    if (targetCount !== sourceCount || copied !== sourceCount)
+      throw new Error(`Question sync mismatch: source=${sourceCount} copied=${copied} target=${targetCount}`);
 
-  console.log(JSON.stringify({ sourceDbName, targetDbName, sourceCount, targetCount }));
+    console.log(JSON.stringify({ sourceDbName, targetDbName, sourceCount, targetCount }));
+  });
 } finally {
   await Promise.allSettled([source.close(), target.close()]);
 }

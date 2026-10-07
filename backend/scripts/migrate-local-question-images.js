@@ -1,3 +1,4 @@
+import { mutateQuestionBank } from '../repositories/questionBankMutation.js';
 import 'dotenv/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -52,7 +53,7 @@ try {
       if (JSON.stringify(value) !== JSON.stringify(row[field])) { updates[field] = value; guards[field] = { $eq: row[field] }; }
     }
     if (apply && Object.keys(updates).length) {
-      const result = await questions.updateOne(guards, { $set: updates });
+      const result = await mutateQuestionBank(db, () => questions.updateOne(guards, { $set: updates }));
       stats.modified += result.modifiedCount;
       stats.conflicted += 1 - result.matchedCount;
     }

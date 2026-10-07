@@ -5,6 +5,7 @@ import { MongoClient } from "mongodb";
 import pLimit from "p-limit";
 
 import { b2Client, B2_BUCKET } from "../config/b2.js";
+import { mutateQuestionBank } from '../repositories/questionBankMutation.js';
 
 const APPLY = process.argv.includes("--apply");
 const AZURE_HOST_SUFFIX = ".blob.core.windows.net";
@@ -164,7 +165,7 @@ async function run() {
       index += WRITE_BATCH_SIZE
     ) {
       const batch = verifiedMigrations.slice(index, index + WRITE_BATCH_SIZE);
-      const result = await questions.bulkWrite(
+      const result = await mutateQuestionBank(client.db('quizDB'), () => questions.bulkWrite(
         batch.map((migration) => ({
           updateOne: {
             filter: {
@@ -180,7 +181,7 @@ async function run() {
           },
         })),
         { ordered: true }
-      );
+      ));
 
       matched += result.matchedCount;
       modified += result.modifiedCount;

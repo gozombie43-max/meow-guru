@@ -1,4 +1,4 @@
-import { cachedNotificationUnread, invalidateNotificationUnread } from '../services/notificationUnreadCache.js';
+import { cachedNotificationUnread, commitNotificationMutation } from '../services/notificationUnreadCache.js';
 import { ObjectId } from "mongodb";
 import { boundedLegacyOffset, readKeysetPage } from '../infrastructure/keysetPage.js';
 import {
@@ -262,26 +262,23 @@ export const getNotificationForUser = async (id, userId) => {
 };
 
 export const upsertReadReceipt = async (userId, notificationId) => {
-  const receipts = getNotificationReceiptsCollection();
-  const result = await receipts.updateOne(
+  const result = await commitNotificationMutation(userId, (db, session) => db.collection('notificationReceipts').updateOne(
     { userId, notificationId },
     {
       $set: { readAt: new Date() },
       $setOnInsert: { createdAt: new Date() },
     },
-    { upsert: true }
-  );
-  await invalidateNotificationUnread(userId);
+    { upsert: true, session }
+  ));
   return result;
 };
 
 export const setAllReadForUser = async (userId, now) => {
-  const users = getUsersCollection();
-  const result = await users.updateOne(
+  const result = await commitNotificationMutation(userId, (db, session) => db.collection('users').updateOne(
     { id: userId },
-    { $set: { "notificationState.lastReadAllAt": now } }
-  );
-  await invalidateNotificationUnread(userId);
+    { $set: { "notificationState.lastReadAllAt": now } },
+    { session },
+  ));
   return result;
 };
 

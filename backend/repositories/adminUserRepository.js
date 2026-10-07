@@ -78,7 +78,7 @@ export function findUserForRoleChange(id) { return getUsersCollection().findOne(
 
 export function persistUserRole(id, newRole) { return getUsersCollection().updateOne(
       { id: String(id) },
-      { $set: { role: newRole, updatedAt: new Date().toISOString() } }
+      { $set: { role: newRole, updatedAt: new Date().toISOString() }, $inc: { authRevision: 1 } }
     ); }
 
 export function findUserForStatusChange(id) { return getUsersCollection().findOne(
@@ -88,7 +88,7 @@ export function findUserForStatusChange(id) { return getUsersCollection().findOn
 
 export function persistUserStatus(id, status) { return getUsersCollection().updateOne(
       { id: String(id) },
-      { $set: { status, updatedAt: new Date().toISOString() } }
+      { $set: { status, updatedAt: new Date().toISOString() }, $inc: { authRevision: 1 } }
     ); }
 
 export function findUserForDeletion(id) { return getUsersCollection().findOne(

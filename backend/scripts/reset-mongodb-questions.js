@@ -1,3 +1,4 @@
+import { mutateQuestionBank } from '../repositories/questionBankMutation.js';
 import dotenv from "dotenv";
 import { MongoClient } from "mongodb";
 
@@ -16,7 +17,7 @@ async function reset() {
     const before = await collection.countDocuments();
     console.log("Documents before reset:", before);
 
-    await collection.deleteMany({});
+    await mutateQuestionBank(client.db('quizDB'), () => collection.deleteMany({}));
 
     // Remove the incorrect unique { id: 1 } index if present
     const indexes = await collection.indexes();

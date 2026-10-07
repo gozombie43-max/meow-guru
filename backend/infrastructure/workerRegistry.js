@@ -73,15 +73,16 @@ const workers = [
 let stopping = false;
 export async function startWorkers() {
   stopping = false;
-  queuedWorkers = await startMaintenanceQueue([
+  const tasks = [
     { name: 'NoteImageCleanup', intervalMs: 60_000, run: cleanupNoteImages },
     { name: 'ConceptGrouping', intervalMs: 5000, run: processConceptGroupingJob },
     { name: 'ScheduledNotification', intervalMs: pollInterval('NOTIFICATION_WORKER_POLL_MS', 30000), run: runScheduledNotificationWorkerOnce },
     { name: 'DailyPracticeReminder', intervalMs: pollInterval('DAILY_REMINDER_WORKER_POLL_MS', 60000), run: runDailyPracticeReminderWorkerOnce },
     { name: 'StreakProtection', intervalMs: pollInterval('STREAK_PROTECTION_WORKER_POLL_MS', 60000), run: runStreakProtectionWorkerOnce },
     { name: 'BattleSeason', intervalMs: pollInterval('BATTLE_SEASON_WORKER_POLL_MS', 60000), run: runBattleSeasonWorkerOnce },
-  ]);
-  for (const worker of workers) { if (stopping) return; if (queuedWorkers && scheduledNames.has(worker.name)) continue; await worker.start(); if (stopping) worker.stop(); }
+  ].filter(task => process.env.QUIZ_ONLY_MODE !== 'true' || !task.name.startsWith('Battle'));
+  queuedWorkers = await startMaintenanceQueue(tasks);
+  for (const worker of workers) { if (stopping) return; if (process.env.QUIZ_ONLY_MODE === 'true' && worker.name.startsWith('Battle')) continue; if (queuedWorkers && scheduledNames.has(worker.name)) continue; await worker.start(); if (stopping) worker.stop(); }
 }
 export async function stopWorkers() {
   stopping = true;

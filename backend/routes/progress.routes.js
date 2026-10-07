@@ -2,7 +2,7 @@ import express from 'express';
 import { optionalAuth } from '../middleware/protect.js';
 import { fetchTopicCountSnapshot } from '../services/questions/topicCountSnapshot.js';
 import { readUserTopicProgress } from '../repositories/questionProgressRepository.js';
-import { readTopicProgressCache, writeTopicProgressCache } from '../services/questions/topicProgressCache.js';
+import { cachedTopicProgress } from '../services/questions/topicProgressCache.js';
 
 const router = express.Router();
 
@@ -16,9 +16,7 @@ router.get('/topics', optionalAuth, async (req, res) => {
     const progressMap = {};
     if (req.user) {
       const userId = req.user._id || req.user.id;
-      const cached = await readTopicProgressCache(userId);
-      const progressDocs = cached?.value ?? await readUserTopicProgress(userId);
-      if (!cached?.value) await writeTopicProgressCache(cached?.key, progressDocs);
+      const progressDocs = await cachedTopicProgress(userId, () => readUserTopicProgress(userId));
       
       // 3. Merge
       for (const doc of progressDocs) {

@@ -15,6 +15,7 @@ beforeAll(async () => {
   vi.stubEnv('QUEUE_REDIS_URL', process.env.REDIS_TEST_URL);
   vi.stubEnv('REDIS_NAMESPACE', `reliability-test-${randomUUID()}`);
   vi.stubEnv('USE_DURABLE_QUEUE', 'true');
+  vi.stubEnv('QUEUE_REDIS_ALLOW_SHARED', 'true');
   runtime = await startMaintenanceQueue([{ name: 'probe', run }]);
   secondWorker = new Worker('maintenance', run, { connection: { ...queueConnection(process.env.REDIS_TEST_URL), maxRetriesPerRequest: null }, prefix: runtime.queue.opts.prefix, concurrency: 2 });
   secondWorker.on('error', () => {});

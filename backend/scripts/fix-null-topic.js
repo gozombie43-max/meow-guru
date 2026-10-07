@@ -1,3 +1,4 @@
+import { mutateQuestionBank } from '../repositories/questionBankMutation.js';
 import dotenv from "dotenv";
 import { MongoClient } from "mongodb";
 
@@ -13,7 +14,7 @@ async function fix() {
       .db("quizDB")
       .collection("questions");
 
-    const result = await collection.updateOne(
+    const result = await mutateQuestionBank(client.db('quizDB'), () => collection.updateOne(
       {
         id: "visual_1776252864088_9d03bca4",
         topic: null,
@@ -23,7 +24,7 @@ async function fix() {
           topic: "",
         },
       }
-    );
+    ));
 
     console.log("Matched :", result.matchedCount);
     console.log("Modified:", result.modifiedCount);

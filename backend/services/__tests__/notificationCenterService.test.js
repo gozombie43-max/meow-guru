@@ -12,7 +12,10 @@ vi.mock('../../config/mongodb.js', () => ({
     collection: () => ({
       updateOne: vi.fn().mockResolvedValue({ modifiedCount: 1 })
     })
-  })
+  }),
+  withMongoTransaction: work => work({ session: {}, db: { collection: name => name === 'notificationFeed'
+    ? { insertOne: (...args) => mockInsertOne(...args) }
+    : { updateOne: vi.fn().mockResolvedValue({ modifiedCount: 1 }) } } })
 }));
 
 const mockEmitNotificationToUser = vi.fn();
@@ -61,7 +64,7 @@ describe('notificationCenterService', () => {
         dedupeKey: 'daily-practice:user_99:2026-09-07',
         createdAt: expect.any(Date),
         expiresAt: expect.any(Date),
-      })
+      }), expect.objectContaining({ session: expect.any(Object) })
     );
 
     expect(mockEmitNotificationToUser).toHaveBeenCalledWith(
@@ -94,7 +97,7 @@ describe('notificationCenterService', () => {
       expect.objectContaining({
         audience: 'all',
         title: 'New Mock Test Available 🎯',
-      })
+      }), expect.objectContaining({ session: expect.any(Object) })
     );
 
     expect(mockEmitGlobalNotification).toHaveBeenCalledWith(

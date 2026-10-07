@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { Collection } from 'mongodb';
 import express from 'express';
 import { once } from 'node:events';
@@ -24,7 +24,7 @@ async function start() {
   return response.json();
 }
 beforeAll(async () => {
-  mongo = await MongoMemoryServer.create();
+  mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
   process.env.MONGODB_URI = mongo.getUri();
   process.env.MONGODB_DB = 'mock_audit';
   db = await connectMongoDB();

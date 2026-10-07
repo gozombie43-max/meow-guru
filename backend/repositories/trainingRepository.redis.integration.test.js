@@ -15,6 +15,7 @@ vi.mock('../config/redis.js', () => ({
 import { connectMongoDB, disconnectMongoDB } from '../config/mongodb.js';
 import { trainingQuestionPool } from './trainingRepository.js';
 import { clearSharedLocalCaches } from '../infrastructure/tieredCache.js';
+import { getRedisClient } from '../config/redis.js';
 
 let mongo, db;
 beforeAll(async () => {
@@ -33,6 +34,10 @@ beforeAll(async () => {
 afterAll(async () => { await disconnectMongoDB(); await mongo?.stop(); vi.unstubAllEnvs(); });
 
 it('shares indexed candidates while preserving recent-question exclusion and ObjectIds', async () => {
+  // Shared publication requires a successfully acquired lease; this case models
+  // healthy Redis while the next case explicitly models an absent connection.
+  vi.mocked(getRedisClient).mockResolvedValue({ eval: async () => 1 });
+  try {
   const config = { exam: 'ssc-cgl', subject: 'mathematics', topic: 'algebra', mode: 'adaptive' };
   const first = await trainingQuestionPool(config, [], ['q0']);
   expect(first.find(row => row.id === 'q0')).toBeUndefined();
@@ -46,6 +51,7 @@ it('shares indexed candidates while preserving recent-question exclusion and Obj
   expect(find).toHaveBeenCalledTimes(1);
   expect(find).toHaveBeenCalledWith({ _id: 'revision' }, expect.any(Object));
   find.mockRestore();
+  } finally { vi.mocked(getRedisClient).mockResolvedValue(null); vi.restoreAllMocks(); }
 });
 
 it('coalesces ten cold builders without Redis and applies exclusions per learner', async () => {

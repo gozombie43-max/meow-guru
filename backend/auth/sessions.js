@@ -11,6 +11,7 @@ import {
   verifyLegacyRefreshToken,
 } from './jwt.js';
 import { getBattleRealtimeServer } from '../battle/battleRealtime.js';
+import { createSingleFlight } from '../infrastructure/singleFlight.js';
 const disconnectSession = sid => getBattleRealtimeServer()?.in(`session:${sid}`).disconnectSockets(true);
 
 // Stateless refresh tokens issued by the final legacy release live for at most
@@ -25,7 +26,7 @@ const payload = user => ({ id: String(user.id), email: user.email, name: user.na
 async function activeUser(id) {
   const user = await getUsersCollection().findOne(
     { id: String(id), type: { $ne: 'email_lock' } },
-    { projection: { id: 1, name: 1, email: 1, role: 1, status: 1 }, timeoutMS: 5000 },
+    { projection: { id: 1, name: 1, email: 1, role: 1, status: 1, authRevision: 1 }, timeoutMS: 5000 },
   );
   if (!user || ['suspended', 'banned'].includes(user.status)) throw unauthorized();
   return user;
@@ -37,7 +38,7 @@ export async function createSession(user) {
   const refreshToken = signRefreshToken({ id: String(user.id), sid });
   const decoded = verifyRefreshToken(refreshToken);
   await sessions().insertOne({
-    _id: sid, userId: String(user.id), refreshJti: decoded.jti,
+    _id: sid, userId: String(user.id), refreshJti: decoded.jti, revision: 0,
     refreshIssuedAt: decoded.iat, expiresAt: new Date(decoded.exp * 1000), createdAt: new Date(),
   });
   return { token: signToken({ ...payload(currentUser), sid }), refreshToken };
@@ -46,6 +47,22 @@ export async function createSession(user) {
 const SESSION_CACHE_TTL_MS = 15_000;
 const sessionCache = new LRUCache({ max: 5000, ttl: SESSION_CACHE_TTL_MS });
 const sharedSessionKey = (sid, userId) => `auth-session:${createHash('sha256').update(`${sid}:${userId}`).digest('hex')}`;
+const authorizationGeneration = (session, user) => createHash('sha256').update(
+  JSON.stringify([session.revision ?? 0, user.authRevision ?? 0, payload(user)]),
+).digest('hex');
+const revisionedSessionKey = (sid, userId, generation) => `auth-session:v2:${createHash('sha256').update(JSON.stringify([sid, String(userId), generation])).digest('hex')}`;
+async function authorizationState(decoded) {
+  const [session, user] = await Promise.all([
+    sessions().findOne(
+      { _id: decoded.sid, userId: String(decoded.id), ...active(new Date()) },
+      { projection: { _id: 1, revision: 1, expiresAt: 1 }, timeoutMS: 5000 },
+    ),
+    activeUser(decoded.id),
+  ]);
+  if (!session) throw unauthorized();
+  return { session, user, generation: authorizationGeneration(session, user) };
+}
+
 let invalidationSubscriber;
 let invalidationRetry;
 let stoppingInvalidationSubscriber = false;
@@ -119,27 +136,38 @@ export async function closeSessionInvalidationSubscriber() {
   if (client) client.destroy();
 }
 
+const authorizationReads = createSingleFlight();
 export async function assertSession(decoded) {
   if (!decoded?.sid || !decoded?.id) throw unauthorized();
+  const currentPayload = await authorizationReads(JSON.stringify([decoded.sid, String(decoded.id)]), () => readAuthorization(decoded));
+  return { ...decoded, ...currentPayload };
+}
+
+async function readAuthorization(decoded) {
   const cacheKey = `${decoded.sid}:${decoded.id}`;
-  const cached = sessionCache.get(cacheKey);
-  if (cached) return { ...decoded, ...cached };
-  const shared = await redisGetJson(sharedSessionKey(decoded.sid, decoded.id));
-  if (shared) {
-    sessionCache.set(cacheKey, shared);
-    return { ...decoded, ...shared };
+  for (let attempt = 0; attempt < 3; attempt++) {
+    // Redis is never the authority for revocation or current account privileges.
+    const current = await authorizationState(decoded);
+    const valid = entry => entry?.generation === current.generation && entry.validUntil > Date.now();
+    const cached = sessionCache.get(cacheKey);
+    if (valid(cached)) return cached.payload;
+    const key = revisionedSessionKey(decoded.sid, decoded.id, current.generation);
+    const shared = await redisGetJson(key);
+    // Protect reads that were already in flight when logout/role removal committed.
+    const after = await authorizationState(decoded);
+    if (after.generation !== current.generation) continue;
+    const entry = valid(shared) ? shared : {
+      generation: current.generation,
+      payload: payload(current.user),
+      validUntil: Math.min(Date.now() + SESSION_CACHE_TTL_MS, new Date(current.session.expiresAt).getTime()),
+    };
+    const remaining = entry.validUntil - Date.now();
+    if (remaining <= 0) throw unauthorized();
+    sessionCache.set(cacheKey, entry, { ttl: remaining });
+    if (!valid(shared)) await redisSetJson(key, entry, Math.max(1, Math.ceil(remaining / 1000)));
+    return entry.payload;
   }
-  
-  const session = await sessions().findOne(
-    { _id: decoded.sid, userId: String(decoded.id), ...active(new Date()) },
-    { projection: { _id: 1 }, timeoutMS: 5000 },
-  );
-  if (!session) throw unauthorized();
-  
-  const userPayload = payload(await activeUser(decoded.id));
-  sessionCache.set(cacheKey, userPayload);
-  await redisSetJson(sharedSessionKey(decoded.sid, decoded.id), userPayload, 15);
-  return { ...decoded, ...userPayload };
+  throw unauthorized();
 }
 
 export async function evictSessionCache(sid, userId) {
@@ -149,6 +177,8 @@ export async function evictSessionCache(sid, userId) {
 }
 
 export async function evictUserSessionCache(userId) {
+  // Also fences asynchronous readers when Redis is offline or delivery is lost.
+  await getUsersCollection().updateOne({ id: String(userId) }, { $inc: { authRevision: 1 } });
   evictLocalUser(userId);
   if (!process.env.REDIS_URL) return;
   const rows = await sessions().find({ userId: String(userId) }, { projection: { _id: 1 } }).toArray();
@@ -163,7 +193,7 @@ export async function revokeUserSessions(userId, reason = 'admin-action') {
     .toArray();
   await sessions().updateMany(
     { userId: normalizedUserId, ...active(new Date()) },
-    { $set: { revokedAt: new Date(), revokeReason: reason } },
+    { $set: { revokedAt: new Date(), revokeReason: reason }, $inc: { revision: 1 } },
   );
   await evictUserSessionCache(normalizedUserId);
   for (const session of activeSessions) disconnectSession(session._id);
@@ -192,7 +222,7 @@ export async function rotateSession(refreshToken, now = new Date()) {
     // parallel tabs or a lost response. It never extends session lifetime.
     if (!session || session.previousJti !== decoded.jti || session.previousValidUntil <= now) {
       if (session) {
-        await sessions().updateOne(filter, { $set: { revokedAt: now, revokeReason: 'refresh-reuse' } });
+        await sessions().updateOne(filter, { $set: { revokedAt: now, revokeReason: 'refresh-reuse' }, $inc: { revision: 1 } });
         await evictSessionCache(decoded.sid, decoded.id);
         disconnectSession(decoded.sid);
       }
@@ -204,7 +234,7 @@ export async function rotateSession(refreshToken, now = new Date()) {
 
 export async function revokeSession(decoded) {
   if (!decoded?.sid || !decoded?.id) return;
-  await sessions().updateOne({ _id: decoded.sid, userId: String(decoded.id) }, { $set: { revokedAt: new Date(), revokeReason: 'logout' } });
+  await sessions().updateOne({ _id: decoded.sid, userId: String(decoded.id) }, { $set: { revokedAt: new Date(), revokeReason: 'logout' }, $inc: { revision: 1 } });
   await evictSessionCache(decoded.sid, decoded.id);
   disconnectSession(decoded.sid);
 }

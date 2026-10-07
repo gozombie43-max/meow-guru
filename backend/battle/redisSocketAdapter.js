@@ -19,12 +19,13 @@ export async function prepareBattleRedisAdapter() {
       ]);
     } finally { clearTimeout(timer); }
     return {
+      isReady: () => client.isReady,
       adapter: createAdapter(client, {
         streamName: redisKey('socket-stream'),
         channelPrefix: redisKey('socket-channel'),
         sessionKeyPrefix: redisKey('socket-session:'),
       }),
-      close: () => client.destroy(),
+      close: () => { if (client.isOpen) client.destroy(); },
     };
   } catch (error) {
     client.destroy();

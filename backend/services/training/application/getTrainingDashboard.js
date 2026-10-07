@@ -12,10 +12,15 @@ import {
 } from "../../trainingEngine.js";
 import { getDailyMissionBlocks } from "../mission/missionBlocks.js";
 import { logger, hashId } from "../../../infrastructure/logger.js";
-import { readTrainingDashboardCache, writeTrainingDashboardCache } from '../dashboardCache.js';
+import { cachedTrainingDashboard } from '../dashboardCache.js';
 import { featureEnabled } from '../../../infrastructure/featureRollout.js';
+import { createSingleFlight } from '../../../infrastructure/singleFlight.js';
 
-export async function getTrainingDashboardData(userId, exam) {
+const dashboardReads = createSingleFlight();
+export function getTrainingDashboardData(userId, exam) {
+  return dashboardReads(JSON.stringify([String(userId), exam]), () => loadDashboard(userId, exam));
+}
+async function loadDashboard(userId, exam) {
   const start = performance.now();
   const expired = await expiredActiveSessions(userId, exam);
   for (const stale of expired) {
@@ -23,82 +28,80 @@ export async function getTrainingDashboardData(userId, exam) {
     await commitTrainingTransition(stale, finalized);
   }
 
-  const cached = await readTrainingDashboardCache(userId, exam);
-  if (cached?.value) return cached.value;
+  return cachedTrainingDashboard(userId, exam, async () => {
+    const dashboard = await trainingDashboardData(userId, exam);
+    const durablePrimary = dashboard.stateMeta?.version === 1 && dashboard.stateMeta?.status === 'ready';
+    const previous = await history(userId, exam, durablePrimary && featureEnabled('USE_COMPACT_TRAINING_HISTORY', userId));
+    const {
+      active,
+      catalogPairs,
+      mocks,
+      reviewRows,
+      skillRows,
+      stateMeta,
+    } = dashboard;
+    const subjects = [...new Set(catalogPairs.map((item) => item.subject))];
+    const topics = [...new Set(catalogPairs.map((item) => item.topic))];
 
-  const dashboard = await trainingDashboardData(userId, exam);
-  const durablePrimary = dashboard.stateMeta?.version === 1 && dashboard.stateMeta?.status === 'ready';
-  const previous = await history(userId, exam, durablePrimary && featureEnabled('USE_COMPACT_TRAINING_HISTORY', userId));
-  const {
-    active,
-    catalogPairs,
-    mocks,
-    reviewRows,
-    skillRows,
-    stateMeta,
-  } = dashboard;
-  const subjects = [...new Set(catalogPairs.map((item) => item.subject))];
-  const topics = [...new Set(catalogPairs.map((item) => item.topic))];
+    let intelligence = mergeDurableIntelligence(
+      buildIntelligence(previous, Date.now(), stateMeta?.version === 1 && stateMeta?.status === 'ready'),
+      skillRows,
+      reviewRows,
+    );
 
-  let intelligence = mergeDurableIntelligence(
-    buildIntelligence(previous, Date.now(), stateMeta?.version === 1 && stateMeta?.status === 'ready'),
-    skillRows,
-    reviewRows,
-  );
+    intelligence = readinessWithEvidence(intelligence, previous, topics, mocks);
+    const trainedTopics = new Set(intelligence.topics.map((item) => item.topic));
+    const coverageRatio = topics.length
+      ? topics.filter((topic) => trainedTopics.has(topic)).length / topics.length
+      : 0;
+    const recentDays = new Set(
+      previous
+        .filter((session) => Date.now() - new Date(session.completedAt).getTime() <= 7 * 86400000)
+        .map((session) => String(session.completedAt).slice(0, 10)),
+    ).size;
+    const confidenceScore =
+      Math.min(1, intelligence.attempts / 200) * 0.45 +
+      coverageRatio * 0.25 +
+      Math.min(1, mocks.length / 5) * 0.2 +
+      Math.min(1, recentDays / 7) * 0.1;
+    const evidenceConfidence =
+      confidenceScore >= 0.72 ? "high" : confidenceScore >= 0.4 ? "medium" : "low";
 
-  intelligence = readinessWithEvidence(intelligence, previous, topics, mocks);
-  const trainedTopics = new Set(intelligence.topics.map((item) => item.topic));
-  const coverageRatio = topics.length
-    ? topics.filter((topic) => trainedTopics.has(topic)).length / topics.length
-    : 0;
-  const recentDays = new Set(
-    previous
-      .filter((session) => Date.now() - new Date(session.completedAt).getTime() <= 7 * 86400000)
-      .map((session) => String(session.completedAt).slice(0, 10)),
-  ).size;
-  const confidenceScore =
-    Math.min(1, intelligence.attempts / 200) * 0.45 +
-    coverageRatio * 0.25 +
-    Math.min(1, mocks.length / 5) * 0.2 +
-    Math.min(1, recentDays / 7) * 0.1;
-  const evidenceConfidence =
-    confidenceScore >= 0.72 ? "high" : confidenceScore >= 0.4 ? "medium" : "low";
+    const blocks = getDailyMissionBlocks(intelligence);
+    const mission = blocks.map(({ mode, count, label }) => ({ mode, count, label }));
 
-  const blocks = getDailyMissionBlocks(intelligence);
-  const mission = blocks.map(({ mode, count, label }) => ({ mode, count, label }));
+    logger.info({
+      event: "training.dashboard.duration_ms",
+      durationMs: Math.round(performance.now() - start),
+      userId: hashId(userId),
+      exam,
+    }, "Dashboard generated");
 
-  logger.info({
-    event: "training.dashboard.duration_ms",
-    durationMs: Math.round(performance.now() - start),
-    userId: hashId(userId),
-    exam,
-  }, "Dashboard generated");
-
-  const result = {
-    ...intelligence,
-    evidenceConfidence,
-    confidenceScore: Math.round(confidenceScore * 100),
-    active,
-    subjects,
-    catalogTopics: topics,
-    catalog: catalogPairs,
-    mission,
-    history: previous.slice(0, 20).map((s) => ({
-      id: s.id,
-      mode: s.mode,
-      at: s.completedAt,
-      score: s.result.score,
-      maxScore: s.result.maxScore,
-      accuracy: s.result.accuracy,
-      completionReason: s.completionReason || "submitted",
-    })),
-    personalBest: Math.max(
-      0,
-      ...previous
-        .filter((s) => s.mode === "survival")
-        .map((s) => s.result.correct),
-    ),
-  };
-  await writeTrainingDashboardCache(cached?.key, result);
-  return result;
+    const result = {
+      ...intelligence,
+      evidenceConfidence,
+      confidenceScore: Math.round(confidenceScore * 100),
+      active,
+      subjects,
+      catalogTopics: topics,
+      catalog: catalogPairs,
+      mission,
+      history: previous.slice(0, 20).map((s) => ({
+        id: s.id,
+        mode: s.mode,
+        at: s.completedAt,
+        score: s.result.score,
+        maxScore: s.result.maxScore,
+        accuracy: s.result.accuracy,
+        completionReason: s.completionReason || "submitted",
+      })),
+      personalBest: Math.max(
+        0,
+        ...previous
+          .filter((s) => s.mode === "survival")
+          .map((s) => s.result.correct),
+      ),
+    };
+    return result;
+  });
 }

@@ -2,7 +2,7 @@ import { beforeEach, expect, it, vi } from 'vitest';
 
 const state = vi.hoisted(() => ({ revision: 1, shared: new Map() }));
 vi.mock('../../config/redis.js', () => ({
-  getRedisClient: vi.fn(async () => null), redisKey: key => key,
+  getRedisClient: vi.fn(async () => ({ eval: async () => 1 })), redisKey: key => key,
   redisGetJson: vi.fn(async key => state.shared.get(key) ?? null),
   redisSetJson: vi.fn(async (key, value) => { state.shared.set(key, value); }),
 }));

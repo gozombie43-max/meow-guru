@@ -57,6 +57,10 @@ const mockUsersFindOne = vi.fn().mockResolvedValue(null);
 const mockUsersUpdateOne = vi.fn().mockResolvedValue({ acknowledged: true });
 
 vi.mock("../../config/mongodb.js", () => ({
+  withMongoTransaction: work => work({
+    session: { id: 'notification-test-session' },
+    db: { collection: name => ({ updateOne: name === 'notificationReceipts' ? mockReceiptsUpdateOne : name === 'users' ? mockUsersUpdateOne : vi.fn(async () => ({ modifiedCount: 1 })) }) },
+  }),
   getPushDevicesCollection: () => ({
     updateOne: mockUpdateOne,
   }),
@@ -907,7 +911,7 @@ describe("Notifications Routes - Scheduled Management (GET, cancel, retry)", () 
           $set: { readAt: expect.any(Date) },
           $setOnInsert: { createdAt: expect.any(Date) },
         },
-        { upsert: true }
+        { upsert: true, session: { id: 'notification-test-session' } }
       );
     });
 
@@ -937,7 +941,8 @@ describe("Notifications Routes - Scheduled Management (GET, cancel, retry)", () 
           $set: {
             "notificationState.lastReadAllAt": expect.any(Date),
           },
-        }
+        },
+        { session: { id: 'notification-test-session' } }
       );
     });
 

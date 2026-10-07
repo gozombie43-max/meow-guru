@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 
 const state = vi.hoisted(() => ({
-  client: { on: vi.fn(), connect: vi.fn(async () => {}), destroy: vi.fn() },
+  client: { isOpen: true, isReady: true, on: vi.fn(), connect: vi.fn(async () => {}), destroy: vi.fn() },
   createClient: vi.fn(),
   createAdapter: vi.fn(),
 }));
@@ -33,4 +33,7 @@ it('requires Redis and namespaces the recoverable Streams adapter', async () => 
   }));
   prepared.close();
   expect(state.client.destroy).toHaveBeenCalled();
+  state.client.isOpen = false; state.client.isReady = false;
+  prepared.close(); expect(state.client.destroy).toHaveBeenCalledTimes(1);
+  expect(prepared.isReady()).toBe(false);
 });

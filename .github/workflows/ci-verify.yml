@@ -58,7 +58,7 @@ jobs:
     services:
       redis:
         image: redis:7.4-alpine
-        ports: ['6379:6379']
+        ports: ['16379:6379']
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 5s --health-timeout 3s --health-retries 10
@@ -94,11 +94,20 @@ jobs:
         working-directory: ./backend
         run: npm run lint && npm run test:coverage
 
-      - name: Real Redis queue and cache multi-instance recovery
+      - name: Real Redis queue, counters and cache subscriber recovery
         working-directory: ./backend
         env:
-          REDIS_TEST_URL: redis://127.0.0.1:6379
-        run: npm test -- infrastructure/__tests__/redisReliability.integration.test.js
+          REDIS_TEST_URL: redis://127.0.0.1:16379
+        run: npm test -- infrastructure/__tests__/redisReliability.integration.test.js infrastructure/__tests__/redisCorrectness.integration.test.js infrastructure/__tests__/queueAdmission.integration.test.js
+
+      - name: Install disposable Redis fault-test executable
+        run: sudo apt-get update && sudo apt-get install -y redis-server
+
+      - name: Two API outage, restore and worker crash tests (owned local services)
+        working-directory: ./backend
+        env:
+          REDIS_FAULT_TEST_BIN: /usr/bin/redis-server
+        run: npm test -- infrastructure/__tests__/redisOperational.integration.test.js
 
       - name: Authenticated training load smoke (isolated local database)
         working-directory: ./backend

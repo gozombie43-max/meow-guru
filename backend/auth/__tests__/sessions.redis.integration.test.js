@@ -47,7 +47,8 @@ it('uses Redis after local expiry and evicts shared sessions on role change and 
   const find = vi.spyOn(Collection.prototype, 'findOne');
   expect((await assertSession(decoded)).role).toBe('student');
   expect(vi.mocked(redisGetJson).mock.calls.length).toBeGreaterThan(redisReads);
-  expect(find).not.toHaveBeenCalled();
+  // Shared payloads still require durable revocation/current-role validation.
+  expect(find).toHaveBeenCalledWith(expect.objectContaining({ _id: decoded.sid }), expect.any(Object));
   find.mockRestore();
   clock.mockRestore();
 

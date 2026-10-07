@@ -15,9 +15,12 @@ import { getReleaseId } from './infrastructure/releaseInfo.js';
 import { randomUUID } from 'node:crypto';
 import { startCacheInvalidationSubscriber, closeCacheInvalidationSubscriber } from './infrastructure/cacheInvalidation.js';
 import { closeRedisClient } from './config/redis.js';
+import { startOptionalService, stopOptionalServices, optionalServiceReady } from './infrastructure/optionalServices.js';
+import { maintenanceQueueHealth } from './infrastructure/maintenanceQueue.js';
 
 const workerId = randomUUID();
 let stopping = false, ready = false, healthServer, closeRealtime, closeBattleRedisAdapter, heartbeat, stopMetrics, stopOutbox;
+let battleRedisReady = () => true;
 async function shutdown(code = 0) {
   if (stopping) return;
   stopping = true;
@@ -27,6 +30,7 @@ async function shutdown(code = 0) {
   deadline.unref();
   try {
     await stopWorkers();
+    await stopOptionalServices();
     await stopOutbox?.();
     await closeRealtime?.();
     await closeBattleRedisAdapter?.();
@@ -45,16 +49,21 @@ process.once('SIGINT', () => void shutdown());
 process.once('uncaughtException', err => { logger.fatal({ err }, 'worker crash'); void shutdown(1); });
 process.once('unhandledRejection', err => { logger.fatal({ err }, 'worker rejection'); void shutdown(1); });
 try {
-  healthServer = await startWorkerHealthServer('maintenance', () => ready && !stopping);
+  healthServer = await startWorkerHealthServer('maintenance', () => ready && !stopping
+    && (process.env.USE_DURABLE_QUEUE !== 'true' || maintenanceQueueHealth() === 'healthy')
+    && (process.env.QUIZ_ONLY_MODE === 'true' || process.env.BATTLE_REDIS_CRITICAL !== 'true' || optionalServiceReady('battle')));
   const db = await connectMongoDB();
   await assertMigrations(db);
   await startCacheInvalidationSubscriber();
-  const battleAdapter = await prepareBattleRedisAdapter();
-  closeBattleRedisAdapter = battleAdapter?.close;
-  closeRealtime = startWorkerRealtime(battleAdapter?.adapter);
+  await startOptionalService('battle', async () => {
+    const battleAdapter = await prepareBattleRedisAdapter();
+    closeBattleRedisAdapter = battleAdapter?.close;
+    battleRedisReady = battleAdapter?.isReady || (() => true);
+    closeRealtime = startWorkerRealtime(battleAdapter?.adapter);
+  }, { enabled: process.env.QUIZ_ONLY_MODE !== 'true', critical: process.env.BATTLE_REDIS_CRITICAL === 'true', ready: () => battleRedisReady(), cleanup: async () => { await closeRealtime?.(); closeRealtime = undefined; await closeBattleRedisAdapter?.(); closeBattleRedisAdapter = undefined; } });
   stopMetrics = startRuntimeMetrics();
   await startWorkers();
-  stopOutbox = startBattleOutbox();
+  if (optionalServiceReady('battle')) stopOutbox = startBattleOutbox();
   const beat = () => getMongoDB().collection('runtimeHealth').updateOne({ _id: workerId }, { $set: { role: 'maintenance', releaseId: getReleaseId(), updatedAt: new Date(), expiresAt: new Date(Date.now() + 60000) } }, { upsert: true });
   await beat();
   if (!stopping) heartbeat = setInterval(() => void beat().catch(err => logger.error({ err }, 'worker heartbeat failed')), 15000);

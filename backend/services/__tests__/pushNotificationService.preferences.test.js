@@ -14,6 +14,9 @@ vi.mock('../../config/firebase.js', () => ({
 }));
 
 vi.mock('../../config/mongodb.js', () => ({
+  withMongoTransaction: work => work({ session: {}, db: { collection: name => name === 'notificationFeed'
+    ? { insertOne: vi.fn(async () => ({ insertedId: 'feed_1' })) }
+    : { updateOne: vi.fn(async () => ({ modifiedCount: 1 })) } } }),
   getPushDevicesCollection: () => ({
     find: vi.fn(() => ({
       toArray: (...args) => mockDevicesFindToArray(...args),

@@ -3,8 +3,10 @@ import { requestLogging } from './infrastructure/logger.js';
 import { requestTrace } from './infrastructure/tracing.js';
 import { optionalWorkAdmission } from './middleware/overload.js';
 import { metricsHandler } from './infrastructure/metrics.js';
-import { redisHealth } from './config/redis.js';
+import { redisHealth, redisCircuitHealth } from './config/redis.js';
+import { cacheInvalidationHealth } from './infrastructure/cacheInvalidation.js';
 import { maintenanceQueueHealth } from './infrastructure/maintenanceQueue.js';
+import { optionalServiceHealth, optionalServiceReady } from './infrastructure/optionalServices.js';
 import { dependencyHealth } from './infrastructure/dependencyBoundary.js';
 import { checkReadiness } from './infrastructure/readiness.js';
 import { requestBodyLimits } from './middleware/requestBodyLimits.js';
@@ -94,25 +96,32 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   );
 
   const healthCheck = async (_req, res) => {
-    let healthy = isReady() && !isShuttingDown();
-    if (healthy) {
+    let mongoHealthy = isReady() && !isShuttingDown();
+    if (mongoHealthy) {
       try {
         await checkReadiness();
       } catch {
-        healthy = false;
+        mongoHealthy = false;
       }
     }
+    const criticalReady = (quizOnlyMode || process.env.BATTLE_REDIS_CRITICAL !== 'true' || optionalServiceReady('battle'))
+      && (!embeddedWorkersEnabled() || process.env.EMBEDDED_WORKERS_CRITICAL !== 'true' || optionalServiceReady('workers'));
+    const healthy = mongoHealthy && criticalReady;
 
     return res.status(healthy ? 200 : 503).json({
       ok: healthy,
       dependencies: {
-        mongo: healthy ? 'healthy' : 'unavailable',
+        mongo: mongoHealthy ? 'healthy' : 'unavailable',
         redis: redisHealth(),
+        redisCircuit: redisCircuitHealth(),
+        cacheInvalidationSubscriber: cacheInvalidationHealth(),
         maintenanceQueue: maintenanceQueueHealth(),
+        optionalServices: optionalServiceHealth(),
+        battle: quizOnlyMode ? 'disabled' : optionalServiceHealth().battle || 'starting',
         storage: dependencyHealth().storage?.circuit === 'open' ? 'degraded' : 'unknown',
-        workers: quizOnlyMode || !embeddedWorkersEnabled() ? 'disabled' : 'embedded',
+        workers: quizOnlyMode || !embeddedWorkersEnabled() ? 'disabled' : optionalServiceHealth().workers || 'starting',
       },
-      state: isShuttingDown() ? 'draining' : healthy ? 'ready' : 'starting',
+      state: isShuttingDown() ? 'draining' : healthy ? 'ready' : mongoHealthy ? 'degraded' : 'starting',
       service: 'backend',
       releaseId: getReleaseId(),
       environment: ['staging', 'production'].includes(process.env.DEPLOYMENT_ENVIRONMENT)
@@ -176,19 +185,10 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   app.use('/api/admin', lazyRouter(() => import('./routes/adminUsers.routes.js')));
 
   if (!quizOnlyMode) {
-    const [
-      { default: notificationRoutes },
-      { default: examUpdatesRouter },
-      { default: battleRoutes },
-    ] = await Promise.all([
-      import('./routes/notifications.routes.js'),
-      import('./routes/examUpdates.routes.js'),
-      import('./routes/battle.routes.js'),
-    ]);
-
-    app.use('/api/notifications', notificationRoutes);
-    app.use('/api/exam-updates', examUpdatesRouter);
-    app.use('/api/battle', battleRoutes);
+    app.use('/api/notifications', lazyRouter(() => import('./routes/notifications.routes.js')));
+    app.use('/api/exam-updates', lazyRouter(() => import('./routes/examUpdates.routes.js')));
+    app.use('/api/battle', (_req, res, next) => optionalServiceReady('battle') ? next()
+      : res.set('Retry-After', '5').status(503).json({ error: 'Battle service is unavailable' }), lazyRouter(() => import('./routes/battle.routes.js')));
   }
 
   app.use(errorHandler);

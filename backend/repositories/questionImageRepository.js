@@ -2,6 +2,7 @@ import { resolveQuestion } from '../services/questions/questionIdentity.js';
 
 
 import { getQuestionsCollection } from "../config/mongodb.js";
+import { invalidateQuestionMetadata } from '../services/questions/questionMetadataCache.js';
 
 export function mergeQuestionContent(
   existingQuestion,
@@ -63,6 +64,7 @@ export async function patchQuestionImage(
     }
   );
 
+  await invalidateQuestionMetadata();
   return {
     ...doc,
     questionImage,
@@ -137,6 +139,7 @@ export async function patchSolutionImage(
     }
   );
 
+  await invalidateQuestionMetadata();
   return {
     ...doc,
     solutionImage,

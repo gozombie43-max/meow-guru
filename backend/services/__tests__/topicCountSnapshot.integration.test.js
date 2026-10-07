@@ -5,7 +5,7 @@ import { connectMongoDB, disconnectMongoDB } from "../../config/mongodb.js";
 import { fetchTopicCountSnapshot } from "../questions/topicCountSnapshot.js";
 import { fetchQuestionCounts } from "../questions/questionMetadataService.js";
 import { createQuestion, createQuestionsBulk, modifyQuestion, removeQuestion, removeQuestionsBulk } from "../questions/questionWriteService.js";
-import { invalidateQuestionCacheRevision } from "../questions/questionCache.js";
+import { invalidateQuestionCacheRevision, questionCountsCache } from "../questions/questionCache.js";
 
 let server, db;
 const question = (id, quizName, extra = {}) => ({ id, subject: "mathematics", topic: "percentages", quizName, ...extra });
@@ -23,6 +23,18 @@ beforeEach(async () => {
 afterAll(async () => { await disconnectMongoDB(); await server?.stop(); vi.unstubAllEnvs(); });
 
 describe("saved mathematics topic totals", () => {
+  it('rebuilds an ancient same-revision snapshot after an external import', async () => {
+    vi.stubEnv('QUESTIONS_NORMALIZED_KEYS', 'false');
+    await db.collection('questionMetadata').insertOne({
+      _id: 'topic-counts:v2:mathematics:false', revision: 0,
+      data: { revision: 0, totals: { percentages: 99 }, updatedAt: new Date(0).toISOString() },
+    });
+    await db.collection('questions').insertOne(question('external', 'PYQ'));
+    questionCountsCache.clear();
+    const snapshot = await fetchTopicCountSnapshot();
+    expect(snapshot.totals.percentages).toBe(1);
+    expect(new Date(snapshot.generatedAt).getTime()).toBeGreaterThan(Date.now() - 10000);
+  });
   it.each(["true", "false"])("sums the six modes, excludes study mode, and reuses saved data (normalized=%s)", async normalized => {
     vi.stubEnv("QUESTIONS_NORMALIZED_KEYS", normalized);
     await createQuestionsBulk([

@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
-import { ObjectId } from 'mongodb';
+import { ObjectId, Collection } from 'mongodb';
 import express from "express";
 import { once } from "node:events";
 import { connectMongoDB, disconnectMongoDB } from "../../config/mongodb.js";
@@ -10,6 +10,8 @@ import { up as upHardening } from "../../migrations/007-training-hardening.js";
 import router from "../training.js";
 import curationRouter from "../trainingCuration.js";
 import { invalidateTrainingCatalog } from '../../services/training/catalogCache.js';
+import { getTrainingDashboardData } from '../../services/training/application/getTrainingDashboard.js';
+import { clearSharedLocalCaches } from '../../infrastructure/tieredCache.js';
 
 import { up as upPerformance } from '../../migrations/008-training-performance.js';
 import { up as upExamWideCandidates } from '../../migrations/009-training-exam-wide-candidates.js';
@@ -18,7 +20,15 @@ import { backfillTrainingMetadata } from '../../services/training/questionMetada
 import { trainingQuestionPool, trainingExposureData, trainingHistory } from '../../repositories/trainingRepository.js';
 
 let mongo, db, server, base, token;
-afterEach(() => vi.unstubAllEnvs());
+afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); });
+it('coalesces the full dashboard read including expired-session discovery', async () => {
+  clearSharedLocalCaches();
+  const find = vi.spyOn(Collection.prototype, 'find');
+  const results = await Promise.all(Array.from({ length: 100 }, () => getTrainingDashboardData('student', 'ssc-cgl')));
+  expect(results).toHaveLength(100);
+  expect(results.every(result => Array.isArray(result.active))).toBe(true);
+  expect(find.mock.calls.filter(([filter]) => filter.userId === 'student' && filter.deadline?.$lte)).toHaveLength(1);
+});
 async function request(path, method = "GET", body, auth = token) {
   return fetch(`${base}${path}`, {
     method,
@@ -49,6 +59,8 @@ beforeAll(async () => {
   base = `http://127.0.0.1:${server.address().port}`;
 }, 60000);
 beforeEach(async () => {
+  // These fixtures replace source rows directly, bypassing application events.
+  clearSharedLocalCaches();
   invalidateTrainingCatalog();
   // Raw fixture replacement bypasses question writers. Advance the shared
   // revision just as a real importer must, rather than reusing cached ObjectIds.

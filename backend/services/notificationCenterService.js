@@ -1,4 +1,4 @@
-import { invalidateNotificationUnread } from './notificationUnreadCache.js';
+import { commitNotificationMutation } from './notificationUnreadCache.js';
 import {
   getNotificationFeedCollection,
 } from "../config/mongodb.js";
@@ -66,12 +66,8 @@ async function insertNotification({
   }
 
   try {
-    const result =
-      await collection.insertOne(
-        doc
-      );
-
-    await invalidateNotificationUnread(audience === "user" ? userId : null);
+    const result = await commitNotificationMutation(audience === 'user' ? userId : null,
+      (db, session) => db.collection('notificationFeed').insertOne(doc, { session }));
 
     const notification = {
       _id:

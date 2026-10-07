@@ -1,6 +1,7 @@
 import { cachedQuestionPage } from './questionCache.js';
+import { canonicalQuestionQuery } from './questionQueryIdentity.js';
 import { getQuestionsCollection } from "../../config/mongodb.js";
-import { isNormalizedQuestionKeysEnabled, questionsQueryCache, revisionedQuestionCacheKey } from "./questionCache.js";
+import { isNormalizedQuestionKeysEnabled } from "./questionCache.js";
 import { normalizeSearchKey } from "./questionNormalizer.js";
 import { quizQuestionProjection, toQuizQuestionDTO } from './quizQuestionDTO.js';
 import {
@@ -14,15 +15,6 @@ async function buildfetchQuestionsSession(params) {
   const collection = getQuestionsCollection();
   const { topic, subject, mode, limit = 50, cursor: cursorId, letter, exam, concept } = params;
   const useNormalizedKeys = isNormalizedQuestionKeysEnabled();
-  const shouldCache = !cursorId && params.includeTotal !== 'true' && params.includeTotal !== true;
-  const cacheKey = shouldCache
-    ? await revisionedQuestionCacheKey('session:' + JSON.stringify(params))
-    : null;
-  if (cacheKey) {
-    const cached = questionsQueryCache.get(cacheKey);
-    if (cached) return cached;
-  }
-
   const parsedLimit = Math.max(
     1,
     Math.min(200, Math.floor(Number(limit)) || 50),
@@ -148,10 +140,10 @@ async function buildfetchQuestionsSession(params) {
     startIndex,
   };
 
-  if (cacheKey) questionsQueryCache.set(cacheKey, result);
   return result;
 }
 
-export function fetchQuestionsSession(params) {
-  return cachedQuestionPage("fetchQuestionsSession", params, () => buildfetchQuestionsSession(params));
+export async function fetchQuestionsSession(params) {
+  const query = canonicalQuestionQuery('session', params);
+  return cachedQuestionPage("fetchQuestionsSession", query, () => buildfetchQuestionsSession(query));
 }

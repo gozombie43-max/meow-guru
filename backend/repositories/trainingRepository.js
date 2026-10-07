@@ -2,7 +2,7 @@ import { getMongoDB, getQuestionsCollection, withMongoTransaction } from '../con
 import { createHash } from 'node:crypto';
 import { dashboardEvidence } from '../services/training/domain/dashboardEvidence.js';
 import { getQuestionRevision } from '../services/questions/questionCache.js';
-import { invalidateTrainingDashboard } from '../services/training/dashboardCache.js';
+import { invalidateTrainingDashboard, advanceTrainingDashboardRevision } from '../services/training/dashboardCache.js';
 import { normalizeTrainingSubject } from '../services/trainingSubjects.js';
 import { cachedTrainingCatalog } from '../services/training/catalogCache.js';
 import { cachedTrainingPool } from '../services/training/poolCache.js';
@@ -23,6 +23,16 @@ const exposures = () => getMongoDB().collection('trainingQuestionExposure');
 const skills = () => getMongoDB().collection('trainingSkillState');
 const learnerStateMeta = () => getMongoDB().collection('trainingLearnerStateMeta');
 const learnerStateMetaId = (userId, exam) => `${userId}:${exam}`;
+
+async function mutateDashboard(source, mutate) {
+  return withMongoTransaction(async ({ db, session }) => {
+    const write = await mutate(db, session);
+    if (write.modifiedCount || write.insertedId) {
+      await advanceTrainingDashboardRevision(source.userId, source.exam, { db, session });
+    }
+    return write;
+  });
+}
 
 const trainingSubjectFilter = subject => {
   const canonical = normalizeTrainingSubject(subject);
@@ -90,7 +100,7 @@ export const findOwnedSession = (id, userId, completed = false) =>
   sessions().findOne({ id, userId, ...(completed ? { status: 'completed' } : {}) }).then(orderedTrainingSession);
 
 export async function createTrainingSession(session) {
-  const result = await measureTrainingCreate('insert', () => sessions().insertOne(session));
+  const result = await measureTrainingCreate('insert', () => mutateDashboard(session, (db, mongoSession) => db.collection('trainingSessions').insertOne(session, { session: mongoSession })));
   await measureTrainingCreate('invalidation', () => invalidateTrainingDashboard(session.userId, session.exam));
   return result;
 }
@@ -259,10 +269,9 @@ export async function commitTrainingTransition(session, updated) {
   const isCompletion =
     session.status === 'active' && ['completed', 'abandoned'].includes(updated.status);
   if (!isCompletion) {
-    const write = await sessions().updateOne(
-      { _id: session._id, revision: session.revision },
-      update,
-    );
+    const write = await mutateDashboard(session, (db, mongoSession) => db.collection('trainingSessions').updateOne(
+      { _id: session._id, revision: session.revision }, update, { session: mongoSession },
+    ));
     if (write.modifiedCount) await invalidateTrainingDashboard(session.userId, session.exam);
     return write;
   }
@@ -274,6 +283,7 @@ export async function commitTrainingTransition(session, updated) {
       update,
       { session: mongoSession },
     );
+    if (write.modifiedCount) await advanceTrainingDashboardRevision(session.userId, session.exam, { db, session: mongoSession });
     if (write.modifiedCount && updated.status === 'completed') {
       await applyCompletedSessionLearning(db, updated, mongoSession);
       const metaFilter = { _id: learnerStateMetaId(updated.userId, updated.exam) };
@@ -308,29 +318,34 @@ export async function commitTrainingTransition(session, updated) {
 }
 
 export async function saveTrainingDiagnosis(session, diagnosis) {
-  const write = await sessions().updateOne(
+  const write = await mutateDashboard(session, (db, mongoSession) => db.collection('trainingSessions').updateOne(
     { _id: session._id, revision: session.revision },
     { $set: { 'result.diagnosis': diagnosis }, $inc: { revision: 1 } },
-  );
+    { session: mongoSession },
+  ));
   if (write.modifiedCount) await invalidateTrainingDashboard(session.userId, session.exam);
   return write;
 }
 
 export async function saveTrainingMistakes(session) {
-  const write = await sessions().updateOne(
-    { _id: session._id, revision: session.revision },
-    { $set: { answers: session.answers, result: session.result }, $inc: { revision: 1 } },
-  );
-  if (write.modifiedCount) {
-    const changed = session.result.rows.filter(row => row.mistake);
-    if (changed.length) {
-      await reviews().bulkWrite(changed.map(row => ({ updateOne: {
-        filter: { userId: session.userId, exam: session.exam, questionId: row.questionId },
-        update: { $set: { mistake: row.mistake, updatedAt: new Date() } },
-      } })), { ordered: false });
+  const write = await mutateDashboard(session, async (db, mongoSession) => {
+    const result = await db.collection('trainingSessions').updateOne(
+      { _id: session._id, revision: session.revision },
+      { $set: { answers: session.answers, result: session.result }, $inc: { revision: 1 } },
+      { session: mongoSession },
+    );
+    if (result.modifiedCount) {
+      const changed = session.result.rows.filter(row => row.mistake);
+      if (changed.length) {
+        await db.collection('trainingReviewState').bulkWrite(changed.map(row => ({ updateOne: {
+          filter: { userId: session.userId, exam: session.exam, questionId: row.questionId },
+          update: { $set: { mistake: row.mistake, updatedAt: new Date() } },
+        } })), { ordered: false, session: mongoSession });
+      }
     }
-    await invalidateTrainingDashboard(session.userId, session.exam);
-  }
+    return result;
+  });
+  if (write.modifiedCount) await invalidateTrainingDashboard(session.userId, session.exam);
   return write;
 }
 

@@ -127,7 +127,7 @@ export const trainingIngressLimiter = rateLimit({
 // Global Limiter
 export const globalLimiter =
   rateLimit({
-    ...(!isLocalEnvironment() ? { store: new RedisRateLimitStore('global') } : {}),
+    ...(!isLocalEnvironment() ? { store: new RedisRateLimitStore('global', { outagePolicy: 'availability' }) } : {}),
     windowMs:
       15 * 60 * 1000,
 
@@ -238,7 +238,7 @@ export const aiLimiter =
 // cannot exhaust an AI-style bucket.
 export const trainingLimiter =
   rateLimit({
-    ...(!isLocalEnvironment() ? { store: new RedisRateLimitStore('training') } : {}),
+    ...(!isLocalEnvironment() ? { store: new RedisRateLimitStore('training', { outagePolicy: 'availability' }) } : {}),
     windowMs:
       15 * 60 * 1000,
 

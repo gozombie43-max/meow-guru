@@ -1,5 +1,6 @@
 import { resolveQuestion } from '../services/questions/questionIdentity.js';
 import { withMongoTransaction, getQuestionsCollection, getUserTopicProgressCollection } from '../config/mongodb.js';
+import { advanceTopicProgressRevision } from '../services/questions/topicProgressCache.js';
 export const findAnsweredQuestion = (questionId, context = {}) => resolveQuestion(getQuestionsCollection(), questionId, context);
 export const readUserTopicProgress = userId => getUserTopicProgressCollection().find({ userId }).toArray();
 export async function recordQuestionAnswer(userId, questionUid, topic, isCorrect, legacyId) {
@@ -51,6 +52,7 @@ export async function recordQuestionAnswer(userId, questionUid, topic, isCorrect
          },
          { upsert: true, session }
        );
+       await advanceTopicProgressRevision(userId, { db, session });
     }
 
     return {

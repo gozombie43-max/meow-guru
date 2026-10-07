@@ -15,17 +15,20 @@ export class LocalRateLimitStore {
         for (const [id, row] of this.entries) if (row.resetTime.getTime() <= now) this.entries.delete(id);
       }
       if (this.entries.size >= this.maxKeys) return { totalHits: Number.MAX_SAFE_INTEGER, resetTime: new Date(now + this.windowMs) };
-      entry = { totalHits: 0, resetTime: new Date(now + this.windowMs) };
+      entry = { totalHits: 0, resetTime: new Date((Math.floor(now / this.windowMs) + 1) * this.windowMs) };
       this.entries.set(key, entry);
     }
     entry.totalHits++;
-    return { ...entry };
+    return { totalHits: entry.totalHits, resetTime: entry.resetTime };
   }
   observe(key, result) {
     const entry = this.entries.get(key);
     if (entry) {
-      entry.totalHits = Math.max(entry.totalHits, result.totalHits);
-      entry.resetTime = new Date(Math.max(entry.resetTime.getTime(), result.resetTime.getTime()));
+      if (result.resetTime.getTime() < (entry.sharedResetAt ?? 0)) return;
+      entry.totalHits = entry.resetTime.getTime() === result.resetTime.getTime()
+        ? Math.max(entry.totalHits, result.totalHits) : result.totalHits;
+      entry.resetTime = new Date(result.resetTime);
+      entry.sharedResetAt = result.resetTime.getTime();
     }
   }
   decrement(key) { const entry = this.entries.get(key); if (entry) entry.totalHits = Math.max(0, entry.totalHits - 1); }
