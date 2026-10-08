@@ -4,9 +4,9 @@ import { publishCacheInvalidation } from './cacheInvalidation.js';
 import { createTieredCache } from './tieredCache.js';
 import { createSingleFlight } from './singleFlight.js';
 
-export function createDurableProgressCache(prefix, owner, ttlSeconds) {
+export function createDurableProgressCache(prefix, owner, ttlSeconds, { validUntil = () => Infinity } = {}) {
   const scope = (...args) => `${prefix}:v2:${owner(...args)}`;
-  const cache = createTieredCache({ freshMs: ttlSeconds * 1000, staleMs: ttlSeconds * 1000, waitMs: 100 });
+  const cache = createTieredCache({ freshMs: ttlSeconds * 1000, staleMs: ttlSeconds * 1000, waitMs: 100, validUntil });
   const flight = createSingleFlight();
   return {
     advance: (args, options) => advanceCacheCounter(scope(...args), options),

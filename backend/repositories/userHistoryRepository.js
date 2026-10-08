@@ -1,9 +1,28 @@
 import { getMongoDB, withMongoTransaction } from '../config/mongodb.js';
+import { mergeQuizEntry } from '../services/userHistory.js';
 
 const names = { recentQuizzes: 'userQuizHistory', aiChats: 'aiConversations', bookmarkEntries: 'userBookmarks' };
 const keyFor = (field, row) => field === 'aiChats' ? row.id : (field === 'bookmarkEntries' ? row.questionId : row.quizKey);
 const limits = { recentQuizzes: 12, aiChats: 30, bookmarkEntries: 60 };
 export const analyticsFields = ['failureMap', 'masteryMap', 'timePerQuestion'];
+
+// The caller commits the owner revision and concept counters in this transaction.
+export async function persistQuizResume(db, session, owner, body) {
+  if (owner.historyStorageVersion !== 1) {
+    const rows = owner.recentQuizzes || [];
+    const entry = mergeQuizEntry(rows.find(row => row.quizKey === body.quizKey), body);
+    return [entry, ...rows.filter(row => row.quizKey !== body.quizKey)].slice(0, 12);
+  }
+  const history = db.collection('userQuizHistory'), userId = String(owner.id);
+  const filter = { userId, quizKey: body.quizKey };
+  const previous = await history.findOne(filter, { session });
+  const { _id, userId: _owner, ...entry } = mergeQuizEntry(previous, body);
+  await history.replaceOne(filter, { ...entry, userId }, { session, upsert: true });
+  const excluded = await history.find({ userId }, { session, projection: { quizKey: 1 } })
+    .sort({ updatedAt: -1, _id: -1 }).skip(12).toArray();
+  if (excluded.length) await history.deleteMany({ userId, quizKey: { $in: excluded.map(row => row.quizKey) } }, { session });
+  return undefined;
+}
 
 export async function readSeparatedHistory(db, userId, field, session, { summaries = false } = {}) {
   const rows = await db.collection(names[field]).find({ userId: String(userId) }, { session }).sort({ updatedAt: -1, _id: -1 }).limit(limits[field]).toArray();
@@ -19,7 +38,7 @@ async function storeEntry(db, userId, field, entry, session) {
   if (typeof key !== 'string' || !key) throw Object.assign(new Error('History identity is required'), { statusCode: 400 });
   const filter = { userId: String(userId), [field === 'aiChats' ? 'id' : 'quizKey']: key };
   const { messages, ...metadata } = entry;
-  await db.collection(names[field]).replaceOne(filter, { ...metadata, userId: String(userId), ...(field === 'aiChats' ? { messageCount: (messages || []).length } : {}) }, { session, upsert: true });
+  await db.collection(names[field]).replaceOne(filter, { ...metadata, userId: String(userId), ...(field === 'aiChats' ? { messageCount: (messages || []).length, messagePositionVersion: 0 } : {}) }, { session, upsert: true });
   if (field === 'aiChats') {
     const messagesCollection = db.collection('aiMessages');
     await messagesCollection.deleteMany({ userId: String(userId), conversationId: key }, { session });

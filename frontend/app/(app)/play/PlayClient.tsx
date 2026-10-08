@@ -115,9 +115,6 @@ export default function PlayClient({
     dashboard,
     loading,
     error: dashboardError,
-    setDashboard,
-    setLoading,
-    setError: setDashboardError,
   } = useTrainingDashboard(exam);
   const {
     busy,
@@ -172,9 +169,6 @@ export default function PlayClient({
                   router.push(playHref(rawParamsRef.current, tab, nextExam), {
                     scroll: false,
                   });
-                  setDashboard(null);
-                  setLoading(true);
-                  setDashboardError("");
                   setSetupError("");
                 }}
               />

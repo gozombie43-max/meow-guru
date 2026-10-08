@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import useSWR from "swr";
 import { fetchWithRetry } from "@/lib/api/http";
 import { API_BASE } from "@/lib/api-base";
+import { PUBLIC_QUESTION_QUERY } from '@/features/quiz/api/publicQuery';
 
 interface QuestionCountsResponse {
   concept: number;
@@ -35,7 +36,7 @@ const EMPTY_COUNTS: ModeQuestionCounts = {
 };
 
 async function fetchCounts(url: string): Promise<QuestionCountsResponse> {
-  const response = await fetchWithRetry(url);
+  const response = await fetchWithRetry(url, {}, { auth: 'none' });
   if (!response.ok) throw new Error("Failed to fetch question counts");
   return response.json();
 }
@@ -54,6 +55,7 @@ export function useQuestionCounts(params: {
     ? null
     : `${API_BASE}/api/questions/counts?${query.toString()}`;
   const { data, error, isLoading, mutate } = useSWR<QuestionCountsResponse>(url, fetchCounts, {
+    ...PUBLIC_QUESTION_QUERY,
     revalidateOnFocus: false,
     revalidateIfStale: false,
     shouldRetryOnError: false,

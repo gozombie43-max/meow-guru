@@ -1,11 +1,13 @@
 import { storeQuestionImages } from "../middleware/questionImageStorage.js";
 import express from "express";
 import { idempotency } from '../middleware/idempotency.js';
-import { fetchTopicCountSnapshot } from "../services/questions/topicCountSnapshot.js";
+import { fetchPublicTopicCountSnapshot } from "../services/questions/topicCountSnapshot.js";
 import multer from 'multer';
 import questionController from '../controllers/questionController.js';
 import adminAuth from "../middleware/auth.js";
 import { protect } from "../middleware/protect.js";
+import { quizAnswerCommandSchema } from '@meow/contracts/progress';
+import { submitQuizAnswer } from '../services/quizAnswerService.js';
 
 const router = express.Router();
 const upload = multer({
@@ -37,7 +39,7 @@ router.post('/bulk-delete', adminAuth, questionController.bulkDeleteQuestions);
 router.post('/check-duplicates', adminAuth, questionController.checkDuplicates);
 router.get('/topic-counts', async (req, res) => {
   try {
-    const snapshot = await fetchTopicCountSnapshot(req.query.subject);
+    const snapshot = await fetchPublicTopicCountSnapshot(req.query.subject);
     res.set('Cache-Control', 'no-cache');
     res.set('Vercel-CDN-Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     res.json(snapshot);
@@ -51,6 +53,19 @@ router.post('/analyze', adminAuth, questionController.runAnalysis);
 router.get("/image", questionController.getImageQuestions);
 router.get('/session', questionController.getQuestionsSession);
 router.get('/meta', questionController.getQuestionsMeta);
+router.post('/answer', protect, async (req, res) => {
+  const parsed = quizAnswerCommandSchema.safeParse(req.body);
+  if (!parsed.success || req.get('Idempotency-Key') !== parsed.data.submissionId) {
+    return res.status(400).json({ error: 'Valid quiz answer and matching Idempotency-Key required' });
+  }
+  try {
+    const result = await submitQuizAnswer(req.user.id, parsed.data);
+    if (result.replayed) res.set('Idempotency-Replayed', 'true');
+    return res.json(result.response);
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
+  }
+});
 
 // ── Generic routes ──────────────────────────────────────
 

@@ -25,7 +25,7 @@ vi.mock('../../config/mongodb.js', () => ({
   getLeaderboardsCollection: () => ({}),
 }));
 
-import { gradeAttempt, uploadFullPaper } from '../mockTestEngine.js';
+import { buildPaper, gradeAttempt, uploadFullPaper } from '../mockTestEngine.js';
 
 /**
  * gradeAttempt() expects an attemptDoc with:
@@ -251,5 +251,24 @@ describe('uploadFullPaper', () => {
       },
       { upsert: true }
     );
+  });
+});
+
+describe('paper builder slot reuse', () => {
+  const slot = { id: 'loaded', examSlug: 'ssc-cgl', configKey: 'ssc-cgl-tier1', fixedQuestions: [
+    { id: 'q1', sectionKey: 'quant', question: 'Two plus two?', options: ['3', '4'], correctAnswer: 1, solution: 'secret' },
+  ] };
+  it('uses an already loaded slot and preserves answer stripping', async () => {
+    mockSlotFindOne.mockClear();
+    const result = await buildPaper({ examSlug: 'ssc-cgl', testId: 'loaded', slot });
+    expect(mockSlotFindOne).not.toHaveBeenCalled();
+    expect(result.answerKey.q1).toBe(1);
+    expect(result.clientPaper.sections.flatMap(section => section.questions)[0].correctAnswer).toBeUndefined();
+  });
+  it('still loads the slot for standalone callers', async () => {
+    mockSlotFindOne.mockClear();
+    mockSlotFindOne.mockResolvedValueOnce(slot);
+    await buildPaper({ examSlug: 'ssc-cgl', testId: 'loaded' });
+    expect(mockSlotFindOne).toHaveBeenCalledOnce();
   });
 });

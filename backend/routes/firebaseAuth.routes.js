@@ -3,6 +3,12 @@ import { protect } from '../middleware/protect.js';
 
 const router = express.Router();
 
+// Revalidate Meow authorization without minting a new Firebase credential.
+router.post('/session', protect, (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({ uid: String(req.user.id), projectId: process.env.FIREBASE_PROJECT_ID });
+});
+
 // The enclosing /auth router applies the existing authentication rate limiter.
 router.post('/token', protect, async (req, res) => {
   res.set('Cache-Control', 'no-store');

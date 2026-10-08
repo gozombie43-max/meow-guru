@@ -57,6 +57,19 @@ afterAll(async () => {
 });
 
 describe('mock test HTTP and MongoDB contract', () => {
+  it('reads the fixed slot once when starting an attempt', async () => {
+    const original = Collection.prototype.findOne;
+    const reads = [];
+    const spy = vi.spyOn(Collection.prototype, 'findOne').mockImplementation(function (...args) {
+      if (this.collectionName === 'mockSlots') reads.push(args[0]);
+      return original.apply(this, args);
+    });
+    try {
+      const attempt = await start();
+      expect(attempt.paper.sections.flatMap(section => section.questions)).toHaveLength(4);
+      expect(reads).toEqual([{ id: 'audit-test', examSlug: 'ssc-cgl' }]);
+    } finally { spy.mockRestore(); }
+  });
   it('advances the shared question revision after publishing a practice paper', async () => {
     const before = (await db.collection('questionMetadata').findOne({ _id: 'revision' }))?.revision ?? 0;
     const uploaded = await uploadFullPaper({

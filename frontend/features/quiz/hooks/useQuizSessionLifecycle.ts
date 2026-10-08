@@ -10,6 +10,9 @@ import { useQuizAnswerLifecycle } from "./useQuizAnswerLifecycle";
 import { initialQuizSession, quizSessionReducer } from "../model/sessionReducer";
 import useSWR from 'swr';
 import api from '@/shared/api/client';
+import { createResumeSaver } from '../model/resumeDelta';
+import { authSessionIdentity } from '@/lib/auth-session-identity';
+import type { RecentQuizPayload } from '@/lib/userApi';
 
 export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, routeBase, resumeRequested,
   jumpIdRaw, filters, closePalette }: {
@@ -31,7 +34,7 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   const storageKey = `${subjectConfig.subjectId}_quiz_resume_${slug}_${mode}`;
   const { resumeData, setResumeData, loadResume, clearResume } = useQuizResume(storageKey);
 
-  const { user, token, refreshUser } = useAuth();
+  const { user, token, refreshUser, loading: authLoading } = useAuth();
   const quizKey = `${subjectConfig.subjectId}:${slug}`;
   const quizHref = `${routeBase ?? `/${subjectConfig.subjectId}/${slug}`}/quiz`;
   const resumeSummary = useMemo(() => {
@@ -55,7 +58,6 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   useEffect(() => {
     if (started && !showAnalytics && hasMore && currentIndex >= questions.length - 3) void fetchMore();
   }, [started, showAnalytics, hasMore, currentIndex, questions.length, fetchMore]);
-  const answers = useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch });
   const initialization = state.restored;
   const anchorIndex = resumeEntry?.questionAnchor ? questions.findIndex(question => question.sessionAnchor === resumeEntry.questionAnchor) : -1;
   const savedIndex = anchorIndex >= 0 ? anchorIndex : resumeEntry?.currentIndex ?? 0;
@@ -87,7 +89,18 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     concept: Array.from(selectedClassificationConcepts).join(',') || undefined,
     letter: Array.from(filters.selectedLetters ?? []).join(',') || undefined,
   }), [examFilter, selectedClassificationConcepts, filters.selectedLetters]);
+  const identity = authSessionIdentity(token);
+  const saver = useMemo(() => createResumeSaver(identity, `${quizKey}:${mode}`), [identity, quizKey, mode]);
+  const snapshot = useCallback((next: typeof state): RecentQuizPayload => ({
+    quizKey, title, subject: subjectConfig.subjectId, slug, href: quizHref, mode,
+    currentIndex: next.currentIndex, questionAnchor: questions[next.currentIndex]?.sessionAnchor,
+    sessionFilters, totalQuestions: questions.length, selectedAnswers: next.selectedAnswers,
+    submittedQuestions: [...next.submittedQuestions], results: next.results,
+    status: next.phase === 'completed' ? 'completed' : 'in-progress',
+  }), [quizKey, title, subjectConfig.subjectId, slug, quizHref, mode, questions, sessionFilters]);
+  const answers = useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch, persistAnswer: saver.answer, snapshot });
   useQuizSync({
+    saver,
     token,
     started,
     showAnalytics,
@@ -113,12 +126,14 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   });
 
   function handleStart() {
+    if (authLoading) return;
     if (loadResume()) return;
     dispatch({ type: 'START' });
     startTimer();
   }
 
   function handleResume() {
+    if (authLoading) return;
     if (resumeData) {
       filters.setResumeWindow?.({ index: resumeData.currentIndex, anchor: resumeData.questionAnchor,
         filters: { exam: resumeData.examFilter, concept: resumeData.selectedClassificationConcepts?.join(',') } });
@@ -136,6 +151,7 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   }
 
   function handleRestartFromPopup() {
+    if (authLoading) return;
     filters.setResumeWindow?.({ index: 0 });
     clearResume();
     dispatch({ type: 'START' });

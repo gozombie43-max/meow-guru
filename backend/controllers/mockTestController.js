@@ -175,7 +175,7 @@ export const startMockTest = async (req, res) => {
       if (previous) return res.json(presentAttempt(previous));
     }
 
-    const { clientPaper, answerKey } = await buildPaper({ examSlug, testId });
+    const { clientPaper, answerKey } = await buildPaper({ examSlug, testId, slot });
     validateAssessment(slot, clientPaper, answerKey);
     if (slot.assessmentMode === 'confidential') clientPaper.compositeTimer = true;
     clientPaper.sections = clientPaper.sections.filter(section => section.questions.length > 0);

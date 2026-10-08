@@ -66,12 +66,16 @@ export async function createTrainingSessionCommand(userId, config, now) {
   const preparationStart = performance.now();
   
   const poolStart = performance.now();
-  const docs = await measureTrainingCreate('pool', () => trainingQuestionPool(
-    config,
-    intelligence.due.map((r) => r.questionId),
-    recentIds,
-    intelligence.topics.slice(0, 6).map((item) => item.topic),
-  ));
+  const [docs, dueDocs] = await Promise.all([
+    measureTrainingCreate('pool', () => trainingQuestionPool(
+      config,
+      intelligence.due.map((r) => r.questionId),
+      recentIds,
+      intelligence.topics.slice(0, 6).map((item) => item.topic),
+    )),
+    measureTrainingCreate('due', () => config.mode === 'mission'
+      ? dueTrainingQuestions(config.exam, intelligence.due.map(r => r.questionId)) : []),
+  ]);
   
   const asCandidate = doc => doc.trainingCandidate ? { ...doc.trainingCandidate, _trainingDocumentId: doc._id, _trainingFingerprint: JSON.stringify(doc.trainingCandidate) } : normalizeQuestion(doc);
   const pool = [
@@ -83,8 +87,6 @@ export async function createTrainingSessionCommand(userId, config, now) {
     ).values(),
   ];
   
-  const dueDocs = await measureTrainingCreate('due', () => config.mode === 'mission'
-    ? dueTrainingQuestions(config.exam, intelligence.due.map(r => r.questionId)) : []);
   const duePool = dueDocs.map(asCandidate).filter(Boolean);
   const exposureRows = await measureTrainingCreate('exposure', () => trainingExposureData(userId, config.exam, [...new Set([...pool, ...duePool].map(q => q.id))]));
 

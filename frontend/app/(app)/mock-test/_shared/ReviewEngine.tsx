@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ArrowLeft,CheckCircle2,ChevronLeft,ChevronRight,XCircle } from 'lucide-react';
 import QuestionImage from '@/components/QuestionImage';
 import { useRouter } from 'next/navigation';
-import { useEffect,useMemo,useState } from 'react';
+import { useEffect,useRef,useMemo,useState } from 'react';
 import {
 getAttempt,
 type MockAnswer,
@@ -37,10 +37,17 @@ const EMPTY_ANSWERS: Record<string, MockAnswer> = {};
 
 export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngineProps) {
   const router = useRouter();
-  const { token } = useAuth();
+  const { token, user, loading: authLoading } = useAuth();
+  const owner = user?.id;
+  const ready = !authLoading && !!token && !!owner;
+  const tokenRef = useRef(token);
+  useEffect(() => { tokenRef.current = token; }, [token]);
 
   const [attempt, setAttempt] = useState<MockAttempt | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [pending, setLoading] = useState(true);
+  const [loadedScope, setLoadedScope] = useState('');
+  const scope = `${owner}:${attemptId}`;
+  const loading = !ready || pending || loadedScope !== scope;
   const [error, setError] = useState<string | null>(null);
 
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -48,19 +55,26 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
   const [filter, setFilter] = useState<FilterType>('all');
 
   useEffect(() => {
-    if (!token) return;
-    getAttempt(attemptId, token)
+    if (!ready) return;
+    const controller = new AbortController();
+    getAttempt(attemptId, tokenRef.current!, controller.signal)
       .then((res) => {
-        if (res.assessmentMode === 'confidential') { setError('Answer review is disabled for this confidential assessment.'); setLoading(false); return; }
+        if (controller.signal.aborted) return;
+        if (res.assessmentMode === 'confidential') { setError('Answer review is disabled for this confidential assessment.'); setLoadedScope(scope); setLoading(false); return; }
+        setError(null);
         setAttempt(res);
+        setLoadedScope(scope);
         setLoading(false);
       })
       .catch((err) => {
+        if (controller.signal.aborted) return;
         console.error('Failed to load review:', err);
         setError('Failed to load attempt details.');
+        setLoadedScope(scope);
         setLoading(false);
       });
-  }, [attemptId, token]);
+    return () => controller.abort();
+  }, [attemptId, owner, ready, scope]);
 
   const sections = attempt?.paper?.sections ?? EMPTY_SECTIONS;
   const currentSection = sections[currentSectionIndex];

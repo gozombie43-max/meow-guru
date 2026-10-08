@@ -1,6 +1,8 @@
 import 'fake-indexeddb/auto';
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { StrictMode } from 'react';
+import { seedStartResponse } from '@/lib/start-response-cache';
 import type { TrainingSession } from '../../training-types';
 import { clearPendingTrainingAction, readPendingTrainingAction, readTrainingSnapshot, savePendingTrainingAction, saveTrainingSnapshot } from '../offlineTraining';
 
@@ -9,6 +11,21 @@ vi.mock('@/shared/api/client', () => ({ default: { get: mocks.get, post: mocks.p
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ user: { id: 'offline-user' } }) }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace }) }));
 import { useTrainingSession } from './useTrainingSession';
+
+it('cancels a superseded session GET and ignores its late response', async () => {
+  let release!: (value: { data: TrainingSession }) => void;
+  mocks.get.mockReturnValueOnce(new Promise(resolve => { release = resolve; }));
+  const hook = renderHook(({ sessionId }) => useTrainingSession(sessionId), { initialProps: { sessionId: id } });
+  await waitFor(() => expect(mocks.get).toHaveBeenCalledTimes(1));
+  const signal = mocks.get.mock.calls[0][1].signal as AbortSignal;
+  const next = { ...saved, id: crypto.randomUUID() };
+  mocks.get.mockResolvedValue({ data: next });
+  hook.rerender({ sessionId: next.id });
+  await waitFor(() => expect(hook.result.current.session?.id).toBe(next.id));
+  expect(signal.aborted).toBe(true);
+  await act(async () => release({ data: saved }));
+  expect(hook.result.current.session?.id).toBe(next.id);
+});
 
 let id: string;
 let saved: TrainingSession;
@@ -22,7 +39,8 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllEnvs(); });
 
-it('replays the saved idempotency key before reading authoritative state', async () => {
+it('replays the saved idempotency key before reading authoritative state, even with a create handoff', async () => {
+  seedStartResponse('training', 'offline-user', id, saved);
   await savePendingTrainingAction('offline-user', id, pending());
   mocks.post.mockResolvedValue({ data: {} });
   mocks.get.mockImplementation(async () => {
@@ -79,4 +97,30 @@ it('keeps ambiguous outcomes pending and saves offline answers without grading t
   expect((await readPendingTrainingAction('offline-user', id))?.key).toBe(action?.key);
   expect(hook.result.current.session?.revision).toBe(2);
   await clearPendingTrainingAction('offline-user', id, action!.key);
+});
+
+it('hydrates a new session without GET, preserves time sync, and reloads authoritatively', async () => {
+  const receivedAt = Date.now() - 5000;
+  const now = vi.spyOn(Date, 'now').mockReturnValue(receivedAt);
+  seedStartResponse('training', 'offline-user', id, saved);
+  now.mockReturnValue(receivedAt + 5000);
+  mocks.get.mockResolvedValue({ data: { ...saved, revision: 3 } });
+  const hook = renderHook(() => useTrainingSession(id), { wrapper: StrictMode });
+  await waitFor(() => expect(hook.result.current.session?.revision).toBe(2));
+  expect(mocks.get).not.toHaveBeenCalled();
+  expect(hook.result.current.timeSync.receivedAt).toBe(receivedAt);
+  await act(async () => hook.result.current.reload());
+  expect(mocks.get).toHaveBeenCalledOnce();
+  expect(hook.result.current.session?.revision).toBe(3);
+});
+
+it('fetches on revisit after the creation handoff has been consumed', async () => {
+  seedStartResponse('training', 'offline-user', id, saved);
+  mocks.get.mockResolvedValue({ data: { ...saved, revision: 3 } });
+  const initial = renderHook(() => useTrainingSession(id));
+  await waitFor(() => expect(initial.result.current.session?.revision).toBe(2));
+  initial.unmount();
+  const revisit = renderHook(() => useTrainingSession(id));
+  await waitFor(() => expect(revisit.result.current.session?.revision).toBe(3));
+  expect(mocks.get).toHaveBeenCalledOnce();
 });

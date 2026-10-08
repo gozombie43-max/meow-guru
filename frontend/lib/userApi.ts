@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import type { progressPatchSchema } from '@meow/contracts/progress';
+import type { progressPatchSchema, quizAnswerCommandSchema } from '@meow/contracts/progress';
 import type { questionAnswerRequestSchema } from '@meow/contracts/questions';
 import api from '@/shared/api/client';
 import { announceFeedback } from './feedback';
@@ -51,9 +51,16 @@ export const toggleBookmark = (
     return response;
   });
 
-export const saveRecentQuiz = (token: string, payload: RecentQuizPayload) =>
+export const saveRecentQuiz = (token: string, payload: RecentQuizPayload, signal?: AbortSignal) =>
   api.patch('/users/me/recent-quizzes', payload, {
     headers: { Authorization: `Bearer ${token}` },
+    signal,
+  });
+
+export type QuizAnswerCommand = z.input<typeof quizAnswerCommandSchema>;
+export const submitQuizAnswer = (command: QuizAnswerCommand, signal?: AbortSignal) =>
+  api.post('/api/questions/answer', command, {
+    headers: { 'Idempotency-Key': command.submissionId }, signal,
   });
 
 export interface NotificationPreferences {

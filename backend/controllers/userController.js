@@ -10,7 +10,8 @@ import {
   mutateUserList,
   findQuestionForBookmark,
 } from '../repositories/userRepository.js';
-import { profileProjection, chatSummary, appendChatMessages, mergeQuizEntry } from '../services/userHistory.js';
+import { profileProjection, mergeQuizEntry } from '../services/userHistory.js';
+import { listAiChatSummaries, readAiChat, appendAiChatMessages, writeAiChat } from '../repositories/aiChatRepository.js';
 import {
   computeNextDailyReminder,
   isValidTimezone,
@@ -212,29 +213,18 @@ export const updateUsage = async (req, res) => {
 
 export const getAiChats = async (req, res) => {
   try {
-    const user = await getUser(req.user.id, { aiChats: 1 });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    const aiChats = Array.isArray(user.aiChats) ? user.aiChats : [];
-    const safeChats = aiChats
-      .filter((chat) => chat && chat.id && Array.isArray(chat.messages))
-      .sort((a, b) => (Date.parse(b.updatedAt || '') || 0) - (Date.parse(a.updatedAt || '') || 0))
-      .slice(0, 30);
-
-    res.json({ aiChats: safeChats.map(chatSummary) });
+    res.json({ aiChats: await listAiChatSummaries(req.user.id) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message });
   }
 };
 
 export const getAiChat = async (req, res) => {
   try {
-    const user = await getUser(req.user.id, { aiChats: 1 });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    const chat = user.aiChats?.find(entry => entry.id === req.params.chatId);
+    const chat = await readAiChat(req.user.id, req.params.chatId);
     if (!chat) return res.status(404).json({ error: 'Chat not found' });
     return res.json({ aiChat: { ...chat, revision: chat.revision ?? chat.messages.length } });
-  } catch (error) { return res.status(500).json({ error: error.message }); }
+  } catch (error) { return res.status(error.statusCode || 500).json({ error: error.message }); }
 };
 
 const appendMessagesSchema = z.object({
@@ -247,13 +237,7 @@ export const appendAiMessages = async (req, res) => {
   const parsed = appendMessagesSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid chat messages' });
   try {
-    let revision;
-    const chats = await mutateUserList(req.user.id, 'aiChats', entries => {
-      const result = appendChatMessages(entries, req.params.chatId, parsed.data);
-      revision = result.revision;
-      return result.chats;
-    });
-    if (!chats) return res.status(404).json({ error: 'User not found' });
+    const revision = await appendAiChatMessages(req.user.id, req.params.chatId, parsed.data);
     return res.json({ saved: true, revision });
   } catch (error) { return res.status(error.statusCode || 500).json({ error: error.message }); }
 };
@@ -278,19 +262,15 @@ export const updateAiChat = async (req, res) => {
   }
 
   try {
-    const user = await getUser(req.user.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
     const updatedAt = new Date().toISOString();
     const safeTitle = typeof title === 'string' && title.trim() ? title.trim().slice(0, 80) : 'New chat';
 
     const entry = { id: String(chatId), title: safeTitle, messages: safeMessages, revision: safeMessages.length, updatedAt };
 
-    await mutateUserList(user.id, 'aiChats', chats =>
-      [entry, ...chats.filter(chat => chat && chat.id && chat.id !== entry.id && Array.isArray(chat.messages))].slice(0, 30));
+    await writeAiChat(req.user.id, chatId, entry);
     res.json({ saved: true, revision: safeMessages.length });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message });
   }
 };
 
@@ -299,13 +279,10 @@ export const deleteAiChat = async (req, res) => {
   if (!chatId) return res.status(400).json({ error: 'chatId is required' });
 
   try {
-    const user = await getUser(req.user.id, { aiChats: 1 });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    await mutateUserList(req.user.id, 'aiChats', chats => chats.filter(chat => chat && chat.id !== chatId).slice(0, 30));
+    await writeAiChat(req.user.id, chatId);
     res.json({ saved: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || 500).json({ error: err.message });
   }
 };
 

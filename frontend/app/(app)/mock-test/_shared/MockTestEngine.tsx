@@ -6,6 +6,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 import QuestionImage from '@/components/QuestionImage';
 import MockCountdown from './MockCountdown';
 import { createCoalescedSave } from '@/lib/coalesced-save';
+import { abortError } from '@/shared/api/policy';
 import BackButton from "@/components/BackButton";
 import { useQuizLeaveGuard } from "@/hooks/useAppNavigation";
 import { useRouter,useSearchParams } from 'next/navigation';
@@ -23,6 +24,9 @@ type MockSection,
 type QuestionStatus,
 type AttemptProgress,
 } from './api';
+import { readStartResponse, clearStartResponse } from '@/lib/start-response-cache';
+import { getMockStartKey, mockStartStorageKey } from './startKey';
+import type { MockAttempt } from './api';
 import styles from './MockTestEngine.module.css';
 // import { getExamConfig, getSlotById } from './exam-config';
 
@@ -33,9 +37,19 @@ function normalizeOption(option: string | MockOption, index: number): MockOption
 export default function MockTestEngine({ examSlug, testId }: { examSlug: string; testId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { token } = useAuth();
+  const { token, user, loading: authLoading } = useAuth();
+  const userId = user?.id;
+  const ready = !authLoading && !!token && !!userId;
+  const tokenRef = useRef(token);
+  useEffect(() => { tokenRef.current = token; }, [token]);
+  const saveScope = `${userId}:${examSlug}:${testId}`;
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const resumeAttemptId = searchParams?.get('resume');
+  const scope = `${saveScope}:${resumeAttemptId ?? "start"}`;
+  const resourceRef = useRef(scope);
+  useEffect(() => { resourceRef.current = scope; }, [scope]);
+  const loadController = useRef<AbortController | null>(null);
+  const [loadedScope, setLoadedScope] = useState('');
 
   const [paper, setPaper] = useState<MockPaper | null>(null);
   const [attemptId, setAttemptId] = useState<string>(resumeAttemptId || '');
@@ -63,48 +77,54 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const [confidential, setConfidential] = useState(false);
 
 
-  const writeProgress = useCallback(async (progress: Omit<AttemptProgress, 'revision'>) => {
+  const writeProgress = useCallback(async (progress: Omit<AttemptProgress, 'revision'>, expectedScope: string) => {
+    if (resourceRef.current !== expectedScope) throw abortError();
     if (conflictRef.current) throw new Error('Reload this attempt to resolve the save conflict.');
     const baseRevision = saveRevisionRef.current;
     setSaveStatus('Saving…');
     try {
-      const result = await autosaveAttempt(attemptIdRef.current, { ...progress, baseRevision, revision: baseRevision + 1 }, token!);
+      const result = await autosaveAttempt(attemptIdRef.current, { ...progress, baseRevision, revision: baseRevision + 1 }, tokenRef.current!);
+      if (resourceRef.current !== expectedScope) return;
       saveRevisionRef.current = result.revision ?? baseRevision + 1;
       setSaveStatus('Progress saved');
     } catch (error) {
+      if (resourceRef.current !== expectedScope) throw error;
       if (error instanceof Error && 'conflict' in error && error.conflict) { conflictRef.current = true; setHasConflict(true); }
       setSaveStatus(error instanceof Error ? error.message : 'Progress could not be saved.');
       throw error;
     }
-  }, [token]);
-  const saverRef = useRef<{ token: string | null; value: ReturnType<typeof createCoalescedSave<Omit<AttemptProgress, 'revision'>>> } | null>(null);
+  }, []);
+  const saverRef = useRef<{ scope: string; value: ReturnType<typeof createCoalescedSave<Omit<AttemptProgress, 'revision'>>> } | null>(null);
   const getSaver = useCallback(() => {
-    if (!saverRef.current || saverRef.current.token !== token) {
-      saverRef.current = { token, value: createCoalescedSave(writeProgress,
+    if (!saverRef.current || saverRef.current.scope !== scope) {
+      saverRef.current = { scope, value: createCoalescedSave(progress => writeProgress(progress, scope),
         (a, b) => a.answers === b.answers && a.questionStatuses === b.questionStatuses
           && a.currentSection === b.currentSection && a.currentQuestion === b.currentQuestion) };
     }
     return saverRef.current.value;
-  }, [token, writeProgress]);
+  }, [scope, writeProgress]);
   const saveProgress = useCallback((progress: Omit<AttemptProgress, 'revision'>) => getSaver().save(progress), [getSaver]);
 
-  const loadData = useCallback(async () => {
-    if (!token) return;
+  const loadData = useCallback(async (signal?: AbortSignal) => {
+    const currentToken = tokenRef.current;
+    if (!ready || !currentToken) return;
     try {
       setLoadError(null);
       let data;
+      const created = resumeAttemptId ? readStartResponse<MockAttempt>(`mock:${examSlug}:${testId}`, userId, resumeAttemptId) : undefined;
       if (resumeAttemptId) {
-        data = await getAttempt(resumeAttemptId, token);
+        data = created ? await Promise.resolve(created.data) : await getAttempt(resumeAttemptId, currentToken, signal);
       } else {
-        const storageKey = `mock-start:${examSlug}:${testId}`;
-        let startKey = sessionStorage.getItem(storageKey);
-        if (!startKey) { startKey = crypto.randomUUID(); sessionStorage.setItem(storageKey, startKey); }
-        data = await startTest(examSlug, testId, token, startKey);
+        const startKey = getMockStartKey(userId, examSlug, testId);
+        data = await startTest(examSlug, testId, currentToken, startKey);
+        if (signal?.aborted) return;
         attemptIdRef.current = data.attemptId;
         setAttemptId(data.attemptId);
       }
+      if (signal?.aborted) return;
+      if (resumeAttemptId) { attemptIdRef.current = resumeAttemptId; setAttemptId(resumeAttemptId); }
       if (data.status === 'completed') {
-        sessionStorage.removeItem(`mock-start:${examSlug}:${testId}`);
+        sessionStorage.removeItem(mockStartStorageKey(userId, examSlug, testId));
         router.replace(`/mock-test/${examSlug}/${testId}/result/${data.id || data.attemptId}`);
         return;
       }
@@ -112,8 +132,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       setConfidential(data.assessmentMode === 'confidential');
       if (!nextPaper?.sections?.length) throw new Error('Attempt did not include a valid paper');
       setPaper(nextPaper);
+      setLoadedScope(scope);
       const remaining = data.timeLeft ?? (nextPaper.totalDurationMin ?? 60) * 60;
-      setDeadline(Date.now() + remaining * 1000);
+      setDeadline((created?.receivedAt ?? Date.now()) + remaining * 1000);
       const loadedAnswers = data.answers ?? {};
       const loadedStatuses = data.questionStatuses ?? {};
       getSaver().seed({ answers: loadedAnswers, questionStatuses: loadedStatuses,
@@ -126,34 +147,39 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       conflictRef.current = false;
       setHasConflict(false);
       autoSubmitAttemptedRef.current = false;
+      if (resumeAttemptId) clearStartResponse(`mock:${examSlug}:${testId}`, userId, resumeAttemptId);
     } catch (e) {
+      if (signal?.aborted) return;
       console.error('Failed to load test', e);
       setLoadError(e instanceof Error ? e.message : 'Failed to load test');
     }
-  }, [examSlug, testId, token, resumeAttemptId, router, getSaver]);
+  }, [examSlug, testId, userId, ready, resumeAttemptId, router, getSaver, scope]);
 
 
   useEffect(() => {
+    const controller = new AbortController();
+    loadController.current = controller;
     // Fetching the attempt is the external synchronization boundary for this screen.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the route-bound attempt must load immediately for timer and recovery correctness.
-    void loadData();
+    void loadData(controller.signal);
+    return () => controller.abort();
   }, [loadData]);
 
   const saveLatestProgress = useEffectEvent(() => {
-    if (!attemptId || !token || isSubmitting) return;
+    if (!attemptId || !token || isSubmitting || loadedScope !== scope) return;
     void saveProgress({ answers, questionStatuses, currentSection, currentQuestion }).catch(console.error);
   });
 
   // Keep a stable interval while reading the latest committed answers.
   useEffect(() => {
-    if (!attemptId || !token) return;
+    if (!attemptId || !ready) return;
     autosaveTimerRef.current = setInterval(() => {
       saveLatestProgress();
     }, 20000);
     return () => {
       if (autosaveTimerRef.current) clearInterval(autosaveTimerRef.current);
     };
-  }, [attemptId, token]);
+  }, [attemptId, ready]);
 
   // visibilitychange
   useEffect(() => {
@@ -183,7 +209,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         if (!(error instanceof Error && 'submissionAllowed' in error && error.submissionAllowed)) throw error;
       }
       await submitAttempt(attemptId, token);
-      sessionStorage.removeItem(`mock-start:${examSlug}:${testId}`);
+      sessionStorage.removeItem(mockStartStorageKey(userId, examSlug, testId));
       router.replace(`/mock-test/${examSlug}/${testId}/result/${attemptId}`);
     } catch (error) {
       console.error(error);
@@ -200,6 +226,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     questionStatuses,
     router,
     testId,
+    userId,
     token,
     saveProgress,
   ]);
@@ -295,9 +322,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     }
   };
 
-  if (loadError) return <div className={styles.container}><p role="alert">{loadError}</p><button data-ui-button="state" onClick={() => void loadData()}>Retry loading test</button></div>;
+  if (loadError) return <div className={styles.container}><p role="alert">{loadError}</p><button data-ui-button="state" onClick={() => void loadData(loadController.current?.signal)}>Retry loading test</button></div>;
 
-  if (!paper) return (
+  if (!paper || loadedScope !== scope || !ready) return (
     <div className={styles.container} style={{justifyContent: 'center', alignItems: 'center', padding: 20, textAlign: 'center'}}>
       <h1 style={{ fontSize: '24px', color: '#64748b', margin: '0 0 12px 0' }}>Setting up your mock test environment...</h1>
       <p style={{ fontSize: '16px', color: '#94a3b8', margin: 0, maxWidth: 400 }}>Please wait while we initialize the secure testing engine, load your questions, and start the timer.</p>

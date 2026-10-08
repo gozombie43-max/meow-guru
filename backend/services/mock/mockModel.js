@@ -44,10 +44,7 @@ export function summarizeSlot(slot) {
 
   return {
     ...summary,
-    hasFixedPaper: Boolean(
-      fixedQuestions &&
-      fixedQuestions.length > 0
-    ),
+    hasFixedPaper: Array.isArray(fixedQuestions) ? fixedQuestions.length > 0 : clean.hasFixedPaper === true,
     questionCount:
       fixedQuestions?.length ||
       clean.questionCount ||

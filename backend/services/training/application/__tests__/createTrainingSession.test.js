@@ -28,9 +28,20 @@ vi.mock("../../../../infrastructure/logger.js", () => ({
   hashId: vi.fn(id => `hashed-${id}`),
 }));
 
-import { findMission, createTrainingSession } from "../../../../repositories/trainingRepository.js";
+import { findMission, createTrainingSession, trainingQuestionPool, dueTrainingQuestions, trainingExposureData } from "../../../../repositories/trainingRepository.js";
 
 describe("createTrainingSessionCommand", () => {
+  it('starts mission due selection before the pool completes and waits for both before exposure', async () => {
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    trainingQuestionPool.mockReturnValueOnce(gate);
+    const work = createTrainingSessionCommand('user-1', { mode: 'mission', exam: 'cat', count: 20 }, Date.now());
+    try {
+      await vi.waitFor(() => expect(dueTrainingQuestions).toHaveBeenCalledTimes(1));
+      expect(trainingExposureData).not.toHaveBeenCalled();
+    } finally { release([{ id: 'pool', difficulty: 2, expectedTime: 60 }]); await work; }
+    expect(trainingExposureData).toHaveBeenCalledTimes(1);
+  });
   beforeEach(() => {
     vi.clearAllMocks();
   });

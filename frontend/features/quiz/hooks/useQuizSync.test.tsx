@@ -2,9 +2,11 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
 import { useQuizSync } from './useQuizSync';
 import type { QuizQuestion } from '../model/types';
+import { createResumeSaver } from '../model/resumeDelta';
 
 const save = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 vi.mock('@/lib/userApi', () => ({ saveRecentQuiz: save }));
+vi.mock('@/lib/axios', () => ({ getAccessToken: () => 'token', AUTH_TOKEN_CHANGED_EVENT: 'auth-token-changed' }));
 const options = {
   token: 'token', started: true, showAnalytics: false,
   questions: [{ sessionAnchor: 'anchor' } as QuizQuestion],
@@ -17,20 +19,21 @@ beforeEach(() => { save.mockClear(); localStorage.clear(); vi.useFakeTimers(); }
 afterEach(() => vi.useRealTimers());
 
 it('flushes the latest answer when leaving before the debounce', async () => {
-  const hook = renderHook(props => useQuizSync(props), { initialProps: options });
-  hook.rerender({ ...options, selectedAnswers: { 0: 2 } });
+  const props = { ...options, saver: createResumeSaver('token', 'test') };
+  const hook = renderHook(props => useQuizSync(props), { initialProps: props });
+  hook.rerender({ ...props, selectedAnswers: { 0: 2 } });
   hook.unmount();
-  await Promise.resolve();
-  expect(save).toHaveBeenLastCalledWith('token', expect.objectContaining({ selectedAnswers: { 0: 2 }, status: 'in-progress' }));
+  await vi.advanceTimersByTimeAsync(0);
+  expect(save).toHaveBeenLastCalledWith('token', expect.objectContaining({ selectedAnswers: { 0: 2 }, status: 'in-progress' }), expect.any(AbortSignal));
   expect(JSON.parse(localStorage.getItem('sync-test')!)).toMatchObject({ selectedAnswers: { 0: 2 } });
 });
 
 it('keeps completion as the final checkpoint when unmounting', async () => {
-  const hook = renderHook(props => useQuizSync(props), { initialProps: options });
-  hook.rerender({ ...options, showAnalytics: true });
+  const props = { ...options, saver: createResumeSaver('token', 'test') };
+  const hook = renderHook(props => useQuizSync(props), { initialProps: props });
+  hook.rerender({ ...props, showAnalytics: true });
   hook.unmount();
-  await Promise.resolve();
-  await Promise.resolve();
+  await vi.advanceTimersByTimeAsync(0);
   expect(save).toHaveBeenCalled();
   expect(save.mock.calls.every(([, snapshot]) => snapshot.status === 'completed')).toBe(true);
 });

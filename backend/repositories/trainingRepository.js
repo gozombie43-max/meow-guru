@@ -134,9 +134,13 @@ export async function trainingLearningState(userId, exam) {
   return { reviewRows, skillRows, stateMeta };
 }
 
-export async function trainingDashboardData(userId, exam) {
+export async function trainingDashboardData(userId, exam, { includeHistory = false, compactHistory = false } = {}) {
   const nowIso = new Date().toISOString();
-  const [active, catalog, mocks, reviewRows, skillRows, stateMeta] = await Promise.all([
+  const metaRead = learnerStateMeta().findOne({ _id: learnerStateMetaId(userId, exam) });
+  // History's projection depends on readiness, not on the other dashboard reads.
+  const historyRead = includeHistory ? metaRead.then(meta => trainingHistory(userId, exam,
+    compactHistory && meta?.version === 1 && meta?.status === 'ready')) : undefined;
+  const [active, catalog, mocks, reviewRows, skillRows, stateMeta, previous] = await Promise.all([
     sessions()
       .find({ userId, exam, status: 'active', deadline: { $gt: nowIso } })
       .sort({ startedAt: -1 })
@@ -175,7 +179,8 @@ export async function trainingDashboardData(userId, exam) {
       .sort({ mastery: 1 })
       .limit(5000)
       .toArray(),
-    learnerStateMeta().findOne({ _id: learnerStateMetaId(userId, exam) }),
+    metaRead,
+    historyRead,
   ]);
 
   const catalogPairs = [...new Map(catalog.map(item => {
@@ -185,7 +190,7 @@ export async function trainingDashboardData(userId, exam) {
     };
     return [JSON.stringify([pair.subject, pair.topic]), pair];
   })).values()].sort((a, b) => a.subject.localeCompare(b.subject) || a.topic.localeCompare(b.topic));
-  return { active, catalogPairs, mocks, reviewRows, skillRows, stateMeta };
+  return { active, catalogPairs, mocks, reviewRows, skillRows, stateMeta, ...(includeHistory ? { previous } : {}) };
 }
 
 export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics = []) {

@@ -5,7 +5,7 @@ import { useTrainingDashboard } from "./useTrainingDashboard";
 import TrainingMockCatalog from "@/components/training/TrainingMockCatalog";
 
 const state = vi.hoisted(() => ({
-  auth: { loading: true, token: null as string | null },
+  auth: { loading: true, token: null as string | null, user: null as { id: string } | null },
   get: vi.fn(),
 }));
 vi.mock("@/context/AuthContext", () => ({ useAuth: () => state.auth }));
@@ -19,7 +19,7 @@ function HubQueries() {
 
 describe("public training hub request boundary", () => {
   beforeEach(() => {
-    state.auth = { loading: true, token: null };
+    state.auth = { loading: true, token: null, user: null };
     state.get.mockReset().mockResolvedValue({ data: {} });
   });
 
@@ -27,9 +27,10 @@ describe("public training hub request boundary", () => {
     const view = render(<HubQueries />);
     expect(screen.getByRole("heading", { name: "Previous-year papers" })).toBeInTheDocument();
     expect(state.get).not.toHaveBeenCalled();
-    state.auth = { loading: true, token: "restored-token" };
+    state.auth = { loading: true, token: "restored-token", user: null };
     view.rerender(<HubQueries />);
     expect(state.get).not.toHaveBeenCalled();
+    state.auth.user = { id: "restored-owner" };
     state.auth.loading = false;
     view.rerender(<HubQueries />);
     await waitFor(() => expect(state.get).toHaveBeenCalledTimes(4));

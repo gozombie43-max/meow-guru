@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect,useState } from 'react';
+import { useEffect,useRef,useState } from 'react';
 import { getAttempt, type MockAttempt, type MockResultSection } from './api';
 import styles from './ResultReport.module.css';
 
@@ -14,24 +14,38 @@ interface ResultReportProps {
 
 export default function ResultReport({ examSlug, testId, attemptId }: ResultReportProps) {
   const router = useRouter();
-  const { token } = useAuth();
+  const { token, user, loading: authLoading } = useAuth();
+  const owner = user?.id;
+  const ready = !authLoading && !!token && !!owner;
+  const tokenRef = useRef(token);
+  useEffect(() => { tokenRef.current = token; }, [token]);
   const [data, setData] = useState<MockAttempt | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [pending, setLoading] = useState(true);
+  const [loadedScope, setLoadedScope] = useState('');
+  const scope = `${owner}:${attemptId}`;
+  const loading = !ready || pending || loadedScope !== scope;
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) return;
-    getAttempt(attemptId, token)
+    if (!ready) return;
+    const controller = new AbortController();
+    getAttempt(attemptId, tokenRef.current!, controller.signal)
       .then((res) => {
+        if (controller.signal.aborted) return;
+        setError(null);
         setData(res);
+        setLoadedScope(scope);
         setLoading(false);
       })
       .catch((err) => {
+        if (controller.signal.aborted) return;
         console.error(err);
         setError('Failed to load test results.');
+        setLoadedScope(scope);
         setLoading(false);
       });
-  }, [attemptId, token]);
+    return () => controller.abort();
+  }, [attemptId, owner, ready, scope]);
 
   if (loading) {
     return (

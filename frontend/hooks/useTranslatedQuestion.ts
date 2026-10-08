@@ -29,7 +29,8 @@ export function useTranslatedQuestion<T extends TranslatableQuestion>(
   currentQ: T | undefined,
   skipTranslation = false,
   upcomingQuestions: T[] = [],
-  context = ""
+  context = "",
+  includeSolution = false
 ) {
   const { activeLang, setActiveLang, translate } = useTranslation();
   const [completed, setCompleted] = useState<{ key: string; texts: string[] } | null>(null);
@@ -51,7 +52,7 @@ export function useTranslatedQuestion<T extends TranslatableQuestion>(
     typeof nativeTranslation?.solution === "string" &&
     nativeTranslation.solution.trim().length > 0;
 
-  const hasNativeContent = hasNativeQuestion && hasNativeOptions && hasNativeSolution;
+  const hasNativeContent = hasNativeQuestion && hasNativeOptions && (!includeSolution || hasNativeSolution);
 
   const questionContext = `${context} ${currentQ?.concept ?? ""} ${currentQ?.chapter ?? ""}`;
   
@@ -59,29 +60,28 @@ export function useTranslatedQuestion<T extends TranslatableQuestion>(
   const fallbackQuestion = {
     question: hasNativeQuestion ? "" : currentQ?.question,
     options: hasNativeOptions ? undefined : currentQ?.options,
-    solution: hasNativeSolution ? "" : currentQ?.solution,
+    solution: !includeSolution || hasNativeSolution ? "" : currentQ?.solution,
   };
 
   const plan = planQuestionTranslation(fallbackQuestion, questionContext);
   const sourceTexts = plan.source;
   const key = JSON.stringify([activeLang, sourceTexts, questionContext]);
 
-  const upcomingKey = JSON.stringify(upcomingQuestions.slice(0, 3)
+  const upcomingKey = JSON.stringify(upcomingQuestions.slice(0, 1)
     .filter((q) => q.questionType !== "image_mcq")
     .filter((q) => {
        if (activeLang === "en") return false;
        const t = (q.translations as Record<string, TranslationData> | undefined)?.[activeLang];
        const qText = t?.question;
        const opts = t?.options;
-       const sol = t?.solution;
-       return !(qText && opts?.length === q.options?.length && sol);
+       return !(qText && opts?.length === q.options?.length);
     })
     .map((q) => {
        const t = (q.translations as Record<string, TranslationData> | undefined)?.[activeLang];
        const fallbackQ = {
           question: t?.question ? "" : q.question,
           options: (t?.options?.length === q.options?.length) ? undefined : q.options,
-          solution: t?.solution ? "" : q.solution,
+          solution: "",
        };
        return planQuestionTranslation(fallbackQ, `${context} ${q.concept ?? ""} ${q.chapter ?? ""}`).texts;
     }));
@@ -136,7 +136,7 @@ export function useTranslatedQuestion<T extends TranslatableQuestion>(
   if (activeLang !== "en" && !skipTranslation) {
     displayedQuestion = hasNativeQuestion ? (nativeTranslation?.question as string) : fallbackDisplayed[0];
     displayedOptions = hasNativeOptions ? (nativeTranslation?.options as string[]) : fallbackDisplayed.slice(1, fallbackDisplayed.length - 1);
-    displayedSolution = hasNativeSolution ? (nativeTranslation?.solution as string) : fallbackDisplayed[fallbackDisplayed.length - 1];
+    displayedSolution = !includeSolution ? displayedSolution : hasNativeSolution ? (nativeTranslation?.solution as string) : fallbackDisplayed[fallbackDisplayed.length - 1];
   }
 
   return {

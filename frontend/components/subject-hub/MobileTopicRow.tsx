@@ -2,6 +2,7 @@
 
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { prefetchOnce } from "@/lib/intent-prefetch";
 import { useRouter } from "next/navigation";
 import React from "react";
 
@@ -27,9 +28,9 @@ export const MobileTopicRow = React.memo(function MobileTopicRow({
     <Link
       href={href}
       prefetch={false}
-      onPointerEnter={() => router.prefetch(href)}
-      onFocus={() => router.prefetch(href)}
-      onTouchStart={() => router.prefetch(href)}
+      onPointerEnter={() => prefetchOnce(router, href)}
+      onFocus={() => prefetchOnce(router, href)}
+      onTouchStart={() => prefetchOnce(router, href)}
       data-hub-part="mobileTopicRow"
       className={styles.mobileTopicRow}
     >

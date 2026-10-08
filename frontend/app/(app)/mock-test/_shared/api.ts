@@ -129,15 +129,15 @@ function getAdminHeaders(adminToken: string) {
 
 // ─── Slot Endpoints ───────────────────────────────────────
 
-export async function getExamSlots(examSlug: string): Promise<{ slots: MockTestSlot[] }> {
-  const res = await fetch(`${BASE}/api/mocktest/${examSlug}/slots`);
+export async function getExamSlots(examSlug: string, signal?: AbortSignal): Promise<{ slots: MockTestSlot[] }> {
+  const res = await fetch(`${BASE}/api/mocktest/${examSlug}/slots`, { signal }, { auth: 'none' });
   if (!res.ok) throw new Error(`Failed to fetch slots for ${examSlug}`);
   return readJson<{ slots: MockTestSlot[] }>(res);
 }
 
-export async function getSlotDetails(slotId: string, examSlug?: string): Promise<{ slot: MockTestSlot }> {
+export async function getSlotDetails(slotId: string, examSlug?: string, signal?: AbortSignal): Promise<{ slot: MockTestSlot }> {
   const query = examSlug ? `?examSlug=${encodeURIComponent(examSlug)}` : '';
-  const res = await fetch(`${BASE}/api/mocktest/slots/${slotId}${query}`);
+  const res = await fetch(`${BASE}/api/mocktest/slots/${slotId}${query}`, { signal }, { auth: 'none' });
   if (!res.ok) throw new Error(`Failed to fetch slot ${slotId}`);
   return readJson<{ slot: MockTestSlot }>(res);
 }
@@ -225,8 +225,9 @@ export async function submitAttempt(attemptId: string, token: string) {
   return res.json();
 }
 
-export async function getAttempt(attemptId: string, token: string): Promise<MockAttempt> {
+export async function getAttempt(attemptId: string, token: string, signal?: AbortSignal): Promise<MockAttempt> {
   const res = await fetch(`${BASE}/api/mocktest/attempt/${attemptId}`, {
+    signal,
     headers: getHeaders(token),
   });
   if (!res.ok) throw new Error('Failed to get attempt');
@@ -241,8 +242,9 @@ export async function getTestHistory(examSlug: string, testId: string, token: st
   return res.json();
 }
 
-export async function getExamHistory(examSlug: string, token: string): Promise<{ attempts: MockAttemptHistory[] }> {
+export async function getExamHistory(examSlug: string, token: string, signal?: AbortSignal): Promise<{ attempts: MockAttemptHistory[] }> {
   const res = await fetch(`${BASE}/api/mocktest/${examSlug}/history`, {
+    signal,
     headers: getHeaders(token),
   });
   if (!res.ok) throw new Error('Failed to fetch exam history');

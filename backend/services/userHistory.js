@@ -5,8 +5,9 @@ export const profileProjection = { _id: 0, ...Object.fromEntries([
     'totalQuestions', 'status', 'updatedAt', 'questionAnchor', 'sessionFilters'].map(field => `recentQuizzes.${field}`),
 ].map(field => [field, 1])) };
 
-export function chatSummary({ id, title, updatedAt, messages, revision }) {
-  return { id, title, updatedAt, revision: revision ?? messages.length, messageCount: messages.length };
+export function chatSummary({ id, title, updatedAt, messages, messageCount, revision }) {
+  const count = messageCount ?? messages?.length ?? 0;
+  return { id, title, updatedAt, revision: revision ?? count, messageCount: count };
 }
 
 export function appendChatMessages(chats, chatId, { title, messages, sequence }) {

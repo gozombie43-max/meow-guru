@@ -28,16 +28,18 @@ export const getUser = async (id, projection) => {
 // Compare-and-swap protects embedded histories against concurrent requests/tabs.
 export const mutateUserList = async (id, field, mutate) => {
   const users = getUsersCollection();
+  const separated = ['aiChats', 'recentQuizzes', 'bookmarkEntries'].includes(field);
   const owner = await users.findOne({ id: String(id), type: { $ne: 'email_lock' } }, { projection: { historyStorageVersion: 1 } });
   if (!owner) return null;
-  if (owner.historyStorageVersion === 1 && ['aiChats', 'recentQuizzes', 'bookmarkEntries'].includes(field)) return mutateSeparatedHistory(id, field, mutate);
+  if (owner.historyStorageVersion === 1 && separated) return mutateSeparatedHistory(id, field, mutate);
   const revisionField = `${field}Revision`;
   for (let attempt = 0; attempt < 8; attempt++) {
     const user = await getUser(id, { [field]: 1, [revisionField]: 1 });
     if (!user) return null;
+    if (user.historyStorageVersion === 1 && separated) return mutateSeparatedHistory(id, field, mutate);
     const value = mutate(Array.isArray(user[field]) ? user[field] : []);
     const revision = user[revisionField] ?? 0;
-    const result = await users.updateOne({ id: String(id), type: { $ne: 'email_lock' },
+    const result = await users.updateOne({ id: String(id), type: { $ne: 'email_lock' }, ...(separated ? { historyStorageVersion: { $ne: 1 } } : {}),
       [revisionField]: user[revisionField] === undefined ? { $exists: false } : revision },
     { $set: { [field]: value }, $inc: { [revisionField]: 1 } });
     if (result.matchedCount) return value;

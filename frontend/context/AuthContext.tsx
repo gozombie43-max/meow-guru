@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { abortError } from '@/shared/api/policy';
 import api, {
   AUTH_TOKEN_CHANGED_EVENT,
   clearLegacyAuthStorage,
@@ -14,12 +15,6 @@ import { discardPreparedSession, restorePreparedSession } from '@/lib/session-bo
 const isAuthError = (err: unknown) => {
   const status = (err as { response?: { status?: number } })?.response?.status;
   return status === 401 || status === 403;
-};
-
-const isRetryableError = (err: unknown) => {
-  const status = (err as { response?: { status?: number } })?.response?.status;
-  if (status === undefined) return true; // network error or no response
-  return status >= 500;
 };
 
 interface RecentQuizEntry {
@@ -89,35 +84,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser]       = useState<User | null>(null);
   const [token, setToken]     = useState<string | null>(null);
   const [loading, setLoading] = useState(true); // start true to avoid flash
+  const authEpoch = useRef(0);
+  const profileReads = useRef(new Set<AbortController>());
+  const cancelProfileReads = useCallback(() => {
+    authEpoch.current += 1;
+    for (const controller of profileReads.current) controller.abort();
+    profileReads.current.clear();
+    return authEpoch.current;
+  }, []);
 
   const persistToken = useCallback((t: string | null) => {
     setToken(t);
     updateAccessToken(t);
   }, []);
 
-  const refreshAccessToken = useCallback(async () => {
-    const newToken = await requestTokenRefresh();
-    if (!newToken) {
-      throw new Error('Failed to refresh token');
+  const fetchUser = useCallback(async (t?: string, signal?: AbortSignal) => {
+    // Transport owns the complete profile recovery budget: two safe-read
+    // retries and at most one 401 refresh/replay. No outer retry loop.
+    const epoch = authEpoch.current;
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    if (signal?.aborted) abort(); else signal?.addEventListener('abort', abort, { once: true });
+    profileReads.current.add(controller);
+    try {
+      const res = await api.get('/users/me', { signal: controller.signal, apiPolicy: { retries: 2 },
+        ...(t ? { headers: { Authorization: `Bearer ${t}` } } : {}) });
+      if (controller.signal.aborted || epoch !== authEpoch.current) throw abortError();
+      setUser(res.data);
+    } finally {
+      profileReads.current.delete(controller);
+      signal?.removeEventListener('abort', abort);
     }
-    setToken(newToken);
-    return newToken;
-  }, []);
-
-  const fetchUser = useCallback(async (t?: string) => {
-    const res = await api.get('/users/me', t ? {
-      headers: { Authorization: `Bearer ${t}` },
-    } : undefined);
-    setUser(res.data);
   }, []);
 
   const clearAuthState = useCallback(() => {
+    cancelProfileReads();
     discardPreparedSession();
     disconnectSocket();
     setToken(null);
     setUser(null);
+    setLoading(false);
     updateAccessToken(null);
-  }, []);
+  }, [cancelProfileReads]);
 
   const logout = useCallback(async () => {
     /*
@@ -155,45 +163,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [clearAuthState]);
 
   const login = useCallback(async (t: string) => {
+    const epoch = cancelProfileReads();
     setLoading(true);
+    setUser(null);
     persistToken(t);
     try {
       await fetchUser(t);
     } catch (err) {
-      if (isAuthError(err)) {
-        try {
-          const refreshedToken = await refreshAccessToken();
-          await fetchUser(refreshedToken);
-        } catch {
-          clearAuthState();
-          throw err;
-        }
-        return;
+      if (epoch === authEpoch.current && isAuthError(err)) {
+        clearAuthState();
       }
       throw err;
     } finally {
-      setLoading(false);
+      if (epoch === authEpoch.current) setLoading(false);
     }
-  }, [clearAuthState, fetchUser, persistToken, refreshAccessToken]);
+  }, [clearAuthState, fetchUser, persistToken, cancelProfileReads]);
 
   const refreshUser = useCallback(async () => {
+    const epoch = authEpoch.current;
     const activeToken = token ?? getAccessToken() ?? await requestTokenRefresh();
-    if (!activeToken) return;
+    if (!activeToken || epoch !== authEpoch.current) return;
     try {
       await fetchUser(activeToken);
     } catch (err) {
+      if (epoch !== authEpoch.current) return;
       if (isAuthError(err)) {
-        try {
-          const refreshedToken = await refreshAccessToken();
-          await fetchUser(refreshedToken);
-        } catch {
-          clearAuthState();
-        }
+        clearAuthState();
       } else {
         console.error('Failed to refresh user:', err);
       }
     }
-  }, [clearAuthState, fetchUser, refreshAccessToken, token]);
+  }, [clearAuthState, fetchUser, token]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -215,39 +215,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let cancelled = false;
-    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    const controller = new AbortController();
+    const epoch = authEpoch.current;
 
-    const bootstrap = async (attempt = 0) => {
+    const bootstrap = async () => {
       if (cancelled) return;
 
       try {
         setLoading(true);
         clearLegacyAuthStorage();
         const activeToken = await restorePreparedSession();
+        if (cancelled || epoch !== authEpoch.current) return;
         if (!activeToken) {
           if (!cancelled) setLoading(false);
           return;
         }
         persistToken(activeToken);
-        await fetchUser(activeToken);
-        if (!cancelled) setLoading(false);
+        await fetchUser(activeToken, controller.signal);
+        if (!cancelled && epoch === authEpoch.current) setLoading(false);
       } catch (err) {
+        if (cancelled || epoch !== authEpoch.current) return;
         if (isAuthError(err)) {
-          try {
-            const refreshedToken = await refreshAccessToken();
-            await fetchUser(refreshedToken);
-            if (!cancelled) setLoading(false);
-            return;
-          } catch {
-            clearAuthState();
-            if (!cancelled) setLoading(false);
-            return;
-          }
-        }
-
-        if (isRetryableError(err) && attempt < 3) {
-          retryTimer = setTimeout(() => bootstrap(attempt + 1), 1500 * (attempt + 1));
-          return;
+          clearAuthState();
         }
 
         if (!cancelled) setLoading(false);
@@ -258,9 +247,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => {
       cancelled = true;
-      if (retryTimer) clearTimeout(retryTimer);
+      controller.abort();
+      cancelProfileReads();
     };
-  }, [clearAuthState, fetchUser, persistToken, refreshAccessToken]);
+  }, [clearAuthState, fetchUser, persistToken, cancelProfileReads]);
 
   const updateProfile = useCallback(
     async (data: { name?: string; avatar?: string | null; phone?: string | null }) => {

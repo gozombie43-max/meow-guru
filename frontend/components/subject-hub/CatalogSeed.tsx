@@ -6,6 +6,6 @@ import type { ReactNode } from 'react';
 
 export function CatalogSeed({ snapshot, children }: { snapshot: PublicTopicCounts | null; children: ReactNode }) {
   if (!snapshot) return children;
-  const key = `${API_BASE}/api/progress/topics?subject=${encodeURIComponent(snapshot.subject)}`;
+  const key = `${API_BASE}/api/questions/topic-counts?subject=${encodeURIComponent(snapshot.subject)}`;
   return <SWRConfig value={{ fallback: { [key]: snapshot } }}>{children}</SWRConfig>;
 }

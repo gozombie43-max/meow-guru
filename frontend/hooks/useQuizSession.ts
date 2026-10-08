@@ -1,5 +1,6 @@
 import { getQuestionSessionRevision } from "@/features/quiz/api/questionWrites";
 import { API_BASE } from "@/lib/api-base";
+import { PUBLIC_QUESTION_QUERY } from '@/features/quiz/api/publicQuery';
 import { fetchWithRetry } from "@/lib/api/http";
 import type { Question } from "@/lib/api/questions";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -14,7 +15,7 @@ interface SessionResponse {
 }
 
 const fetcher = async (url: string): Promise<SessionResponse> => {
-  const res = await fetchWithRetry(url);
+  const res = await fetchWithRetry(url, {}, { auth: 'none' });
   if (!res.ok) throw new Error("Failed to fetch quiz session");
   return res.json();
 };
@@ -70,6 +71,7 @@ export function useQuizSession(params: {
       },
       fetcher,
       {
+        ...PUBLIC_QUESTION_QUERY,
         revalidateOnFocus: false,
         revalidateIfStale: false,
         revalidateFirstPage: false,

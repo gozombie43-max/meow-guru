@@ -105,7 +105,7 @@ export function useQuizController({
     displayedQuestion,
     displayedOptions,
     displayedSolution,
-  } = useTranslatedQuestion(currentQ, isImageQuestion, questions.slice(currentIndex + 1, currentIndex + 4), `${subjectConfig.subjectId} ${slug}`);
+  } = useTranslatedQuestion(currentQ, isImageQuestion, questions.slice(currentIndex + 1, currentIndex + 2), `${subjectConfig.subjectId} ${slug}`, isSolutionOpen && submittedQuestions.has(currentIndex));
 
   useEffect(() => {
     const next = questions[currentIndex + 1];

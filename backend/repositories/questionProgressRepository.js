@@ -4,7 +4,10 @@ import { advanceTopicProgressRevision } from '../services/questions/topicProgres
 export const findAnsweredQuestion = (questionId, context = {}) => resolveQuestion(getQuestionsCollection(), questionId, context);
 export const readUserTopicProgress = userId => getUserTopicProgressCollection().find({ userId }).toArray();
 export async function recordQuestionAnswer(userId, questionUid, topic, isCorrect, legacyId) {
- return withMongoTransaction(async ({ db, session }) => {
+ return withMongoTransaction(({ db, session }) => recordQuestionAnswerInTransaction(db, session, userId, questionUid, topic, isCorrect, legacyId));
+}
+
+export async function recordQuestionAnswerInTransaction(db, session, userId, questionUid, topic, isCorrect, legacyId) {
     const uqpColl = db.collection('userQuestionProgress');
     const utpColl = db.collection('userTopicProgress');
 
@@ -60,5 +63,4 @@ export async function recordQuestionAnswer(userId, questionUid, topic, isCorrect
       isFirstTime,
       becameMastered
     };
-  });
 }

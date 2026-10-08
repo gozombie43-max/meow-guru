@@ -2,6 +2,7 @@ import { findPersistedQuestionMetadata, saveTopicCountSnapshot } from '../../rep
 import { createTieredCache } from '../../infrastructure/tieredCache.js';
 import { getQuestionRevision, isNormalizedQuestionKeysEnabled } from "./questionCache.js";
 import { fetchQuestionCounts, primeQuestionCountCaches } from "./questionMetadataService.js";
+import { runtimeLog } from '../../infrastructure/runtimeLog.js';
 
 // Canonical hub topics per subject. Counts use the same mode resolver as topic pages.
 const SUBJECT_TOPICS = {
@@ -39,10 +40,17 @@ const SUBJECT_TOPICS = {
 
 const MODES = ["concept", "formula", "mixed", "aiChallenge", "easy", "hard"];
 const MAX_SNAPSHOT_AGE_MS = 60 * 60 * 1000;
+const MAX_PUBLIC_AGE_MS = 24 * 60 * 60 * 1000;
+const validSnapshot = (data, subject, revision, maxAge) => {
+  const topics = Object.hasOwn(SUBJECT_TOPICS, subject || '') ? SUBJECT_TOPICS[subject] : undefined;
+  const age = Date.now() - new Date(data?.generatedAt || data?.updatedAt).getTime();
+  return Boolean(topics && data?.subject === subject && data?.revision === revision
+    && Number.isSafeInteger(revision) && revision >= 0 && age >= 0 && age < maxAge
+    && Number.isFinite(new Date(data?.updatedAt).getTime())
+    && topics.every(topic => Number.isSafeInteger(data.totals?.[topic]) && data.totals[topic] >= 0));
+};
 const freshSnapshot = (data, revision) => {
-  const generatedAt = new Date(data?.generatedAt || data?.updatedAt).getTime();
-  const age = Date.now() - generatedAt;
-  return data?.revision === revision && Number.isFinite(age) && age >= 0 && age < MAX_SNAPSHOT_AGE_MS;
+  return validSnapshot(data, data?.subject, revision, MAX_SNAPSHOT_AGE_MS);
 };
 
 const snapshots = createTieredCache({
@@ -50,16 +58,63 @@ const snapshots = createTieredCache({
   validUntil: data => data ? new Date(data.generatedAt || data.updatedAt).getTime() + MAX_SNAPSHOT_AGE_MS : Infinity,
 });
 
+// This cache is exclusively public catalog data. A previous bank revision is
+// permitted here, never in scoring, question pages or private progress reads.
+const publicSnapshots = createTieredCache({
+  freshMs: 5000, staleMs: MAX_PUBLIC_AGE_MS,
+  validUntil: data => new Date(data?.generatedAt || data?.updatedAt).getTime() + MAX_PUBLIC_AGE_MS,
+});
+const refreshes = new Map();
+function refreshPublicSnapshot(subject) {
+  const key = `${subject}:${isNormalizedQuestionKeysEnabled()}`;
+  if (refreshes.has(key)) return refreshes.get(key);
+  const work = fetchTopicCountSnapshot(subject).catch(error => {
+    runtimeLog.error('Public topic count refresh failed:', error.message);
+  }).finally(() => refreshes.delete(key));
+  refreshes.set(key, work);
+  return work;
+}
+
+export async function fetchPublicTopicCountSnapshot(subject = 'mathematics') {
+  const normalizedSubject = String(subject).toLowerCase();
+  const topics = Object.hasOwn(SUBJECT_TOPICS, normalizedSubject) ? SUBJECT_TOPICS[normalizedSubject] : undefined;
+  if (!topics) throw Object.assign(new Error(`Unsupported topic-count subject: ${subject}`), { statusCode: 400 });
+  const id = `topic-counts:v2:${normalizedSubject}:${isNormalizedQuestionKeysEnabled()}`;
+  const data = await publicSnapshots.read(`public-catalog:v1:${id}`, async () => {
+    const cached = await findPersistedQuestionMetadata(id);
+    const value = cached?.data;
+    if (validSnapshot(value, normalizedSubject, cached?.revision, MAX_PUBLIC_AGE_MS)) return value;
+    return fetchTopicCountSnapshot(normalizedSubject);
+  });
+  if (!freshSnapshot(data, await getQuestionRevision())) void refreshPublicSnapshot(normalizedSubject);
+  return { subject: data.subject, revision: data.revision, totals: data.totals,
+    generatedAt: data.generatedAt, updatedAt: data.updatedAt };
+}
+
+// Warm the persisted Mathematics snapshot without delaying API readiness.
+// Writes already precompute it; this also covers restarts and external imports.
+export function startTopicCountPrewarm() {
+  let stopped = false, pending;
+  const warm = () => {
+    if (stopped || pending) return;
+    pending = refreshPublicSnapshot('mathematics').finally(() => { pending = undefined; });
+  };
+  warm();
+  const timer = setInterval(warm, 15 * 60 * 1000);
+  timer.unref();
+  return async () => { stopped = true; clearInterval(timer); await pending; };
+}
+
 export async function fetchTopicCountSnapshot(subject = "mathematics") {
   const normalizedSubject = String(subject).toLowerCase();
-  const topics = SUBJECT_TOPICS[normalizedSubject];
+  const topics = Object.hasOwn(SUBJECT_TOPICS, normalizedSubject) ? SUBJECT_TOPICS[normalizedSubject] : undefined;
   if (!topics) throw Object.assign(new Error(`Unsupported topic-count subject: ${subject}`), { statusCode: 400 });
   const id = `topic-counts:v2:${normalizedSubject}:${isNormalizedQuestionKeysEnabled()}`;
   for (let attempt = 0; attempt < 3; attempt++) {
     const revision = await getQuestionRevision();
     const data = await snapshots.read(`topic-counts:v3:${id}:${revision}`, async () => {
       const cached = await findPersistedQuestionMetadata(id);
-      if (cached?.revision === revision && freshSnapshot(cached.data, revision)) return cached.data;
+      if (cached?.revision === revision && validSnapshot(cached.data, normalizedSubject, revision, MAX_SNAPSHOT_AGE_MS)) return cached.data;
       const totals = {};
       await primeQuestionCountCaches(topics.map(topic => ({ subject: normalizedSubject, topic })));
       for (let offset = 0; offset < topics.length; offset += 4) {

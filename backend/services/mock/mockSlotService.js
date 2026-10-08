@@ -5,6 +5,16 @@ import { invalidPaper } from '../assessmentPolicy.js';
 import { getSlotById as getStaticSlotById, getSlotsForExam as getStaticSlotsForExam, MOCK_TEST_SLOTS } from '../../config/exam-config.js';
 import { getMockSlotsCollection } from '../../config/mongodb.js';
 
+// Compute paper metadata inside Mongo; question arrays never cross the driver.
+const readSlotCatalog = (slots, examSlug) => slots.aggregate([
+  { $match: { examSlug } },
+  { $sort: { order: 1 } },
+  { $set: { _fixedCount: { $size: { $cond: [{ $isArray: '$fixedQuestions' }, '$fixedQuestions', []] } } } },
+  { $set: { hasFixedPaper: { $gt: ['$_fixedCount', 0] },
+    questionCount: { $cond: [{ $gt: ['$_fixedCount', 0] }, '$_fixedCount', { $ifNull: ['$questionCount', 0] }] } } },
+  { $project: { fixedQuestions: 0, _fixedCount: 0, _id: 0, _cosmosRid: 0 } },
+]).toArray();
+
 export async function fetchSlotsForExam(
   examSlug
 ) {
@@ -12,15 +22,7 @@ export async function fetchSlotsForExam(
     const slots =
       getMockSlotsCollection();
 
-    let resources =
-      await slots
-        .find({
-          examSlug,
-        })
-        .sort({
-          order: 1,
-        })
-        .toArray();
+    let resources = await readSlotCatalog(slots, examSlug);
 
     if (resources.length > 0) {
       return resources.map(
@@ -69,15 +71,7 @@ export async function fetchSlotsForExam(
       }
     }
 
-    resources =
-      await slots
-        .find({
-          examSlug,
-        })
-        .sort({
-          order: 1,
-        })
-        .toArray();
+    resources = await readSlotCatalog(slots, examSlug);
 
     return resources.length
       ? resources.map(

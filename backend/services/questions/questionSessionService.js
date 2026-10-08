@@ -112,15 +112,15 @@ async function buildfetchQuestionsSession(params) {
   // Fetch limit + 1 to know if there are more
   const query = collection.find(mongoFilter).project(quizQuestionProjection).sort({ _id: 1 });
   if (startIndex) query.skip(startIndex);
-  const resources = await query.limit(parsedLimit + 1).toArray();
-
   const countFilter = combineMongoConditions(
     conditions.filter((c) => !c._id || !c._id.$gt)
   );
   
-  const totalCount = params.includeTotal === 'true' || params.includeTotal === true
-    ? await collection.countDocuments(countFilter)
-    : undefined;
+  const [resources, totalCount] = await Promise.all([
+    query.limit(parsedLimit + 1).toArray(),
+    params.includeTotal === 'true' || params.includeTotal === true
+      ? collection.countDocuments(countFilter) : undefined,
+  ]);
 
   const hasMore = resources.length > parsedLimit;
   const pageItems = resources.slice(0, parsedLimit);

@@ -5,20 +5,21 @@ import { useQuizController } from '@/features/quiz/hooks/useQuizController';
 
 const mocks = vi.hoisted(() => ({
   params: new URLSearchParams(),
+  authLoading: false,
   questions: [] as QuizQuestion[],
   hasMore: false,
   fetchMore: vi.fn(),
   start: vi.fn(), stop: vi.fn(), progress: vi.fn().mockResolvedValue({}),
-  refreshUser: vi.fn(), recentQuizzes: [] as Record<string, unknown>[], submitQuestionAnswer: vi.fn().mockResolvedValue({}),
+  refreshUser: vi.fn(), recentQuizzes: [] as Record<string, unknown>[], submitQuizAnswer: vi.fn().mockResolvedValue({}),
 }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => mocks.params }));
 vi.mock('@/hooks/useAppNavigation', () => ({ useBackLayer: vi.fn(), useQuizLeaveGuard: vi.fn() }));
-vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ token: 'token', user: { recentQuizzes: mocks.recentQuizzes }, refreshUser: mocks.refreshUser }) }));
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ token: 'token', loading: mocks.authLoading, user: { recentQuizzes: mocks.recentQuizzes }, refreshUser: mocks.refreshUser }) }));
 vi.mock('@/hooks/useMediaQuery', () => ({ useMediaQuery: () => false }));
 vi.mock('@/features/quiz/components/QuizThemeProvider', () => ({ useQuizTheme: () => 'light', useQuizThemeControls: () => ({ toggleTheme: vi.fn() }) }));
 vi.mock('@/features/quiz/components/useQuizPreferences', () => ({ useQuizPreferences: () => ({}) }));
 vi.mock('@/hooks/useTranslatedQuestion', () => ({ useTranslatedQuestion: () => ({}) }));
-vi.mock('@/lib/userApi', () => ({ updateProgress: mocks.progress, submitQuestionAnswer: mocks.submitQuestionAnswer }));
+vi.mock('@/lib/userApi', () => ({ updateProgress: mocks.progress, submitQuizAnswer: mocks.submitQuizAnswer, saveRecentQuiz: vi.fn().mockResolvedValue({}) }));
 vi.mock('@/features/quiz/hooks/useQuizFilters', () => ({ useQuizFilters: () => ({ questions: mocks.questions, hasMore: mocks.hasMore, fetchMore: mocks.fetchMore, selectedClassificationConcepts: new Set(), setConceptFilter: vi.fn(), setExamFilter: vi.fn(), setSelectedClassificationConcepts: vi.fn() }) }));
 vi.mock('@/features/quiz/hooks/useQuizBookmarks', () => ({ useQuizBookmarks: () => ({}) }));
 vi.mock('@/features/quiz/hooks/useQuizKeyboard', () => ({ useQuizKeyboard: vi.fn() }));
@@ -31,11 +32,22 @@ const setup = () => renderHook(() => useQuizController({ subjectConfig, title: '
 
 beforeEach(() => {
   vi.clearAllMocks(); localStorage.clear(); mocks.params = new URLSearchParams();
+  mocks.authLoading = false;
   mocks.questions = [question(1), question(2)]; mocks.hasMore = false; mocks.recentQuizzes = [];
 });
 
 describe('quiz controller public behavior', () => {
-  it('requires an answer, clears an unsubmitted selection, records elapsed time, and locks submissions', () => {
+  it('waits for auth restoration before starting or accepting a local resume', () => {
+    mocks.authLoading = true;
+    const { result, rerender } = setup();
+    act(() => { result.current.handleStart(); result.current.handleResume(); result.current.handleRestartFromPopup(); });
+    expect(result.current.started).toBe(false);
+    expect(mocks.start).not.toHaveBeenCalled();
+    mocks.authLoading = false; rerender();
+    act(() => result.current.handleStart());
+    expect(result.current.started).toBe(true);
+  });
+  it('requires an answer, clears an unsubmitted selection, records elapsed time, and locks submissions', async () => {
     const { result } = setup();
     act(() => result.current.handleStart());
     act(() => result.current.handleSubmitCurrent());
@@ -48,14 +60,20 @@ describe('quiz controller public behavior', () => {
     expect(result.current.results[0]).toMatchObject({ questionId: 1, selected: 1, isCorrect: true, timeTaken: 15 });
     act(() => { result.current.handleClearResponse(); result.current.handleSelectAnswer(0); result.current.handleSubmitCurrent(); });
     expect(result.current.selectedAnswer).toBe(1);
-    expect(mocks.progress).toHaveBeenCalledTimes(1);
+    await act(async () => {});
+    expect(mocks.progress).not.toHaveBeenCalled();
+    expect(mocks.submitQuizAnswer).toHaveBeenCalledTimes(1);
+    expect(mocks.submitQuizAnswer.mock.calls[0][0]).toMatchObject({ questionId: 1, answer: 1, timeTaken: 15,
+      resume: { selectedAnswers: { 0: 1 }, submittedQuestions: [0] } });
   });
 
-  it('sends progress once for repeated submit calls before rerender', () => {
+  it('sends one answer command for repeated submit calls before rerender', async () => {
     const { result } = setup();
     act(() => result.current.handleSelectAnswer(1));
     act(() => { result.current.handleSubmitCurrent(); result.current.handleSubmitCurrent(); });
-    expect(mocks.progress).toHaveBeenCalledTimes(1);
+    await act(async () => {});
+    expect(mocks.progress).not.toHaveBeenCalled();
+    expect(mocks.submitQuizAnswer).toHaveBeenCalledTimes(1);
     expect(result.current.results).toHaveLength(1);
     expect(result.current.bestStreak).toBe(1);
   });

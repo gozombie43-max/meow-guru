@@ -18,18 +18,26 @@ test('authenticated assessment survives reload and submits without leaking answe
   ]);
   // Send browser API traffic to the disposable fixture, regardless of the build's
   // backend rewrite. No production service receives browser test traffic.
+  const startup = { posts: 0, attemptReads: 0 };
   await context.route('**/backend-api/**', route => {
     const path = new URL(route.request().url()).pathname.replace('/backend-api', '');
+    if (path.endsWith('/start') && route.request().method() === 'POST') startup.posts++;
+    if (/\/api\/mocktest\/attempt\/[^/]+$/.test(path) && route.request().method() === 'GET') startup.attemptReads++;
     return route.fetch({ url: `http://127.0.0.1:3111${path}${new URL(route.request().url()).search}` }).then(response => route.fulfill({ response }));
   });
-  await page.goto('/mock-test/ssc-cgl/browser-test/attempt');
+  const profile = page.waitForResponse(response => response.url().endsWith('/users/me') && response.ok());
+  await page.goto('/mock-test/ssc-cgl/browser-test');
+  await profile;
+  await page.getByRole('button', { name: /Start Test/ }).click();
   await expect(page.getByRole('radio').nth(1)).toBeVisible();
+  expect(startup).toEqual({ posts: 1, attemptReads: 0 });
   await page.getByRole('radio').nth(1).check();
   const save = page.waitForResponse(response => response.url().includes('/autosave') && response.status() === 200);
   await page.evaluate(() => { Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' }); document.dispatchEvent(new Event('visibilitychange')); });
   await save;
   await page.reload();
   await expect(page.getByRole('radio').nth(1)).toBeChecked();
+  expect(startup).toEqual({ posts: 1, attemptReads: 1 });
   await expect(page.getByText('Private worked solution')).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
   await page.screenshot({ path: testInfo.outputPath('assessment.png'), fullPage: true });

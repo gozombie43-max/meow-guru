@@ -13,6 +13,7 @@ import { startRuntimeMetrics, logger } from './infrastructure/logger.js';
 import { listenServer } from './infrastructure/httpListen.js';
 import { startOptionalService, stopOptionalServices, optionalServiceReady } from './infrastructure/optionalServices.js';
 import { maintenanceQueueHealth } from './infrastructure/maintenanceQueue.js';
+import { startTopicCountPrewarm } from './services/questions/topicCountSnapshot.js';
 
 let socketServer = null, httpServer;
 let isShuttingDown = false, isReady = false;
@@ -208,6 +209,10 @@ async function initWithRetry() {
     await listenServer(httpServer, PORT);
     isReady = true;
     logger.info({ port: PORT, quizOnlyMode, embeddedWorkers: runEmbeddedWorkers }, 'server ready');
+    let stopCatalogPrewarm;
+    void startOptionalService('catalogPrewarm', async () => {
+      stopCatalogPrewarm = startTopicCountPrewarm();
+    }, { cleanup: async () => { await stopCatalogPrewarm?.(); } });
     void startOptionalService('cacheSubscribers', async () => {
       await Promise.all([startSessionInvalidationSubscriber(), startCacheInvalidationSubscriber()]);
     }, { enabled: Boolean(process.env.REDIS_URL), cleanup: async () => { await closeSessionInvalidationSubscriber(); await closeCacheInvalidationSubscriber(); } });

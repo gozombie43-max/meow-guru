@@ -11,7 +11,7 @@ Layers,
 Lock
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect,useMemo,useState } from 'react';
+import { useEffect,useRef,useMemo,useState } from 'react';
 import { getExamHistory,getExamSlots,type MockAttemptHistory } from './api';
 import {
 getExamConfig,
@@ -51,7 +51,11 @@ const EXAM_META: Record<string, { name: string; category: string; subtitle: stri
 
 export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
   const router = useRouter();
-  const { token } = useAuth();
+  const { token, user, loading: authLoading } = useAuth();
+  const owner = user?.id;
+  const ready = !authLoading && !!token && !!owner;
+  const tokenRef = useRef(token);
+  useEffect(() => { tokenRef.current = token; }, [token]);
 
   const meta = EXAM_META[examSlug] || {
     name: examSlug.toUpperCase(),
@@ -61,9 +65,11 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
   };
 
   const [activeTab, setActiveTab] = useState<'mock' | 'overview' | 'prev'>('mock');
-  const [history, setHistory] = useState<MockAttemptHistory[]>([]);
-  const [allSlots, setAllSlots] = useState<MockTestSlot[]>(() => getSlotsForExam(examSlug));
-  const [pyqSlots, setPyqSlots] = useState<MockTestSlot[]>(() => getPyqSlotsForExam(examSlug));
+  const [historyState, setHistory] = useState<{ owner: string | undefined; exam: string; attempts: MockAttemptHistory[] } | null>(null);
+  const history = historyState && historyState.owner === owner && historyState.exam === examSlug && ready ? historyState.attempts : [];
+  const [slotState, setSlotState] = useState<{ exam: string; slots: MockTestSlot[] } | null>(null);
+  const allSlots = useMemo(() => slotState?.exam === examSlug ? slotState.slots.filter(s => !s.isPyq) : getSlotsForExam(examSlug), [slotState, examSlug]);
+  const pyqSlots = useMemo(() => slotState?.exam === examSlug ? slotState.slots.filter(s => s.isPyq) : getPyqSlotsForExam(examSlug), [slotState, examSlug]);
   const [, setLoadingSlots] = useState(true);
 
   useEffect(() => {
@@ -80,22 +86,20 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
   // Fetch slots from API (with fallback to static config)
   useEffect(() => {
     let isMounted = true;
-    getExamSlots(examSlug)
+    const controller = new AbortController();
+    getExamSlots(examSlug, controller.signal)
       .then((res) => {
         if (isMounted && res.slots && res.slots.length > 0) {
-          const apiMocks = res.slots.filter((s: MockTestSlot) => !s.isPyq);
-          const apiPyqs = res.slots.filter((s: MockTestSlot) => s.isPyq);
-          if (apiMocks.length > 0) setAllSlots(apiMocks);
-          if (apiPyqs.length > 0) setPyqSlots(apiPyqs);
+          setSlotState({ exam: examSlug, slots: res.slots });
         }
       })
       .catch((err) => {
-        console.warn('API slots fetch fallback to static:', err);
+        if (!controller.signal.aborted) console.warn('API slots fetch fallback to static:', err);
       })
       .finally(() => {
         if (isMounted) setLoadingSlots(false);
       });
-    return () => { isMounted = false; };
+    return () => { isMounted = false; controller.abort(); };
   }, [examSlug]);
 
   // Compute dynamic tiers/stages from loaded mock and pyq slots
@@ -118,15 +122,18 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
 
   // Fetch attempt history for this exam
   useEffect(() => {
-    if (!token) return;
-    getExamHistory(examSlug, token)
+    if (!ready) return;
+    const controller = new AbortController();
+    getExamHistory(examSlug, tokenRef.current!, controller.signal)
       .then((res) => {
-        setHistory(res.attempts || []);
+        if (controller.signal.aborted) return;
+        setHistory({ owner, exam: examSlug, attempts: res.attempts || [] });
       })
       .catch((err) => {
-        console.warn('History fetch error:', err);
+        if (!controller.signal.aborted) console.warn('History fetch error:', err);
       });
-  }, [examSlug, token]);
+    return () => controller.abort();
+  }, [examSlug, owner, ready]);
 
   // Filtered by selected tier (if exam has tiers)
   const displayMockSlots = useMemo(() => {

@@ -8,6 +8,8 @@ import { type TrainingSession, type TrainingAction } from "../../training-types"
 import { mergeTrainingResponse, type TrainingDelta } from '../sessionDelta';
 import { offlineTrainingEnabled, savePendingTrainingAction, clearPendingTrainingAction } from '../offlineTraining';
 
+import { useInvalidateTrainingDashboard } from '@/app/(app)/play/hooks/trainingQueries';
+
 interface UseTrainingActionsProps {
   id: string;
   userId?: string;
@@ -32,6 +34,7 @@ export function useTrainingActions({
   setConfirmFinish
 }: UseTrainingActionsProps) {
   const router = useRouter();
+  const invalidateDashboard = useInvalidateTrainingDashboard();
   const act = useCallback(
     async (action: TrainingAction) => {
       if (!session || sendingRef.current) return;
@@ -52,6 +55,7 @@ export function useTrainingActions({
           { headers: { 'Idempotency-Key': key }, apiPolicy: { retries: 2 } },
         );
         if (offlineTrainingEnabled() && userId) await clearPendingTrainingAction(userId, id, key);
+        invalidateDashboard(userId);
         if (data.status === "abandoned") {
           router.replace("/play");
           return;
@@ -74,7 +78,7 @@ export function useTrainingActions({
         setPendingAction("");
       }
     },
-    [id, userId, session, accept, router, sendingRef, setBusy, setError, setPendingAction, setConfirmFinish],
+    [id, userId, session, accept, router, sendingRef, setBusy, setError, setPendingAction, setConfirmFinish, invalidateDashboard],
   );
 
   return { act };

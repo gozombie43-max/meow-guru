@@ -1,0 +1,52 @@
+{
+  "environment": "Local production Next server; HTTP response-header timing after the CLI ready message, including lazy initialization. Distinct from authenticated browser rendering metrics.",
+  "objectiveMs": 800,
+  "passed": false,
+  "samples": [
+    {
+      "restart": 1,
+      "phase": "cold-first-request",
+      "responseHeadersMs": 1224.44
+    },
+    {
+      "restart": 1,
+      "phase": "warm",
+      "responseHeadersMs": 18.19
+    },
+    {
+      "restart": 1,
+      "phase": "warm",
+      "responseHeadersMs": 24.12
+    },
+    {
+      "restart": 2,
+      "phase": "cold-first-request",
+      "responseHeadersMs": 1183.33
+    },
+    {
+      "restart": 2,
+      "phase": "warm",
+      "responseHeadersMs": 20.38
+    },
+    {
+      "restart": 2,
+      "phase": "warm",
+      "responseHeadersMs": 27.15
+    },
+    {
+      "restart": 3,
+      "phase": "cold-first-request",
+      "responseHeadersMs": 1180.12
+    },
+    {
+      "restart": 3,
+      "phase": "warm",
+      "responseHeadersMs": 18.27
+    },
+    {
+      "restart": 3,
+      "phase": "warm",
+      "responseHeadersMs": 26.98
+    }
+  ]
+}

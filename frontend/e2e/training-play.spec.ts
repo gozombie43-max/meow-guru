@@ -150,11 +150,13 @@ test("play exposes all modes and persists an adaptive session across reload", as
     result: null,
   };
 
+  const trainingReads = { capabilities: 0, dashboard: 0, session: 0 };
   await context.route("**/backend-api/**", async (route) => {
     const url = new URL(route.request().url());
     const path = url.pathname.replace("/backend-api", "");
 
     if (path === "/api/training/capabilities") {
+      trainingReads.capabilities++;
       return route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -177,6 +179,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
     }
 
     if (path === "/api/training/dashboard") {
+      trainingReads.dashboard++;
       return route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -216,6 +219,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
     }
 
     if (path === "/api/training/sessions/browser-training" && route.request().method() === "GET") {
+      trainingReads.session++;
       await questionsGate;
       session = { ...session, serverNow: Date.now() };
       return route.fulfill({
@@ -340,7 +344,10 @@ test("play exposes all modes and persists an adaptive session across reload", as
       const b = await page.getByRole("button", { name: "Begin training" }).boundingBox();
       expect(b!.y + b!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
     }).toPass();
-    if (mode.id === "adaptive") await page.screenshot({ path: testInfo.outputPath("setup.png") });
+    if (mode.id === "adaptive") {
+      expect(trainingReads).toEqual({ capabilities: 1, dashboard: 1, session: 0 });
+      await page.screenshot({ path: testInfo.outputPath("setup.png") });
+    }
     await page.getByRole("link", { name: "Back to Play" }).click();
     await expect(page).toHaveURL(/\/play$/);
   }
@@ -373,9 +380,14 @@ test("play exposes all modes and persists an adaptive session across reload", as
   await expect(page.getByText("Building your session…", { exact: false }).first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Building your session…" })).toBeDisabled();
   await expect(page.getByRole("button", { name: /^Subject / })).toBeDisabled();
+  expect(trainingReads.session).toBe(0);
   releaseCreation();
 
   await expect(page).toHaveURL(/\/play\/session\/browser-training$/);
+  await expect(page.getByText("2 + 2 = ?", { exact: true })).toBeVisible();
+  expect(trainingReads.session).toBe(0);
+  // Reload has no handoff and must fetch authoritative state.
+  await page.reload();
   await expect(page.getByRole("heading", { name: "Loading your questions", exact: true })).toBeVisible();
   await expect(page.locator(".training-skeleton-option")).toHaveCount(4);
   await page.screenshot({ path: testInfo.outputPath("question-loading.png") });

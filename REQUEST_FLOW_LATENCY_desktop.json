@@ -1,0 +1,1492 @@
+{
+  "measuredAt": "2026-10-08T10:23:18.390Z",
+  "project": "desktop",
+  "runs": 5,
+  "samples": [
+    {
+      "run": 1,
+      "actions": {
+        "login": 546,
+        "dashboard_reload": 272,
+        "mathematics_document": 159,
+        "topic_document": 190,
+        "quiz_setup": 529,
+        "start_quiz": 349,
+        "submit_answer_ui": 17,
+        "open_solution": 23,
+        "open_ai_tutor": 26,
+        "next_question": 8,
+        "training_hub": 129,
+        "training_setup": 90,
+        "start_training": 267,
+        "finish_training": 221,
+        "mock_catalog": 91,
+        "mock_exam": 393,
+        "mock_instructions": 154,
+        "start_mock": 433
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "preparation",
+          "status": 401,
+          "durationMs": 46.5,
+          "ttfbMs": 44.8
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "action": "login",
+          "status": 200,
+          "durationMs": 342.4,
+          "ttfbMs": 341
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "login",
+          "status": 200,
+          "durationMs": 29.6,
+          "ttfbMs": 27.8
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "dashboard_reload",
+          "status": 200,
+          "durationMs": 30.2,
+          "ttfbMs": 28.3
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "dashboard_reload",
+          "status": 200,
+          "durationMs": 24.3,
+          "ttfbMs": 22.6
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 44.6,
+          "ttfbMs": 42.7
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 37.1,
+          "ttfbMs": 33.6
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/counts",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 20.4,
+          "ttfbMs": 16.5
+        },
+        {
+          "method": "GET",
+          "path": "/api/progress/topics/private",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 124,
+          "ttfbMs": 122.5
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/counts",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 7.4,
+          "ttfbMs": 6.1
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 23.3,
+          "ttfbMs": 21.3
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 33.3,
+          "ttfbMs": 31.3
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/meta",
+          "action": "quiz_setup",
+          "status": 200,
+          "durationMs": 169.9,
+          "ttfbMs": 168.4
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/session",
+          "action": "quiz_setup",
+          "status": 200,
+          "durationMs": 84.4,
+          "ttfbMs": 82
+        },
+        {
+          "method": "POST",
+          "path": "/api/questions/answer",
+          "action": "submit_answer_ui",
+          "status": 200,
+          "durationMs": 108,
+          "ttfbMs": 106.5
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 27.7,
+          "ttfbMs": 25.6
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 22.9,
+          "ttfbMs": 20.9
+        },
+        {
+          "method": "GET",
+          "path": "/api/training/capabilities",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 16.8,
+          "ttfbMs": 14.9
+        },
+        {
+          "method": "GET",
+          "path": "/api/training/dashboard",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 53.6,
+          "ttfbMs": 50.3
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions",
+          "action": "start_training",
+          "status": 201,
+          "durationMs": 128.3,
+          "ttfbMs": 126.6
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions/e3b9e7e9-40d2-4ae0-b3ab-eedde17ef0d4/actions",
+          "action": "start_training",
+          "status": 200,
+          "durationMs": 39.8,
+          "ttfbMs": 38
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions/e3b9e7e9-40d2-4ae0-b3ab-eedde17ef0d4/actions",
+          "action": "finish_training",
+          "status": 200,
+          "durationMs": 93.2,
+          "ttfbMs": 91.4
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mock_catalog",
+          "status": 200,
+          "durationMs": 33.4,
+          "ttfbMs": 31.8
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mock_catalog",
+          "status": 200,
+          "durationMs": 57,
+          "ttfbMs": 55.1
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/ssc-cgl/slots",
+          "action": "mock_exam",
+          "status": 200,
+          "durationMs": 7.8,
+          "ttfbMs": 6.4
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/ssc-cgl/history",
+          "action": "mock_exam",
+          "status": 200,
+          "durationMs": 15.4,
+          "ttfbMs": 13.5
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 16.9,
+          "ttfbMs": 15.3
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/slots/browser-test",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 12.6,
+          "ttfbMs": 11.2
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 16.3,
+          "ttfbMs": 14.8
+        },
+        {
+          "method": "POST",
+          "path": "/api/mocktest/ssc-cgl/browser-test/start",
+          "action": "start_mock",
+          "status": 201,
+          "durationMs": 68.6,
+          "ttfbMs": 67
+        }
+      ],
+      "pairedReads": [
+        {
+          "path": "/api/questions/counts?subject=mathematics&topic=algebra",
+          "directMs": 7.5,
+          "rewriteMs": 11
+        },
+        {
+          "path": "/api/questions/counts?subject=mathematics&topic=algebra",
+          "directMs": 6.3,
+          "rewriteMs": 13.6
+        },
+        {
+          "path": "/api/progress/topics/private?subject=mathematics",
+          "directMs": 15.6,
+          "rewriteMs": 18.5
+        },
+        {
+          "path": "/api/progress/topics/private?subject=mathematics",
+          "directMs": 16.5,
+          "rewriteMs": 19
+        },
+        {
+          "path": "/api/training/dashboard?exam=ssc-cgl",
+          "directMs": 22.2,
+          "rewriteMs": 27.9
+        },
+        {
+          "path": "/api/training/dashboard?exam=ssc-cgl",
+          "directMs": 15.7,
+          "rewriteMs": 24.7
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "actions": {
+        "login": 722,
+        "dashboard_reload": 318,
+        "mathematics_document": 107,
+        "topic_document": 223,
+        "quiz_setup": 414,
+        "start_quiz": 350,
+        "submit_answer_ui": 15,
+        "open_solution": 28,
+        "open_ai_tutor": 28,
+        "next_question": 7,
+        "training_hub": 112,
+        "training_setup": 55,
+        "start_training": 265,
+        "finish_training": 167,
+        "mock_catalog": 96,
+        "mock_exam": 381,
+        "mock_instructions": 156,
+        "start_mock": 385
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "preparation",
+          "status": 401,
+          "durationMs": 9.3,
+          "ttfbMs": 7.5
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "action": "login",
+          "status": 200,
+          "durationMs": 519.2,
+          "ttfbMs": 517.5
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "login",
+          "status": 200,
+          "durationMs": 22.1,
+          "ttfbMs": 20.4
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "dashboard_reload",
+          "status": 200,
+          "durationMs": 75.7,
+          "ttfbMs": 72.6
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "dashboard_reload",
+          "status": 200,
+          "durationMs": 21.8,
+          "ttfbMs": 20.1
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 16.8,
+          "ttfbMs": 15.3
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 27.9,
+          "ttfbMs": 26.4
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/counts",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 33.1,
+          "ttfbMs": 30.3
+        },
+        {
+          "method": "GET",
+          "path": "/api/progress/topics/private",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 23.3,
+          "ttfbMs": 21.4
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/counts",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 11.3,
+          "ttfbMs": 9.6
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 65.6,
+          "ttfbMs": 62.7
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 22.1,
+          "ttfbMs": 20.1
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/meta",
+          "action": "quiz_setup",
+          "status": 200,
+          "durationMs": 8.7,
+          "ttfbMs": 7
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/session",
+          "action": "quiz_setup",
+          "status": 200,
+          "durationMs": 7.9,
+          "ttfbMs": 5
+        },
+        {
+          "method": "POST",
+          "path": "/api/questions/answer",
+          "action": "submit_answer_ui",
+          "status": 200,
+          "durationMs": 98.3,
+          "ttfbMs": 96.6
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 13.5,
+          "ttfbMs": 11.9
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 16.7,
+          "ttfbMs": 15.2
+        },
+        {
+          "method": "GET",
+          "path": "/api/training/capabilities",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 13.1,
+          "ttfbMs": 11.4
+        },
+        {
+          "method": "GET",
+          "path": "/api/training/dashboard",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 26.7,
+          "ttfbMs": 24.8
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions",
+          "action": "start_training",
+          "status": 201,
+          "durationMs": 159.7,
+          "ttfbMs": 158.2
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions/14de77eb-d480-41ac-b6a6-0dcd11b52813/actions",
+          "action": "start_training",
+          "status": 200,
+          "durationMs": 54.5,
+          "ttfbMs": 52.8
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions/14de77eb-d480-41ac-b6a6-0dcd11b52813/actions",
+          "action": "finish_training",
+          "status": 200,
+          "durationMs": 56.8,
+          "ttfbMs": 55.3
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mock_catalog",
+          "status": 200,
+          "durationMs": 94.8,
+          "ttfbMs": 92.6
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mock_exam",
+          "status": 200,
+          "durationMs": 46.2,
+          "ttfbMs": 44.2
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/ssc-cgl/slots",
+          "action": "mock_exam",
+          "status": 200,
+          "durationMs": 11.3,
+          "ttfbMs": 9.6
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/ssc-cgl/history",
+          "action": "mock_exam",
+          "status": 200,
+          "durationMs": 16.2,
+          "ttfbMs": 14.1
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 67.2,
+          "ttfbMs": 64.9
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/slots/browser-test",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 18.6,
+          "ttfbMs": 16.2
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 28.7,
+          "ttfbMs": 26.5
+        },
+        {
+          "method": "POST",
+          "path": "/api/mocktest/ssc-cgl/browser-test/start",
+          "action": "start_mock",
+          "status": 201,
+          "durationMs": 23.2,
+          "ttfbMs": 21.9
+        }
+      ],
+      "pairedReads": [
+        {
+          "path": "/api/questions/counts?subject=mathematics&topic=algebra",
+          "directMs": 6.2,
+          "rewriteMs": 11.4
+        },
+        {
+          "path": "/api/questions/counts?subject=mathematics&topic=algebra",
+          "directMs": 5.9,
+          "rewriteMs": 8.1
+        },
+        {
+          "path": "/api/progress/topics/private?subject=mathematics",
+          "directMs": 14.7,
+          "rewriteMs": 18.5
+        },
+        {
+          "path": "/api/progress/topics/private?subject=mathematics",
+          "directMs": 16.2,
+          "rewriteMs": 17.3
+        },
+        {
+          "path": "/api/training/dashboard?exam=ssc-cgl",
+          "directMs": 16.9,
+          "rewriteMs": 20.6
+        },
+        {
+          "path": "/api/training/dashboard?exam=ssc-cgl",
+          "directMs": 20.2,
+          "rewriteMs": 20.5
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "actions": {
+        "login": 671,
+        "dashboard_reload": 235,
+        "mathematics_document": 93,
+        "topic_document": 195,
+        "quiz_setup": 407,
+        "start_quiz": 351,
+        "submit_answer_ui": 16,
+        "open_solution": 30,
+        "open_ai_tutor": 29,
+        "next_question": 10,
+        "training_hub": 136,
+        "training_setup": 71,
+        "start_training": 277,
+        "finish_training": 209,
+        "mock_catalog": 123,
+        "mock_exam": 158,
+        "mock_instructions": 150,
+        "start_mock": 383
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "preparation",
+          "status": 401,
+          "durationMs": 6.8,
+          "ttfbMs": 4.3
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "action": "login",
+          "status": 200,
+          "durationMs": 464.4,
+          "ttfbMs": 462.8
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "login",
+          "status": 200,
+          "durationMs": 19.5,
+          "ttfbMs": 17.4
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "dashboard_reload",
+          "status": 200,
+          "durationMs": 15.8,
+          "ttfbMs": 14
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "dashboard_reload",
+          "status": 200,
+          "durationMs": 15.7,
+          "ttfbMs": 14.2
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 15.1,
+          "ttfbMs": 13.3
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 18,
+          "ttfbMs": 16.4
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/counts",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 21.5,
+          "ttfbMs": 19.1
+        },
+        {
+          "method": "GET",
+          "path": "/api/progress/topics/private",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 17.7,
+          "ttfbMs": 16.1
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/counts",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 8.5,
+          "ttfbMs": 6.9
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 20.5,
+          "ttfbMs": 18.6
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 32.6,
+          "ttfbMs": 30.6
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/meta",
+          "action": "quiz_setup",
+          "status": 200,
+          "durationMs": 11.1,
+          "ttfbMs": 9.3
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/session",
+          "action": "quiz_setup",
+          "status": 200,
+          "durationMs": 10.3,
+          "ttfbMs": 7.4
+        },
+        {
+          "method": "POST",
+          "path": "/api/questions/answer",
+          "action": "submit_answer_ui",
+          "status": 200,
+          "durationMs": 62.2,
+          "ttfbMs": 60.4
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 17.6,
+          "ttfbMs": 15.7
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 14.8,
+          "ttfbMs": 13.1
+        },
+        {
+          "method": "GET",
+          "path": "/api/training/capabilities",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 12.1,
+          "ttfbMs": 10.4
+        },
+        {
+          "method": "GET",
+          "path": "/api/training/dashboard",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 25.5,
+          "ttfbMs": 23.7
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions",
+          "action": "start_training",
+          "status": 201,
+          "durationMs": 152.3,
+          "ttfbMs": 150.3
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions/314bfd9a-5c26-41b6-9e1b-e06abd6bf081/actions",
+          "action": "start_training",
+          "status": 200,
+          "durationMs": 46.3,
+          "ttfbMs": 44.3
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions/314bfd9a-5c26-41b6-9e1b-e06abd6bf081/actions",
+          "action": "finish_training",
+          "status": 200,
+          "durationMs": 83.6,
+          "ttfbMs": 81.8
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mock_catalog",
+          "status": 200,
+          "durationMs": 20.2,
+          "ttfbMs": 17.5
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mock_catalog",
+          "status": 200,
+          "durationMs": 21.4,
+          "ttfbMs": 19.5
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/ssc-cgl/slots",
+          "action": "mock_exam",
+          "status": 200,
+          "durationMs": 30.7,
+          "ttfbMs": 28.7
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/ssc-cgl/history",
+          "action": "mock_exam",
+          "status": 200,
+          "durationMs": 35.7,
+          "ttfbMs": 29.9
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 56.1,
+          "ttfbMs": 54.2
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/slots/browser-test",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 12.4,
+          "ttfbMs": 10.6
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 18.4,
+          "ttfbMs": 16.9
+        },
+        {
+          "method": "POST",
+          "path": "/api/mocktest/ssc-cgl/browser-test/start",
+          "action": "start_mock",
+          "status": 201,
+          "durationMs": 21.5,
+          "ttfbMs": 19.9
+        }
+      ],
+      "pairedReads": [
+        {
+          "path": "/api/questions/counts?subject=mathematics&topic=algebra",
+          "directMs": 7.3,
+          "rewriteMs": 9.4
+        },
+        {
+          "path": "/api/questions/counts?subject=mathematics&topic=algebra",
+          "directMs": 6.8,
+          "rewriteMs": 8.7
+        },
+        {
+          "path": "/api/progress/topics/private?subject=mathematics",
+          "directMs": 14.9,
+          "rewriteMs": 16.1
+        },
+        {
+          "path": "/api/progress/topics/private?subject=mathematics",
+          "directMs": 13.7,
+          "rewriteMs": 16.8
+        },
+        {
+          "path": "/api/training/dashboard?exam=ssc-cgl",
+          "directMs": 16.9,
+          "rewriteMs": 19.8
+        },
+        {
+          "path": "/api/training/dashboard?exam=ssc-cgl",
+          "directMs": 18.5,
+          "rewriteMs": 21.3
+        }
+      ]
+    },
+    {
+      "run": 4,
+      "actions": {
+        "login": 717,
+        "dashboard_reload": 294,
+        "mathematics_document": 95,
+        "topic_document": 210,
+        "quiz_setup": 407,
+        "start_quiz": 352,
+        "submit_answer_ui": 17,
+        "open_solution": 28,
+        "open_ai_tutor": 29,
+        "next_question": 8,
+        "training_hub": 119,
+        "training_setup": 54,
+        "start_training": 206,
+        "finish_training": 236,
+        "mock_catalog": 104,
+        "mock_exam": 121,
+        "mock_instructions": 138,
+        "start_mock": 367
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "preparation",
+          "status": 401,
+          "durationMs": 5.8,
+          "ttfbMs": 4
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "action": "login",
+          "status": 200,
+          "durationMs": 513.6,
+          "ttfbMs": 511.5
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "login",
+          "status": 200,
+          "durationMs": 21.8,
+          "ttfbMs": 20
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "dashboard_reload",
+          "status": 200,
+          "durationMs": 59.3,
+          "ttfbMs": 56.2
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "dashboard_reload",
+          "status": 200,
+          "durationMs": 14.3,
+          "ttfbMs": 12.8
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 11.8,
+          "ttfbMs": 9.8
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 20,
+          "ttfbMs": 18.3
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/counts",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 22.4,
+          "ttfbMs": 19.8
+        },
+        {
+          "method": "GET",
+          "path": "/api/progress/topics/private",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 16.3,
+          "ttfbMs": 14.7
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/counts",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 11.7,
+          "ttfbMs": 10
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 22.6,
+          "ttfbMs": 20.4
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 24,
+          "ttfbMs": 22.4
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/meta",
+          "action": "quiz_setup",
+          "status": 200,
+          "durationMs": 10.6,
+          "ttfbMs": 9.4
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/session",
+          "action": "quiz_setup",
+          "status": 200,
+          "durationMs": 9.5,
+          "ttfbMs": 7.2
+        },
+        {
+          "method": "POST",
+          "path": "/api/questions/answer",
+          "action": "submit_answer_ui",
+          "status": 200,
+          "durationMs": 55.3,
+          "ttfbMs": 53.8
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 14.6,
+          "ttfbMs": 12.9
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 15.9,
+          "ttfbMs": 14.2
+        },
+        {
+          "method": "GET",
+          "path": "/api/training/capabilities",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 12.1,
+          "ttfbMs": 10.4
+        },
+        {
+          "method": "GET",
+          "path": "/api/training/dashboard",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 24.7,
+          "ttfbMs": 23.1
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions",
+          "action": "start_training",
+          "status": 201,
+          "durationMs": 112.4,
+          "ttfbMs": 111
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions/f9f0845c-fedc-4ed3-a546-c610849eb2be/actions",
+          "action": "start_training",
+          "status": 200,
+          "durationMs": 71.1,
+          "ttfbMs": 69.3
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions/f9f0845c-fedc-4ed3-a546-c610849eb2be/actions",
+          "action": "finish_training",
+          "status": 200,
+          "durationMs": 92.4,
+          "ttfbMs": 90.9
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mock_catalog",
+          "status": 200,
+          "durationMs": 55.5,
+          "ttfbMs": 53.4
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mock_catalog",
+          "status": 200,
+          "durationMs": 58.9,
+          "ttfbMs": 57.2
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/ssc-cgl/slots",
+          "action": "mock_exam",
+          "status": 200,
+          "durationMs": 15.2,
+          "ttfbMs": 12.6
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/ssc-cgl/history",
+          "action": "mock_exam",
+          "status": 200,
+          "durationMs": 21.2,
+          "ttfbMs": 18.7
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 18.5,
+          "ttfbMs": 16.7
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/slots/browser-test",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 12.3,
+          "ttfbMs": 10.9
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 13,
+          "ttfbMs": 11.3
+        },
+        {
+          "method": "POST",
+          "path": "/api/mocktest/ssc-cgl/browser-test/start",
+          "action": "start_mock",
+          "status": 201,
+          "durationMs": 22.4,
+          "ttfbMs": 20.9
+        }
+      ],
+      "pairedReads": [
+        {
+          "path": "/api/questions/counts?subject=mathematics&topic=algebra",
+          "directMs": 5.9,
+          "rewriteMs": 9
+        },
+        {
+          "path": "/api/questions/counts?subject=mathematics&topic=algebra",
+          "directMs": 5.7,
+          "rewriteMs": 9.2
+        },
+        {
+          "path": "/api/progress/topics/private?subject=mathematics",
+          "directMs": 16.9,
+          "rewriteMs": 18.2
+        },
+        {
+          "path": "/api/progress/topics/private?subject=mathematics",
+          "directMs": 16.1,
+          "rewriteMs": 18.7
+        },
+        {
+          "path": "/api/training/dashboard?exam=ssc-cgl",
+          "directMs": 13.9,
+          "rewriteMs": 18.7
+        },
+        {
+          "path": "/api/training/dashboard?exam=ssc-cgl",
+          "directMs": 21.8,
+          "rewriteMs": 19.4
+        }
+      ]
+    },
+    {
+      "run": 5,
+      "actions": {
+        "login": 756,
+        "dashboard_reload": 252,
+        "mathematics_document": 107,
+        "topic_document": 213,
+        "quiz_setup": 411,
+        "start_quiz": 364,
+        "submit_answer_ui": 13,
+        "open_solution": 31,
+        "open_ai_tutor": 24,
+        "next_question": 6,
+        "training_hub": 115,
+        "training_setup": 63,
+        "start_training": 172,
+        "finish_training": 186,
+        "mock_catalog": 109,
+        "mock_exam": 100,
+        "mock_instructions": 153,
+        "start_mock": 367
+      },
+      "api": [
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "preparation",
+          "status": 401,
+          "durationMs": 8,
+          "ttfbMs": 6
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "action": "login",
+          "status": 200,
+          "durationMs": 539.5,
+          "ttfbMs": 537.6
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "login",
+          "status": 200,
+          "durationMs": 21,
+          "ttfbMs": 19.2
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "dashboard_reload",
+          "status": 200,
+          "durationMs": 18.5,
+          "ttfbMs": 15.6
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "dashboard_reload",
+          "status": 200,
+          "durationMs": 19.9,
+          "ttfbMs": 17.9
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 54.6,
+          "ttfbMs": 53
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/counts",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 26.4,
+          "ttfbMs": 21.8
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 20,
+          "ttfbMs": 18.3
+        },
+        {
+          "method": "GET",
+          "path": "/api/progress/topics/private",
+          "action": "mathematics_document",
+          "status": 200,
+          "durationMs": 13.6,
+          "ttfbMs": 12.1
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/counts",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 13.1,
+          "ttfbMs": 11
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 26.1,
+          "ttfbMs": 24
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "topic_document",
+          "status": 200,
+          "durationMs": 21.9,
+          "ttfbMs": 20
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/meta",
+          "action": "quiz_setup",
+          "status": 200,
+          "durationMs": 10.3,
+          "ttfbMs": 8.8
+        },
+        {
+          "method": "GET",
+          "path": "/api/questions/session",
+          "action": "quiz_setup",
+          "status": 200,
+          "durationMs": 9.7,
+          "ttfbMs": 6.9
+        },
+        {
+          "method": "POST",
+          "path": "/api/questions/answer",
+          "action": "submit_answer_ui",
+          "status": 200,
+          "durationMs": 95,
+          "ttfbMs": 93.3
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 16.3,
+          "ttfbMs": 14.6
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 17.5,
+          "ttfbMs": 15.9
+        },
+        {
+          "method": "GET",
+          "path": "/api/training/capabilities",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 10.3,
+          "ttfbMs": 8.6
+        },
+        {
+          "method": "GET",
+          "path": "/api/training/dashboard",
+          "action": "training_hub",
+          "status": 200,
+          "durationMs": 26.5,
+          "ttfbMs": 24.8
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions",
+          "action": "start_training",
+          "status": 201,
+          "durationMs": 68.6,
+          "ttfbMs": 67.2
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions/68fade70-ff59-4027-a94c-6c5629ee6ef9/actions",
+          "action": "start_training",
+          "status": 200,
+          "durationMs": 32,
+          "ttfbMs": 30.4
+        },
+        {
+          "method": "POST",
+          "path": "/api/training/sessions/68fade70-ff59-4027-a94c-6c5629ee6ef9/actions",
+          "action": "finish_training",
+          "status": 200,
+          "durationMs": 91.5,
+          "ttfbMs": 89.2
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mock_catalog",
+          "status": 200,
+          "durationMs": 48.7,
+          "ttfbMs": 46.7
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mock_catalog",
+          "status": 200,
+          "durationMs": 37.3,
+          "ttfbMs": 34.9
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/ssc-cgl/slots",
+          "action": "mock_exam",
+          "status": 200,
+          "durationMs": 12.9,
+          "ttfbMs": 11
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/ssc-cgl/history",
+          "action": "mock_exam",
+          "status": 200,
+          "durationMs": 17.4,
+          "ttfbMs": 14
+        },
+        {
+          "method": "POST",
+          "path": "/auth/refresh",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 16.7,
+          "ttfbMs": 14.5
+        },
+        {
+          "method": "GET",
+          "path": "/api/mocktest/slots/browser-test",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 12.7,
+          "ttfbMs": 8.9
+        },
+        {
+          "method": "GET",
+          "path": "/users/me",
+          "action": "mock_instructions",
+          "status": 200,
+          "durationMs": 20.9,
+          "ttfbMs": 16.2
+        },
+        {
+          "method": "POST",
+          "path": "/api/mocktest/ssc-cgl/browser-test/start",
+          "action": "start_mock",
+          "status": 201,
+          "durationMs": 19.2,
+          "ttfbMs": 18
+        }
+      ],
+      "pairedReads": [
+        {
+          "path": "/api/questions/counts?subject=mathematics&topic=algebra",
+          "directMs": 8.1,
+          "rewriteMs": 7.1
+        },
+        {
+          "path": "/api/questions/counts?subject=mathematics&topic=algebra",
+          "directMs": 4.7,
+          "rewriteMs": 8.4
+        },
+        {
+          "path": "/api/progress/topics/private?subject=mathematics",
+          "directMs": 12.5,
+          "rewriteMs": 17
+        },
+        {
+          "path": "/api/progress/topics/private?subject=mathematics",
+          "directMs": 14.9,
+          "rewriteMs": 16
+        },
+        {
+          "path": "/api/training/dashboard?exam=ssc-cgl",
+          "directMs": 14.1,
+          "rewriteMs": 16.9
+        },
+        {
+          "path": "/api/training/dashboard?exam=ssc-cgl",
+          "directMs": 16.2,
+          "rewriteMs": 17.6
+        }
+      ]
+    }
+  ]
+}

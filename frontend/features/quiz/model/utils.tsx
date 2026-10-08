@@ -1,4 +1,5 @@
 import React from 'react';
+import { quizCorrectIndex } from '@meow/contracts/questions';
 import { type Question as ApiQuestion } from '@/lib/api/questions';
 import { QuizMode, Difficulty, QuizQuestionRecord, ConceptColour, QuizQuestion } from '@/features/quiz/model/types';
 
@@ -54,30 +55,7 @@ export function extractYear(exam: string): string {
 }
 
 export function resolveCorrectIndex(question: ApiQuestion, options: string[]): number {
-  const letter = (question.correctLetter ?? "").trim().toLowerCase();
-  if (letter) {
-    const idx = letter.charCodeAt(0) - 97;
-    if (idx >= 0 && idx < options.length) return idx;
-  }
-
-  const answerText = String(question.correctAnswer ?? "").trim();
-  if (answerText) {
-    if (/^[a-z]$/i.test(answerText)) {
-      const idx = answerText.toLowerCase().charCodeAt(0) - 97;
-      if (idx >= 0 && idx < options.length) return idx;
-    }
-
-    const exact = options.findIndex((opt) => opt.trim() === answerText);
-    if (exact >= 0) return exact;
-
-    const numeric = Number(answerText);
-    if (Number.isFinite(numeric)) {
-      if (numeric >= 0 && numeric < options.length) return numeric;
-      if (numeric >= 1 && numeric <= options.length) return numeric - 1;
-    }
-  }
-
-  return 0;
+  return quizCorrectIndex(question, options) ?? 0;
 }
 
 export function buildConceptColours(concepts: string[]): Record<string, ConceptColour> {

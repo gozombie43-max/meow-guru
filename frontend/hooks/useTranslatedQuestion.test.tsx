@@ -98,3 +98,19 @@ describe("question translation navigation", () => {
     expect(hook.result.current.isTranslating).toBe(false);
   });
 });
+
+it("translates one future question and waits for solution opening", async () => {
+  const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, init) => response(JSON.parse(init?.body as string).texts));
+  const current = { question: "D lazy current", options: ["D option"], solution: "D current explanation" };
+  const upcoming = ['alpha', 'beta', 'gamma'].map(n => ({ question: `D future ${n}`, options: [`D choice ${n}`], solution: `D future explanation ${n}` }));
+  const hook = renderHook(({ open }) => useTranslatedQuestion(current, false, upcoming, "math", open), { initialProps: { open: false } });
+  await act(async () => hook.result.current.setActiveLang("bn"));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  const texts = () => fetchMock.mock.calls.flatMap(call => JSON.parse(call[1]?.body as string).texts as string[]);
+  expect(texts()).toContain("D future alpha"); expect(texts()).not.toContain("D future beta");
+  expect(texts().some(text => text.includes("explanation"))).toBe(false);
+  hook.rerender({ open: true });
+  await waitFor(() => expect(hook.result.current.displayedSolution).toBe("bn:D current explanation"));
+  expect(texts()).toContain("D current explanation");
+  expect(texts()).not.toContain("D future explanation alpha");
+});

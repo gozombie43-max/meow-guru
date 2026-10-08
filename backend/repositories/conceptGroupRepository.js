@@ -1,9 +1,38 @@
 import { getMongoDB } from '../config/mongodb.js';
+import { LRUCache } from 'lru-cache';
+import { registerSharedLocalCache } from '../infrastructure/tieredCache.js';
 import { claimJob, renewJob, completeJob } from '../infrastructure/durableQueue.js';
 const groups = () => getMongoDB().collection('conceptGroupMetadata');
+const databaseCaches = new WeakMap();
 export async function enqueueConceptGrouping(fingerprint, doc) {
-  await groups().updateOne({ _id: fingerprint }, { $setOnInsert: doc }, { upsert: true });
-  return groups().findOne({ _id: fingerprint });
+  const db = getMongoDB();
+  let state = databaseCaches.get(db);
+  if (!state) {
+    const completed = new LRUCache({ max: 200, maxSize: 10 * 1024 * 1024,
+      maxEntrySize: 1024 * 1024, ttl: 300000,
+      sizeCalculation: value => Buffer.byteLength(JSON.stringify(value)) });
+    state = { completed, pending: new Map() };
+    databaseCaches.set(db, state);
+    registerSharedLocalCache(completed);
+  }
+  // Completed results are immutable for this version/scope/concepts fingerprint.
+  const cached = state.completed.get(fingerprint);
+  if (cached) return cached;
+  if (state.pending.has(fingerprint)) return state.pending.get(fingerprint);
+  if (state.pending.size >= 256) throw Object.assign(new Error('Grouping read capacity exceeded'), { statusCode: 503 });
+  const work = (async () => {
+    const collection = db.collection('conceptGroupMetadata');
+    let existing = await collection.findOne({ _id: fingerprint });
+    if (!existing) {
+      await collection.updateOne({ _id: fingerprint }, { $setOnInsert: doc }, { upsert: true });
+      existing = await collection.findOne({ _id: fingerprint });
+    }
+    if (existing?.status === 'completed') state.completed.set(fingerprint, existing);
+    return existing;
+  })();
+  state.pending.set(fingerprint, work);
+  try { return await work; }
+  finally { state.pending.delete(fingerprint); }
 }
 export const claimConceptGrouping = leaseMs => claimJob(groups(), 'concept-grouping', new Date(), leaseMs);
 export const renewConceptGrouping = (job, leaseMs) => renewJob(groups(), job, new Date(), leaseMs);

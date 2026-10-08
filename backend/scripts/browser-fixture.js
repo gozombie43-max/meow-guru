@@ -30,10 +30,13 @@ const { default: passport } = await import('../auth/passport.js');
 const { default: auth } = await import('../routes/auth.routes.js');
 const { default: mocktest } = await import('../routes/mocktest.js');
 const { default: progress } = await import('../routes/progress.routes.js');
+const { default: questionsRouter } = await import('../routes/questionRoutes.js');
 const { protect } = await import('../middleware/protect.js');
 const { getMe, getRecentQuiz, updateRecentQuizzes, getAiChats, getAiChat, appendAiMessages, updateAiChat, deleteAiChat } = await import('../controllers/userController.js');
 const passwordHash = await bcrypt.hash('Browser-fixture-123!', 4);
 await db.collection('users').insertMany(['desktop', 'mobile', 'lighthouse', 'performance-desktop', 'performance-mobile', 'admin', 'superadmin'].map(device => ({ id: `browser-${device}`, name: 'Browser Student', email: `browser-${device}@example.test`, passwordHash, role: ['admin', 'superadmin'].includes(device) ? device : 'student', progress: {}, bookmarks: [], recentQuizzes: [{ quizKey: 'mathematics:algebra', currentIndex: 0, status: 'in-progress', selectedAnswers: {}, submittedQuestions: [] }] })));
+const { migrateUserHistory } = await import('../repositories/userHistoryRepository.js');
+for (const user of await db.collection('users').find({}).toArray()) await migrateUserHistory(db, user, { apply: true });
 const { normalizedQuestionKeys } = await import('../services/questions/questionNormalizer.js');
 const { trainingQuestionMetadata } = await import('../services/training/domain/questionMetadata.js');
 await db.collection('questions').insertMany(Array.from({ length: 250 }, (_, i) => {
@@ -75,6 +78,7 @@ app.get('/api/questions', async (req, res) => res.json(await fetchQuestions(req.
 app.get('/api/questions/session', async (req, res) => res.json(await fetchQuestionsSession(req.query)));
 app.get('/api/questions/meta', async (req, res) => res.json(await fetchQuestionsMeta(req.query)));
 app.get('/api/questions/counts', async (req, res) => res.json(await fetchQuestionCounts(req.query)));
+app.use('/api/questions', questionsRouter);
 app.get('/api/questions/topic-counts', async (req, res) => {
   try {
     res.json(await fetchTopicCountSnapshot(req.query.subject));

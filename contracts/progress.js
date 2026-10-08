@@ -48,3 +48,15 @@ export const studyTimePatchSchema = z.object({
   activeSeconds: z.number().int().positive().max(86400),
   timezone: z.string().trim().min(1).max(100).optional(),
 });
+
+export const quizAnswerCommandSchema = z.object({
+  questionId: z.union([z.string().min(1).max(200), z.number().int()]),
+  questionUid: z.string().regex(/^q_[a-f0-9]{32}$/).optional(),
+  questionAnchor: z.string().regex(/^[a-f0-9]{24}$/i).optional(),
+  topic: z.string().max(200).optional(),
+  answer: z.number().int().nonnegative().max(20),
+  submissionId: z.string().regex(/^[a-zA-Z0-9_-]{8,100}$/),
+  questionIndex: z.number().int().nonnegative(),
+  timeTaken: z.number().min(0).max(86400),
+  resume: recentQuizPatchSchema,
+});

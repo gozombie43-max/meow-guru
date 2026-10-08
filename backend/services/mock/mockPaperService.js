@@ -166,8 +166,8 @@ export async function uploadFullPaper({ slotData, questions }) {
   };
 }
 
-export async function buildPaper({ examSlug, testId }) {
-  const slot = await fetchSlotById(examSlug, testId);
+export async function buildPaper({ examSlug, testId, slot: loadedSlot }) {
+  const slot = loadedSlot ?? await fetchSlotById(examSlug, testId);
   if (!slot) throw new Error(`Slot not found: ${testId}`);
 
   const config = getExamConfig(slot.configKey);
@@ -225,94 +225,102 @@ export async function buildPaper({ examSlug, testId }) {
   }
 
   // Case B: Dynamic paper generation from question pool
-  for (const section of config.sections) {
-    const overfetchCount = section.questionCount * 3;
-    const topicList = section.topics.map(t => t.toLowerCase());
+  // Keep section order and answer-key precedence while limiting simultaneous reads.
+  for (let offset = 0; offset < config.sections.length; offset += 3) {
+    const batch = await Promise.all(config.sections.slice(offset, offset + 3).map(async section => {
+      const sectionKeys = {};
+      const overfetchCount = section.questionCount * 3;
+      const topicList = section.topics.map(t => t.toLowerCase());
 
-    let allQuestions = [];
-    if (topicList.length > 0) {
-      try {
-        const topicRegexes =
-          topicList.map(
-            (topic) =>
-              exactCI(topic)
-          );
+      let allQuestions = [];
+      if (topicList.length > 0) {
+        try {
+          const topicRegexes =
+            topicList.map(
+              (topic) =>
+                exactCI(topic)
+            );
 
-        const resources =
-          await questionsCollection
-            .find(
-              {
-                topic: {
-                  $in: topicRegexes,
+          const resources =
+            await questionsCollection
+              .find(
+                {
+                  topic: {
+                    $in: topicRegexes,
+                  },
                 },
-              },
-              {
-                projection: {
-                  _id: 0,
-                  _cosmosRid: 0,
-                },
-              }
-            )
-            .limit(
-              overfetchCount *
-              Math.max(
-                topicList.length,
-                1
+                {
+                  projection: {
+                    _id: 0,
+                    _cosmosRid: 0,
+                  },
+                }
               )
-            )
-            .toArray();
+              .limit(
+                overfetchCount *
+                Math.max(
+                  topicList.length,
+                  1
+                )
+              )
+              .toArray();
 
-        allQuestions =
-          resources.map(q => ({ ...q, legacyId: q.id, id: q.questionUid || q.id }));
-      } catch (err) {
-        runtimeLog.warn(`Query for topics [${topicList.join(', ')}] failed:`, err.message);
+          allQuestions =
+            resources.map(q => ({ ...q, legacyId: q.id, id: q.questionUid || q.id }));
+        } catch (err) {
+          runtimeLog.warn(`Query for topics [${topicList.join(', ')}] failed:`, err.message);
+        }
       }
+
+      // Deduplicate by id
+      const seen = new Set();
+      allQuestions = allQuestions.filter(q => {
+        if (seen.has(q.id)) return false;
+        seen.add(q.id);
+        return true;
+      });
+
+      // Apply 30/50/20 difficulty distribution
+      const easy = allQuestions.filter(q => (q.difficulty || '').toLowerCase() === 'easy');
+      const medium = allQuestions.filter(q => (q.difficulty || '').toLowerCase() === 'medium');
+      const hard = allQuestions.filter(q => (q.difficulty || '').toLowerCase() === 'hard');
+      const rest = allQuestions.filter(q => !['easy', 'medium', 'hard'].includes((q.difficulty || '').toLowerCase()));
+
+      const easyCount = Math.round(section.questionCount * 0.3);
+      const hardCount = Math.round(section.questionCount * 0.2);
+      const mediumCount = section.questionCount - easyCount - hardCount;
+
+      let selected = [
+        ...shuffleArray(easy).slice(0, easyCount),
+        ...shuffleArray(medium).slice(0, mediumCount),
+        ...shuffleArray(hard).slice(0, hardCount),
+      ];
+
+      if (selected.length < section.questionCount) {
+        const selectedIds = new Set(selected.map(q => q.id));
+        const remaining = allQuestions.filter(q => !selectedIds.has(q.id));
+        selected.push(...shuffleArray(remaining).slice(0, section.questionCount - selected.length));
+      }
+
+      selected = shuffleArray(selected).slice(0, section.questionCount);
+
+      for (const q of selected) {
+        sectionKeys[q.questionUid || q.id] = q.correctAnswer ?? q.answer ?? null;
+      }
+
+      return { answerKey: sectionKeys, section: {
+        key: section.key,
+        label: section.label,
+        questionCount: section.questionCount,
+        timeLimitMin: section.timeLimitMin,
+        marking: section.marking,
+        questions: selected.map(stripAnswer),
+      } };
+    }));
+    for (const result of batch) {
+      sections.push(result.section);
+      Object.assign(answerKey, result.answerKey);
     }
-
-    // Deduplicate by id
-    const seen = new Set();
-    allQuestions = allQuestions.filter(q => {
-      if (seen.has(q.id)) return false;
-      seen.add(q.id);
-      return true;
-    });
-
-    // Apply 30/50/20 difficulty distribution
-    const easy = allQuestions.filter(q => (q.difficulty || '').toLowerCase() === 'easy');
-    const medium = allQuestions.filter(q => (q.difficulty || '').toLowerCase() === 'medium');
-    const hard = allQuestions.filter(q => (q.difficulty || '').toLowerCase() === 'hard');
-    const rest = allQuestions.filter(q => !['easy', 'medium', 'hard'].includes((q.difficulty || '').toLowerCase()));
-
-    const easyCount = Math.round(section.questionCount * 0.3);
-    const hardCount = Math.round(section.questionCount * 0.2);
-    const mediumCount = section.questionCount - easyCount - hardCount;
-
-    let selected = [
-      ...shuffleArray(easy).slice(0, easyCount),
-      ...shuffleArray(medium).slice(0, mediumCount),
-      ...shuffleArray(hard).slice(0, hardCount),
-    ];
-
-    if (selected.length < section.questionCount) {
-      const selectedIds = new Set(selected.map(q => q.id));
-      const remaining = allQuestions.filter(q => !selectedIds.has(q.id));
-      selected.push(...shuffleArray(remaining).slice(0, section.questionCount - selected.length));
-    }
-
-    selected = shuffleArray(selected).slice(0, section.questionCount);
-
-    for (const q of selected) {
-      answerKey[q.questionUid || q.id] = q.correctAnswer ?? q.answer ?? null;
-    }
-
-    sections.push({
-      key: section.key,
-      label: section.label,
-      questionCount: section.questionCount,
-      timeLimitMin: section.timeLimitMin,
-      marking: section.marking,
-      questions: selected.map(stripAnswer),
-    });
   }
 
   return {

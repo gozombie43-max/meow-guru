@@ -16,7 +16,8 @@ function QuestionInvalidationBridge({ children }: { children: ReactNode }) {
 
 const waitForAuth: Middleware = useSWRNext => function useAuthenticatedQuery(key, fetcher, config) {
   const { loading } = useAuth();
-  return useSWRNext(loading ? null : key, fetcher, config);
+  const publicQuery = (config as typeof config & { meowPublicQuery?: boolean }).meowPublicQuery === true;
+  return useSWRNext(loading && !publicQuery ? null : key, fetcher, config);
 };
 
 function AccountQueries({ children }: { children: ReactNode }) {
@@ -24,8 +25,8 @@ function AccountQueries({ children }: { children: ReactNode }) {
   const owner = user?.id ?? 'guest';
   const [scope, setScope] = useState(() => ({ owner, ready: !loading, generation: 0 }));
   if (!scope.ready && !loading) {
-    // No queries run during bootstrap, so the empty cache can acquire its first
-    // owner without remounting the server-rendered page and replaying effects.
+    // Only public queries run during bootstrap. Preserve their cache and page
+    // when the first private owner becomes ready, avoiding a second public read.
     setScope({ owner, ready: true, generation: scope.generation });
   } else if (scope.ready && scope.owner !== owner) {
     // Actual account changes still discard both private cache and page state.

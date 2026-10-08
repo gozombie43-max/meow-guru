@@ -2,7 +2,8 @@ import { beforeAll, afterAll, beforeEach, describe, it, expect, vi } from "vites
 import { Collection } from "mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { connectMongoDB, disconnectMongoDB } from "../../config/mongodb.js";
-import { fetchTopicCountSnapshot } from "../questions/topicCountSnapshot.js";
+import { fetchTopicCountSnapshot, fetchPublicTopicCountSnapshot, startTopicCountPrewarm } from "../questions/topicCountSnapshot.js";
+import { clearSharedLocalCaches } from '../../infrastructure/tieredCache.js';
 import { fetchQuestionCounts } from "../questions/questionMetadataService.js";
 import { createQuestion, createQuestionsBulk, modifyQuestion, removeQuestion, removeQuestionsBulk } from "../questions/questionWriteService.js";
 import { invalidateQuestionCacheRevision, questionCountsCache } from "../questions/questionCache.js";
@@ -16,6 +17,7 @@ beforeAll(async () => {
   db = await connectMongoDB();
 }, 120000);
 beforeEach(async () => {
+  clearSharedLocalCaches();
   await db.collection("questions").deleteMany({});
   await db.collection("questionMetadata").deleteMany({});
   invalidateQuestionCacheRevision();
@@ -23,6 +25,62 @@ beforeEach(async () => {
 afterAll(async () => { await disconnectMongoDB(); await server?.stop(); vi.unstubAllEnvs(); });
 
 describe("saved mathematics topic totals", () => {
+  it('serves a previous public revision while rebuilding, but private reads await the current revision', async () => {
+    vi.stubEnv('QUESTIONS_NORMALIZED_KEYS', 'false');
+    await db.collection('questions').insertOne(question('old', 'PYQ'));
+    const old = await fetchTopicCountSnapshot();
+    await db.collection('questions').insertOne(question('new', 'PYQ'));
+    await db.collection('questionMetadata').updateOne({ _id: 'revision' }, { $inc: { revision: 1 } }, { upsert: true });
+    await db.collection('questionMetadata').updateOne({ kind: 'topic-counts' }, { $set: { 'data.userProgress': { secret: 1 } } });
+    clearSharedLocalCaches();
+    const original = Collection.prototype.aggregate;
+    let release, entered;
+    const gate = new Promise(resolve => { release = resolve; });
+    const started = new Promise(resolve => { entered = resolve; });
+    const aggregate = vi.spyOn(Collection.prototype, 'aggregate').mockImplementationOnce(function (...args) {
+      return { toArray: async () => { entered(); await gate; return original.apply(this, args).toArray(); } };
+    });
+    let reading;
+    try {
+      const publicData = await fetchPublicTopicCountSnapshot();
+      expect(publicData.revision).toBe(old.revision);
+      expect(publicData.totals.percentages).toBe(1);
+      expect(publicData).not.toHaveProperty('userProgress');
+      await started;
+      let settled = false;
+      reading = fetchTopicCountSnapshot().then(data => { settled = true; return data; });
+      await new Promise(resolve => setImmediate(resolve));
+      expect(settled).toBe(false);
+      release();
+      expect((await reading).totals.percentages).toBe(2);
+    } finally { release(); await reading; aggregate.mockRestore(); }
+  });
+  it('prewarms an empty installation and drains startup work on stop', async () => {
+    const stop = startTopicCountPrewarm();
+    await stop();
+    const saved = await db.collection('questionMetadata').findOne({ kind: 'topic-counts' });
+    expect(saved.data.subject).toBe('mathematics');
+    expect(saved.data.totals.percentages).toBe(0);
+    const aggregate = vi.spyOn(Collection.prototype, 'aggregate');
+    expect((await fetchPublicTopicCountSnapshot()).totals.geometry).toBe(0);
+    expect(aggregate).not.toHaveBeenCalled();
+    aggregate.mockRestore();
+  });
+  it('rejects public snapshots beyond the stale budget or with invalid totals', async () => {
+    await db.collection('questions').insertOne(question('current', 'PYQ'));
+    const valid = await fetchTopicCountSnapshot();
+    const wrongSubject = await fetchTopicCountSnapshot('english');
+    for (const invalid of [
+      { ...valid, totals: { ...valid.totals, percentages: -1 } },
+      { ...valid, generatedAt: new Date(Date.now() - 25 * 3600000).toISOString(), totals: { ...valid.totals, percentages: 99 } },
+      wrongSubject,
+    ]) {
+      await db.collection('questionMetadata').updateOne({ _id: `topic-counts:v2:mathematics:${process.env.QUESTIONS_NORMALIZED_KEYS === 'true'}` }, { $set: { data: invalid } });
+      clearSharedLocalCaches();
+      expect((await fetchPublicTopicCountSnapshot()).totals.percentages).toBe(1);
+    }
+    await expect(fetchPublicTopicCountSnapshot('unknown')).rejects.toMatchObject({ statusCode: 400 });
+  });
   it('rebuilds an ancient same-revision snapshot after an external import', async () => {
     vi.stubEnv('QUESTIONS_NORMALIZED_KEYS', 'false');
     await db.collection('questionMetadata').insertOne({

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import useSWR from 'swr';
 import { fetchWithRetry } from '@/lib/api/http';
 import { API_BASE } from '@/lib/api-base';
+import { PUBLIC_QUESTION_QUERY } from '@/features/quiz/api/publicQuery';
 
 interface QuestionsMeta {
   total: number;
@@ -13,7 +14,7 @@ interface QuestionsMeta {
 }
 
 const fetcher = async (url: string): Promise<QuestionsMeta> => {
-  const res = await fetchWithRetry(url);
+  const res = await fetchWithRetry(url, {}, { auth: 'none' });
   if (!res.ok) throw new Error('Failed to fetch questions meta');
   return res.json();
 };
@@ -42,6 +43,7 @@ export function useQuestionsMeta(params: {
     : `${API_BASE}/api/questions/meta?${query.toString()}`;
 
   const { data, error, isLoading, mutate } = useSWR<QuestionsMeta>(url, fetcher, {
+    ...PUBLIC_QUESTION_QUERY,
     revalidateOnFocus: false,
     revalidateIfStale: true,
     refreshInterval: (data) => data?.groupingStatus === 'processing' ? 10000 : 0,

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from "react";
-import { createResumeSaver } from '../model/resumeDelta';
+import { useEffect, useRef } from "react";
+import type { createResumeSaver } from '../model/resumeDelta';
 import type { SessionResult, Difficulty, QuizQuestion } from "@/features/quiz/model/types";
 
 export function useQuizSync({
@@ -25,6 +25,7 @@ export function useQuizSync({
   selectedClassificationConcepts,
   difficulty,
   sessionFilters,
+  saver,
 }: {
   token: string | null;
   started: boolean;
@@ -48,8 +49,8 @@ export function useQuizSync({
   selectedClassificationConcepts: Set<string>;
   difficulty: Difficulty;
   sessionFilters?: { exam?: string; concept?: string; letter?: string };
+  saver: ReturnType<typeof createResumeSaver>;
 }): void {
-  const saver = useMemo(() => createResumeSaver(token, `${quizKey}:${mode}`), [token, quizKey, mode]);
   const localFlush = useRef<(() => void) | null>(null);
   const serverFlush = useRef<(() => void) | null>(null);
   useEffect(() => () => { localFlush.current?.(); serverFlush.current?.(); }, []);

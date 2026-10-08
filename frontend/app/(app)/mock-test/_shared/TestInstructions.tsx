@@ -2,7 +2,9 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect,useState } from 'react';
+import { useEffect,useRef,useState } from 'react';
+import { seedStartResponse, startResponseEpoch } from '@/lib/start-response-cache';
+import { getMockStartKey } from './startKey';
 import { getSlotDetails,startTest } from './api';
 import { getExamConfig,getSlotById,getTotalQuestions,type MockTestSlot } from './exam-config';
 import styles from './TestInstructions.module.css';
@@ -15,24 +17,29 @@ interface TestInstructionsProps {
 
 export default function TestInstructions({ examSlug, testId, resumeAttemptId }: TestInstructionsProps) {
   const router = useRouter();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const starting = useRef(false);
   const [loading, setLoading] = useState(false);
-  const [slot, setSlot] = useState<MockTestSlot | null>(() => getSlotById(testId) || null);
+  const [loadedSlot, setLoadedSlot] = useState<{ key: string; slot: MockTestSlot } | null>(null);
+  const slotKey = `${examSlug}:${testId}`;
+  const slot = getSlotById(testId) ?? (loadedSlot?.key === slotKey ? loadedSlot.slot : null);
 
   const isResume = Boolean(resumeAttemptId);
 
   useEffect(() => {
     // If not found in static config, fetch from API
     if (!slot) {
-      getSlotDetails(testId, examSlug)
+      const controller = new AbortController();
+      getSlotDetails(testId, examSlug, controller.signal)
         .then((res) => {
-          if (res.slot) setSlot(res.slot);
+          if (!controller.signal.aborted && res.slot) setLoadedSlot({ key: slotKey, slot: res.slot });
         })
         .catch((err) => {
-          console.warn('Failed to load dynamic slot:', err);
+          if (!controller.signal.aborted) console.warn('Failed to load dynamic slot:', err);
         });
+      return () => controller.abort();
     }
-  }, [testId, examSlug, slot]);
+  }, [testId, examSlug, slot, slotKey]);
 
   const config = slot ? getExamConfig(slot.configKey) : null;
 
@@ -53,17 +60,22 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
       router.replace('/login');
       return;
     }
+    if (starting.current) return;
+    starting.current = true;
     setLoading(true);
+    const epoch = startResponseEpoch();
     try {
       if (isResume && resumeAttemptId) {
         router.push(`/mock-test/${examSlug}/${testId}/attempt?resume=${resumeAttemptId}`);
       } else {
-        const res = await startTest(examSlug, testId, token);
+        const res = await startTest(examSlug, testId, token, getMockStartKey(user?.id, examSlug, testId));
+        seedStartResponse(`mock:${examSlug}:${testId}`, user?.id, res.attemptId, res, epoch);
         router.push(`/mock-test/${examSlug}/${testId}/attempt?resume=${res.attemptId}`);
       }
     } catch (error) {
       console.error(error);
       alert('Failed to start test. Please check your network and login status.');
+      starting.current = false;
       setLoading(false);
     }
   };

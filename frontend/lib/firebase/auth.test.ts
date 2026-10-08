@@ -3,7 +3,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 const { app, auth, user, getAuth, setPersistence, signInWithCustomToken, signOut, post, getFirebaseAppCheck } = vi.hoisted(() => {
   const user = { uid: 'meow-user', getIdToken: vi.fn() };
   return {
-    app: { options: { projectId: 'meow-project' } }, auth: {}, user,
+    app: { options: { projectId: 'meow-project' } }, auth: { currentUser: null as typeof user | null }, user,
     getAuth: vi.fn(), setPersistence: vi.fn(), signInWithCustomToken: vi.fn(),
     signOut: vi.fn(), post: vi.fn(), getFirebaseAppCheck: vi.fn(),
   };
@@ -11,7 +11,7 @@ const { app, auth, user, getAuth, setPersistence, signInWithCustomToken, signOut
 vi.mock('firebase/auth', () => ({
   getAuth, setPersistence, signInWithCustomToken, signOut, inMemoryPersistence: 'memory',
 }));
-vi.mock('@/lib/axios', () => ({ default: { post }, AUTH_TOKEN_CHANGED_EVENT: 'auth-token-changed' }));
+vi.mock('@/lib/axios', () => ({ default: { post }, AUTH_TOKEN_CHANGED_EVENT: 'auth-token-changed', getAccessToken: () => null }));
 vi.mock('./client', () => ({ getFirebaseApp: () => app, getFirebaseAppCheck }));
 
 let ensureFirebaseTutorAuth: () => Promise<void>;
@@ -29,9 +29,10 @@ describe('Firebase tutor session', () => {
     vi.clearAllMocks();
     getAuth.mockReturnValue(auth);
     setPersistence.mockResolvedValue(undefined);
-    signOut.mockResolvedValue(undefined);
+    auth.currentUser = null;
+    signOut.mockImplementation(async () => { auth.currentUser = null; });
     user.getIdToken.mockResolvedValue('firebase-id-token');
-    signInWithCustomToken.mockResolvedValue({ user });
+    signInWithCustomToken.mockImplementation(async () => { auth.currentUser = user; return { user }; });
     post.mockResolvedValue({ data: { token: 'custom-token', uid: user.uid, projectId: 'meow-project' } });
   });
   afterEach(() => vi.restoreAllMocks());
@@ -49,6 +50,54 @@ describe('Firebase tutor session', () => {
     expect(post).toHaveBeenCalledOnce();
     await ensureFirebaseTutorAuth();
     expect(post).toHaveBeenCalledTimes(2);
+    expect(post).toHaveBeenLastCalledWith('/auth/firebase/session', {}, { timeout: 15000 });
+    expect(signInWithCustomToken).toHaveBeenCalledOnce();
+  });
+  it('reuses Firebase credentials only after successful Meow validation', async () => {
+    await ensureFirebaseTutorAuth();
+    post.mockRejectedValueOnce(Object.assign(new Error('revoked'), { status: 401 }));
+    await expect(ensureFirebaseTutorAuth()).rejects.toMatchObject({ status: 401 });
+    expect(signOut).toHaveBeenCalledWith(auth);
+    expect(auth.currentUser).toBeNull();
+    expect(signInWithCustomToken).toHaveBeenCalledOnce();
+  });
+  it('signs in again when the validated user differs from the Firebase user', async () => {
+    await ensureFirebaseTutorAuth();
+    auth.currentUser = { ...user, uid: 'old-user' };
+    await ensureFirebaseTutorAuth();
+    expect(signOut).toHaveBeenCalledWith(auth);
+    expect(signInWithCustomToken).toHaveBeenCalledTimes(2);
+    expect(auth.currentUser?.uid).toBe(user.uid);
+  });
+  it('recovers an invalid Firebase credential with one new custom sign-in', async () => {
+    await ensureFirebaseTutorAuth();
+    user.getIdToken.mockRejectedValueOnce(Object.assign(new Error('expired'), { code: 'auth/user-token-expired' }));
+    await ensureFirebaseTutorAuth();
+    expect(signInWithCustomToken).toHaveBeenCalledTimes(2);
+    expect(post).toHaveBeenCalledTimes(3);
+  });
+  it('blocks a pending message on a different Meow session', async () => {
+    await ensureFirebaseTutorAuth();
+    let deliver!: (value: unknown) => void;
+    post.mockImplementationOnce(() => new Promise(resolve => { deliver = resolve; }));
+    const pending = ensureFirebaseTutorAuth();
+    await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(2));
+    window.dispatchEvent(new CustomEvent('auth-token-changed', { detail: 'new-session-token' }));
+    deliver({ data: { uid: user.uid, projectId: 'meow-project' } });
+    await expect(pending).rejects.toMatchObject({ code: 'auth/session-changed' });
+  });
+  it('keeps a pending validation and Firebase sign-in across same-session token rotation', async () => {
+    const token = (jti: string) => `header.${btoa(JSON.stringify({ id: user.uid, sid: 'same-session', jti }))}.signature`;
+    window.dispatchEvent(new CustomEvent('auth-token-changed', { detail: token('first') }));
+    await ensureFirebaseTutorAuth();
+    let deliver!: (value: unknown) => void;
+    post.mockImplementationOnce(() => new Promise(resolve => { deliver = resolve; }));
+    const pending = ensureFirebaseTutorAuth();
+    await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(2));
+    window.dispatchEvent(new CustomEvent('auth-token-changed', { detail: token('rotated') }));
+    deliver({ data: { uid: user.uid, projectId: 'meow-project' } });
+    await expect(pending).resolves.toBeUndefined();
+    expect(signInWithCustomToken).toHaveBeenCalledOnce();
   });
   it('rejects mismatched Firebase projects before signing in', async () => {
     post.mockResolvedValueOnce({ data: { token: 'custom-token', uid: user.uid, projectId: 'other-project' } });

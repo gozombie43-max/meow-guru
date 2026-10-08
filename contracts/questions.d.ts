@@ -11,3 +11,11 @@ export declare const questionAnswerRequestSchema: z.ZodObject<{
     topic: z.ZodOptional<z.ZodString>;
     submissionId: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
+/** @param {{ correctLetter?: string, correctAnswer?: unknown }} question
+ * @param {string[]} options
+ * @returns {number | null}
+ */
+export declare function quizCorrectIndex(question: {
+    correctLetter?: string;
+    correctAnswer?: unknown;
+}, options: string[]): number | null;

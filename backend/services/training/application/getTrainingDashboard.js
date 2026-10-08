@@ -1,5 +1,4 @@
 import {
-  trainingHistory as history,
   expiredActiveSessions,
   trainingDashboardData,
   commitTrainingTransition,
@@ -22,16 +21,18 @@ export function getTrainingDashboardData(userId, exam) {
 }
 async function loadDashboard(userId, exam) {
   const start = performance.now();
-  const expired = await expiredActiveSessions(userId, exam);
-  for (const stale of expired) {
-    const finalized = transition(stale, { type: "finish" });
-    await commitTrainingTransition(stale, finalized);
-  }
-
   return cachedTrainingDashboard(userId, exam, async () => {
-    const dashboard = await trainingDashboardData(userId, exam);
-    const durablePrimary = dashboard.stateMeta?.version === 1 && dashboard.stateMeta?.status === 'ready';
-    const previous = await history(userId, exam, durablePrimary && featureEnabled('USE_COMPACT_TRAINING_HISTORY', userId));
+    // Cached dashboards last at most five seconds and never outlive a visible
+    // active-session deadline. Cache misses recover expiry without a worker.
+    const expired = await expiredActiveSessions(userId, exam);
+    for (const stale of expired) {
+      const finalized = transition(stale, { type: 'finish' });
+      await commitTrainingTransition(stale, finalized);
+    }
+    const dashboard = await trainingDashboardData(userId, exam, {
+      includeHistory: true, compactHistory: featureEnabled('USE_COMPACT_TRAINING_HISTORY', userId),
+    });
+    const { previous } = dashboard;
     const {
       active,
       catalogPairs,

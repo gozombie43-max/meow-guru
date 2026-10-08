@@ -53,6 +53,17 @@ describe('Firebase custom authentication bridge', () => {
     expect(createCustomToken).toHaveBeenCalledExactlyOnceWith('meow-user');
     expect(await response.json()).toMatchObject({ uid: 'meow-user', token: 'custom-token' });
   });
+  it('validates the current Meow identity without minting, and rejects revoked sessions', async () => {
+    const validate = () => fetch(`${baseUrl}/auth/firebase/session`, { method: 'POST', headers: { Authorization: 'Bearer meow-jwt' } });
+    const response = await validate();
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(await response.json()).toMatchObject({ uid: 'meow-user' });
+    expect(assertSession).toHaveBeenCalledOnce();
+    expect(createCustomToken).not.toHaveBeenCalled();
+    assertSession.mockRejectedValueOnce(Object.assign(new Error('revoked'), { statusCode: 401 }));
+    expect((await validate()).status).toBe(401);
+  });
   it('does not expose Firebase credentials or provider errors', async () => {
     createCustomToken.mockRejectedValue(new Error('private signing credential failure'));
     const response = await post();

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { prefetchOnce } from "@/lib/intent-prefetch";
 import { useRouter } from 'next/navigation';
 import React from "react";
 import type { LucideIcon } from "lucide-react";
@@ -109,9 +110,9 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
     <Link
       href={href}
       prefetch={false}
-      onPointerEnter={() => { if (!isComingSoon) router.prefetch(href); }}
-      onFocus={() => { if (!isComingSoon) router.prefetch(href); }}
-      onTouchStart={() => { if (!isComingSoon) router.prefetch(href); }}
+      onPointerEnter={() => { if (!isComingSoon) prefetchOnce(router, href); }}
+      onFocus={() => { if (!isComingSoon) prefetchOnce(router, href); }}
+      onTouchStart={() => { if (!isComingSoon) prefetchOnce(router, href); }}
       data-hub-part="mobileTopicRow"
       className={`${styles.card} ${isComingSoon ? styles.cardComingSoon : ""}`}
       aria-label={`${name}${isComingSoon ? ", Coming soon" : count !== undefined ? `, ${count} questions` : ""}`}

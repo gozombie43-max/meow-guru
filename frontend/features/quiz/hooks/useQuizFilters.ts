@@ -96,7 +96,7 @@ export function useQuizFilters({
     topic: questionTopic ?? slug,
     mode,
     limit: 100,
-    enabled: !authLoading && (!restoredEntry || Boolean(resumeEntry)),
+    enabled: (!resumeRequested || !authLoading) && (!restoredEntry || Boolean(resumeEntry)),
     resumeIndex: matchesResumeFilters ? resumeWindow.index : undefined,
     anchor: matchesResumeFilters ? resumeWindow.anchor : undefined,
     // Unfiltered totals already arrive in metadata. Filter combinations need an exact count.
@@ -225,6 +225,6 @@ export function useQuizFilters({
     classificationCategoryCounts,
     questions,
     availableCount,
-    isLoading,
+    isLoading: isLoading || authLoading,
   };
 }

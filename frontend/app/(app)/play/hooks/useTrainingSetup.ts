@@ -2,10 +2,15 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { isAxiosError } from "axios";
 import api from "@/shared/api/client";
-import { type ModeId } from "@/components/training/training-types";
+import { type TrainingSession, type ModeId } from "@/components/training/training-types";
+
+import { useAuth } from '@/context/AuthContext';
+import { seedStartResponse, startResponseEpoch } from '@/lib/start-response-cache';
 
 export function useTrainingSetup(exam: string) {
   const router = useRouter();
+  const { user } = useAuth();
+  const userId = user?.id;
   const [selected, setSelected] = useState<ModeId | null>(null);
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
@@ -30,8 +35,9 @@ export function useTrainingSetup(exam: string) {
     if (!mode || busy) return;
     setBusy(true);
     setError("");
+    const epoch = startResponseEpoch();
     try {
-      const { data } = await api.post("/api/training/sessions", {
+      const { data } = await api.post<TrainingSession>("/api/training/sessions", {
         mode,
         exam,
         tier,
@@ -40,6 +46,7 @@ export function useTrainingSetup(exam: string) {
         count,
         minutes,
       });
+      seedStartResponse('training', userId, data.id, data, epoch);
       router.push(`/play/session/${data.id}`);
     } catch (e) {
       setError(
@@ -49,7 +56,7 @@ export function useTrainingSetup(exam: string) {
       );
       setBusy(false);
     }
-  }, [selected, busy, exam, tier, subject, topic, count, minutes, router]);
+  }, [selected, busy, exam, tier, subject, topic, count, minutes, router, userId]);
 
   return {
     selected, setSelected,

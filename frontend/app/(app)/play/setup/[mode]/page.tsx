@@ -24,6 +24,9 @@ import {
   X,
 } from "lucide-react";
 import { isAxiosError } from "axios";
+import { useAuth } from '@/context/AuthContext';
+import { seedStartResponse, startResponseEpoch } from '@/lib/start-response-cache';
+import type { TrainingSession } from '@/components/training/training-types';
 import api from "@/shared/api/client";
 import { useThemeMode } from "@/hooks/useTheme";
 import {
@@ -79,6 +82,8 @@ const specialModes: Record<string, { id: string; title: string; category: string
 export default function PlaySetupPage() {
   const { theme } = useThemeMode();
   const router = useRouter();
+  const { user } = useAuth();
+  const userId = user?.id;
   const params = useParams();
   const searchParams = useSearchParams();
 
@@ -154,8 +159,9 @@ export default function PlaySetupPage() {
     starting.current = true;
     setBusy(true);
     setError("");
+    const epoch = startResponseEpoch();
     try {
-      const { data } = await api.post("/api/training/sessions", {
+      const { data } = await api.post<TrainingSession>("/api/training/sessions", {
         mode: modeParam,
         exam,
         tier,
@@ -164,6 +170,7 @@ export default function PlaySetupPage() {
         count,
         minutes,
       });
+      seedStartResponse('training', userId, data.id, data, epoch);
       router.push(`/play/session/${data.id}`);
     } catch (e) {
       setError(
@@ -174,7 +181,7 @@ export default function PlaySetupPage() {
       starting.current = false;
       setBusy(false);
     }
-  }, [modeParam, exam, tier, subject, topic, count, minutes, router]);
+  }, [modeParam, exam, tier, subject, topic, count, minutes, router, userId]);
 
   const setupLoading = dashboardLoading || capabilitiesLoading;
   const isFormDisabled = busy || setupLoading;
