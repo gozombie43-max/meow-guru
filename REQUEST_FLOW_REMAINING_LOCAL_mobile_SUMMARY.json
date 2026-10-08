@@ -1,0 +1,303 @@
+{
+  "before": null,
+  "after": {
+    "label": "9c9eb3ec-plus-remaining-local",
+    "target": "local",
+    "completed": true,
+    "project": "mobile",
+    "duplicateLogRows": 0,
+    "serverWindow": {
+      "available": true,
+      "completedRequests": 32,
+      "mongoCommands": 164,
+      "scope": "All completed API requests in the capture window, including SSR and ambient traffic; detached work excluded. Requires synchronized clocks and every replica log."
+    },
+    "actions": [
+      {
+        "action": "login",
+        "runs": 1,
+        "apiRequests": 2,
+        "apiRequestsPerRun": 2,
+        "matchedApiRequests": 2,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 10,
+        "matchedAuthorizationCommands": 4,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "POST /auth/login": 1,
+          "GET /users/me": 1
+        },
+        "requestP95Ms": 31.196,
+        "automationP95Ms": 300.701
+      },
+      {
+        "action": "open_dashboard",
+        "runs": 1,
+        "apiRequests": 2,
+        "apiRequestsPerRun": 2,
+        "matchedApiRequests": 2,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 7,
+        "matchedAuthorizationCommands": 2,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "POST /auth/refresh": 1,
+          "GET /users/me": 1
+        },
+        "requestP95Ms": 28.48,
+        "automationP95Ms": 270.9434000000001
+      },
+      {
+        "action": "open_mathematics",
+        "runs": 1,
+        "apiRequests": 3,
+        "apiRequestsPerRun": 3,
+        "matchedApiRequests": 3,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 12,
+        "matchedAuthorizationCommands": 4,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "POST /auth/refresh": 1,
+          "GET /users/me": 1,
+          "GET /api/progress/topics/private": 1
+        },
+        "requestP95Ms": 69.432,
+        "automationP95Ms": 185.5363000000002
+      },
+      {
+        "action": "open_topic",
+        "runs": 1,
+        "apiRequests": 3,
+        "apiRequestsPerRun": 3,
+        "matchedApiRequests": 3,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 7,
+        "matchedAuthorizationCommands": 2,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "GET /api/questions/counts": 1,
+          "POST /auth/refresh": 1,
+          "GET /users/me": 1
+        },
+        "requestP95Ms": 84.19,
+        "automationP95Ms": 227.35540000000037
+      },
+      {
+        "action": "quiz_setup",
+        "runs": 1,
+        "apiRequests": 4,
+        "apiRequestsPerRun": 4,
+        "matchedApiRequests": 4,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 8,
+        "matchedAuthorizationCommands": 2,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "GET /api/questions/meta": 1,
+          "GET /api/questions/session": 1,
+          "POST /auth/refresh": 1,
+          "GET /users/me": 1
+        },
+        "requestP95Ms": 65.32,
+        "automationP95Ms": 272.71249999999964
+      },
+      {
+        "action": "start_quiz",
+        "runs": 1,
+        "apiRequests": 1,
+        "apiRequestsPerRun": 1,
+        "matchedApiRequests": 1,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 9,
+        "matchedAuthorizationCommands": 2,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "PATCH /users/me/recent-quizzes": 1
+        },
+        "requestP95Ms": 73.994,
+        "automationP95Ms": 127.08500000000004
+      },
+      {
+        "action": "submit_answer",
+        "runs": 1,
+        "apiRequests": 1,
+        "apiRequestsPerRun": 1,
+        "matchedApiRequests": 1,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 16,
+        "matchedAuthorizationCommands": 2,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "POST /api/questions/answer": 1
+        },
+        "requestP95Ms": 108.462,
+        "automationP95Ms": 78.70469999999932
+      },
+      {
+        "action": "open_solution",
+        "runs": 1,
+        "apiRequests": 0,
+        "apiRequestsPerRun": 0,
+        "matchedApiRequests": 0,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 0,
+        "matchedAuthorizationCommands": 0,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {},
+        "requestP95Ms": null,
+        "automationP95Ms": 409.66330000000016
+      },
+      {
+        "action": "open_ai_tutor",
+        "runs": 1,
+        "apiRequests": 0,
+        "apiRequestsPerRun": 0,
+        "matchedApiRequests": 0,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 0,
+        "matchedAuthorizationCommands": 0,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {},
+        "requestP95Ms": null,
+        "automationP95Ms": 678.2875000000004
+      },
+      {
+        "action": "next_question",
+        "runs": 1,
+        "apiRequests": 1,
+        "apiRequestsPerRun": 1,
+        "matchedApiRequests": 1,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 9,
+        "matchedAuthorizationCommands": 2,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "PATCH /users/me/recent-quizzes": 1
+        },
+        "requestP95Ms": 75.478,
+        "automationP95Ms": 56.05659999999989
+      },
+      {
+        "action": "training_hub",
+        "runs": 1,
+        "apiRequests": 4,
+        "apiRequestsPerRun": 4,
+        "matchedApiRequests": 4,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 19,
+        "matchedAuthorizationCommands": 4,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "POST /auth/refresh": 1,
+          "GET /users/me": 1,
+          "GET /api/training/capabilities": 1,
+          "GET /api/training/dashboard": 1
+        },
+        "requestP95Ms": 68.52,
+        "automationP95Ms": 238.5550000000003
+      },
+      {
+        "action": "training_setup",
+        "runs": 1,
+        "apiRequests": 0,
+        "apiRequestsPerRun": 0,
+        "matchedApiRequests": 0,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 0,
+        "matchedAuthorizationCommands": 0,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {},
+        "requestP95Ms": null,
+        "automationP95Ms": 153.22179999999935
+      },
+      {
+        "action": "start_training",
+        "runs": 1,
+        "apiRequests": 1,
+        "apiRequestsPerRun": 1,
+        "matchedApiRequests": 1,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 17,
+        "matchedAuthorizationCommands": 2,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "POST /api/training/sessions": 1
+        },
+        "requestP95Ms": 179.077,
+        "automationP95Ms": 438.6347000000005
+      },
+      {
+        "action": "training_answer",
+        "runs": 1,
+        "apiRequests": 1,
+        "apiRequestsPerRun": 1,
+        "matchedApiRequests": 1,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 8,
+        "matchedAuthorizationCommands": 2,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "POST /api/training/sessions/:id/actions": 1
+        },
+        "requestP95Ms": 117.798,
+        "automationP95Ms": 217.5645999999997
+      },
+      {
+        "action": "finish_training",
+        "runs": 1,
+        "apiRequests": 1,
+        "apiRequestsPerRun": 1,
+        "matchedApiRequests": 1,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 17,
+        "matchedAuthorizationCommands": 2,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "POST /api/training/sessions/:id/actions": 1
+        },
+        "requestP95Ms": 128.888,
+        "automationP95Ms": 487.5047999999988
+      },
+      {
+        "action": "load_progress",
+        "runs": 1,
+        "apiRequests": 3,
+        "apiRequestsPerRun": 3,
+        "matchedApiRequests": 3,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 14,
+        "matchedAuthorizationCommands": 6,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "POST /auth/refresh": 1,
+          "GET /users/me": 1,
+          "GET /api/progress/topics/private": 1
+        },
+        "requestP95Ms": 68.548,
+        "automationP95Ms": 261.1395999999986
+      },
+      {
+        "action": "open_mock_test",
+        "runs": 1,
+        "apiRequests": 4,
+        "apiRequestsPerRun": 4,
+        "matchedApiRequests": 4,
+        "unmatchedApiRequests": 0,
+        "matchedMongoCommands": 11,
+        "matchedAuthorizationCommands": 4,
+        "repeatedLogicalRequestIds": 0,
+        "endpoints": {
+          "POST /auth/refresh": 1,
+          "GET /users/me": 1,
+          "GET /api/mocktest/ssc-cgl/slots": 1,
+          "GET /api/mocktest/ssc-cgl/history": 1
+        },
+        "requestP95Ms": 74.255,
+        "automationP95Ms": 467.03700000000026
+      }
+    ]
+  },
+  "comparison": null,
+  "limitations": "Matched physical Mongo commands only; retries count separately and coalesced authorization belongs to its initiating request. Unmatched calls, SSR work and detached background work are excluded. Small-sample p95 is descriptive, not capacity evidence."
+}

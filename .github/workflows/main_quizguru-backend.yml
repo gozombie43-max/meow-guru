@@ -116,6 +116,8 @@ jobs:
           echo "::add-mask::$mongodb_uri"
           echo "MONGODB_URI=$mongodb_uri" >> "$GITHUB_ENV"
           echo "MONGODB_DB=$mongodb_db" >> "$GITHUB_ENV"
+          normalized_keys="$(az webapp config appsettings list --name quizguru-backend --resource-group "$resource_group" --query "[?name=='QUESTIONS_NORMALIZED_KEYS'].value | [0]" --output tsv)"
+          echo "QUESTIONS_NORMALIZED_KEYS=${normalized_keys:-false}" >> "$GITHUB_ENV"
           echo "RESOURCE_GROUP=$resource_group" >> "$GITHUB_ENV"
           host="$(az webapp show --name quizguru-backend --resource-group "$resource_group" --query defaultHostName --output tsv)"
           echo "APP_HOST=$host" >> "$GITHUB_ENV"
@@ -123,6 +125,10 @@ jobs:
       - name: Apply database migrations before release
         working-directory: release
         run: npm run db:migrate --workspace backend
+
+      - name: Persist public catalogs before release
+        working-directory: release
+        run: npm run db:initialize-public-catalog --workspace backend
 
       - name: Configure quiz-only runtime
         shell: bash

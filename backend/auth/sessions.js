@@ -12,6 +12,8 @@ import {
 } from './jwt.js';
 import { getBattleRealtimeServer } from '../battle/battleRealtime.js';
 import { createSingleFlight } from '../infrastructure/singleFlight.js';
+import { AUTH_VALIDATION_COMMENT } from '../infrastructure/mongoOperationMetrics.js';
+import { authRequests, authBurstLatency } from '../infrastructure/metrics.js';
 const disconnectSession = sid => getBattleRealtimeServer()?.in(`session:${sid}`).disconnectSockets(true);
 
 // Stateless refresh tokens issued by the final legacy release live for at most
@@ -23,10 +25,10 @@ const unauthorized = () => Object.assign(new Error('Session expired, please logi
 const active = now => ({ revokedAt: { $exists: false }, expiresAt: { $gt: now } });
 const payload = user => ({ id: String(user.id), email: user.email, name: user.name, role: user.role || 'student' });
 
-async function activeUser(id) {
+async function activeUser(id, comment) {
   const user = await getUsersCollection().findOne(
     { id: String(id), type: { $ne: 'email_lock' } },
-    { projection: { id: 1, name: 1, email: 1, role: 1, status: 1, authRevision: 1 }, timeoutMS: 5000 },
+    { projection: { id: 1, name: 1, email: 1, role: 1, status: 1, authRevision: 1 }, timeoutMS: 5000, ...(comment ? { comment } : {}) },
   );
   if (!user || ['suspended', 'banned'].includes(user.status)) throw unauthorized();
   return user;
@@ -55,9 +57,9 @@ async function authorizationState(decoded) {
   const [session, user] = await Promise.all([
     sessions().findOne(
       { _id: decoded.sid, userId: String(decoded.id), ...active(new Date()) },
-      { projection: { _id: 1, revision: 1, expiresAt: 1 }, timeoutMS: 5000 },
+      { projection: { _id: 1, revision: 1, expiresAt: 1 }, timeoutMS: 5000, comment: AUTH_VALIDATION_COMMENT },
     ),
-    activeUser(decoded.id),
+    activeUser(decoded.id, AUTH_VALIDATION_COMMENT),
   ]);
   if (!session) throw unauthorized();
   return { session, user, generation: authorizationGeneration(session, user) };
@@ -139,18 +141,31 @@ export async function closeSessionInvalidationSubscriber() {
 const authorizationReads = createSingleFlight();
 export async function assertSession(decoded) {
   if (!decoded?.sid || !decoded?.id) throw unauthorized();
+  authRequests.inc();
   const currentPayload = await authorizationReads(JSON.stringify([decoded.sid, String(decoded.id)]), () => readAuthorization(decoded));
   return { ...decoded, ...currentPayload };
 }
 
 async function readAuthorization(decoded) {
+  const started = performance.now();
+  let cache = 'none', outcome = 'error';
+  try {
+    const result = await readAuthorizationPayload(decoded, value => { cache = value; });
+    outcome = 'success';
+    return result;
+  } finally {
+    authBurstLatency.observe({ cache, outcome }, (performance.now() - started) / 1000);
+  }
+}
+
+async function readAuthorizationPayload(decoded, recordCache) {
   const cacheKey = `${decoded.sid}:${decoded.id}`;
   for (let attempt = 0; attempt < 3; attempt++) {
     // Redis is never the authority for revocation or current account privileges.
     const current = await authorizationState(decoded);
     const valid = entry => entry?.generation === current.generation && entry.validUntil > Date.now();
     const cached = sessionCache.get(cacheKey);
-    if (valid(cached)) return cached.payload;
+    if (valid(cached)) { recordCache('local'); return cached.payload; }
     const key = revisionedSessionKey(decoded.sid, decoded.id, current.generation);
     const shared = await redisGetJson(key);
     // Protect reads that were already in flight when logout/role removal committed.
@@ -165,6 +180,7 @@ async function readAuthorization(decoded) {
     if (remaining <= 0) throw unauthorized();
     sessionCache.set(cacheKey, entry, { ttl: remaining });
     if (!valid(shared)) await redisSetJson(key, entry, Math.max(1, Math.ceil(remaining / 1000)));
+    recordCache(valid(shared) ? 'shared' : 'fresh');
     return entry.payload;
   }
   throw unauthorized();

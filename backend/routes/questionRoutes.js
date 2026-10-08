@@ -8,6 +8,7 @@ import adminAuth from "../middleware/auth.js";
 import { protect } from "../middleware/protect.js";
 import { quizAnswerCommandSchema } from '@meow/contracts/progress';
 import { submitQuizAnswer } from '../services/quizAnswerService.js';
+import { fetchConceptGroupingStatus } from '../services/questions/conceptGroupService.js';
 
 const router = express.Router();
 const upload = multer({
@@ -53,6 +54,14 @@ router.post('/analyze', adminAuth, questionController.runAnalysis);
 router.get("/image", questionController.getImageQuestions);
 router.get('/session', questionController.getQuestionsSession);
 router.get('/meta', questionController.getQuestionsMeta);
+router.get('/concept-groups/:fingerprint', async (req, res) => {
+  try {
+    res.set('Cache-Control', 'no-store');
+    res.json(await fetchConceptGroupingStatus(req.params.fingerprint));
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
 router.post('/answer', protect, async (req, res) => {
   const parsed = quizAnswerCommandSchema.safeParse(req.body);
   if (!parsed.success || req.get('Idempotency-Key') !== parsed.data.submissionId) {

@@ -3,6 +3,7 @@ import { randomUUID, createHash } from 'node:crypto';
 import { monitorEventLoopDelay, createHistogram } from 'node:perf_hooks';
 import { traceFields } from './tracing.js';
 import { recordHttp, dependencyLatency, dependencyErrors } from './metrics.js';
+import { mongoRequestContext } from './mongoOperationMetrics.js';
 
 export function hashId(id) {
   return id ? createHash('sha256').update(String(id)).digest('hex').substring(0, 16) : undefined;
@@ -29,12 +30,13 @@ export function requestLogging(req, res, next) {
   res.setHeader('X-Request-ID', req.id);
   const start = performance.now();
   const correlation = traceFields();
+  const mongo = { total: 0, operations: {} };
   res.once('finish', () => {
     const durationMs = Math.round(performance.now() - start);
     recordHttp(req, res, durationMs);
-    logger.info({ ...correlation, requestId: req.id, userHash: hashId(req.user?.id), method: req.method, route: req.route?.path || 'unmatched', status: res.statusCode, durationMs }, 'request completed');
+    logger.info({ ...correlation, requestId: req.id, userHash: hashId(req.user?.id), method: req.method, route: req.route?.path || 'unmatched', status: res.statusCode, durationMs, mongo }, 'request completed');
   });
-  next();
+  mongoRequestContext.run(mongo, next);
 }
 export function startRuntimeMetrics() {
   const histogram = monitorEventLoopDelay({ resolution: 20 });

@@ -13,7 +13,7 @@ import { startRuntimeMetrics, logger } from './infrastructure/logger.js';
 import { listenServer } from './infrastructure/httpListen.js';
 import { startOptionalService, stopOptionalServices, optionalServiceReady } from './infrastructure/optionalServices.js';
 import { maintenanceQueueHealth } from './infrastructure/maintenanceQueue.js';
-import { startTopicCountPrewarm } from './services/questions/topicCountSnapshot.js';
+import { initializePublicCatalogs, startTopicCountPrewarm } from './services/questions/topicCountSnapshot.js';
 
 let socketServer = null, httpServer;
 let isShuttingDown = false, isReady = false;
@@ -140,6 +140,7 @@ async function initWithRetry() {
     }
 
     await checkReadiness();
+    await initializePublicCatalogs();
     initPassport();
     const { app, corsOrigin } = await createApp({
       isReady: () => isReady,

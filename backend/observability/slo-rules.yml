@@ -21,6 +21,12 @@ groups:
         expr: histogram_quantile(0.95, sum by (le) (rate(meow_http_duration_seconds_bucket{method="GET"}[5m])))
       - record: meow:mongo_latency:p95
         expr: histogram_quantile(0.95, sum by (le) (rate(meow_dependency_duration_seconds_bucket{dependency="mongo"}[5m])))
+      - record: meow:authorization_mongo:qps
+        expr: sum(rate(meow_mongo_commands_total{purpose="authorization"}[5m]))
+      - record: meow:authorization_mongo:p95
+        expr: histogram_quantile(0.95, sum by (le, collection) (rate(meow_mongo_command_duration_seconds_bucket{purpose="authorization",outcome="success"}[5m])))
+      - record: meow:authorization_burst:p95
+        expr: histogram_quantile(0.95, sum by (le) (rate(meow_auth_validation_burst_duration_seconds_bucket{outcome="success"}[5m])))
       - record: meow:answer_latency:p95
         expr: histogram_quantile(0.95, sum by (le) (rate(meow_http_duration_seconds_bucket{operation="answer"}[5m])))
       - record: meow:create_latency:p95

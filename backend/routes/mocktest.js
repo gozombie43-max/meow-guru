@@ -24,7 +24,7 @@ const router = express.Router();
 
 // ─── Public Slot Routes ───────────────────────────────────
 
-// GET /:examSlug/slots — Fetch all slots for an exam (auto-seeds if container empty)
+// GET /:examSlug/slots — Read catalog; default initialization is migration 018.
 router.get('/:examSlug/slots', fetchExamSlots);
 
 // GET /slots/:slotId — Fetch a single slot by ID

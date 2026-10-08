@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 import { fetchWithRetry } from '@/lib/api/http';
 import { API_BASE } from '@/lib/api-base';
@@ -11,7 +11,10 @@ interface QuestionsMeta {
   letters: Record<string, number>;
   conceptGroups?: { id: string; label: string; description: string; concepts: string[] }[];
   groupingStatus?: 'ready' | 'processing' | 'failed' | 'empty';
+  groupingFingerprint?: string;
 }
+
+type GroupingStatus = Pick<QuestionsMeta, 'groupingStatus' | 'groupingFingerprint' | 'conceptGroups'>;
 
 const fetcher = async (url: string): Promise<QuestionsMeta> => {
   const res = await fetchWithRetry(url, {}, { auth: 'none' });
@@ -46,15 +49,35 @@ export function useQuestionsMeta(params: {
     ...PUBLIC_QUESTION_QUERY,
     revalidateOnFocus: false,
     revalidateIfStale: true,
-    refreshInterval: (data) => data?.groupingStatus === 'processing' ? 10000 : 0,
+    refreshInterval: 0,
     shouldRetryOnError: false,
     dedupingInterval: 10000, // Reuse cached UI; check saved metadata on later visits.
   });
 
+  const fingerprint = url && data?.groupingStatus === 'processing' ? data.groupingFingerprint : undefined;
+  const [pollFingerprint, setPollFingerprint] = useState<string>();
+  useEffect(() => {
+    if (!fingerprint) return;
+    // Metadata already contains the initial status; avoid reading it again on mount.
+    const timer = setTimeout(() => setPollFingerprint(fingerprint), 10000);
+    return () => clearTimeout(timer);
+  }, [fingerprint]);
+  const statusUrl = fingerprint && pollFingerprint === fingerprint
+    ? `${API_BASE}/api/questions/concept-groups/${encodeURIComponent(fingerprint)}`
+    : null;
+  const { data: grouping, error: groupingError } = useSWR<GroupingStatus>(statusUrl, fetcher, {
+    ...PUBLIC_QUESTION_QUERY,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    refreshInterval: value => value?.groupingStatus === 'processing' ? 10000 : 0,
+    shouldRetryOnError: false,
+    dedupingInterval: 10000,
+  });
+
   return useMemo(() => ({
-    meta: data ?? EMPTY_META,
+    meta: data && grouping?.groupingFingerprint === data.groupingFingerprint ? { ...data, ...grouping } : data ?? EMPTY_META,
     isLoading,
-    isError: error,
+    isError: error || groupingError,
     mutate,
-  }), [data, isLoading, error, mutate]);
+  }), [data, grouping, isLoading, error, groupingError, mutate]);
 }

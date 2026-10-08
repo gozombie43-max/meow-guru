@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { traceCarrier } from '../../infrastructure/tracing.js';
-import { enqueueConceptGrouping } from '../../repositories/conceptGroupRepository.js';
+import { enqueueConceptGrouping, readConceptGrouping } from '../../repositories/conceptGroupRepository.js';
 import { normalizeSearchKey } from "./questionNormalizer.js";
 
 export const GROUPING_VERSION = 1;
@@ -46,5 +46,18 @@ export async function ensureConceptGroups(params, concepts) {
     conceptGroups: doc.status === "completed" ? doc.result.groups : [],
     groupingStatus: doc.status === "completed" ? "ready" : doc.status === "failed" ? "failed" : "processing",
     groupingFingerprint: input.fingerprint,
+  };
+}
+
+export async function fetchConceptGroupingStatus(fingerprint) {
+  if (typeof fingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(fingerprint)) {
+    throw Object.assign(new Error('Invalid grouping fingerprint'), { statusCode: 400 });
+  }
+  const doc = await readConceptGrouping(fingerprint);
+  if (!doc) throw Object.assign(new Error('Concept grouping not found'), { statusCode: 404 });
+  return {
+    groupingFingerprint: fingerprint,
+    groupingStatus: doc.status === 'completed' ? 'ready' : doc.status === 'failed' ? 'failed' : 'processing',
+    ...(doc.status === 'completed' ? { conceptGroups: doc.result.groups } : {}),
   };
 }

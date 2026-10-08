@@ -277,6 +277,16 @@ jobs:
           MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
           MONGODB_DB: quizDB_staging
         run: npm run db:migrate --workspace backend
+
+      - name: Persist staging public catalogs before release
+        working-directory: release
+        env:
+          MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+          MONGODB_DB: ${{ env.STAGING_MONGODB_DB }}
+        run: |
+          normalized_keys="$(az webapp config appsettings list --name "$STAGING_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "[?name=='QUESTIONS_NORMALIZED_KEYS'].value | [0]" --output tsv)"
+          export QUESTIONS_NORMALIZED_KEYS="${normalized_keys:-false}"
+          npm run db:initialize-public-catalog --workspace backend
       - name: Configure isolated staging runtime
         env:
           STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}

@@ -75,6 +75,33 @@ function refreshPublicSnapshot(subject) {
   return work;
 }
 
+let catalogRefresh;
+export function refreshPublicCatalogs() {
+  if (catalogRefresh) return catalogRefresh;
+  catalogRefresh = (async () => {
+    // Keep the existing <=4 topic-query budget across subjects as well.
+    for (const subject of Object.keys(SUBJECT_TOPICS)) await refreshPublicSnapshot(subject);
+  })().finally(() => { catalogRefresh = undefined; });
+  return catalogRefresh;
+}
+
+export async function initializePublicCatalogs({ fresh = false } = {}) {
+  const results = [];
+  for (const subject of Object.keys(SUBJECT_TOPICS)) {
+    const id = `topic-counts:v2:${subject}:${isNormalizedQuestionKeysEnabled()}`;
+    const saved = await findPersistedQuestionMetadata(id);
+    if (!fresh && validSnapshot(saved?.data, subject, saved?.revision, MAX_PUBLIC_AGE_MS)) {
+      results.push({ subject, revision: saved.revision, rebuilt: false });
+      continue;
+    }
+    const data = await fetchTopicCountSnapshot(subject);
+    // A tiered cache hit alone does not establish durable snapshot presence.
+    await saveTopicCountSnapshot({ _id: id, revision: data.revision, data, kind: 'topic-counts' });
+    results.push({ subject, revision: data.revision, rebuilt: true });
+  }
+  return results;
+}
+
 export async function fetchPublicTopicCountSnapshot(subject = 'mathematics') {
   const normalizedSubject = String(subject).toLowerCase();
   const topics = Object.hasOwn(SUBJECT_TOPICS, normalizedSubject) ? SUBJECT_TOPICS[normalizedSubject] : undefined;
@@ -91,13 +118,13 @@ export async function fetchPublicTopicCountSnapshot(subject = 'mathematics') {
     generatedAt: data.generatedAt, updatedAt: data.updatedAt };
 }
 
-// Warm the persisted Mathematics snapshot without delaying API readiness.
-// Writes already precompute it; this also covers restarts and external imports.
+// Readiness establishes durable presence first; periodic refresh covers all
+// subjects and durable bank revision changes from external mutation tools.
 export function startTopicCountPrewarm() {
   let stopped = false, pending;
   const warm = () => {
     if (stopped || pending) return;
-    pending = refreshPublicSnapshot('mathematics').finally(() => { pending = undefined; });
+    pending = refreshPublicCatalogs().finally(() => { pending = undefined; });
   };
   warm();
   const timer = setInterval(warm, 15 * 60 * 1000);

@@ -2,6 +2,40 @@ rule_files:
   - slo-rules.yml
 evaluation_interval: 1m
 tests:
+  - name: authorization rates and histograms aggregate both API replicas
+    interval: 1m
+    input_series:
+      - series: 'meow_mongo_commands_total{collection="users",command="find",purpose="authorization",outcome="success",instance="a"}'
+        values: '0+120x20'
+      - series: 'meow_mongo_commands_total{collection="authSessions",command="find",purpose="authorization",outcome="success",instance="a"}'
+        values: '0+120x20'
+      - series: 'meow_mongo_commands_total{collection="users",command="find",purpose="authorization",outcome="success",instance="b"}'
+        values: '0+120x20'
+      - series: 'meow_mongo_commands_total{collection="authSessions",command="find",purpose="authorization",outcome="success",instance="b"}'
+        values: '0+120x20'
+      - series: 'meow_mongo_command_duration_seconds_bucket{collection="users",command="find",purpose="authorization",outcome="success",instance="a",le="0.01"}'
+        values: '0+108x20'
+      - series: 'meow_mongo_command_duration_seconds_bucket{collection="users",command="find",purpose="authorization",outcome="success",instance="a",le="0.025"}'
+        values: '0+120x20'
+      - series: 'meow_mongo_command_duration_seconds_bucket{collection="users",command="find",purpose="authorization",outcome="success",instance="a",le="+Inf"}'
+        values: '0+120x20'
+      - series: 'meow_mongo_command_duration_seconds_bucket{collection="users",command="find",purpose="authorization",outcome="success",instance="b",le="0.01"}'
+        values: '0+108x20'
+      - series: 'meow_mongo_command_duration_seconds_bucket{collection="users",command="find",purpose="authorization",outcome="success",instance="b",le="0.025"}'
+        values: '0+120x20'
+      - series: 'meow_mongo_command_duration_seconds_bucket{collection="users",command="find",purpose="authorization",outcome="success",instance="b",le="+Inf"}'
+        values: '0+120x20'
+    promql_expr_test:
+      - expr: meow:authorization_mongo:qps
+        eval_time: 10m
+        exp_samples:
+          - labels: '{__name__="meow:authorization_mongo:qps"}'
+            value: 8
+      - expr: meow:authorization_mongo:p95
+        eval_time: 10m
+        exp_samples:
+          - labels: '{__name__="meow:authorization_mongo:p95",collection="users"}'
+            value: 0.01749999999999999
   - name: external failure catches an unreachable backend
     interval: 1m
     input_series:

@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 
 process.env.NODE_ENV = 'test';
+process.env.METRICS_TOKEN = 'local-browser-metrics-not-for-deployment';
 process.env.JWT_SECRET = 'local-browser-access-secret-not-for-deployment';
 process.env.REFRESH_TOKEN_SECRET = 'local-browser-refresh-secret-not-for-deployment';
 process.env.DEPLOYMENT_ENVIRONMENT = 'test';
@@ -34,7 +35,7 @@ const { default: questionsRouter } = await import('../routes/questionRoutes.js')
 const { protect } = await import('../middleware/protect.js');
 const { getMe, getRecentQuiz, updateRecentQuizzes, getAiChats, getAiChat, appendAiMessages, updateAiChat, deleteAiChat } = await import('../controllers/userController.js');
 const passwordHash = await bcrypt.hash('Browser-fixture-123!', 4);
-await db.collection('users').insertMany(['desktop', 'mobile', 'lighthouse', 'performance-desktop', 'performance-mobile', 'admin', 'superadmin'].map(device => ({ id: `browser-${device}`, name: 'Browser Student', email: `browser-${device}@example.test`, passwordHash, role: ['admin', 'superadmin'].includes(device) ? device : 'student', progress: {}, bookmarks: [], recentQuizzes: [{ quizKey: 'mathematics:algebra', currentIndex: 0, status: 'in-progress', selectedAnswers: {}, submittedQuestions: [] }] })));
+await db.collection('users').insertMany(['desktop', 'mobile', 'lighthouse', 'performance-desktop', 'performance-mobile', 'admin', 'superadmin'].map(device => ({ id: `browser-${device}`, name: 'Browser Student', email: `browser-${device}@example.test`, passwordHash, role: ['admin', 'superadmin'].includes(device) ? device : 'student', progress: {}, bookmarks: [], recentQuizzes: [{ quizKey: 'mathematics:algebra', title: 'Algebra', subject: 'mathematics', href: '/mathematics/advance/algebra/quiz', mode: 'concept', totalQuestions: 250, currentIndex: 0, status: 'in-progress', selectedAnswers: {}, submittedQuestions: [] }] })));
 const { migrateUserHistory } = await import('../repositories/userHistoryRepository.js');
 for (const user of await db.collection('users').find({}).toArray()) await migrateUserHistory(db, user, { apply: true });
 const { normalizedQuestionKeys } = await import('../services/questions/questionNormalizer.js');
@@ -43,6 +44,8 @@ await db.collection('questions').insertMany(Array.from({ length: 250 }, (_, i) =
   const row = { id: `fixture-${i}`, topic: 'algebra', subject: 'Mathematics', exam: 'SSC CGL', quizName: 'PYQ', concept: 'Addition', question: `Solve the equation: x + ${i + 1} = ${i + 3}. What is x?`, options: ['1', '2', '3', '4'], correctAnswer: 'B', solution: 'Subtract the constant from both sides to get x = 2.', difficulty: 'easy', expectedTime: 60 };
   return { ...row, ...normalizedQuestionKeys(row), ...trainingQuestionMetadata(row) };
 }));
+const { initializePublicCatalogs } = await import('../services/questions/topicCountSnapshot.js');
+await initializePublicCatalogs();
 const { createTrainingSessionCommand } = await import('../services/training/application/createTrainingSession.js');
 const { session: trainingSession } = await createTrainingSessionCommand('browser-lighthouse', { mode: 'adaptive', exam: 'ssc-cgl', tier: '1', count: 10, minutes: 10 }, Date.now());
 await db.collection('trainingSessions').updateOne({ id: trainingSession.id }, { $set: { id: 'lighthouse-training', deadline: new Date(Date.now() + 3600000).toISOString() } });
@@ -50,7 +53,10 @@ const questions = ['ga', 'reasoning', 'quant', 'english'].flatMap(sectionKey => 
   id: `${sectionKey}-${index}`, sectionKey, question: `Two plus two? ${index + 1}`, options: ['three', 'four', 'five', 'six'], correctAnswer: 'B', solution: 'Private worked solution',
 })));
 await db.collection('mockSlots').insertOne({ id: 'browser-test', examSlug: 'ssc-cgl', configKey: 'ssc-cgl-tier1', title: 'Browser assessment', assessmentMode: 'confidential', timingPolicy: 'composite', fixedQuestions: questions });
-const app = express(); app.use(express.json()); app.use(cookieParser()); app.use(passport.initialize());
+const { requestLogging } = await import('../infrastructure/logger.js');
+const { metricsHandler } = await import('../infrastructure/metrics.js');
+const app = express(); app.use(requestLogging); app.use(express.json()); app.use(cookieParser()); app.use(passport.initialize());
+app.get('/metrics', metricsHandler);
 // Disposable S3-compatible storage: real SDK requests stay entirely on loopback.
 const storageObjects = new Map();
 const storageApp = express();
@@ -100,3 +106,7 @@ const server = app.listen(3111, '127.0.0.1');
 let stopping = false;
 async function stop() { if (stopping) return; stopping = true; server.closeAllConnections(); storageServer.closeAllConnections(); await Promise.all([new Promise(resolve => server.close(resolve)), new Promise(resolve => storageServer.close(resolve))]); await disconnectMongoDB(); await mongo.stop(); }
 process.once('SIGTERM', () => void stop()); process.once('SIGINT', () => void stop());
+// Owned local harnesses can stop Mongo cleanly on Windows through Node IPC.
+process.on('message', message => {
+  if (message === 'stop') void stop().finally(() => process.disconnect?.());
+});

@@ -15,81 +15,13 @@ const readSlotCatalog = (slots, examSlug) => slots.aggregate([
   { $project: { fixedQuestions: 0, _fixedCount: 0, _id: 0, _cosmosRid: 0 } },
 ]).toArray();
 
-export async function fetchSlotsForExam(
-  examSlug
-) {
+export async function fetchSlotsForExam(examSlug) {
   try {
-    const slots =
-      getMockSlotsCollection();
-
-    let resources = await readSlotCatalog(slots, examSlug);
-
-    if (resources.length > 0) {
-      return resources.map(
-        summarizeSlot
-      );
-    }
-
-    const staticSlots =
-      getStaticSlotsForExam(
-        examSlug
-      );
-
-    if (staticSlots.length === 0) {
-      return [];
-    }
-
-    const now =
-      new Date().toISOString();
-
-    for (const slot of staticSlots) {
-      try {
-        await slots.updateOne(
-          {
-            id: slot.id,
-            examSlug: slot.examSlug,
-          },
-          {
-            $setOnInsert: {
-              ...slot,
-              type:
-                slot.type ||
-                'mock',
-              createdAt: now,
-              updatedAt: now,
-            },
-          },
-          {
-            upsert: true,
-          }
-        );
-      } catch (err) {
-        runtimeLog.warn(
-          `Failed to seed slot ${slot.id}:`,
-          err.message
-        );
-      }
-    }
-
-    resources = await readSlotCatalog(slots, examSlug);
-
-    return resources.length
-      ? resources.map(
-          summarizeSlot
-        )
-      : staticSlots.map(
-          (slot) =>
-            summarizeSlot(slot)
-        );
+    const resources = await readSlotCatalog(getMockSlotsCollection(), examSlug);
+    return (resources.length ? resources : getStaticSlotsForExam(examSlug)).map(summarizeSlot);
   } catch (err) {
-    runtimeLog.warn(
-      `fetchSlotsForExam failed for ${examSlug}, falling back to static config:`,
-      err.message
-    );
-
-    return getStaticSlotsForExam(
-      examSlug
-    );
+    runtimeLog.warn(`fetchSlotsForExam failed for ${examSlug}, falling back to static config:`, err.message);
+    return getStaticSlotsForExam(examSlug).map(summarizeSlot);
   }
 }
 

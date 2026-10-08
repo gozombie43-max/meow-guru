@@ -3,6 +3,7 @@ import dns from "node:dns";
 import { MongoClient } from "mongodb";
 import { observeMongo } from '../infrastructure/logger.js';
 import { mongoPoolWaiting, dependencyLatency } from '../infrastructure/metrics.js';
+import { attachMongoOperationMetrics } from '../infrastructure/mongoOperationMetrics.js';
 
 let poolWaiting = 0;
 export function mongoPoolHealth() { return { waiting: poolWaiting, capacity: 30 }; }
@@ -45,6 +46,7 @@ async function openMongoDB() {
   });
   connectingClient.on('commandSucceeded', event => observeMongo(event));
   connectingClient.on('commandFailed', event => observeMongo(event, true));
+  attachMongoOperationMetrics(connectingClient);
   connectingClient.on('connectionCheckOutStarted', () => { poolWaiting++; mongoPoolWaiting.set(poolWaiting); });
   const checkoutFinished = event => {
     poolWaiting = Math.max(0, poolWaiting - 1); mongoPoolWaiting.set(poolWaiting);

@@ -4,17 +4,36 @@ import { registerSharedLocalCache } from '../infrastructure/tieredCache.js';
 import { claimJob, renewJob, completeJob } from '../infrastructure/durableQueue.js';
 const groups = () => getMongoDB().collection('conceptGroupMetadata');
 const databaseCaches = new WeakMap();
-export async function enqueueConceptGrouping(fingerprint, doc) {
-  const db = getMongoDB();
+function cacheState(db) {
   let state = databaseCaches.get(db);
   if (!state) {
     const completed = new LRUCache({ max: 200, maxSize: 10 * 1024 * 1024,
       maxEntrySize: 1024 * 1024, ttl: 300000,
       sizeCalculation: value => Buffer.byteLength(JSON.stringify(value)) });
-    state = { completed, pending: new Map() };
+    state = { completed, pending: new Map(), statusPending: new Map() };
     databaseCaches.set(db, state);
     registerSharedLocalCache(completed);
   }
+  return state;
+}
+export async function readConceptGrouping(fingerprint) {
+  const db = getMongoDB(), state = cacheState(db);
+  const cached = state.completed.get(fingerprint);
+  if (cached) return cached;
+  if (state.statusPending.has(fingerprint)) return state.statusPending.get(fingerprint);
+  if (state.statusPending.size >= 256) throw Object.assign(new Error('Grouping read capacity exceeded'), { statusCode: 503 });
+  const work = db.collection('conceptGroupMetadata').findOne({ _id: fingerprint }, {
+    projection: { status: 1, 'result.groups': 1 }, timeoutMS: 5000,
+  }).then(doc => {
+    if (doc?.status === 'completed') state.completed.set(fingerprint, doc);
+    return doc;
+  });
+  state.statusPending.set(fingerprint, work);
+  try { return await work; }
+  finally { state.statusPending.delete(fingerprint); }
+}
+export async function enqueueConceptGrouping(fingerprint, doc) {
+  const db = getMongoDB(), state = cacheState(db);
   // Completed results are immutable for this version/scope/concepts fingerprint.
   const cached = state.completed.get(fingerprint);
   if (cached) return cached;

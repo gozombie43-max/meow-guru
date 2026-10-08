@@ -17,6 +17,7 @@
     "check:performance": "node scripts/check-performance-budget.mjs",
     "test:performance:startup": "node scripts/benchmark-play-startup.mjs",
     "test:e2e": "playwright test",
+    "test:request-flows": "node scripts/capture-request-flows.mjs",
     "screenshots:all": "node scripts/capture-all-routes.mjs",
     "screenshots:all:dark": "node scripts/capture-all-routes.mjs --theme=dark"
   },
