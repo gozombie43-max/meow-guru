@@ -1,5 +1,7 @@
 "use client";
 import "./DesktopQuizView.css";
+import "./custom-text-size.css";
+import type { CSSProperties } from "react";
 import BackButton from "@/components/BackButton";
 import { LangToggle } from "@/components/LangToggle";
 import RichContent from "@/components/RichContent";
@@ -103,6 +105,8 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
       className={`mac-series-quiz ${subjectConfig.cssClassName}`}
       data-theme={theme}
       data-text-size={textSize}
+      data-custom-text-size={typeof textSize === "number" ? "true" : undefined}
+      style={typeof textSize === "number" ? { "--quiz-custom-text-size": `${textSize}px` } as CSSProperties : undefined}
       data-spacing={spacing}
       data-text-weight={textWeight}
     >

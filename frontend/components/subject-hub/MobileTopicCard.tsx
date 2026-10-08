@@ -102,22 +102,19 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
   detail,
 }: MobileTopicCardProps) {
   const router = useRouter();
-  const count = detail?.questionCount;
-  const isComingSoon = count === 0;
+  const count = detail?.questionCount ?? 0;
   const userSolved = detail?.userSolved ?? 0;
 
   return (
     <Link
       href={href}
       prefetch={false}
-      onPointerEnter={() => { if (!isComingSoon) prefetchOnce(router, href); }}
-      onFocus={() => { if (!isComingSoon) prefetchOnce(router, href); }}
-      onTouchStart={() => { if (!isComingSoon) prefetchOnce(router, href); }}
+      onPointerEnter={() => { prefetchOnce(router, href); }}
+      onFocus={() => { prefetchOnce(router, href); }}
+      onTouchStart={() => { prefetchOnce(router, href); }}
       data-hub-part="mobileTopicRow"
-      className={`${styles.card} ${isComingSoon ? styles.cardComingSoon : ""}`}
-      aria-label={`${name}${isComingSoon ? ", Coming soon" : count !== undefined ? `, ${count} questions` : ""}`}
-      aria-disabled={isComingSoon ? true : undefined}
-      tabIndex={isComingSoon ? -1 : undefined}
+      className={styles.card}
+      aria-label={`${name}, ${count} questions`}
     >
       {/* 1. Top Section: Icon + Title + Meta with fixed baseline */}
       <div className={styles.cardBody}>
@@ -132,11 +129,9 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
         </div>
 
         <span className={styles.topicCount}>
-          {isComingSoon
-            ? "Coming soon"
-            : count !== undefined
-              ? `${userSolved} / ${count} solved`
-              : "—"}
+          {count === 0
+            ? "0 Questions"
+            : `${userSolved} / ${count} solved`}
         </span>
       </div>
 

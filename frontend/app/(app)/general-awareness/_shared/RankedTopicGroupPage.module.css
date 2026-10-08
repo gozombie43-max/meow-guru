@@ -45,6 +45,7 @@
 
 /* Mobile Geography Chapter Items */
 .mobileTopbarTitle {
+  margin: 0;
   color: #ffffff !important;
   font-size: 1rem !important;
   font-weight: 700 !important;
@@ -64,15 +65,12 @@
 }
 
 .mobileTopicName {
-  font-size: 0.96rem;
+  font-size: 15px;
   font-weight: 600;
   color: #ffffff;
-  line-height: 1.35;
+  line-height: 1.45;
   letter-spacing: -0.01em;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  min-width: 0;
   word-break: break-word;
 }
 
@@ -81,14 +79,98 @@
 }
 
 .mobileRankNum {
-  font-weight: 700;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: rgba(235, 235, 245, 0.65);
-  margin-right: 2px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.chapterSearch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 50px;
+  padding: 3px 6px 3px 16px;
+  margin: 10px 0 12px;
+  border-radius: 999px;
+  background: var(--geo-surface);
+  color: var(--geo-text);
+}
+
+.chapterSearch > svg { flex: none; }
+.chapterSearchInput {
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+  padding: 10px 0;
+}
+.chapterSearchInput::placeholder { color: var(--geo-tertiary); }
+.chapterSearch:focus-within { outline: 2px solid var(--ios-system-blue); outline-offset: 2px; }
+.chapterSearchActions { display: flex; align-items: center; flex: none; gap: 2px; }
+.searchAction { border: 0; background: transparent; color: inherit; padding: 0; }
+.searchAction[aria-pressed="true"] { color: var(--ios-system-blue); }
+.searchDivider { width: 1px; height: 22px; background: var(--geo-border); margin-inline: 3px; }
+
+.page .chapterList {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--geo-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.chapterRow {
+  display: grid;
+  grid-template-columns: 34px 24px minmax(0, 1fr) 18px;
+  align-items: center;
+  column-gap: 8px;
+  min-height: 72px;
+  padding: 18px 4px;
+  border-bottom: 1px solid var(--geo-border);
+  text-decoration: none;
+  color: var(--geo-text);
+  -webkit-tap-highlight-color: transparent;
+}
+.chapterRow .chapterIcon { width: 30px; height: 32px; }
+.chapterChevron { color: var(--geo-secondary); }
+.chapterText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.chapterQuestionCount {
+  color: var(--geo-secondary);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.chapterRow:focus-visible { outline: 2px solid var(--ios-system-blue); outline-offset: -2px; }
+.chapterRow:active { background: rgb(var(--ios-system-blue-rgb) / 8%); }
+@media (hover: hover) { .chapterRow:hover { background: rgb(var(--ios-system-blue-rgb) / 6%); } }
+@media (max-width: 360px) {
+  .chapterRow { grid-template-columns: 28px 22px minmax(0, 1fr) 16px; gap: 6px; }
+  .mobileTopicName, .mobileRankNum { font-size: 14px; }
 }
 
 :global(body.theme-light) .mobileRankNum {
   color: rgba(60, 60, 67, 0.65) !important;
+}
+
+:global(html.theme-light) .page .mobileLayout,
+:global(html.theme-light) .page .mobileLayout [data-hub-part="mobileBody"] {
+  background: var(--light-surface, #fff) !important;
+}
+
+:global(html.theme-light) .chapterSearch {
+  background: var(--light-surface-muted, #eef1f4);
 }
 
 .header {

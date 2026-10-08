@@ -9,6 +9,8 @@ import {
   ListOrdered,
   LogOut,
   Moon,
+  Minus,
+  Plus,
   Settings,
   Sun,
   Type,
@@ -16,6 +18,7 @@ import {
 } from "lucide-react";
 import type { QuizTheme } from "@/features/quiz/model/types";
 import type { QuizSpacing,QuizTextSize,QuizTextWeight } from "@/features/quiz/components/useQuizPreferences";
+import { getQuizTextSizePixels, MIN_QUIZ_TEXT_SIZE, MAX_QUIZ_TEXT_SIZE } from "@/features/quiz/components/useQuizPreferences";
 
 export function SettingIcon({ className = "w-4.5 h-4.5" }: { className?: string }) {
   return <Settings className={className} aria-hidden="true" />;
@@ -109,6 +112,7 @@ export function QuizSettingsModal({
 
   const isDark = theme === "dark";
   const hideBoth = hideViewSolution && hideAiTutor;
+  const textSizePixels = getQuizTextSizePixels(textSize);
 
   return (
     <>
@@ -142,16 +146,10 @@ export function QuizSettingsModal({
 
         <div className="ios-settings-list">
           {/* Section: Reading Comfort */}
-          <div className="ios-settings-section-title">Reading Comfort</div>
+          <section className="ios-settings-section" aria-label="Reading comfort">
+          <h3 className="ios-settings-section-title">Reading Comfort</h3>
+          <div className="ios-settings-card">
 
-          <div className="ios-settings-item">
-            <div className="ios-settings-item-left"><div className="ios-settings-icon-box text-size-icon"><Type size={15} /></div><span className="ios-settings-label">Text Boldness</span></div>
-            <div className="ios-settings-segmented" role="group" aria-label="Text boldness">
-              {(["low", "medium", "high"] as const).map((weight) => (
-                <button key={weight} type="button" data-ui-button="state" className={`ios-segment-btn ${textWeight === weight ? "is-active" : ""}`} aria-label={`${weight} text boldness`} aria-pressed={textWeight === weight} onClick={() => onTextWeightChange?.(weight)}>{weight[0].toUpperCase()}</button>
-              ))}
-            </div>
-          </div>
           {/* Text Size Row */}
           <div className="ios-settings-item">
             <div className="ios-settings-item-left">
@@ -160,7 +158,7 @@ export function QuizSettingsModal({
               </div>
               <div className="ios-settings-label-wrap">
                 <span className="ios-settings-label">Text Size</span>
-                <span className="ios-settings-sublabel">Question & options scale</span>
+                <span className="ios-settings-sublabel">Questions & answers</span>
               </div>
             </div>
             <div className="ios-settings-segmented" role="group" aria-label="Text size options">
@@ -191,6 +189,31 @@ export function QuizSettingsModal({
             </div>
           </div>
 
+          <div className="ios-settings-divider" />
+
+          <div className="ios-settings-custom-size">
+            <div className="ios-settings-label-wrap"><span className="ios-settings-label">Custom text size</span><span className="ios-settings-sublabel">{MIN_QUIZ_TEXT_SIZE}–{MAX_QUIZ_TEXT_SIZE} px</span></div>
+            <div className="ios-text-size-stepper" role="group" aria-label="Custom text size">
+              <button type="button" data-ui-button="state" className="ios-text-size-step" aria-label="Decrease text size" disabled={!onTextSizeChange || textSizePixels <= MIN_QUIZ_TEXT_SIZE} onClick={() => onTextSizeChange?.(textSizePixels - 1)}>
+                <Minus size={20} aria-hidden="true" />
+              </button>
+              <output className="ios-text-size-value" aria-live="polite" aria-label="Current text size">{textSizePixels}<span>px</span></output>
+              <button type="button" data-ui-button="state" className="ios-text-size-step is-increase" aria-label="Increase text size" disabled={!onTextSizeChange || textSizePixels >= MAX_QUIZ_TEXT_SIZE} onClick={() => onTextSizeChange?.(textSizePixels + 1)}>
+                <Plus size={20} aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+
+          <div className="ios-settings-divider" />
+
+          <div className="ios-settings-item">
+            <div className="ios-settings-item-left"><div className="ios-settings-icon-box text-size-icon"><Type size={15} /></div><span className="ios-settings-label">Text Boldness</span></div>
+            <div className="ios-settings-segmented" role="group" aria-label="Text boldness">
+              {(["low", "medium", "high"] as const).map((weight) => (
+                <button key={weight} type="button" data-ui-button="state" className={`ios-segment-btn ${textWeight === weight ? "is-active" : ""}`} aria-label={`${weight} text boldness`} aria-pressed={textWeight === weight} onClick={() => onTextWeightChange?.(weight)}>{weight[0].toUpperCase()}</button>
+              ))}
+            </div>
+          </div>
           <div className="ios-settings-divider" />
 
           {/* Spacing Row */}
@@ -226,8 +249,11 @@ export function QuizSettingsModal({
 
           <div className="ios-settings-divider" />
 
-          {/* Section: Display & Features */}
-          <div className="ios-settings-section-title">Display & Features</div>
+          </div>
+          </section>
+          <section className="ios-settings-section" aria-label="Display and features">
+          <h3 className="ios-settings-section-title">Display & Features</h3>
+          <div className="ios-settings-card">
 
           {/* Theme Row */}
           <div className="ios-settings-item">
@@ -273,66 +299,22 @@ export function QuizSettingsModal({
 
           <div className="ios-settings-divider" />
 
-          {/* Hide View Solution */}
-          <div className="ios-settings-item">
-            <div className="ios-settings-item-left">
-              <div className="ios-settings-icon-box solution-icon">
-                <FileText size={15} />
-              </div>
-              <div className="ios-settings-label-wrap">
-                <span className="ios-settings-label">Hide View Solution</span>
-                <span className="ios-settings-sublabel">Hide solution button</span>
-              </div>
-            </div>
-            <SwitchToggle
-              checked={hideViewSolution}
-              onChange={onToggleHideViewSolution}
-              label="Hide View Solution"
-              ariaLabel="Toggle hide view solution"
-            />
           </div>
-
-          <div className="ios-settings-divider" />
-
-          {/* Hide AI Tutor */}
-          <div className="ios-settings-item">
-            <div className="ios-settings-item-left">
-              <div className="ios-settings-icon-box tutor-icon">
-                <Bot size={15} />
-              </div>
-              <div className="ios-settings-label-wrap">
-                <span className="ios-settings-label">Hide AI Tutor</span>
-                <span className="ios-settings-sublabel">Hide Ask AI Tutor button</span>
-              </div>
+          </section>
+          <section className="ios-settings-visibility" aria-label="Tool visibility">
+            <div className="ios-settings-tools-heading"><h3 className="ios-settings-section-title">Hide tools</h3><span className="ios-settings-sublabel">Select tools to hide</span></div>
+            <div className="ios-settings-tool-options" role="group" aria-label="Hide quiz tools">
+              <button type="button" data-ui-button="state" className="ios-settings-tool-btn" aria-label="Toggle hide view solution" aria-pressed={hideViewSolution} onClick={() => onToggleHideViewSolution(!hideViewSolution)}>
+                <FileText size={17} aria-hidden="true" /><span>Solution</span>
+              </button>
+              <button type="button" data-ui-button="state" className="ios-settings-tool-btn" aria-label="Toggle hide AI tutor" aria-pressed={hideAiTutor} onClick={() => onToggleHideAiTutor(!hideAiTutor)}>
+                <Bot size={17} aria-hidden="true" /><span>AI tutor</span>
+              </button>
+              <button type="button" data-ui-button="state" className="ios-settings-tool-btn" aria-label="Toggle hide both Solution and AI Tutor" aria-pressed={hideBoth} onClick={() => onToggleHideBoth(!hideBoth)}>
+                <Layers size={17} aria-hidden="true" /><span>Both</span>
+              </button>
             </div>
-            <SwitchToggle
-              checked={hideAiTutor}
-              onChange={onToggleHideAiTutor}
-              label="Hide AI Tutor"
-              ariaLabel="Toggle hide AI tutor"
-            />
-          </div>
-
-          <div className="ios-settings-divider" />
-
-          {/* Hide Both (Solution & AI Tutor) */}
-          <div className="ios-settings-item">
-            <div className="ios-settings-item-left">
-              <div className="ios-settings-icon-box both-icon">
-                <Layers size={15} />
-              </div>
-              <div className="ios-settings-label-wrap">
-                <span className="ios-settings-label">Hide Both</span>
-                <span className="ios-settings-sublabel">Hide Solution & AI Tutor</span>
-              </div>
-            </div>
-            <SwitchToggle
-              checked={hideBoth}
-              onChange={onToggleHideBoth}
-              label="Hide Both"
-              ariaLabel="Toggle hide both Solution and AI Tutor"
-            />
-          </div>
+          </section>
         </div>
         {onLeaveQuiz && (
           <button
@@ -363,7 +345,7 @@ export function QuizSettingsModal({
           top: calc(env(safe-area-inset-top) + 56px);
           left: 12px;
           width: calc(100% - 24px);
-          max-width: 340px;
+          max-width: 360px;
           max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 68px);
           overflow-y: auto;
           z-index: 999;
@@ -393,6 +375,7 @@ export function QuizSettingsModal({
         .ios-series-quiz[data-theme="dark"] .ios-settings-popover,
         .mac-series-quiz[data-theme="dark"] .ios-settings-popover,
         .ios-settings-popover[data-theme="dark"] {
+          --ui-header-surface: var(--oled-surface, #1c1c1e);
           background: var(--oled-surface, #1c1c1e);
           border: 0;
           color: var(--oled-text, #e5eaf0);
@@ -403,7 +386,8 @@ export function QuizSettingsModal({
         .ios-series-quiz[data-theme="light"] .ios-settings-popover,
         .mac-series-quiz[data-theme="light"] .ios-settings-popover,
         .ios-settings-popover[data-theme="light"] {
-          background: #ffffff;
+          --ui-header-surface: var(--light-surface, #ffffff);
+          background: var(--light-surface, #ffffff);
           border: 1px solid var(--light-border);
           color: var(--light-text);
           box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.04);
@@ -413,7 +397,7 @@ export function QuizSettingsModal({
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding-bottom: 12px;
+          padding: 0 0 8px;
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
           margin-bottom: 6px;
         }
@@ -465,6 +449,104 @@ export function QuizSettingsModal({
           display: flex;
           flex-direction: column;
         }
+
+        .ios-settings-visibility { padding: 12px 0 4px; }
+        .ios-settings-tool-options {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 6px;
+          margin-top: 8px;
+          padding: 5px;
+          border: 1px solid var(--ui-border);
+          border-radius: 16px;
+          background: var(--ui-muted-surface);
+        }
+        .ios-settings-tool-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          min-width: 0;
+          padding: 8px 4px;
+          background: transparent;
+          border: 1px solid transparent;
+          color: var(--ui-secondary);
+          font-size: 12px;
+          cursor: pointer;
+          transition: background 150ms, color 150ms;
+        }
+        .ios-settings-tool-btn[aria-pressed="true"] {
+          background: var(--ios-system-blue);
+          color: #fff;
+        }
+        .ios-settings-tool-btn:hover { border-color: var(--ios-system-blue); }
+        .ios-settings-popover .ios-settings-segmented {
+          padding: 4px;
+          gap: 3px;
+          border-radius: 14px;
+          background: var(--ui-muted-surface);
+        }
+        .ios-settings-popover .ios-segment-btn {
+          --ui-control-radius: 10px;
+          border-radius: 10px;
+          transition: background 150ms, color 150ms;
+        }
+        .ios-settings-custom-size {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          padding: 12px 0;
+        }
+        .ios-text-size-stepper {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 5px;
+          border-radius: 999px;
+          background: var(--dark-surface-muted, #161e2b);
+          border: 1px solid var(--dark-border, #303b4c);
+        }
+        .ios-settings-popover .ios-text-size-step {
+          --ui-control-radius: 50%;
+          display: grid;
+          place-items: center;
+          width: 44px;
+          min-width: 44px;
+          height: 44px;
+          padding: 0;
+          border: 1px solid rgb(255 255 255 / 10%);
+          border-radius: 50%;
+          color: inherit;
+          background: var(--dark-surface-raised, #293548);
+          transition: opacity 0.15s, transform 0.15s;
+        }
+        .ios-settings-popover .ios-text-size-step.is-increase {
+          background: var(--ios-system-blue, #0a84ff);
+          color: #fff;
+        }
+        .ios-text-size-step:enabled:hover { opacity: 0.85; }
+        .ios-text-size-step:enabled:active { transform: scale(0.94); }
+        .ios-text-size-step:focus-visible { outline: 2px solid var(--ios-system-blue, #0a84ff); outline-offset: 3px; }
+        .ios-text-size-step:disabled { opacity: 0.35; cursor: not-allowed; }
+        .ios-text-size-value {
+          display: flex;
+          align-items: baseline;
+          justify-content: center;
+          gap: 3px;
+          min-width: 58px;
+          padding: 8px 6px;
+          border-radius: 14px;
+          background: rgb(255 255 255 / 4%);
+          font-size: 20px;
+          font-weight: 600;
+          font-variant-numeric: tabular-nums;
+        }
+        .ios-text-size-value span { font-size: 11px; font-weight: 400; opacity: 0.65; }
+        .ios-settings-popover[data-theme="light"] .ios-text-size-stepper { background: var(--light-surface-muted); border-color: var(--light-border); }
+        .ios-settings-popover[data-theme="light"] .ios-text-size-step:not(.is-increase),
+        .ios-settings-popover[data-theme="light"] .ios-text-size-value { background: var(--light-canvas); color: var(--light-text); }
 
         .ios-settings-leave-btn {
           display: flex;
@@ -656,12 +738,12 @@ export function QuizSettingsModal({
         .ios-settings-popover[data-theme="dark"] :is(.ios-settings-close-btn, .ios-settings-segmented, .ios-settings-switch) {
           background: var(--oled-inset, #29292c); border: 0; box-shadow: none;
         }
-        /* Separate box selections; switches retain their native pill shape. */
+        /* Shared selection surfaces; switches retain their native pill shape. */
         .ios-settings-popover .ios-settings-segmented {
           background: transparent; border: 0; padding: 0; gap: 4px; border-radius: 0;
         }
         .ios-settings-popover .ios-segment-btn {
-          min-width: 44px; min-height: 44px; border-radius: 8px !important;
+          min-width: 44px; min-height: 44px; border-radius: 999px !important;
           background: var(--oled-inset, #29292c); border: 0; box-shadow: none;
         }
         .ios-settings-popover[data-theme="light"] .ios-segment-btn { background: var(--light-surface-muted, #edf1f6); }
@@ -675,6 +757,66 @@ export function QuizSettingsModal({
         .ios-settings-popover[data-theme="dark"] .ios-settings-header { border-bottom: 0 !important; }
         .ios-settings-popover[data-theme="dark"] :is(.ios-segment-btn.is-active, .ios-settings-switch.is-active) {
           background: var(--oled-selected, #216bc1); color: #edf4fc; border: 0; box-shadow: none;
+        }
+        /* Group reading controls and separate secondary display preferences. */
+        .ios-settings-popover .ios-settings-header { padding: 0 0 10px; margin: 0; }
+        .ios-settings-popover .ios-settings-title { font-size: 18px; letter-spacing: -0.4px; }
+        .ios-settings-popover .ios-settings-list { gap: 16px; }
+        .ios-settings-popover .ios-settings-section-title {
+          margin: 0 0 8px; font-size: 10px; line-height: 1.4;
+          letter-spacing: 0.09em; font-weight: 600; color: var(--ui-secondary);
+        }
+        .ios-settings-card {
+          padding: 2px 10px; border-radius: 16px;
+          background: rgb(128 128 128 / 7%);
+          border: 1px solid rgb(128 128 128 / 12%);
+        }
+        .ios-settings-popover .ios-settings-card .ios-settings-item { padding: 9px 0; gap: 8px; }
+        .ios-settings-popover .ios-settings-label { font-size: 12px; font-weight: 600; line-height: 1.4; }
+        .ios-settings-popover .ios-settings-sublabel {
+          font-size: 10px; line-height: 1.5; white-space: normal;
+          overflow: visible; text-overflow: clip; color: var(--ui-secondary);
+        }
+        .ios-settings-popover .ios-settings-item-left { gap: 8px; }
+        .ios-settings-popover .ios-settings-icon-box { width: 24px; height: 28px; background: transparent; color: var(--ui-secondary); }
+        .ios-settings-popover .ios-settings-card .ios-settings-divider { background: rgb(128 128 128 / 12%); margin: 0; }
+        .ios-settings-card > .ios-settings-divider:last-child { display: none; }
+        .ios-settings-popover .ios-settings-custom-size { padding: 9px 0; gap: 8px; flex-wrap: nowrap; }
+        .ios-settings-popover .ios-text-size-stepper { padding: 3px; gap: 2px; border: 0; background: var(--ui-muted-surface); }
+        .ios-settings-popover .ios-text-size-value { min-width: 0; flex: 1; padding: 6px 0; font-size: 18px; background: transparent; }
+        .ios-settings-popover .ios-settings-card .ios-settings-segmented {
+          padding: 3px; gap: 2px; border-radius: 999px; background: var(--ui-muted-surface);
+        }
+        .ios-settings-popover .ios-settings-card :is(.ios-settings-segmented, .ios-text-size-stepper) {
+          box-sizing: border-box;
+          width: 148px;
+          height: 50px;
+          flex: 0 0 148px;
+          border-radius: 999px;
+        }
+        .ios-settings-popover .ios-settings-card .ios-segment-btn {
+          --ui-control-radius: 999px;
+          flex: 1; min-width: 0; height: 44px; padding: 6px 3px; background: transparent; font-size: 11px;
+        }
+        .ios-settings-popover .ios-settings-card .ios-segment-btn.is-active {
+          background: var(--ios-system-blue); color: white;
+        }
+        .ios-settings-popover .ios-settings-visibility { padding: 0; }
+        .ios-settings-tools-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+        .ios-settings-popover .ios-settings-tool-options { margin: 0; border-radius: 999px; }
+        .ios-settings-popover .ios-settings-tool-btn { --ui-control-radius: 999px; border-radius: 999px; }
+        .ios-settings-popover .ios-settings-leave-btn { margin-top: 14px; color: var(--ui-secondary); }
+        .ios-settings-popover[data-theme="light"] {
+          --ui-surface: var(--light-surface, #fff);
+          --ui-border: var(--light-border, #e2e8f0);
+          --ui-text: var(--light-text, #172033);
+        }
+        .ios-settings-popover[data-theme="light"] .ios-text-size-stepper .ios-text-size-step:not(.is-increase) {
+          background: var(--light-surface, #fff); color: var(--light-text, #172033);
+        }
+        @media (max-width: 360px) {
+          .ios-settings-popover { padding-inline: 12px; }
+          .ios-settings-popover .ios-settings-custom-size { padding-left: 0; }
         }
       `}</style>
     </>

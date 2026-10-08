@@ -1162,10 +1162,11 @@
 .ios-series-palette-title {
   position: relative;
   flex: none;
-  display: flex;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
   justify-content: center;
-  padding: 16px 20px;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--dark-border);
   color: var(--dark-text);
   font-size: 16px;
@@ -1175,26 +1176,33 @@
 }
 
 .ios-series-palette-title span {
+  grid-column: 2;
   text-align: center;
   font-size: 16px;
   font-weight: 700;
 }
 
 .ios-series-palette-title button {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
+  grid-column: 3;
+  grid-row: 1;
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 1px solid var(--dark-border);
   border-radius: 50%;
   background: var(--dark-surface-muted);
   color: var(--dark-text);
   cursor: pointer;
+}
+
+/* Keep the dismiss hit area stationary throughout a press. The global tap-scale
+   animation changes transform and used to override its translateY positioning. */
+.ios-series-palette-title button:active:not(:disabled) {
+  animation: none;
+  transform: none;
+  scale: 1 !important;
 }
 
 .ios-series-palette-title svg {

@@ -31,7 +31,8 @@ export default function GeneralAwarenessHubClient() {
   const mobileTopicDetails = Object.fromEntries(
     TOPICS.map((topic) => {
       const topicSlug = topic.slug;
-      const totalQuestions = data?.totals?.[topicSlug] || 0;
+      const hasApiTotal = Boolean(data?.totals && typeof data.totals[topicSlug] === "number");
+      const totalQuestions = hasApiTotal ? (data?.totals?.[topicSlug] ?? 0) : 0;
       const userSolved = data?.userProgress?.[topicSlug]?.userSolved || 0;
 
       const progress = totalQuestions > 0

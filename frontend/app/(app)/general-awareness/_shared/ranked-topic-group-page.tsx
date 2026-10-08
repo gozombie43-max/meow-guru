@@ -32,6 +32,7 @@ Building2,
 Calendar,
 Castle,
 ChevronLeft,
+ChevronRight,
 CircleDot,
 Clock,
 CloudFog,
@@ -398,7 +399,10 @@ const GROUP_META: Record<string, TopicMeta> = {
   "general-science": { icon: Atom, color: "#0284c7" },
 };
 
+import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
+
 export default function RankedTopicGroupPage({ group }: { group: RankedTopicGroup }) {
+  const { data } = useTopicQuestionTotals("general-awareness");
   const [query, setQuery] = useState("");
   const [priority, setPriority] = useState<PriorityFilter>("All");
   const [filterOpen, setFilterOpen] = useState(false);
@@ -608,39 +612,40 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
           >
             <ArrowLeft size={18} strokeWidth={2.4} />
           </Link>
-          <span className={`${hubStyles.mobileTopbarTitle} ${styles.mobileTopbarTitle}`}>
+          <h1 className={`${hubStyles.mobileTopbarTitle} ${styles.mobileTopbarTitle}`}>
             {group.label} Chapters
-          </span>
+          </h1>
           {filterButton}
         </header>
 
         <div data-hub-part="mobileBody" className={hubStyles.mobileBody}>
           {/* Mobile Search Row */}
-          <div data-hub-part="mobileSearchRow" className={hubStyles.mobileSearchRow}>
-            <Search className={hubStyles.mobileSearchIcon} size={16} />
+          <div data-hub-part="mobileSearchRow" className={styles.chapterSearch}>
+            <Search size={21} aria-hidden="true" />
             <input
               type="text"
-              className={hubStyles.mobileSearchInput}
+              className={styles.chapterSearchInput}
               placeholder={isListening ? "Listening... speak chapter" : `Search ${group.label.toLowerCase()} chapters…`}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label={`Search ${group.label} chapters`}
             />
-            <div className={hubStyles.mobileSearchRightActions}>
+            <div className={styles.chapterSearchActions}>
               {query && (
-                <button data-ui-button="secondary"
+                <button data-ui-button="state" data-ui-shape="icon"
                   type="button"
-                  className={hubStyles.mobileSearchClearBtn}
+                  className={styles.searchAction}
                   onClick={() => setQuery("")}
                   aria-label="Clear Search"
                 >
                   <X size={11} />
                 </button>
               )}
-              <span className={hubStyles.mobileSearchDivider} aria-hidden="true" />
+              <span className={styles.searchDivider} aria-hidden="true" />
               <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
-                className={`${hubStyles.mobileMicBtn} ${isListening ? hubStyles.mobileMicBtnListening : ""}`}
+                className={styles.searchAction}
+                aria-pressed={isListening}
                 onClick={toggleVoiceSearch}
                 aria-label={isListening ? "Stop voice search" : "Voice search"}
                 title={isListening ? "Listening..." : "Voice search"}
@@ -650,11 +655,8 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
             </div>
           </div>
 
-          {/* Section Title Header */}
-          <div data-hub-part="mobileTopicsTitle" className={hubStyles.mobileTopicsTitle}>CHAPTERS</div>
-
-          {/* Chapter cards */}
-          <div data-hub-part="mobileTopicGroup" className={`${hubStyles.mobileTopicGroup} ${styles.chapterList}`}>
+          {/* Flat chapter list with stable rank and unrestricted title wrapping. */}
+          <div data-hub-part="mobileTopicGroup" className={styles.chapterList}>
             {topics.length === 0 ? (
               <div style={{ padding: "28px 16px", textAlign: "center", color: "var(--mac-text-secondary, #8E8E93)", fontSize: "0.9rem" }}>
                 No {group.label.toLowerCase()} chapters found matching &ldquo;{query}&rdquo;
@@ -667,19 +669,20 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
                   <Link
                     key={topic.slug}
                     href={`/general-awareness/${group.slug}/${topic.slug}`}
-                    data-hub-part="mobileTopicRow" className={hubStyles.mobileTopicRow}
+                    data-hub-part="mobileTopicRow" className={styles.chapterRow}
                     aria-label={`${topic.rank}. ${topic.title}`}
                   >
-                    <div className={hubStyles.mobileTopicRowLeft}>
                       <div className={styles.chapterIcon}>
                         <TopicIcon size={24} strokeWidth={2.2} aria-hidden="true" />
                       </div>
-
-                      <span className={`${hubStyles.mobileTopicName} ${styles.mobileTopicName}`}>
-                        <span className={styles.mobileRankNum}>{topic.rank}.</span> {topic.title}
+                      <span className={styles.mobileRankNum} aria-hidden="true">{topic.rank}.</span>
+                      <span className={styles.chapterText}>
+                        <span className={styles.mobileTopicName}>{topic.title}</span>
+                        <span className={styles.chapterQuestionCount}>
+                          {data?.totals?.[topic.slug] ?? 0} Questions
+                        </span>
                       </span>
-                    </div>
-
+                      <ChevronRight className={styles.chapterChevron} size={20} aria-hidden="true" />
                   </Link>
                 );
               })

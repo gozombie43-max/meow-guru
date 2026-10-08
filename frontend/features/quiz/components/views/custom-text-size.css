@@ -1,0 +1,12 @@
+/* Shared by both layouts so desktop sizing does not depend on mobile CSS loading. */
+:is(.ios-series-quiz, .mac-series-quiz)[data-custom-text-size="true"][data-text-size] {
+  --reading-question-size: var(--quiz-custom-text-size);
+  --reading-option-size: var(--quiz-custom-text-size);
+  --reading-line-height: 1.5;
+}
+
+:is(.ios-series-quiz, .mac-series-quiz)[data-custom-text-size="true"][data-text-size]
+  :is(.ios-series-prompt, .mac-series-prompt, .ios-series-option-value, .mac-series-option-value) {
+  font-size: var(--quiz-custom-text-size) !important;
+  line-height: 1.5 !important;
+}

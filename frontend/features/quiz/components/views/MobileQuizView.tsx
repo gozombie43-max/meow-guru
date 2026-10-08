@@ -1,5 +1,7 @@
 "use client";
 import "./mobile-quiz-view.css";
+import "./custom-text-size.css";
+import type { CSSProperties } from "react";
 import { MobileQuestionNavigator } from "@/features/quiz/components/views/MobileQuestionNavigator";
 import { MobileQuizFooter, MobileQuizHeader } from "@/features/quiz/components/views/MobileQuizChrome";
 import RichContent from "@/components/RichContent";
@@ -121,6 +123,8 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
       data-theme={theme}
       data-language={activeLang}
       data-text-size={textSize}
+      data-custom-text-size={typeof textSize === "number" ? "true" : undefined}
+      style={typeof textSize === "number" ? { "--quiz-custom-text-size": `${textSize}px` } as CSSProperties : undefined}
       data-spacing={spacing}
       data-text-weight={textWeight}
     >

@@ -42,9 +42,9 @@ describe("QuizSettingsModal", () => {
     expect(screen.getByText("Spacing")).toBeInTheDocument();
     expect(screen.getByText("Dark Theme")).toBeInTheDocument();
     expect(screen.getByText("Hide Question Strip")).toBeInTheDocument();
-    expect(screen.getByText("Hide View Solution")).toBeInTheDocument();
-    expect(screen.getByText("Hide AI Tutor")).toBeInTheDocument();
-    expect(screen.getByText("Hide Both")).toBeInTheDocument();
+    expect(screen.getByText("Solution")).toBeInTheDocument();
+    expect(screen.getByText("AI tutor")).toBeInTheDocument();
+    expect(screen.getByText("Both")).toBeInTheDocument();
   });
 
   it("does not render when isOpen is false", () => {
@@ -92,6 +92,30 @@ describe("QuizSettingsModal", () => {
     expect(onSpacingChange).toHaveBeenCalledWith("comfortable");
   });
 
+  it("steps the custom size from the current preset and displays pixels", () => {
+    const onTextSizeChange = vi.fn();
+    const { rerender } = render(<QuizSettingsModal {...defaultProps} onTextSizeChange={onTextSizeChange} />);
+    expect(screen.getByLabelText("Current text size")).toHaveTextContent("20px");
+    fireEvent.click(screen.getByRole("button", { name: "Increase text size" }));
+    expect(onTextSizeChange).toHaveBeenLastCalledWith(21);
+    rerender(<QuizSettingsModal {...defaultProps} textSize={21} onTextSizeChange={onTextSizeChange} />);
+    expect(screen.getByLabelText("Current text size")).toHaveTextContent("21px");
+    expect(screen.getByRole("button", { name: "M" })).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(screen.getByRole("button", { name: "Decrease text size" }));
+    expect(onTextSizeChange).toHaveBeenLastCalledWith(20);
+    fireEvent.click(screen.getByRole("button", { name: "M" }));
+    expect(onTextSizeChange).toHaveBeenLastCalledWith("md");
+  });
+
+  it("disables stepping past either size limit", () => {
+    const { rerender } = render(<QuizSettingsModal {...defaultProps} textSize={16} />);
+    expect(screen.getByRole("button", { name: "Decrease text size" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Increase text size" })).toBeEnabled();
+    rerender(<QuizSettingsModal {...defaultProps} textSize={24} />);
+    expect(screen.getByRole("button", { name: "Increase text size" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Decrease text size" })).toBeEnabled();
+  });
+
   it("calls onToggleTheme when theme switch is clicked", () => {
     const onToggleTheme = vi.fn();
     render(<QuizSettingsModal {...defaultProps} onToggleTheme={onToggleTheme} />);
@@ -124,8 +148,8 @@ describe("QuizSettingsModal", () => {
         onToggleHideViewSolution={onToggleHideViewSolution}
       />
     );
-    const solSwitch = screen.getByRole("switch", { name: /toggle hide view solution/i });
-    expect(solSwitch).toHaveAttribute("aria-checked", "false");
+    const solSwitch = screen.getByRole("button", { name: /toggle hide view solution/i });
+    expect(solSwitch).toHaveAttribute("aria-pressed", "false");
     fireEvent.click(solSwitch);
     expect(onToggleHideViewSolution).toHaveBeenCalledWith(true);
   });
@@ -139,8 +163,8 @@ describe("QuizSettingsModal", () => {
         onToggleHideAiTutor={onToggleHideAiTutor}
       />
     );
-    const tutorSwitch = screen.getByRole("switch", { name: /toggle hide ai tutor/i });
-    expect(tutorSwitch).toHaveAttribute("aria-checked", "false");
+    const tutorSwitch = screen.getByRole("button", { name: /toggle hide ai tutor/i });
+    expect(tutorSwitch).toHaveAttribute("aria-pressed", "false");
     fireEvent.click(tutorSwitch);
     expect(onToggleHideAiTutor).toHaveBeenCalledWith(true);
   });
@@ -155,8 +179,8 @@ describe("QuizSettingsModal", () => {
         onToggleHideBoth={onToggleHideBoth}
       />
     );
-    const bothSwitch = screen.getByRole("switch", { name: /toggle hide both solution and ai tutor/i });
-    expect(bothSwitch).toHaveAttribute("aria-checked", "false");
+    const bothSwitch = screen.getByRole("button", { name: /toggle hide both solution and ai tutor/i });
+    expect(bothSwitch).toHaveAttribute("aria-pressed", "false");
     fireEvent.click(bothSwitch);
     expect(onToggleHideBoth).toHaveBeenCalledWith(true);
 
@@ -168,7 +192,7 @@ describe("QuizSettingsModal", () => {
         onToggleHideBoth={onToggleHideBoth}
       />
     );
-    expect(bothSwitch).toHaveAttribute("aria-checked", "true");
+    expect(bothSwitch).toHaveAttribute("aria-pressed", "true");
     fireEvent.click(bothSwitch);
     expect(onToggleHideBoth).toHaveBeenCalledWith(false);
   });

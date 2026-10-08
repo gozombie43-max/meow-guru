@@ -2,7 +2,16 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type QuizTextSize = "sm" | "md" | "lg";
+export type QuizTextSize = "sm" | "md" | "lg" | number;
+export const MIN_QUIZ_TEXT_SIZE = 16;
+export const MAX_QUIZ_TEXT_SIZE = 24;
+export function getQuizTextSizePixels(size: QuizTextSize) {
+  return typeof size === "number" ? size : { sm: 17, md: 20, lg: 23 }[size];
+}
+
+function isCustomTextSize(size: number) {
+  return Number.isInteger(size) && size >= MIN_QUIZ_TEXT_SIZE && size <= MAX_QUIZ_TEXT_SIZE;
+}
 export type QuizTextWeight = "low" | "medium" | "high";
 export type QuizSpacing = "comfortable" | "compact";
 
@@ -20,7 +29,7 @@ function readPreference(key: string, fallback = false) {
   return saved === null ? fallback : saved === "true";
 }
 
-function writePreference(key: string, value: boolean | string) {
+function writePreference(key: string, value: boolean | string | number) {
   try {
     window.localStorage.setItem(key, String(value));
   } catch {}
@@ -40,9 +49,14 @@ export function useQuizPreferences() {
         setHideQuestionNumbers(readPreference(STORAGE_KEYS.hideQuestionNumbers, true));
         setHideViewSolution(readPreference(STORAGE_KEYS.hideViewSolution));
         setHideAiTutor(readPreference(STORAGE_KEYS.hideAiTutor));
-        const savedTextSize = window.localStorage.getItem(STORAGE_KEYS.textSize) as QuizTextSize | null;
+        const savedTextSize = window.localStorage.getItem(STORAGE_KEYS.textSize);
+        const savedPixels = Number(savedTextSize);
         if (savedTextSize === "sm" || savedTextSize === "md" || savedTextSize === "lg") {
           setTextSizeState(savedTextSize);
+        } else if (savedTextSize?.trim() && Number.isInteger(savedPixels) && savedPixels > 0) {
+          const size = Math.min(MAX_QUIZ_TEXT_SIZE, Math.max(MIN_QUIZ_TEXT_SIZE, savedPixels));
+          setTextSizeState(size);
+          if (size !== savedPixels) writePreference(STORAGE_KEYS.textSize, size);
         }
         const weight = window.localStorage.getItem(STORAGE_KEYS.textWeight);
         if (weight === "low" || weight === "medium" || weight === "high") setTextWeightState(weight);
@@ -78,6 +92,7 @@ export function useQuizPreferences() {
   }, []);
 
   const setTextSize = useCallback((size: QuizTextSize) => {
+    if (typeof size === "number" && !isCustomTextSize(size)) return;
     setTextSizeState(size);
     writePreference(STORAGE_KEYS.textSize, size);
   }, []);

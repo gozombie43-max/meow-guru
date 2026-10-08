@@ -65,4 +65,39 @@ describe("useQuizPreferences", () => {
     expect(result.current.spacing).toBe("compact");
     expect(window.localStorage.getItem("quiz_spacing")).toBe("compact");
   });
+
+  it("persists custom text sizes and restores them after remounting", async () => {
+    const first = renderHook(() => useQuizPreferences());
+    act(() => first.result.current.setTextSize(22));
+    expect(localStorage.getItem("quiz_text_size")).toBe("22");
+    first.unmount();
+    const restored = renderHook(() => useQuizPreferences());
+    await waitFor(() => expect(restored.result.current.textSize).toBe(22));
+    act(() => restored.result.current.setTextSize("sm"));
+    expect(localStorage.getItem("quiz_text_size")).toBe("sm");
+  });
+
+  it.each([[14, 16], [32, 24], [16, 16], [24, 24]])("restores saved size %s within the range as %s", async (saved, expected) => {
+    localStorage.setItem("quiz_text_size", String(saved));
+    const { result } = renderHook(() => useQuizPreferences());
+    await waitFor(() => expect(result.current.textSize).toBe(expected));
+    expect(localStorage.getItem("quiz_text_size")).toBe(String(expected));
+  });
+
+  it.each([15, 25])("rejects changes outside the limits: %s", (size) => {
+    const { result } = renderHook(() => useQuizPreferences());
+    act(() => result.current.setTextSize(size));
+    expect(result.current.textSize).toBe("md");
+    expect(localStorage.getItem("quiz_text_size")).toBeNull();
+  });
+
+  it.each([0, -1, 20.5, NaN, Infinity])("rejects invalid custom size %s", async (size) => {
+    localStorage.setItem("quiz_text_size", String(size));
+    const { result } = renderHook(() => useQuizPreferences());
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+    expect(result.current.textSize).toBe("md");
+    act(() => result.current.setTextSize(size));
+    expect(result.current.textSize).toBe("md");
+    expect(localStorage.getItem("quiz_text_size")).toBe(String(size));
+  });
 });
