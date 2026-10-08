@@ -1,7 +1,7 @@
 const { isAbsolute, parse } = require('node:path');
 const { globSync: matchDirectories } = require('tinyglobby');
 
-// Next 16.3.6 uses only globSync(string, { onlyDirectories: true }).
+// Next 16.3.8 uses only globSync(string, { onlyDirectories: true }).
 // Reject other callers instead of pretending to implement all of fast-glob.
 exports.globSync = (pattern, options) => {
   if (typeof pattern !== 'string' || options?.onlyDirectories !== true) {

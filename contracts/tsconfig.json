@@ -8,5 +8,5 @@
     "target": "ES2022",
     "skipLibCheck": true
   },
-  "include": ["auth.js", "progress.js", "speech.js", "cognitive.js", "training.js", "notifications.js", "questions.js", "tutor.js", "admin.js"]
+  "include": ["auth.js", "progress.js", "speech.js", "cognitive.js", "training.js", "notifications.js", "questions.js", "quiz-grading.js", "tutor.js", "admin.js"]
 }

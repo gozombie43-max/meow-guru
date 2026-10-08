@@ -15,10 +15,11 @@
     "./training": "./training.js",
     "./notifications": "./notifications.js",
     "./questions": "./questions.js",
+    "./quiz-grading": "./quiz-grading.js",
     "./tutor": "./tutor.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node scripts/publish-declarations.js",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {

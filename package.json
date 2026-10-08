@@ -29,8 +29,13 @@
     "test:coverage": "npm run test:coverage --workspace frontend && npm run test:coverage --workspace backend"
   },
   "overrides": {
-    "@next/eslint-plugin-next@16.3.6": {
+    "@next/eslint-plugin-next@16.3.8": {
       "fast-glob": "$fast-glob"
+    },
+    "katex": "0.18.2",
+    "next": "16.3.8",
+    "concurrently": {
+      "shell-quote": "1.11.0"
     },
     "engine.io": "6.6.11",
     "dompurify": "3.4.16",

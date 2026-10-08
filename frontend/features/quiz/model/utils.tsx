@@ -1,5 +1,5 @@
 import React from 'react';
-import { quizCorrectIndex } from '@meow/contracts/questions';
+import { quizCorrectIndex } from '@meow/contracts/quiz-grading';
 import { type Question as ApiQuestion } from '@/lib/api/questions';
 import { QuizMode, Difficulty, QuizQuestionRecord, ConceptColour, QuizQuestion } from '@/features/quiz/model/types';
 

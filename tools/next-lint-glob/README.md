@@ -1,6 +1,6 @@
 # Next lint directory matching
 
-`@next/eslint-plugin-next@16.3.6` uses `fast-glob` only for
+`@next/eslint-plugin-next@16.3.8` uses `fast-glob` only for
 `globSync(pattern, { onlyDirectories: true })` in `get-root-dirs`.
 Its dependency chain includes `braces@3.0.3`, affected by
 [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm).
@@ -18,6 +18,6 @@ enabled; the CI audit still includes development dependencies.
 
 Run `npm run check:lint-tooling --workspace frontend` to exercise the installed
 Next plugin's directory discovery and internal-link rule. CI runs this check.
-The override applies only to Next's plugin version 16.3.6. Recheck its imports
+The override applies only to Next's plugin version 16.3.8. Recheck its imports
 and this compatibility suite when upgrading; retire the override and workspace
 when upstream removes the vulnerable dependency chain.

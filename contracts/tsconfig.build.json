@@ -4,6 +4,7 @@
     "noEmit": false,
     "checkJs": false,
     "declaration": true,
+    "declarationDir": "./build",
     "emitDeclarationOnly": true
   },
   "include": ["*.js"],
