@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Next.js Middleware — Access Code Gate + Route Redirects
+ * Next.js Middleware — Access Code Gate
  *
- * 1. Redirects /Videos → /videos (case-fix)
- * 2. Checks for `access_session` cookie on every page request.
+ * Checks for `access_session` cookie on every page request.
  *    If missing → redirects to /access-code.
  *
  * IMPORTANT: /backend-api/* must NEVER be intercepted here.
@@ -13,13 +12,6 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // ── /Videos case redirect ──
-  if (pathname === '/Videos' || pathname.startsWith('/Videos/')) {
-    const url = request.nextUrl.clone();
-    url.pathname = pathname.replace(/^\/Videos/, '/videos');
-    return NextResponse.redirect(url);
-  }
 
   // ── Access Code Gate ──
   // Paths that must NEVER be gated (pass straight through)

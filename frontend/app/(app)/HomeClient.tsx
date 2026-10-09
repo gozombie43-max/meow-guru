@@ -19,7 +19,7 @@ import {
   Search,
   Sun,
   Swords,
-  Video,
+  UserRound,
   X,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -34,7 +34,7 @@ const railItems = [
   { label: 'Play', href: '/play', icon: Play },
   { label: 'Battle Mode', href: '/battle', icon: Swords },
   { label: 'All Books & Notes', href: '/resource', icon: BookOpen },
-  { label: 'Videos', href: '/videos', icon: Video },
+  { label: 'Profile', href: '/profile', icon: UserRound },
   { label: 'AI Chat', href: '/ai-chat', icon: AiChatIcon },
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
 ] as const;
@@ -290,7 +290,7 @@ export default function HomeClient({
                 {/* Notifications */}
                 <NotificationBell size={34} iconSize={17} />
 
-                {/* User Avatar with Profile Dropdown Modal or LOGIN pill button */}
+                {/* Profile link or LOGIN pill button */}
                 {user ? (
                   <UserProfileMenu size={34} align="right" />
                 ) : (

@@ -35,7 +35,6 @@ const dynamicRoutes: Record<string, string> = {
   '/play/setup/[mode]': '/play/setup/adaptive',
   '/play/session/[id]': '/play/session/screenshot-session',
   // This page's [id] is a subject key, rather than an individual video ID.
-  '/videos/[id]': '/videos/math',
   '/mock-test/[examSlug]': '/mock-test/ssc-cgl',
   '/mock-test/[examSlug]/[testId]': '/mock-test/ssc-cgl/browser-test',
   '/mock-test/[examSlug]/[testId]/attempt': '/mock-test/ssc-cgl/browser-test/attempt',

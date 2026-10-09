@@ -164,9 +164,9 @@ function DashboardContent() {
                 <span className={`${styles.ic} ${styles.icTeal}`}><Wallet size={15} color="#fff" /></span>
                 Wallet <span className={styles.chev}>›</span>
               </Link>
-              <Link href="/settings" className={styles.sideRow}>
+              <Link href="/profile" className={styles.sideRow}>
                 <span className={`${styles.ic} ${styles.icPurple}`}><Settings size={15} color="#fff" /></span>
-                Settings <span className={styles.chev}>›</span>
+                Profile & settings <span className={styles.chev}>›</span>
               </Link>
             </div>
           </div>

@@ -100,7 +100,7 @@ All layout dimensions and safe-area insets are centralized in `frontend/app/glob
 - Use `100dvh` in CSS and `min-h-dvh` / `h-dvh` in Tailwind classes.
 
 ### Rule 4: Clean Bottom Navigation & Floating Bar Clearance
-- On routes where `BottomNav` is visible (Home, Subject Hubs, Play, Videos, Notes), `body.has-bottom-nav` automatically provides:
+- On routes where `BottomNav` is visible (Home, Subject Hubs, Play, Profile, Notes), `body.has-bottom-nav` automatically provides:
   ```css
   padding-bottom: calc(var(--app-bottom-nav-height) + var(--safe-bottom));
   ```

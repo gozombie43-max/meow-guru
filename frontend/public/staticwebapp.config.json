@@ -1,11 +1,4 @@
 {
-  "routes": [
-    {
-      "route": "/videos/SSC_Pratham_12_StudyWithGuru.html",
-      "serve": "/videos/SSC_Pratham_12_StudyWithGuru.html",
-      "statusCode": 200
-    }
-  ],
   "platform": {
     "apiRuntime": "node:18"
   }

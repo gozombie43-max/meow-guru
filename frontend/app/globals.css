@@ -936,6 +936,15 @@ body.has-bottom-nav {
   }
 }
 
+/* Keep chapter search clear of navigation while the mobile keyboard is in use.
+   Visibility preserves the measured footer clearance and avoids layout jumps. */
+@media (max-width: 767px) {
+  body:has([data-mobile-chapter-search]:focus) .bottom-pill-nav {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
 .bottom-pill-nav {
   position: fixed;
   left: 50%;
@@ -1578,7 +1587,6 @@ html.theme-dark * {
 /* Ensure the page content scrolls naturally above the fixed nav.
    Use padding-bottom on body (set above) rather than shrinking heights,
    which blocks natural scroll on mobile. */
-body.has-bottom-nav .videos-page,
 body.has-bottom-nav .dashboard-shell {
   height: auto !important;
 }

@@ -407,13 +407,29 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
   const [priority, setPriority] = useState<PriorityFilter>("All");
   const [filterOpen, setFilterOpen] = useState(false);
   const filterDialogRef = useRef<HTMLDialogElement>(null);
+  const filterTriggerRef = useRef<HTMLButtonElement | null>(null);
   useBackLayer(filterOpen, () => setFilterOpen(false));
 
   useEffect(() => {
     const dialog = filterDialogRef.current;
     if (!dialog) return;
-    if (filterOpen && !dialog.open) dialog.showModal();
-    if (!filterOpen && dialog.open) dialog.close();
+    if (!filterOpen) {
+      if (dialog.open) dialog.close();
+      return;
+    }
+    const positionDialog = () => {
+      const trigger = filterTriggerRef.current;
+      if (!trigger) return;
+      const bounds = trigger.getBoundingClientRect();
+      const top = bounds.bottom + 8;
+      dialog.style.top = `${top}px`;
+      dialog.style.right = `${Math.max(12, window.innerWidth - bounds.right)}px`;
+      dialog.style.maxHeight = `max(44px, calc(100dvh - ${top + 12}px))`;
+    };
+    positionDialog();
+    if (!dialog.open) dialog.showModal();
+    window.addEventListener('resize', positionDialog);
+    return () => window.removeEventListener('resize', positionDialog);
   }, [filterOpen]);
 
   useEffect(() => {
@@ -509,7 +525,10 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
       aria-haspopup="dialog"
       aria-expanded={filterOpen}
       aria-controls="chapter-filter-dialog"
-      onClick={() => setFilterOpen(true)}
+      onClick={(event) => {
+        filterTriggerRef.current = event.currentTarget;
+        setFilterOpen(true);
+      }}
     >
       <SlidersHorizontal size={20} aria-hidden="true" />
     </button>
@@ -625,6 +644,9 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
             <input
               type="text"
               className={styles.chapterSearchInput}
+              data-custom-focus
+              data-mobile-chapter-search
+              enterKeyHint="search"
               placeholder={isListening ? "Listening... speak chapter" : `Search ${group.label.toLowerCase()} chapters…`}
               value={query}
               onChange={(e) => setQuery(e.target.value)}

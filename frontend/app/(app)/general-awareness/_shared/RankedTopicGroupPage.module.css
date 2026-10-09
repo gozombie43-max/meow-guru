@@ -457,11 +457,15 @@
 }
 
 .headerFilter {
-  color: var(--ios-system-blue);
+  color: #ffffff;
   background: transparent;
   border: 0;
   padding: 0;
   cursor: pointer;
+}
+
+:global(html.theme-light) .headerFilter {
+  color: var(--geo-text);
 }
 
 .chapterIcon {
@@ -487,19 +491,22 @@
 }
 
 .filterDialog {
-  width: min(300px, calc(100vw - 32px));
+  position: fixed;
+  inset: auto;
+  box-sizing: border-box;
+  width: min(220px, calc(100vw - 24px));
   max-height: calc(100dvh - 48px);
-  margin: auto;
-  padding: 12px;
+  margin: 0;
+  padding: 8px;
   color: var(--geo-text);
   background: var(--geo-surface);
   border: 1px solid var(--geo-border);
-  border-radius: 20px;
+  border-radius: 14px;
   box-shadow: 0 16px 48px rgb(0 0 0 / 24%);
 }
 
 .filterDialog::backdrop {
-  background: rgb(0 0 0 / 42%);
+  background: transparent;
 }
 
 .filterDialogHeader {

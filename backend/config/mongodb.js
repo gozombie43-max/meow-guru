@@ -140,10 +140,6 @@ export function getMockSlotsCollection() {
   return getMongoDB().collection("mockSlots");
 }
 
-export function getVideosCollection() {
-  return getMongoDB().collection("videos");
-}
-
 export function getAuditLogCollection() {
   return getMongoDB().collection("auditLog");
 }

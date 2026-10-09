@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { hidesPrimaryNavigation } from '@/lib/shell-policy';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { ClipboardList, Home as HomeIcon, Play, Video } from 'lucide-react';
+import { ClipboardList, Home as HomeIcon, Play, UserRound } from 'lucide-react';
 import { useThemeMode } from '@/hooks/useTheme';
 import { AiChatIcon } from '@/components/AiChatIcon';
 
@@ -53,7 +53,7 @@ export default function BottomNav() {
   const isHome = pathname === '/';
   const isMock = pathname.startsWith('/mock-test');
   const isPlay = pathname === '/play' || pathname.startsWith('/play/');
-  const isVideos = pathname === '/videos' || pathname.startsWith('/videos/');
+  const isProfile = pathname === '/profile' || pathname.startsWith('/profile/');
 
   return (
     <nav
@@ -101,13 +101,13 @@ export default function BottomNav() {
         <span className="bottom-nav-label">Play</span>
       </Link>
       <Link replace
-        href="/videos"
+        href="/profile"
         prefetch={false}
-        className={`bottom-nav-item${isVideos ? ' is-active' : ''}`}
-        aria-current={isVideos ? 'page' : undefined}
+        className={`bottom-nav-item${isProfile ? ' is-active' : ''}`}
+        aria-current={isProfile ? 'page' : undefined}
       >
-        <Video className="bottom-nav-icon" />
-        <span className="bottom-nav-label">Videos</span>
+        <UserRound className="bottom-nav-icon" />
+        <span className="bottom-nav-label">Profile</span>
       </Link>
     </nav>
   );

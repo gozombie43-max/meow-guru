@@ -14,7 +14,7 @@ describe('BottomNav Component', () => {
     expect(screen.getByText('Home')).toBeDefined();
     expect(screen.getByText('Mock')).toBeDefined();
     expect(screen.getByText('Play')).toBeDefined();
-    expect(screen.getByText('Videos')).toBeDefined();
+    expect(screen.getByText('Profile')).toBeDefined();
     expect(screen.getByLabelText('AI Assistant')).toBeDefined();
   });
 
