@@ -187,6 +187,22 @@ export const MATHEMATICS_TOPICS = {
     aliases: [],
     mensurationModes: false,
   },
+  "height-and-distance": {
+    slug: "height-and-distance",
+    label: "Height & Distance",
+    group: "advance",
+    route: "/mathematics/advance/height-and-distance",
+    aliases: [],
+    mensurationModes: false,
+  },
+  "boat-and-stream": {
+    slug: "boat-and-stream",
+    label: "Boat and Stream",
+    group: "arithmetic",
+    route: "/mathematics/arithmetic/boat-and-stream",
+    aliases: [],
+    mensurationModes: false,
+  },
 } as const;
 export type MathematicsRouteGroup = "advance" | "arithmetic" | "top-level";
 

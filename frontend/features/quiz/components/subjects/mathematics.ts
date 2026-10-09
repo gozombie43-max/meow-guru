@@ -29,6 +29,8 @@ export const mathematicsConfig: SubjectConfig = {
     "problems-on-ages": ["Linear Equation Models", "Ratio Based Models", "Past & Future Ages", "Family Age Problems"],
     "pipes-and-cisterns": ["Filling & Emptying", "Leak Problems", "Efficiency Based Calculations", "Alternate Pipes", "Inlet & Outlet Ratios"],
     "calendar-and-clock": ["Odd Days & Leap Years", "Angle between Clock Hands", "Faulty Clocks", "Matching Calendar Years", "Coinciding Hands"],
+    "height-and-distance": ["Angles of Elevation & Depression", "Tower & Building Heights", "Two Observation Points", "Shadows & Distances"],
+    "boat-and-stream": ["Upstream & Downstream Speed", "Still Water & Stream Speed", "Round Trip Time", "Distance & Time Ratios"],
   },
   classificationCategories: [
     { id: "num", label: "Number Based", icon: "123", accent: "#fb923c", bg: "rgba(251, 146, 60, 0.1)", border: "rgba(251, 146, 60, 0.28)" },

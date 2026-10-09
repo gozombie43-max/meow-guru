@@ -12,7 +12,7 @@ const SUBJECT_TOPICS = {
     "mensuration", "trigonometry", "number-system", "averages", "discount",
     "mixture-and-alligation", "partnership", "square-roots", "statistics-probability",
     "simplification", "lcm-and-hcf", "problems-on-ages", "pipes-and-cisterns",
-    "calendar-and-clock",
+    "calendar-and-clock", "height-and-distance", "boat-and-stream",
   ],
   reasoning: [
     "coding-decoding", "syllogism-inferences", "puzzle-seating-arrangement", "series",

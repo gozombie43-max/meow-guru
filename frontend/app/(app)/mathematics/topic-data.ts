@@ -29,6 +29,8 @@ import {
   History,
   Droplets,
   CalendarDays,
+  Ruler,
+  Sailboat,
   type LucideIcon,
 } from "lucide-react";
 
@@ -49,7 +51,7 @@ export interface Topic {
   expectedMarks: string;
 }
 
-// ── 23 SSC Mathematics Topics with Distinctly Colored SVG Icons ───────────────
+// ── SSC Mathematics Topics with Distinctly Colored SVG Icons ──────────────────
 export const TOPICS: Topic[] = [
   {
     id: 1,
@@ -349,6 +351,32 @@ export const TOPICS: Topic[] = [
     expectedMarks: "2 Marks",
     description: "Calculations based on odd days, leap years, finding the day of the week, and angle between clock hands.",
     subtopics: ["Odd Days & Leap Years", "Angle between Clock Hands", "Faulty Clocks"],
+  },
+  {
+    id: 24,
+    priority: "high",
+    icon: Ruler,
+    color: "#38bdf8",
+    name: "Height & Distance",
+    slug: "height-and-distance",
+    routeBase: mathematicsTopicRoute("height-and-distance"),
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Using trigonometric ratios and angles of elevation or depression to calculate heights and distances.",
+    subtopics: ["Angles of Elevation & Depression", "Tower & Building Heights", "Two Observation Points", "Shadows & Distances"],
+  },
+  {
+    id: 25,
+    priority: "medium",
+    icon: Sailboat,
+    color: "#60a5fa",
+    name: "Boat and Stream",
+    slug: "boat-and-stream",
+    routeBase: mathematicsTopicRoute("boat-and-stream"),
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Upstream and downstream speeds, speed in still water, stream speed, and river journey times.",
+    subtopics: ["Upstream & Downstream Speed", "Still Water & Stream Speed", "Round Trip Time", "Distance & Time Ratios"],
   },
 ];
 

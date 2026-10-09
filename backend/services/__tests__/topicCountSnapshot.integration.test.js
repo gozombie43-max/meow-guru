@@ -99,6 +99,9 @@ describe("saved mathematics topic totals", () => {
       question("a", "PYQ"), question("b", "CareerWill"), question("c", "PW"),
       question("d", "Selection Way"), question("e", "Topic Mix"), question("f", "Tier 2"),
       question("g", "Study Mode", { questionType: "study-mode" }),
+      question("height-pyq", "PYQ", { topic: "height-and-distance" }),
+      question("boat-pyq", "PYQ", { topic: "boat-and-stream" }),
+      question("boat-formula", "CareerWill", { topic: "boat-and-stream" }),
     ]);
     const saved = await db.collection("questionMetadata").findOne({ kind: "topic-counts" });
     expect(saved.data.totals.percentages).toBe(6);
@@ -110,6 +113,8 @@ describe("saved mathematics topic totals", () => {
     const second = await fetchTopicCountSnapshot();
     expect(second).toEqual(first);
     expect(first.totals.geometry).toBe(0);
+    expect(first.totals["height-and-distance"]).toBe(1);
+    expect(first.totals["boat-and-stream"]).toBe(2);
     expect(aggregate).not.toHaveBeenCalled();
     aggregate.mockRestore();
   });
