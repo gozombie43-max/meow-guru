@@ -641,6 +641,7 @@
   position: relative;
   overflow: hidden;
   display: flex;
+  margin-top: 8px;
   height: 205px;
   min-height: 205px;
   max-height: 205px;
@@ -780,7 +781,7 @@
 .heroStudentImage {
   object-fit: cover;
   object-position: center 18%;
-  transform: translateZ(0);
+  transform: translateY(5px) scale(1.08) translateZ(0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1463,7 +1464,7 @@
   overflow: hidden;
   display: flex;
   min-height: 180px;
-  margin-top: 4px;
+  margin-top: 10px;
 }
 
 .heroDotsTopRight {
@@ -1584,7 +1585,7 @@
   height: 100%;
   object-fit: contain;
   object-position: center bottom;
-  transform: translateZ(0);
+  transform: translateY(4px) scale(1.08) translateZ(0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
