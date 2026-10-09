@@ -21,7 +21,7 @@ export async function backfillTrainingMetadata(collection, { apply = false, batc
     stats.candidates++;
     // A concurrent edit must win. Retry conflicted rows on the next run.
     const filter = { _id: row._id };
-    for (const key of sourceFields) filter[key] = Object.hasOwn(row, key) ? { $exists: true, $eq: row[key] } : { $exists: false };
+    for (const key of ['questionUid', ...sourceFields]) filter[key] = Object.hasOwn(row, key) ? { $exists: true, $eq: row[key] } : { $exists: false };
     batch.push({ updateOne: { filter, update: { $set: metadata } } });
     if (batch.length >= batchSize) await flush();
   }

@@ -17,7 +17,7 @@ import { up as upPerformance } from '../../migrations/008-training-performance.j
 import { up as upExamWideCandidates } from '../../migrations/009-training-exam-wide-candidates.js';
 import { up as upLearnerStateMeta } from '../../migrations/010-training-learner-state-meta.js';
 import { backfillTrainingMetadata } from '../../services/training/questionMetadataBackfill.js';
-import { trainingQuestionPool, trainingExposureData, trainingHistory } from '../../repositories/trainingRepository.js';
+import { trainingQuestionPool, trainingExposureData, trainingHistory, hydrateTrainingQuestions } from '../../repositories/trainingRepository.js';
 
 let mongo, db, server, base, token;
 afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); });
@@ -441,6 +441,34 @@ describe("persistent training API", () => {
 
 
 describe('training performance contracts', () => {
+  it('accepts reordered metadata but rejects changed or removed selected questions', async () => {
+    await backfillTrainingMetadata(db.collection('questions'), { apply: true });
+    const doc = await db.collection('questions').findOne({ id: 'q0' });
+    const selected = { ...doc.trainingCandidate, _trainingDocumentId: doc._id,
+      _trainingFingerprint: JSON.stringify(Object.fromEntries(Object.entries(doc.trainingCandidate).reverse())) };
+    expect((await hydrateTrainingQuestions([selected]))[0].text).toBe('Question 0');
+    await db.collection('questions').updateOne({ _id: doc._id }, { $set: { difficulty: 'easy' } });
+    await expect(hydrateTrainingQuestions([selected])).rejects.toThrow('Question catalog changed');
+    await db.collection('questions').deleteOne({ _id: doc._id });
+    await expect(hydrateTrainingQuestions([selected])).rejects.toThrow('Question catalog changed');
+  });
+
+  it.each(['true', 'false'])('starts play with legacy candidate metadata (indexed=%s)', async indexed => {
+    await backfillTrainingMetadata(db.collection('questions'), { apply: true });
+    // Metadata written before canonical question identities were introduced.
+    await db.collection('questions').updateMany({}, { $unset: {
+      'trainingCandidate.questionUid': '', 'trainingCandidate.legacyId': '',
+    } });
+    await db.collection('questions').updateOne({ id: 'q0' }, { $set: { questionUid: 'canonical-q0' } });
+    vi.stubEnv('TRAINING_INDEXED_QUESTIONS', indexed);
+    for (const mode of ['adaptive', 'challenge', 'sprint', 'pressure', 'section', 'gauntlet', 'nightmare', 'survival', 'mission']) {
+      const session = await start(mode);
+      expect(session.questions.length).toBeGreaterThan(0);
+      const saved = await db.collection('trainingSessions').findOne({ id: session.id });
+      expect([...saved.questions, ...saved.reserve].every(q => q.id !== 'q0')).toBe(true);
+    }
+  });
+
   it('persists recovery content once and restores logical order on reads', async () => {
     const initial = await start('gauntlet');
     const stored = await db.collection('trainingSessions').findOne({ id: initial.id });

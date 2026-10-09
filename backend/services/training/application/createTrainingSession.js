@@ -77,7 +77,15 @@ export async function createTrainingSessionCommand(userId, config, now) {
       ? dueTrainingQuestions(config.exam, intelligence.due.map(r => r.questionId)) : []),
   ]);
   
-  const asCandidate = doc => doc.trainingCandidate ? { ...doc.trainingCandidate, _trainingDocumentId: doc._id, _trainingFingerprint: JSON.stringify(doc.trainingCandidate) } : normalizeQuestion(doc);
+  const asCandidate = doc => {
+    // Full-document reads must use current source data, not persisted metadata.
+    if (process.env.TRAINING_INDEXED_QUESTIONS !== 'true' || !doc.trainingCandidate) return normalizeQuestion(doc);
+    // Older metadata predates canonical identities. Identity comes from the
+    // source fields included in the compact projection, even before a backfill.
+    const candidate = { ...doc.trainingCandidate, id: String(doc.questionUid || doc.id),
+      questionUid: doc.questionUid || null, legacyId: doc.id || null };
+    return { ...candidate, _trainingDocumentId: doc._id, _trainingFingerprint: JSON.stringify(candidate) };
+  };
   const pool = [
     ...new Map(
       docs

@@ -1,5 +1,6 @@
 import { getMongoDB, getQuestionsCollection, withMongoTransaction } from '../config/mongodb.js';
 import { createHash } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { dashboardEvidence } from '../services/training/domain/dashboardEvidence.js';
 import { getQuestionRevision } from '../services/questions/questionCache.js';
 import { invalidateTrainingDashboard, advanceTrainingDashboardRevision } from '../services/training/dashboardCache.js';
@@ -365,7 +366,7 @@ export async function hydrateTrainingQuestions(selected) {
     const full = doc && normalizeQuestion(doc);
     // Eligibility is rechecked for the handful of selected documents in case an
     // editor changed content after ranking. Never substitute a different ID.
-    if (!full || full.id !== q.id || JSON.stringify(trainingQuestionMetadata(doc).trainingCandidate) !== q._trainingFingerprint) {
+    if (!full || full.id !== q.id || !isDeepStrictEqual(trainingQuestionMetadata(doc).trainingCandidate, JSON.parse(q._trainingFingerprint))) {
       throw new Error('Question catalog changed. Start a new session.');
     }
     const { _trainingDocumentId, _trainingFingerprint, ...metadata } = q;
