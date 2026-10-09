@@ -21,6 +21,7 @@ export function useVirtualKeyboard() {
     let baseline = window.innerHeight;
     let baselineWidth = window.innerWidth;
     let focusTimer: ReturnType<typeof setTimeout> | undefined;
+    let keyboardSearch: HTMLInputElement | null = null;
 
     const update = () => {
       const height = viewport?.height ?? window.innerHeight;
@@ -28,12 +29,25 @@ export function useVirtualKeyboard() {
       if (Math.abs(window.innerWidth - baselineWidth) > 100) {
         baseline = window.innerHeight;
         baselineWidth = window.innerWidth;
+        keyboardSearch = null;
       }
       const editing = isTextEntry(document.activeElement);
       const zoomed = viewport && Math.abs(viewport.scale - 1) > 0.05;
       const shrunk = Math.max(baseline, window.innerHeight) - height > 150;
-      setOpen(touch.matches && !zoomed && editing && (shrunk || !viewport));
-      if (!editing || height > baseline) baseline = window.innerHeight;
+      const activeElement = document.activeElement;
+      // Dismissing the keyboard can leave the search focused and its caret active.
+      // Only blur the search that owned a confirmed keyboard, after height recovers.
+      if (touch.matches && !zoomed && shrunk && editing) {
+        keyboardSearch = activeElement instanceof HTMLInputElement && activeElement.type === 'search'
+          ? activeElement : null;
+      } else if (!zoomed && !shrunk) {
+        if (keyboardSearch === activeElement) keyboardSearch?.blur();
+        keyboardSearch = null;
+      } else if (activeElement !== keyboardSearch) {
+        keyboardSearch = null;
+      }
+      setOpen(touch.matches && !zoomed && isTextEntry(document.activeElement) && (shrunk || !viewport));
+      if ((!editing && !shrunk) || height > baseline) baseline = window.innerHeight;
     };
     const onFocus = () => {
       clearTimeout(focusTimer);

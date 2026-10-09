@@ -73,6 +73,31 @@ describe('BottomNav Component', () => {
     expect(screen.getByRole('navigation')).toBeDefined();
   });
 
+  it.each(['visual', 'window', 'fallback'])('ends search focus when the %s keyboard closes and retains the query', (mode) => {
+    const viewport = Object.assign(new EventTarget(), { height: 800, scale: 1 });
+    vi.stubGlobal('innerHeight', 800);
+    vi.stubGlobal('visualViewport', mode === 'fallback' ? undefined : viewport);
+    vi.stubGlobal('matchMedia', () => Object.assign(new EventTarget(), { matches: true }));
+    render(<><input type="search" aria-label="Chapter search" defaultValue="biology" /><BottomNav /></>);
+    const search = screen.getByRole('searchbox');
+    act(() => {
+      search.focus();
+      viewport.height = 470;
+      if (mode !== 'visual') vi.stubGlobal('innerHeight', 470);
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(document.activeElement).toBe(search);
+    expect(screen.queryByRole('navigation')).toBeNull();
+    act(() => {
+      viewport.height = 800;
+      vi.stubGlobal('innerHeight', 800);
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(document.activeElement).not.toBe(search);
+    expect(search).toHaveValue('biology');
+    expect(screen.getByRole('navigation')).toBeDefined();
+  });
+
   it('renders all core navigation links', () => {
     render(<BottomNav />);
     expect(screen.getByText('Home')).toBeDefined();
