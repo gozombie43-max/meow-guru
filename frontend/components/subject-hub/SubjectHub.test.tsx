@@ -108,7 +108,7 @@ describe("SubjectHub", () => {
     const rows = container.querySelectorAll('[data-hub-part="mobileTopicRow"]');
     expect(rows).toHaveLength(1);
     expect(rows[0]).toHaveTextContent("Percentages");
-    expect(rows[0]).not.toHaveTextContent("Questions");
+    expect(within(rows[0] as HTMLElement).getByText("0 Questions")).toBeInTheDocument();
   });
   it("preserves chapter-group navigation when mobile priority filters are enabled", () => {
     const { container } = render(<SubjectHub config={{ ...mockConfig, mobileAppearance: "oled", getChapterGroup: () => null, chapterBasePrefix: "/general-awareness" }} />);
@@ -143,7 +143,7 @@ describe("SubjectHub", () => {
     });
   });
 
-  it("renders OLED square cards without chevrons and correctly displays coming soon / solved counts", () => {
+  it("renders OLED cards without chevrons and displays zero question / solved counts", () => {
     const mobileTopicDetails = {
       percentages: { color: "#5DA6FF", questionCount: 705, userSolved: 0, progress: 0 },
       "simple-interest": { color: "#F3B54A", questionCount: 0 },
@@ -162,9 +162,11 @@ describe("SubjectHub", () => {
     expect(screen.getAllByText("Percentages").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Simple Interest").length).toBeGreaterThanOrEqual(1);
 
-    // Verify solved count and coming soon text
+    // Keep nonempty totals and explicit zero counts on their respective cards.
     expect(screen.getByText("0 / 705 solved")).toBeInTheDocument();
-    expect(screen.getAllByText("Coming soon").length).toBeGreaterThanOrEqual(1);
+    const emptyTopic = screen.getByRole("link", { name: "Simple Interest, 0 questions" });
+    expect(within(emptyTopic).getByText("0 Questions")).toBeInTheDocument();
+    expect(screen.queryByText("Coming soon")).not.toBeInTheDocument();
 
     // Mobile cards omit progress percentages.
     container.querySelectorAll('[data-hub-part="mobileTopicRow"]').forEach((card) => {
