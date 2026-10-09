@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { Bell, BookOpen, ChevronRight, LayoutDashboard, LogOut, Pencil, Settings, Shield, Swords } from 'lucide-react';
+import { Bell, ChevronRight, LayoutDashboard, LogOut, Pencil, Settings, Shield, Swords } from 'lucide-react';
 import GoogleAvatarRing from '@/components/GoogleAvatarRing';
 import { useAuth } from '@/context/AuthContext';
 import { useNotificationCenter } from '@/context/NotificationCenterContext';
@@ -14,10 +15,15 @@ const UserSettingsModal = dynamic(() => import('@/components/UserSettingsModal')
 
 export default function ProfileClient() {
   const { user, loading, logout } = useAuth();
+  const router = useRouter();
   const { unreadCount } = useNotificationCenter();
   const [panel, setPanel] = useState<'edit' | 'settings' | null>(null);
   const [message, setMessage] = useState('');
   const [signingOut, setSigningOut] = useState(false);
+
+  useEffect(() => {
+    if (!loading && !user) router.replace('/login');
+  }, [loading, user, router]);
 
   const closePanel = () => setPanel(null);
   const handleLogout = async () => {
@@ -33,18 +39,7 @@ export default function ProfileClient() {
   };
 
   if (loading) return <main className={styles.page}><h1>Profile</h1><p role="status">Loading your profile…</p></main>;
-  if (!user) return (
-    <main className={styles.page}>
-      <h1>Profile</h1>
-      <section className={styles.guest}>
-        <GoogleAvatarRing initial="G" size={88} />
-        <h2>Your study journey starts here</h2>
-        <p>Sign in to manage your profile, preferences, and progress.</p>
-        <Link href="/login" data-ui-button="primary">Log in</Link>
-        <Link href="/register" data-ui-button="secondary">Create account</Link>
-      </section>
-    </main>
-  );
+  if (!user) return null;
 
   const attempted = Object.values(user.progress || {}).reduce((sum, item) => sum + (item.attempted || 0), 0);
   const correct = Object.values(user.progress || {}).reduce((sum, item) => sum + (item.correct || 0), 0);
@@ -53,6 +48,7 @@ export default function ProfileClient() {
 
   return (
     <main className={styles.page}>
+      <header className={styles.header}>
       <h1>Profile</h1>
       <section className={styles.identity} aria-label="Your account">
         <GoogleAvatarRing initial={user.name?.trim().charAt(0).toUpperCase() || 'U'} avatarUrl={user.avatar || undefined} size={48} />
@@ -62,7 +58,9 @@ export default function ProfileClient() {
         </div>
         <button type="button" data-ui-button="icon" aria-label="Edit profile" title="Edit profile" className={styles.edit} onClick={() => { setMessage(''); setPanel('edit'); }}><Pencil size={18} aria-hidden="true" /></button>
       </section>
+      </header>
 
+      <div className={styles.scrollContent}>
       <dl className={styles.stats} aria-label="Study statistics">
         <div><dt>Attempted</dt><dd>{attempted.toLocaleString()}</dd></div>
         <div><dt>Accuracy</dt><dd>{accuracy}</dd></div>
@@ -77,7 +75,6 @@ export default function ProfileClient() {
 
       <nav className={styles.group} aria-label="Your learning">
         <Link href="/dashboard" className={styles.row}><span className={styles.icon}><LayoutDashboard /></span><span>My dashboard</span><ChevronRight /></Link>
-        <Link href="/notes" className={styles.row}><span className={styles.icon}><BookOpen /></span><span>My notes</span><ChevronRight /></Link>
         <Link href="/battle/profile" className={styles.row}><span className={styles.icon}><Swords /></span><span>Battle profile & rewards</span><ChevronRight /></Link>
       </nav>
 
@@ -85,6 +82,7 @@ export default function ProfileClient() {
         <button type="button" data-ui-button="state" className={`${styles.row} ${styles.logout}`} disabled={signingOut} onClick={() => void handleLogout()}><span className={styles.icon}><LogOut /></span><span>{signingOut ? 'Logging out…' : 'Log out'}</span></button>
       </div>
       {message && <p role="status" className={styles.message}>{message}</p>}
+      </div>
       {panel === 'edit' && <EditProfileModal isOpen onClose={closePanel} onSuccess={() => setMessage('Profile updated successfully.')} />}
       {panel === 'settings' && <UserSettingsModal isOpen onClose={closePanel} />}
     </main>

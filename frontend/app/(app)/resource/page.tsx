@@ -241,7 +241,7 @@ export default function ResourcePage() {
               <div className={styleClasses("res-search-input-wrap")}>
                 <Search size={15} className={styleClasses("res-search-field-icon")} aria-hidden="true" />
                 <input
-                  type="text"
+                  type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={`Search ${selectedSubject.label} ${activeTab}...`}

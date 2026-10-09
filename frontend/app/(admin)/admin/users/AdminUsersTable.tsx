@@ -54,7 +54,7 @@ export function AdminUsersTable({ view }: { view: AdminUsersView }) {
             <Search size={16} className={s.searchIcon} />
             <input
               className={s.searchInput}
-              type="text"
+              type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
               placeholder="Search users by name, email or ID..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}

@@ -1,7 +1,10 @@
 import React from 'react';
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render as renderUI, screen } from '@testing-library/react';
 import BottomNav from '../BottomNav';
+import { VirtualKeyboardProvider } from '../VirtualKeyboardProvider';
+
+const render = (ui: React.ReactNode) => renderUI(ui, { wrapper: VirtualKeyboardProvider });
 
 let mockPathname = '/mock-test';
 vi.mock('next/navigation', () => ({
@@ -105,6 +108,26 @@ describe('BottomNav Component', () => {
     expect(screen.getByText('Play')).toBeDefined();
     expect(screen.getByText('Profile')).toBeDefined();
     expect(screen.getByLabelText('AI Assistant')).toBeDefined();
+  });
+
+  it('dismisses search focus on pages without bottom navigation', () => {
+    const viewport = Object.assign(new EventTarget(), { height: 800, scale: 1 });
+    vi.stubGlobal('innerHeight', 800);
+    vi.stubGlobal('visualViewport', viewport);
+    vi.stubGlobal('matchMedia', () => Object.assign(new EventTarget(), { matches: true }));
+    render(<input type="search" aria-label="Search users" defaultValue="Alex" />);
+    const search = screen.getByRole('searchbox');
+    act(() => {
+      search.focus();
+      viewport.height = 470;
+      viewport.dispatchEvent(new Event('resize'));
+    });
+    act(() => {
+      viewport.height = 800;
+      viewport.dispatchEvent(new Event('resize'));
+    });
+    expect(document.activeElement).not.toBe(search);
+    expect(search).toHaveValue('Alex');
   });
 
   it('highlights the active navigation tab', () => {

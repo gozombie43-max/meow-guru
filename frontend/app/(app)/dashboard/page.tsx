@@ -1,364 +1,92 @@
-'use client';
+"use client";
 
+import Link from 'next/link';
+import { ArrowLeft, ArrowUpRight, BookOpen, Calculator, ChevronRight, ClipboardList, Globe2, Puzzle, Target } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
-import { FileCheck2,LayoutDashboard,Library,Search,Settings,Swords,Target,Wallet,X } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useMemo,useState } from 'react';
 import styles from './page.module.css';
 
-type AuthUser = NonNullable<ReturnType<typeof useAuth>['user']>;
-type RecentQuizEntry = NonNullable<AuthUser['recentQuizzes']>[number];
-
-// Helper to format time label
-function formatTimeLabel(iso?: string) {
-  if (!iso) return '--:--';
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '--:--';
-
-  const now = new Date();
-  const today = now.toDateString();
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-
-  if (date.toDateString() === today) {
-    return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-  }
-  if (date.toDateString() === yesterday.toDateString()) {
-    return 'Yesterday';
-  }
-
-  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+type RecentQuiz = NonNullable<NonNullable<ReturnType<typeof useAuth>['user']>['recentQuizzes']>[number];
+const subjects = [
+  { name: 'Mathematics', detail: 'Numbers, formulas & problem solving', href: '/mathematics', icon: Calculator },
+  { name: 'Reasoning', detail: 'Patterns, logic & analytical thinking', href: '/reasoning', icon: Puzzle },
+  { name: 'English', detail: 'Vocabulary, grammar & comprehension', href: '/english', icon: BookOpen },
+  { name: 'General Awareness', detail: 'History, science & the world around you', href: '/general-awareness', icon: Globe2 },
+];
+function practiceHref(entry: RecentQuiz) {
+  const [path, query] = entry.href.split('?');
+  const params = new URLSearchParams(query);
+  if (entry.mode) params.set('mode', entry.mode);
+  params.set('resume', '1');
+  return `${path}?${params}`;
 }
-
-function appendQuery(
-  base: string,
-  params: Record<string, string | number | undefined>
-) {
-  const [path, rawQuery] = base.split('?');
-  const query = new URLSearchParams(rawQuery || '');
-  Object.entries(params).forEach(([key, value]) => {
-    if (value === undefined || value === '') return;
-    query.set(key, String(value));
-  });
-  const queryString = query.toString();
-  return queryString ? `${path}?${queryString}` : path;
+function dateLabel(value?: string) {
+  const date = new Date(value || '');
+  return Number.isNaN(date.getTime()) ? 'Practice session' : date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
-
 export default function DashboardPage() {
-  return (
-    <ProtectedRoute>
-      <DashboardContent />
-    </ProtectedRoute>
-  );
+  return <ProtectedRoute><DashboardContent /></ProtectedRoute>;
 }
-
 function DashboardContent() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'All' | 'Mathematics' | 'Reasoning' | 'English' | 'General Awareness'>('All');
-
-  const userRecentQuizzes = user?.recentQuizzes;
-  
-  const totalAttempted = Object.values(user?.progress || {}).reduce((acc, p) => acc + (p?.attempted || 0), 0);
-  const totalCorrect = Object.values(user?.progress || {}).reduce((acc, p) => acc + (p?.correct || 0), 0);
-  const accuracyNum = totalAttempted > 0 ? Math.round((totalCorrect / totalAttempted) * 100) : 0;
-  const strokeDashoffset = 176 - (176 * accuracyNum) / 100;
-  
-  const studySecs = user?.studyTime || 0;
-  const hours = Math.floor(studySecs / 3600);
-  const minutes = Math.floor((studySecs % 3600) / 60);
-  const formattedStudyTime = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-
-  const recentQuizzes = useMemo<RecentQuizEntry[]>(() => {
-    if (!userRecentQuizzes) return [];
-    return [...userRecentQuizzes]
-      .filter((entry) => {
-        if (!entry || !entry.quizKey) return false;
-        if (activeTab === 'All') return true;
-        // Normalize subject comparison
-        return entry.subject?.toLowerCase() === activeTab.toLowerCase();
-      })
-      .sort((a, b) => {
-        const aTime = Date.parse(a.updatedAt || '') || 0;
-        const bTime = Date.parse(b.updatedAt || '') || 0;
-        return bTime - aTime;
-      });
-  }, [userRecentQuizzes, activeTab]);
-
-  const handleClose = () => {
-    router.replace("/");
-  };
-
-  const firstName = user?.name ? user.name.split(' ')[0] : 'User';
-  const initial = firstName.charAt(0).toUpperCase();
-
-  const upgradeTileMarkup = (
-    <div className={styles.upgradeTile}>
-      <div className={styles.txt}>
-        <h4>Unlock every mock test</h4>
-        <p>Full Tier-2 papers &amp; unlimited battles.</p>
-      </div>
-      <button data-ui-button="state">Upgrade</button>
-    </div>
-  );
-
+  const { user } = useAuth();
+  if (!user) return null;
+  const progress = Object.values(user.progress || {});
+  const attempted = progress.reduce((sum, item) => sum + (item.attempted || 0), 0);
+  const correct = progress.reduce((sum, item) => sum + (item.correct || 0), 0);
+  const accuracy = attempted ? `${Math.round(correct / attempted * 100)}%` : '—';
+  const minutes = Math.floor(Math.max(0, user.studyTime || 0) / 60);
+  const studyTime = minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes}m`;
+  const recent = [...(user.recentQuizzes || [])]
+    .filter(entry => entry?.quizKey && entry.href?.startsWith('/') && !entry.href.startsWith('//'))
+    .sort((a, b) => (Date.parse(b.updatedAt || '') || 0) - (Date.parse(a.updatedAt || '') || 0));
+  const resume = recent.find(entry => entry.status !== 'completed');
+  const total = Math.max(0, resume?.totalQuestions || 0);
+  const current = Math.min(total, Math.max(0, resume?.currentIndex || 0) + 1);
   return (
     <div className={styles.page}>
-      {/* Desktop Navbar */}
-      <div className={`${styles.navbar} ${styles.desktopOnly}`}>
-        <div className={styles.navbarTitle}>Dashboard</div>
-        <div className={styles.navbarSearch}>
-          <Search size={14} />
-          Search
+      <header className={styles.header}>
+        <Link href="/" className={styles.back} aria-label="Back to home" data-ui-button="icon"><ArrowLeft size={20} /></Link>
+        <span className={styles.headerTitle}>Dashboard</span>
+        <Link href="/profile" className={styles.profile}>My profile <ChevronRight size={16} /></Link>
+      </header>
+      <main className={styles.content}>
+        <section className={styles.intro}>
+          <div><p className={styles.eyebrow}>YOUR STUDY SPACE</p><h1>Keep moving, {user.name?.trim().split(' ')[0] || 'learner'}.</h1><p>A little practice. A little progress. Every day.</p></div>
+          <Link href="/mock-test" className={styles.mockLink} data-ui-button="secondary"><ClipboardList size={18} /> Take a mock test <ArrowUpRight size={17} /></Link>
+        </section>
+        <dl className={styles.stats} aria-label="Study totals">
+          <div><dt>Questions attempted</dt><dd>{attempted.toLocaleString('en-IN')}</dd></div>
+          <div><dt>Accuracy</dt><dd>{accuracy}</dd></div>
+          <div><dt>Study time</dt><dd>{studyTime}</dd></div>
+          <div><dt>Saved questions</dt><dd>{(user.bookmarks?.length || 0).toLocaleString('en-IN')}</dd></div>
+        </dl>
+        <div className={styles.columns}>
+          <div className={styles.mainColumn}>
+            <section className={styles.resume} aria-labelledby="continue-heading">
+              <div className={styles.resumeLabel}><Target size={18} /><span>{resume ? 'PICK UP WHERE YOU LEFT OFF' : 'YOUR NEXT STEP'}</span></div>
+              <h2 id="continue-heading">{resume ? resume.title || resume.subject || 'Continue your practice' : 'Make time for a little practice'}</h2>
+              <p>{resume ? `${resume.subject || 'Practice'}${total ? ` · Question ${current} of ${total}` : ''}` : 'Choose a subject below, or build momentum with a short training session.'}</p>
+              <Link data-ui-button="primary" className={styles.primary} href={resume ? practiceHref(resume) : '/play'}>{resume ? 'Resume practice' : 'Start practicing'}<ArrowUpRight size={18} /></Link>
+            </section>
+            <section className={styles.section} aria-labelledby="subjects-heading">
+              <div className={styles.sectionHead}><h2 id="subjects-heading">Choose a subject</h2><span>Build your basics</span></div>
+              <div className={styles.subjects}>{subjects.map(({ name, detail, href, icon: Icon }) => (
+                <Link href={href} key={href} className={styles.subject}><span className={styles.subjectIcon}><Icon size={21} /></span><span><strong>{name}</strong><small>{detail}</small></span><ChevronRight size={17} className={styles.chevron} /></Link>
+              ))}</div>
+            </section>
+          </div>
+          <section className={styles.section} aria-labelledby="recent-heading">
+            <div className={styles.sectionHead}><h2 id="recent-heading">Recent practice</h2><span>Latest sessions</span></div>
+            <div className={styles.activity}>
+              {recent.length ? recent.slice(0, 5).map(entry => (
+                <Link key={entry.quizKey} href={practiceHref(entry)} className={styles.activityRow}>
+                  <div><strong>{entry.title || entry.subject || 'Practice session'}</strong><small>{entry.subject || 'Practice'} · {dateLabel(entry.updatedAt)}</small><span className={entry.status === 'completed' ? styles.completed : styles.inProgress}>{entry.status === 'completed' ? 'Completed' : 'In progress'}</span></div><ChevronRight size={17} />
+                </Link>
+              )) : <div className={styles.empty}><BookOpen size={26} /><h3>Your progress starts here</h3><p>Your recent sessions will appear here after you start practicing.</p></div>}
+            </div>
+          </section>
         </div>
-        <div className={styles.navbarAvatar}>{initial}</div>
-        <button data-ui-button="icon" onClick={handleClose} className={styles.navbarClose} aria-label="Close dashboard">
-          <X size={16} strokeWidth={2.4} />
-        </button>
-      </div>
-
-      {/* Mobile Navbar */}
-      <div className={`${styles.mobileNavbar} ${styles.mobileOnly}`}>
-        <div className={styles.mobileNavbarRow}>
-          <div className={styles.mobileNavbarEyebrow}>Dashboard</div>
-          <div className={styles.navbarAvatar}>{initial}</div>
-        </div>
-        <div className={styles.mobileNavbarTitle}>Hello, {firstName} 👋</div>
-      </div>
-
-      <div className={styles.body}>
-        {/* Sidebar */}
-        <div className={styles.sidebar}>
-          <div>
-            <div className={styles.sideGroupLabel}>Prepare</div>
-            <div className={styles.sideList}>
-              <Link href="/dashboard" className={`${styles.sideRow} ${styles.active}`}>
-                <span className={`${styles.ic} ${styles.icBlue}`}><LayoutDashboard size={15} color="#fff" /></span>
-                Dashboard <span className={styles.chev}>›</span>
-              </Link>
-              <Link href="/practice" className={styles.sideRow}>
-                <span className={`${styles.ic} ${styles.icOrange}`}><Target size={15} color="#fff" /></span>
-                Practice Zone <span className={styles.chev}>›</span>
-              </Link>
-              <Link href="/mock-test" className={styles.sideRow}>
-                <span className={`${styles.ic} ${styles.icGreen}`}><FileCheck2 size={15} color="#fff" /></span>
-                Mock Tests <span className={styles.chev}>›</span>
-              </Link>
-              <Link href="/battle" className={styles.sideRow}>
-                <span className={`${styles.ic} ${styles.icPink}`}><Swords size={15} color="#fff" /></span>
-                Battle Mode <span className={styles.chev}>›</span>
-              </Link>
-            </div>
-          </div>
-
-          <div>
-            <div className={styles.sideGroupLabel}>Library</div>
-            <div className={styles.sideList}>
-              <Link href="/flashcards" className={styles.sideRow}>
-                <span className={`${styles.ic} ${styles.icIndigo}`}><Library size={15} color="#fff" /></span>
-                Flashcards <span className={styles.chev}>›</span>
-              </Link>
-              <Link href="/wallet" className={styles.sideRow}>
-                <span className={`${styles.ic} ${styles.icTeal}`}><Wallet size={15} color="#fff" /></span>
-                Wallet <span className={styles.chev}>›</span>
-              </Link>
-              <Link href="/profile" className={styles.sideRow}>
-                <span className={`${styles.ic} ${styles.icPurple}`}><Settings size={15} color="#fff" /></span>
-                Profile & settings <span className={styles.chev}>›</span>
-              </Link>
-            </div>
-          </div>
-
-          <div className={`${styles.desktopOnly} ${styles.sidebarUpgrade}`}>
-            {upgradeTileMarkup}
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className={styles.main}>
-          <div className={styles.greeting}>
-            <h1 className={styles.desktopOnly}>Hello, {firstName} 👋</h1>
-            <p>Good evening to prepare — <b>Tier-2 is 74 days away</b></p>
-          </div>
-
-          <div className={styles.pills}>
-            <button data-ui-button="state"
-              className={`${styles.pill} ${activeTab === 'All' ? styles.active : ''}`}
-              onClick={() => setActiveTab('All')}
-            >
-              <span className={styles.dot} style={{ background: activeTab === 'All' ? '#fff' : 'var(--text-dim)' }}></span>
-              All
-            </button>
-            <button data-ui-button="state"
-              className={`${styles.pill} ${activeTab === 'Mathematics' ? styles.active : ''}`}
-              onClick={() => setActiveTab('Mathematics')}
-            >
-              <span className={styles.dot} style={{ background: activeTab === 'Mathematics' ? '#fff' : 'var(--ios-blue)' }}></span>
-              Mathematics
-            </button>
-            <button data-ui-button="state"
-              className={`${styles.pill} ${activeTab === 'Reasoning' ? styles.active : ''}`}
-              onClick={() => setActiveTab('Reasoning')}
-            >
-              <span className={styles.dot} style={{ background: activeTab === 'Reasoning' ? '#fff' : 'var(--ios-teal)' }}></span>
-              Reasoning
-            </button>
-            <button data-ui-button="state"
-              className={`${styles.pill} ${activeTab === 'English' ? styles.active : ''}`}
-              onClick={() => setActiveTab('English')}
-            >
-              <span className={styles.dot} style={{ background: activeTab === 'English' ? '#fff' : 'var(--ios-orange)' }}></span>
-              English
-            </button>
-            <button data-ui-button="state"
-              className={`${styles.pill} ${activeTab === 'General Awareness' ? styles.active : ''}`}
-              onClick={() => setActiveTab('General Awareness')}
-            >
-              <span className={styles.dot} style={{ background: activeTab === 'General Awareness' ? '#fff' : 'var(--ios-purple)' }}></span>
-              General Awareness
-            </button>
-          </div>
-          
-          <div>
-            <div className={styles.sectionHead}>
-              <h2>Continue practice</h2>
-              <Link href="/play">See all</Link>
-            </div>
-
-            <div className={styles.cardsBox}>
-              <div className={styles.cards}>
-                {authLoading ? (
-                  <div className={styles.emptyState}>Loading...</div>
-                ) : userRecentQuizzes && userRecentQuizzes.length > 0 ? (
-                  recentQuizzes.length > 0 ? (
-                    recentQuizzes.map((entry, index) => {
-                      const colors = [
-                  { grad: 'linear-gradient(155deg,#ff8a80,var(--ios-red))', track: 'linear-gradient(90deg, var(--ios-red), #ff8a80)' },
-                  { grad: 'linear-gradient(155deg,#6ee0d0,var(--ios-teal))', track: 'linear-gradient(90deg, var(--ios-teal), #6ee0d0)' },
-                  { grad: 'linear-gradient(155deg,#ffc861,var(--ios-orange))', track: 'linear-gradient(90deg, var(--ios-orange), #ffc861)' },
-                ];
-                const color = colors[index % colors.length];
-                const icon = (entry.title || entry.subject || 'Q').trim().charAt(0).toUpperCase() || 'Q';
-                
-                const resumeHref = appendQuery(entry.href, {
-                  mode: entry.mode,
-                  resume: 1,
-                });
-                
-                const total = entry.totalQuestions ?? 0;
-                const current = entry.currentIndex ?? 0;
-                const percent = total > 0 ? Math.round(((current + 1) / total) * 100) : 0;
-                const progressLabel = total > 0 ? `Q${Math.min(current + 1, total)} of ${total} · Last played ${formatTimeLabel(entry.updatedAt)}` : `Last played ${formatTimeLabel(entry.updatedAt)}`;
-
-                return (
-                  <Link key={entry.quizKey} href={resumeHref} className={styles.card}>
-                    <div className={styles.cardIcon} style={{ background: color.grad }}>
-                      {icon}
-                    </div>
-                    <div className={styles.cardBody}>
-                      <div className={styles.cardTop}>
-                        <h3>{entry.title || entry.subject || 'Quiz'}</h3>
-                      </div>
-                      <div className={styles.cardMeta}>{progressLabel}</div>
-                      <div className={styles.progressTrack}>
-                        <div className={styles.progressFill} style={{ width: `${percent}%`, background: color.track }}></div>
-                      </div>
-                    </div>
-                    <div className={styles.cardChev}>›</div>
-                  </Link>
-                );
-              })
-            ) : (
-              <div className={styles.emptyState} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-dim)' }}>
-                No recent practice found in this subject.
-              </div>
-            )) : (
-              // Fallback to static cards if no real data at all
-              <>
-                <div className={styles.card}>
-                  <div className={styles.cardIcon} style={{ background: 'linear-gradient(155deg,#ff8a80,var(--ios-red))' }}>📐</div>
-                  <div className={styles.cardBody}>
-                    <div className={styles.cardTop}><h3>Mensuration — 2D & 3D</h3></div>
-                    <div className={styles.cardMeta}>28 concepts · 340 questions</div>
-                    <div className={styles.progressTrack}><div className={styles.progressFill} style={{ width: '64%', background: 'linear-gradient(90deg, var(--ios-red), #ff8a80)' }}></div></div>
-                  </div>
-                  <div className={styles.cardChev}>›</div>
-                </div>
-                <div className={styles.card}>
-                  <div className={styles.cardIcon} style={{ background: 'linear-gradient(155deg,#6ee0d0,var(--ios-teal))' }}>🧩</div>
-                  <div className={styles.cardBody}>
-                    <div className={styles.cardTop}><h3>Coding–Decoding</h3></div>
-                    <div className={styles.cardMeta}>16 concepts · 210 questions</div>
-                    <div className={styles.progressTrack}><div className={styles.progressFill} style={{ width: '41%', background: 'linear-gradient(90deg, var(--ios-teal), #6ee0d0)' }}></div></div>
-                  </div>
-                  <div className={styles.cardChev}>›</div>
-                </div>
-                <div className={styles.card}>
-                  <div className={styles.cardIcon} style={{ background: 'linear-gradient(155deg,#ffc861,var(--ios-orange))' }}>📚</div>
-                  <div className={styles.cardBody}>
-                    <div className={styles.cardTop}><h3>Vocabulary — OWS & Idioms</h3></div>
-                    <div className={styles.cardMeta}>34 concepts · 500 questions</div>
-                    <div className={styles.progressTrack}><div className={styles.progressFill} style={{ width: '22%', background: 'linear-gradient(90deg, var(--ios-orange), #ffc861)' }}></div></div>
-                  </div>
-                  <div className={styles.cardChev}>›</div>
-                </div>
-              </>
-            )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right / Statistics */}
-        <div className={styles.right}>
-          <div className={styles.sectionHead} style={{ marginBottom: '12px' }}>
-            <h2>Statistics</h2>
-          </div>
-
-          <div className={styles.segment}>
-            <button data-ui-button="state">Day</button><button data-ui-button="state" className={styles.active}>Week</button><button data-ui-button="state">Month</button>
-          </div>
-
-          <div className={styles.panel}>
-            <div className={styles.panelTitle}>MOCK TEST SCORE %</div>
-            <div className={styles.bars}>
-              <div className={styles.barCol}><div className={styles.bar} style={{ height: '38%' }}></div><div className={styles.barLabel}>Mo</div></div>
-              <div className={styles.barCol}><div className={styles.bar} style={{ height: '55%' }}></div><div className={styles.barLabel}>Tu</div></div>
-              <div className={styles.barCol}><div className={styles.bar} style={{ height: '47%' }}></div><div className={styles.barLabel}>We</div></div>
-              <div className={styles.barCol}><div className={styles.bar} style={{ height: '70%' }}></div><div className={styles.barLabel}>Th</div></div>
-              <div className={styles.barCol}><div className={styles.bar} style={{ height: '84%' }}></div><div className={styles.barLabel}>Fr</div></div>
-              <div className={styles.barCol}><div className={styles.bar} style={{ height: '60%' }}></div><div className={styles.barLabel}>Sa</div></div>
-              <div className={styles.barCol}><div className={styles.bar} style={{ height: '73%' }}></div><div className={styles.barLabel}>Su</div></div>
-            </div>
-          </div>
-
-          <div className={styles.ringCard}>
-            <div>
-              <div className={styles.lbl}>ACCURACY</div>
-              <div className={styles.accuracy}>Overall</div>
-            </div>
-            <div className={styles.ringWrap}>
-              <svg width="68" height="68" viewBox="0 0 68 68">
-                <circle cx="34" cy="34" r="28" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="7"/>
-                <circle cx="34" cy="34" r="28" fill="none" stroke="#fff" strokeWidth="7" strokeLinecap="round" strokeDasharray="176" strokeDashoffset={strokeDashoffset}/>
-              </svg>
-              <div className={styles.ringNum}>{accuracyNum}%</div>
-            </div>
-          </div>
-
-          <div className={styles.miniRow}>
-            <div className={styles.miniCard}><div className={styles.num}>{totalAttempted}</div><div className={styles.cap}>Questions solved</div></div>
-            <div className={styles.miniCard}><div className={styles.num}>{formattedStudyTime}</div><div className={styles.cap}>Study time</div></div>
-          </div>
-        </div>
-        
-        <div className={styles.mobileOnly} style={{ padding: '0 18px 24px' }}>
-          {upgradeTileMarkup}
-        </div>
-
-      </div>
+      </main>
     </div>
   );
 }

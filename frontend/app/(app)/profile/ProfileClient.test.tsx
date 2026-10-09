@@ -3,6 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as Auth from '@/context/AuthContext';
 import ProfileClient from './ProfileClient';
 
+const { router } = vi.hoisted(() => ({ router: { replace: vi.fn() } }));
+vi.mock('next/navigation', () => ({ useRouter: () => router }));
+
 vi.mock('@/context/NotificationCenterContext', () => ({ useNotificationCenter: () => ({ unreadCount: 3 }) }));
 vi.mock('@/lib/userApi', () => ({
   getNotificationPreferences: vi.fn().mockResolvedValue({ enabled: true }),
@@ -27,7 +30,7 @@ describe('Profile page', () => {
     for (const value of ['10', '80%', '2']) expect(within(stats).getByText(value)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Notifications/ })).toHaveAttribute('href', '/notifications');
     expect(screen.getByRole('link', { name: 'My dashboard' })).toHaveAttribute('href', '/dashboard');
-    expect(screen.getByRole('link', { name: 'My notes' })).toHaveAttribute('href', '/notes');
+    expect(screen.queryByRole('link', { name: 'My notes' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Battle profile/ })).toHaveAttribute('href', '/battle/profile');
     expect(screen.queryByRole('link', { name: 'Admin Panel' })).not.toBeInTheDocument();
   });
@@ -57,13 +60,16 @@ describe('Profile page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Log out' }));
     await waitFor(() => expect(logout).toHaveBeenCalledOnce());
   });
-  it('shows loading and guest states without fake account details', () => {
+  it('waits for authentication then redirects guests directly to login', () => {
     mockAuth({ user: null, loading: true });
     const { rerender } = render(<ProfileClient />);
     expect(screen.getByRole('status')).toHaveTextContent('Loading your profile');
+    expect(router.replace).not.toHaveBeenCalled();
     mockAuth({ user: null });
     rerender(<ProfileClient />);
-    expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute('href', '/login');
+    expect(router.replace).toHaveBeenCalledWith('/login');
+    expect(screen.queryByRole('link', { name: 'Log in' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Your study journey starts here')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Study statistics')).not.toBeInTheDocument();
   });
 });

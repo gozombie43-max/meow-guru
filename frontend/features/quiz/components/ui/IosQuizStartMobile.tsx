@@ -186,7 +186,7 @@ export function IosQuizStartMobile({
               <div className={styles.iosSearchRow}>
                 <Search size={14} className={styles.iosSearchIcon} />
                 <input
-                  type="text"
+                  type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
                   value={activeSearch}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder="Search concept groups..."

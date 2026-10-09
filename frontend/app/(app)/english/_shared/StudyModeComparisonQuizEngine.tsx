@@ -219,7 +219,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               </svg>
               <input
                 ref={searchInputRef}
-                type="search"
+                type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
                 className={styleClasses("search-input")}
                 placeholder="Search vocab (⌘F)"
                 value={searchQuery}
@@ -376,7 +376,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                     <path d="M21 21l-4.35-4.35" />
                   </svg>
                   <input
-                    type="search"
+                    type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
                     className={styleClasses("modal-search-input")}
                     placeholder="Search by word or meaning..."
                     value={mobileSheetSearch}

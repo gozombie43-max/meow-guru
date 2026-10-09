@@ -7,12 +7,12 @@ import { useEffect, useRef } from 'react';
 import { ClipboardList, Home as HomeIcon, Play, UserRound } from 'lucide-react';
 import { useThemeMode } from '@/hooks/useTheme';
 import { AiChatIcon } from '@/components/AiChatIcon';
-import { useVirtualKeyboard } from '@/hooks/useVirtualKeyboard';
+import { useKeyboardOpen } from '@/components/VirtualKeyboardProvider';
 
 export default function BottomNav() {
   const navRef = useRef<HTMLElement>(null);
   const pathname = usePathname() || '/';
-  const keyboardOpen = useVirtualKeyboard();
+  const keyboardOpen = useKeyboardOpen();
   const shouldHideNav = hidesPrimaryNavigation(pathname) || keyboardOpen;
   const { theme } = useThemeMode();
   const isLightSurface = theme === 'light';

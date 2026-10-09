@@ -204,7 +204,7 @@ export default function HomeClient({
                 <Search size={18} className={styles.searchIcon} />
                 <input
                   ref={searchInputRef}
-                  type="text"
+                  type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setSearchOpen(true)}

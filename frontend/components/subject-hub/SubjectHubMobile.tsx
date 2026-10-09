@@ -128,7 +128,7 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
         <div data-hub-part="mobileSearchRow" className={`${defaultStyles.mobileSearchRow} ${defaultStyles.oledSearchRow}`}>
           <Search className={defaultStyles.mobileSearchIcon} size={16} />
           <input
-            type="text"
+            type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
             className={defaultStyles.mobileSearchInput}
             placeholder={config.mobileSearchPlaceholder}
             value={searchQuery}

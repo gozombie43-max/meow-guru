@@ -95,11 +95,11 @@ export function DesktopHomeContent() {
         <div className={styles.desktopQuickLinks}>
           <Link href="/resource" className={styles.resourceCard}>
             <span className={styles.resourceIcon}><BooksIcon size={40} /></span>
-            <span><strong>ALL BOOKS & NOTES</strong><small>Books, chapter notes, extras & DPP</small></span>
+            <span><strong>All books & notes</strong><small>Books, chapter notes, extras & DPP</small></span>
           </Link>
           <Link href="/battle" className={styles.battleCard}>
             <span className={styles.battleIcon}><BattleIcon size={40} /></span>
-            <span><strong>BATTLE MODE</strong><small>Challenge yourself & win rewards</small></span>
+            <span><strong>Battle mode</strong><small>Challenge yourself & win rewards</small></span>
           </Link>
         </div>
       </div>
@@ -121,21 +121,21 @@ export function MobileHomeContent() {
             </div>
             <span>Knowledge That Empowers</span>
           </div>
-          <h1>Choose Your <br /> Subject</h1>
+          <h1>Choose your <br /> subject</h1>
           <div className={styles.heroLine} />
-          <div style={{ minHeight: '40px', marginBottom: '12px' }}>
+          <div style={{ minHeight: '30px', marginBottom: '6px' }}>
             <Typewriter
-              texts={['MATH', 'ENGLISH', 'REASONING', 'GK']}
+              texts={['Math', 'English', 'Reasoning', 'GK']}
               showCursor={false}
               hideCursorOnType
               color="var(--purple)"
               typedColor="var(--purple)"
               font={{
                 fontFamily: 'inherit',
-                fontSize: 'clamp(24px, 5.5vw, 32px)',
-                fontWeight: '700',
-                letterSpacing: '-0.8px',
-                lineHeight: '1.05',
+                fontSize: 'clamp(20px, 5.2vw, 24px)',
+                fontWeight: '600',
+                letterSpacing: '-0.4px',
+                lineHeight: '1.2',
               }}
               style={{ justifyContent: 'flex-start' }}
             />
@@ -159,23 +159,25 @@ export function MobileHomeContent() {
 
       <section className={styles.mobileContentGrid}>
         <div className={styles.mobileLeftColumn}>
+          <div className={styles.sectionHeader}><h2>Subjects</h2></div>
           <div id="subjects" className={styles.mobileSubjectGrid}>
             {mobileSubjects.map((subject) => (
               <Link key={subject.title} href={subject.href} className={styles.mobileSubjectCard}>
                 <span className={`${styles.subjectIcon} ${styles[subject.tone]}`}>
                   <subject.icon size={30} />
                 </span>
-                <span>{subject.title}</span>
+                <span>{subject.title === 'GK' ? 'GK' : subject.title.charAt(0) + subject.title.slice(1).toLowerCase()}</span>
               </Link>
             ))}
           </div>
+          <div className={styles.sectionHeader}><h2>Study and compete</h2></div>
           <Link href="/resource" className={styles.resourceCard}>
             <span className={styles.resourceIcon}><BooksIcon size={48} /></span>
-            <span><strong>ALL BOOKS & NOTES</strong><small>Books, chapter notes, extras & DPP</small></span>
+            <span><strong>All books & notes</strong><small>Books, chapter notes, extras & DPP</small></span>
           </Link>
           <Link href="/battle" className={styles.battleCard}>
             <span className={styles.battleIcon}><BattleIcon size={48} /></span>
-            <span><strong>BATTLE MODE</strong><small>Challenge yourself & win rewards</small></span>
+            <span><strong>Battle mode</strong><small>Challenge yourself & win rewards</small></span>
           </Link>
         </div>
         <MobileRecentQuiz />

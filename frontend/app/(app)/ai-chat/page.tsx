@@ -309,7 +309,7 @@ function AiChatPageContent() {
 
         <div className={styleClasses("sidebar-search")}>
           <Search size={16} />
-          <input
+          <input type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
             placeholder="Search chats"
             aria-label="Search chats"
             value={searchTerm}

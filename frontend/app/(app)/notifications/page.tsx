@@ -310,7 +310,7 @@ export default function NotificationsPage() {
               <div className="notif-search-bar">
                 <Search size={16} />
                 <input
-                  type="text"
+                  type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search notifications…"

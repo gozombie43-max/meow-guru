@@ -165,7 +165,7 @@ function MobileQuizView({ config, cards, bookmarked, toggleBookmark, theme, setT
           <div className="nav-left">
             <div className="mini-search">
               <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-              <input type="text" placeholder="Search terms" value={miniQuery} onChange={e => handleSearchChange(e.target.value)}  aria-label="Search terms"/>
+              <input type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off" placeholder="Search terms" value={miniQuery} onChange={e => handleSearchChange(e.target.value)}  aria-label="Search terms"/>
             </div>
             <button data-ui-button="state" className={`mini-filter-btn ${filterBadgeCount > 0 ? 'has-active' : ''}`} onClick={() => setIsSheetOpen(true)}>
               <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
@@ -191,7 +191,7 @@ function MobileQuizView({ config, cards, bookmarked, toggleBookmark, theme, setT
       <div className="search-wrap">
         <div className="search-bar">
           <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-          <input type="text" placeholder="Search terms" value={query} onChange={e => handleSearchChange(e.target.value)}  aria-label="Search terms"/>
+          <input type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off" placeholder="Search terms" value={query} onChange={e => handleSearchChange(e.target.value)}  aria-label="Search terms"/>
         </div>
         <button data-ui-button="state" className={`filter-btn ${filterBadgeCount > 0 ? 'has-active' : ''}`} onClick={() => setIsSheetOpen(true)}>
           <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>

@@ -369,7 +369,7 @@ export function MacOsQuizStartStudio({
                   <div className={styles.searchBox}>
                     <Search size={12} className={styles.searchIcon} />
                     <input
-                      type="text"
+                      type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
                       value={activeSearch}
                       onChange={(e) => handleSearchChange(e.target.value)}
                       placeholder="Filter concepts..."

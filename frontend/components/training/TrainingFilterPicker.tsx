@@ -166,7 +166,7 @@ export function TrainingFilterPicker({
             onKeyDown={event => {
               if (event.key === "Enter") { event.preventDefault(); handleDone(); }
             }}
-            type="search"
+            type="search" autoCapitalize="none"
             className="tfp-search-input"
             aria-label={`Search ${label.toLowerCase()}s`}
             placeholder={`Search ${label.toLowerCase()}s…`}

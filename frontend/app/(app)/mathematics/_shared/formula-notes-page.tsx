@@ -415,7 +415,7 @@ export default function FormulaNotesPage({
                   <Search size={15} />
                 </span>
                 <input
-                  type="text"
+                  type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
                   className={styleClasses("fn-search-input")}
                   placeholder={`Search in ${activeTab}...`}
                   value={searchQuery}

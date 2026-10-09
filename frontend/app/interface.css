@@ -1,5 +1,9 @@
 /* Shared visual contract for native controls and existing route chrome.
    Layout/positioning stays with the route shell so fixed offsets remain valid. */
+input[type="search"] {
+  caret-color: var(--ios-system-blue, #007aff);
+}
+
 :root {
   --ui-space-1: 4px;
   --ui-space-2: 8px;

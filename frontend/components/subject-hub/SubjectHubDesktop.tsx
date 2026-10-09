@@ -61,7 +61,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                 <Search size={13} className={styles.searchIcon} />
                 <input
                   ref={searchInputRef}
-                  type="text"
+                  type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
                   placeholder={config.searchPlaceholder}
                   className={styles.searchInput}
                   value={searchQuery}

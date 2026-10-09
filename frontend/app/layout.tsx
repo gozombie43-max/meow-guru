@@ -1,6 +1,7 @@
 import type { Metadata,Viewport } from 'next';
 import localFont from 'next/font/local';
 import { AuthProvider } from '@/context/AuthContext';
+import { VirtualKeyboardProvider } from '@/components/VirtualKeyboardProvider';
 import './globals.css';
 import './light-theme.css';
 import './dark-theme.css';
@@ -74,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={GeistSans.variable} suppressHydrationWarning>
-        <AuthProvider>{children}</AuthProvider>
+        <VirtualKeyboardProvider><AuthProvider>{children}</AuthProvider></VirtualKeyboardProvider>
       </body>
     </html>
   );

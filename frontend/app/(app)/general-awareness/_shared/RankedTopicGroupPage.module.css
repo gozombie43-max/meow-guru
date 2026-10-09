@@ -100,7 +100,6 @@
 
 .chapterSearch > svg { flex: none; }
 .chapterSearchInput {
-  caret-color: var(--ios-system-blue);
   width: 100%;
   min-width: 0;
   flex: 1;
@@ -272,7 +271,6 @@
 }
 
 .searchInput {
-  caret-color: var(--ios-system-blue);
   width: 100%;
   height: 42px;
   box-sizing: border-box;
