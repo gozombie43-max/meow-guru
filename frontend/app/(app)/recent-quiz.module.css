@@ -88,7 +88,7 @@
   min-width: 0;
   padding: 16px;
   border: 1px solid var(--mac-border);
-  border-radius: 22px;
+  border-radius: 26px;
   background: var(--mac-card-bg);
   color: var(--mac-text-primary);
 }
@@ -201,7 +201,7 @@
 
 .card > .resume { margin-top: 12px; }
 
-.desktopList .card { padding: 12px; border-radius: 16px; }
+.desktopList .card { padding: 12px; border-radius: 26px; }
 .desktopList .header { gap: 10px; }
 .desktopList .copy h3 { font-size: 15px; }
 .desktopList .copy p,

@@ -636,7 +636,7 @@
 .heroCard {
   background: linear-gradient(120deg, #fdfdfd 0%, #f7f8fa 60%, #eceff3 100%);
   border: 1px solid var(--mac-border);
-  border-radius: 20px;
+  border-radius: 26px;
   box-shadow: var(--mac-shadow-card);
   position: relative;
   overflow: hidden;
@@ -817,7 +817,7 @@
 .subjectCard {
   background: var(--mac-card-bg);
   border: 1px solid var(--mac-border);
-  border-radius: 18px;
+  border-radius: 26px;
   padding: 13px 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 2px 8px rgba(15, 23, 42, 0.02);
   display: flex;
@@ -928,7 +928,7 @@
 .recentQuizCard {
   background: var(--mac-card-bg);
   border: 1px solid var(--mac-border);
-  border-radius: 18px;
+  border-radius: 26px;
   padding: 13px 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 2px 8px rgba(15, 23, 42, 0.02);
   display: flex;
@@ -1145,7 +1145,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  padding: 12px 16px calc(var(--app-bottom-nav-height, 94px) + var(--safe-bottom) - 12px);
+  padding: 0 16px calc(var(--app-bottom-nav-height, 94px) + var(--safe-bottom) - 12px);
   box-sizing: border-box;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -1414,7 +1414,7 @@
 
 .premium {
   padding: 14px 14px;
-  border-radius: 16px;
+  border-radius: 26px;
   background: var(--surface);
   box-shadow: var(--shadow);
   border: 1px solid var(--line);
@@ -1456,13 +1456,13 @@
 
 /* Mobile Hero Banner */
 .mobileHero {
-  border-radius: 22px;
+  border-radius: 26px;
   background: var(--surface);
   box-shadow: var(--shadow);
   position: relative;
   overflow: hidden;
   display: flex;
-  min-height: 200px;
+  min-height: 180px;
   margin-top: 4px;
 }
 
@@ -1480,18 +1480,23 @@
 .mobileHeroCopy {
   position: relative;
   z-index: 3;
-  width: 60%;
-  padding: 12px 14px 12px 18px;
+  width: 57%;
+  margin-left: auto;
+  padding: 22px 12px 22px 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .mobileHeroBadge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   font-size: 10px;
   font-weight: 600;
-  color: var(--purple);
+  letter-spacing: 1.2px;
+  color: var(--muted);
 }
 
 .mobileHeroBadgeIcon {
@@ -1512,6 +1517,7 @@
   letter-spacing: -0.6px;
   font-weight: 700;
 }
+.mobileHeroCopy h1 span { color: var(--purple); }
 
 .heroLine {
   width: 36px;
@@ -1526,7 +1532,7 @@
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
-  margin: 0;
+  margin: 12px 0 0;
 }
 
 .mobileHeroFeatures {
@@ -1556,14 +1562,11 @@
 
 .mobileHeroVisual {
   position: absolute;
-  right: 0;
+  left: 0;
   top: 0;
-  width: 44%;
+  width: 41%;
   height: 100%;
-  border-top-left-radius: 140px;
-  border-bottom-left-radius: 140px;
-  border-left: 2px solid var(--purple);
-  background-color: var(--surface-soft);
+  background-color: transparent;
   overflow: hidden;
   z-index: 2;
   transform: translateZ(0);
@@ -1579,8 +1582,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center 20%;
+  object-fit: contain;
+  object-position: center bottom;
   transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -1610,7 +1613,7 @@
 
 .mobileSubjectCard {
   min-height: 74px;
-  border-radius: 18px;
+  border-radius: 26px;
   background: var(--surface);
   box-shadow: var(--shadow);
   border: 1px solid var(--line);
@@ -1682,7 +1685,7 @@
 .battleCard {
   min-height: 76px;
   padding: 12px 14px;
-  border-radius: 18px;
+  border-radius: 26px;
   border: 1px solid var(--line);
   background: var(--surface);
   box-shadow: var(--shadow);
@@ -1754,7 +1757,7 @@
   position: relative;
   overflow: hidden;
   display: block;
-  border-radius: 20px;
+  border-radius: 26px;
   background: var(--surface);
   border: 1px solid var(--line);
   color: var(--text);
@@ -1881,12 +1884,13 @@
 
 @media (max-width: 480px) {
   .mobileHero {
-    min-height: 180px;
+    min-height: 174px;
   }
   .mobileHeroCopy {
-    width: 62%;
-    padding: 10px 10px 10px 14px;
+    width: 57%;
+    padding: 20px 10px 20px 2px;
   }
+  .mobileHeroCopy h1 { font-size: clamp(21px, 5.5vw, 25px); line-height: 1.18; letter-spacing: -0.6px; }
   .mobileHeroFeatures {
     display: none;
   }
@@ -1923,7 +1927,7 @@
   background: var(--oled-canvas);
 }
 :global(html.theme-dark) .pageWrapper :is(.heroCard, .mobileHero, .subjectCard, .mobileSubjectCard, .resourceCard, .battleCard, .quizCard, .recentQuizCard, .premiumCard, .searchContainer, .searchDropdown) {
-  background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 14px;
+  background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 26px;
 }
 :global(html.theme-dark) .pageWrapper :is(.subjectCard, .mobileSubjectCard, .resourceCard, .battleCard, .quizCard, .recentQuizCard):hover {
   background: var(--oled-hover); box-shadow: none; transform: none;

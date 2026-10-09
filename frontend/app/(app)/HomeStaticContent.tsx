@@ -113,34 +113,10 @@ export function MobileHomeContent() {
   return (
     <>
       <section className={styles.mobileHero}>
-        <div className={styles.heroDotsTopRight} aria-hidden="true" />
         <div className={styles.mobileHeroCopy}>
-          <div className={styles.mobileHeroBadge}>
-            <div className={styles.mobileHeroBadgeIcon}>
-              <GraduationCap size={16} strokeWidth={2.5} />
-            </div>
-            <span>Knowledge That Empowers</span>
-          </div>
-          <h1>Choose your <br /> subject</h1>
-          <div className={styles.heroLine} />
-          <div style={{ minHeight: '30px', marginBottom: '6px' }}>
-            <Typewriter
-              texts={['Math', 'English', 'Reasoning', 'GK']}
-              showCursor={false}
-              hideCursorOnType
-              color="var(--purple)"
-              typedColor="var(--purple)"
-              font={{
-                fontFamily: 'inherit',
-                fontSize: 'clamp(20px, 5.2vw, 24px)',
-                fontWeight: '600',
-                letterSpacing: '-0.4px',
-                lineHeight: '1.2',
-              }}
-              style={{ justifyContent: 'flex-start' }}
-            />
-          </div>
-          <p className={styles.mobileHeroDesc}>Learn your way.<br />Anywhere, anytime.</p>
+          <span className={styles.mobileHeroBadge}>SSC PREPARATION</span>
+          <h1>Small steps.<br /><span>Big progress.</span></h1>
+          <p className={styles.mobileHeroDesc}>Build your skills,<br />one topic at a time.</p>
         </div>
         <div className={styles.mobileHeroVisual}>
           <Image
