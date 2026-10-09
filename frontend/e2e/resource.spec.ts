@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
 
+test.afterEach(async ({ context }) => {
+  await context.unrouteAll({ behavior: 'wait' });
+});
+
 for (const theme of ['light', 'dark'] as const) {
   test(`resource category labels remain readable in ${theme} mode`, async ({ page, context, request }, testInfo) => {
     const login = await request.post('http://127.0.0.1:3111/auth/login', {

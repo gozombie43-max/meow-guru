@@ -1,6 +1,12 @@
 import { expect, test, type BrowserContext } from '@playwright/test';
 const fixture = 'http://127.0.0.1:3111';
 
+// Drain forwarded autosaves before Playwright closes the context and its request
+// client, so an unfinished route callback cannot fail the following test.
+test.afterEach(async ({ context }) => {
+  await context.unrouteAll({ behavior: 'wait' });
+});
+
 for (const resume of [false, true]) {
   test(`public quiz data overlaps blocked auth restoration; resume=${resume}`, async ({ page, context, request }, info) => {
     const login = await request.post(`${fixture}/auth/login`, { data: { email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!' } });
