@@ -568,6 +568,10 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
             <input
               className={styles.searchInput}
               type="search"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={`Search ${group.label.toLowerCase()} chapters`}
@@ -642,7 +646,11 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
           <div data-hub-part="mobileSearchRow" className={styles.chapterSearch}>
             <Search size={21} aria-hidden="true" />
             <input
-              type="text"
+              type="search"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
               className={styles.chapterSearchInput}
               data-custom-focus
               data-mobile-chapter-search

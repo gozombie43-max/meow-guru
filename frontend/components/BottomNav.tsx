@@ -7,11 +7,13 @@ import { useEffect, useRef } from 'react';
 import { ClipboardList, Home as HomeIcon, Play, UserRound } from 'lucide-react';
 import { useThemeMode } from '@/hooks/useTheme';
 import { AiChatIcon } from '@/components/AiChatIcon';
+import { useVirtualKeyboard } from '@/hooks/useVirtualKeyboard';
 
 export default function BottomNav() {
   const navRef = useRef<HTMLElement>(null);
   const pathname = usePathname() || '/';
-  const shouldHideNav = hidesPrimaryNavigation(pathname);
+  const keyboardOpen = useVirtualKeyboard();
+  const shouldHideNav = hidesPrimaryNavigation(pathname) || keyboardOpen;
   const { theme } = useThemeMode();
   const isLightSurface = theme === 'light';
 
@@ -27,8 +29,11 @@ export default function BottomNav() {
 
   useEffect(() => {
     const nav = navRef.current;
-    if (!nav) return;
     const root = document.documentElement;
+    if (!nav) {
+      root.style.setProperty('--app-bottom-nav-occupied-height', '0px');
+      return () => root.style.removeProperty('--app-bottom-nav-occupied-height');
+    }
     const updateHeight = () => {
       root.style.setProperty('--app-bottom-nav-occupied-height', `${nav.getBoundingClientRect().height}px`);
     };

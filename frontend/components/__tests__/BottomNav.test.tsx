@@ -1,6 +1,6 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import BottomNav from '../BottomNav';
 
 let mockPathname = '/mock-test';
@@ -9,6 +9,70 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('BottomNav Component', () => {
+  beforeEach(() => {
+    mockPathname = '/mock-test';
+    vi.stubGlobal('matchMedia', () => Object.assign(new EventTarget(), { matches: false }));
+  });
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it.each(['visual', 'window', 'fallback'])('hides navigation and its clearance for a %s keyboard', (mode) => {
+    vi.useFakeTimers();
+    const viewport = Object.assign(new EventTarget(), { height: 800, scale: 1 });
+    vi.stubGlobal('innerHeight', 800);
+    vi.stubGlobal('visualViewport', mode === 'fallback' ? undefined : viewport);
+    vi.stubGlobal('matchMedia', () => Object.assign(new EventTarget(), { matches: true }));
+    render(<><input aria-label="Chapter search" /><BottomNav /></>);
+    expect(screen.getByRole('navigation')).toBeDefined();
+    act(() => {
+      screen.getByRole('textbox').focus();
+      vi.runAllTimers();
+      viewport.height = 470;
+      if (mode === 'window') vi.stubGlobal('innerHeight', 470);
+      viewport.dispatchEvent(new Event('resize'));
+    });
+    expect(screen.queryByRole('navigation')).toBeNull();
+    expect(document.body.classList.contains('has-bottom-nav')).toBe(false);
+    expect(document.documentElement.style.getPropertyValue('--app-bottom-nav-occupied-height')).toBe('0px');
+    act(() => {
+      viewport.height = 800;
+      vi.stubGlobal('innerHeight', 800);
+      if (mode === 'fallback') screen.getByRole('textbox').blur();
+      viewport.dispatchEvent(new Event('resize'));
+      vi.runAllTimers();
+    });
+    expect(screen.getByRole('navigation')).toBeDefined();
+    expect(document.body.classList.contains('has-bottom-nav')).toBe(true);
+  });
+
+  it('ignores browser chrome changes, pinch zoom, and non-editable focus', () => {
+    const viewport = Object.assign(new EventTarget(), { height: 800, scale: 1 });
+    vi.stubGlobal('innerHeight', 800);
+    vi.stubGlobal('visualViewport', viewport);
+    vi.stubGlobal('matchMedia', () => Object.assign(new EventTarget(), { matches: true }));
+    render(<><input aria-label="Chapter search" /><BottomNav /></>);
+    act(() => {
+      viewport.height = 470;
+      viewport.dispatchEvent(new Event('resize'));
+    });
+    expect(screen.getByRole('navigation')).toBeDefined();
+    act(() => {
+      screen.getByRole('textbox').focus();
+      viewport.height = 720;
+      viewport.dispatchEvent(new Event('resize'));
+    });
+    expect(screen.getByRole('navigation')).toBeDefined();
+    act(() => {
+      viewport.height = 400;
+      viewport.scale = 2;
+      viewport.dispatchEvent(new Event('resize'));
+    });
+    expect(screen.getByRole('navigation')).toBeDefined();
+  });
+
   it('renders all core navigation links', () => {
     render(<BottomNav />);
     expect(screen.getByText('Home')).toBeDefined();
