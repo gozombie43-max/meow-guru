@@ -82,6 +82,8 @@ function QuizEngineContent(props: QuizEngineProps) {
   }
 
   if (!currentQ) {
+    const isQuestionLoading = controller.isLoading || controller.isFetchingMore ||
+      Boolean(controller.questions[currentIndex]?.sessionPlaceholder && !controller.submitError);
     return (
       <div
         className={`${subjectConfig.cssClassName} min-h-dvh relative flex items-center justify-center`}
@@ -92,8 +94,10 @@ function QuizEngineContent(props: QuizEngineProps) {
         <div className="absolute right-4 top-4">
           <ThemeToggle />
         </div>
-        <div className="text-[color:var(--quiz-text-muted)]">
-          No questions available for this selection.
+        <div className="text-[color:var(--quiz-text-muted)]" role="status" aria-busy={isQuestionLoading}>
+          {isQuestionLoading
+            ? "Loading quiz…"
+            : controller.submitError || "No questions available for this selection."}
         </div>
       </div>
     );
