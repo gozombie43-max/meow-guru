@@ -14,7 +14,7 @@ interface QuestionsMeta {
   groupingFingerprint?: string;
 }
 
-type GroupingStatus = Pick<QuestionsMeta, 'groupingStatus' | 'groupingFingerprint' | 'conceptGroups'>;
+type GroupingStatus = Pick<QuestionsMeta, 'groupingStatus' | 'groupingFingerprint' | 'conceptGroups'> & { metadataChanged?: boolean };
 
 const fetcher = async (url: string): Promise<QuestionsMeta> => {
   const res = await fetchWithRetry(url, {}, { auth: 'none' });
@@ -50,7 +50,8 @@ export function useQuestionsMeta(params: {
     revalidateOnFocus: false,
     revalidateIfStale: true,
     refreshInterval: 0,
-    shouldRetryOnError: false,
+    shouldRetryOnError: true,
+    errorRetryInterval: 10000,
     dedupingInterval: 10000, // Reuse cached UI; check saved metadata on later visits.
   });
 
@@ -68,11 +69,17 @@ export function useQuestionsMeta(params: {
   const { data: grouping, error: groupingError } = useSWR<GroupingStatus>(statusUrl, fetcher, {
     ...PUBLIC_QUESTION_QUERY,
     revalidateOnFocus: false,
-    revalidateOnReconnect: false,
+    revalidateOnReconnect: true,
     refreshInterval: value => value?.groupingStatus === 'processing' ? 10000 : 0,
-    shouldRetryOnError: false,
+    // SWR pauses interval polling after an error, so retry status reads too.
+    shouldRetryOnError: true,
+    errorRetryInterval: 10000,
     dedupingInterval: 10000,
   });
+
+  useEffect(() => {
+    if (grouping?.metadataChanged && grouping.groupingFingerprint === fingerprint) void mutate();
+  }, [grouping, fingerprint, mutate]);
 
   return useMemo(() => ({
     meta: data && grouping?.groupingFingerprint === data.groupingFingerprint ? { ...data, ...grouping } : data ?? EMPTY_META,

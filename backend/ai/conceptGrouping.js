@@ -1,9 +1,12 @@
 import { conceptGroupsSchema } from "@meow/contracts/ai";
 import OpenAI from "openai";
 import { backgroundAi, aiProvider } from '../infrastructure/dependencyBoundary.js';
+import { validateConceptGroups } from '../services/questions/conceptGroupService.js';
 
 const gate = work => backgroundAi.execute(signal => aiProvider.execute(work, { signal, timeoutMs: 300000 }));
-const CHUNK_SIZE = 250;
+// Dense geometry/mensuration concepts can exhaust the provider deadline in
+// 250-item batches. Keep each validated request small enough to finish reliably.
+const CHUNK_SIZE = 100;
 
 function buildSchema() {
   return { type: "json_schema", json_schema: { name: "concept_groups", strict: true, schema: {
@@ -23,19 +26,36 @@ function buildSystemPrompt(maxGroups) {
 }
 
 async function callGroupingAPI(client, model, maxTokens, maxGroups, scope, indexedConcepts) {
-  const response = await gate(signal => client.chat.completions.create({
+  const messages = [
+    { role: 'system', content: buildSystemPrompt(maxGroups) },
+    { role: 'user', content: JSON.stringify({ scope, concepts: indexedConcepts }) },
+  ];
+  // Correct invalid batches before proceeding. Large topics must not lose all
+  // successful batches merely because one response omitted or repeated an ID.
+  const usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const response = await gate(signal => client.chat.completions.create({
     model, max_completion_tokens: maxTokens,
-    messages: [
-      { role: "system", content: buildSystemPrompt(maxGroups) },
-      { role: "user", content: JSON.stringify({ scope, concepts: indexedConcepts }) },
-    ],
+    messages,
     response_format: buildSchema(),
-  }, { signal }));
-  const choice = response.choices?.[0];
-  if (choice?.finish_reason !== "stop" || choice.message?.refusal || !choice.message?.content) {
-    throw new Error("AI grouping response was incomplete or refused");
+    }, { signal }));
+    for (const key of Object.keys(usage)) usage[key] += response.usage?.[key] || 0;
+    const choice = response.choices?.[0];
+    if (choice?.finish_reason !== 'stop' || choice.message?.refusal || !choice.message?.content) {
+      throw new Error('AI grouping response was incomplete or refused');
+    }
+    try {
+      const parsed = conceptGroupsSchema.parse(JSON.parse(choice.message.content));
+      if (parsed.groups.length > maxGroups) throw new Error(`Use at most ${maxGroups} groups`);
+      validateConceptGroups(parsed, indexedConcepts.map(concept => concept.c));
+      return { parsed, usage };
+    } catch (error) {
+      if (attempt === 2) throw error;
+      messages.push({ role: 'assistant', content: choice.message.content });
+      messages.push({ role: 'user', content: `The response failed validation: ${String(error.message).slice(0, 300)}. Correct the full grouping for this batch. Use every original integer ID from 0 through ${indexedConcepts.length - 1} exactly once, with no duplicates or omissions, and unique descriptive group labels. Return the complete corrected JSON.` });
+    }
   }
-  return { parsed: conceptGroupsSchema.parse(JSON.parse(choice.message.content)), usage: response.usage };
+  throw new Error('AI grouping validation attempts exhausted');
 }
 
 export async function generateConceptGroups(scope, concepts) {
@@ -64,8 +84,9 @@ export async function generateConceptGroups(scope, concepts) {
   let totalUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
   for (const [chunkIdx, chunk] of chunks.entries()) {
     const globalOffset = chunkIdx * CHUNK_SIZE;
-    const maxTokens = 32000;
-    const maxGroups = Math.min(100, Math.max(30, Math.ceil(chunk.length / 5)));
+    const maxTokens = 16000;
+    // The sum of valid chunks must also fit the final grouping limit.
+    const maxGroups = Math.max(1, Math.floor(Math.min(200, Math.max(60, Math.ceil(concepts.length / 5))) / chunks.length));
     const indexed = chunk.map((c, localId) => ({ id: localId, c }));
     const { parsed, usage } = await callGroupingAPI(client, model, maxTokens, maxGroups, scope, indexed);
     // Remap local IDs back to global IDs

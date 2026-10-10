@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { validateEnvironment } from './config/environment.js';
-import { assertProcessRole, embeddedWorkersEnabled } from './config/processRole.js';
+import { assertProcessRole, embeddedWorkersEnabled, standaloneConceptGroupingEnabled } from './config/processRole.js';
 import { createServer } from 'node:http';
 import { createApp } from './app.js';
 import { initPassport } from './auth/passport.js';
@@ -210,6 +210,18 @@ async function initWithRetry() {
     await listenServer(httpServer, PORT);
     isReady = true;
     logger.info({ port: PORT, quizOnlyMode, embeddedWorkers: runEmbeddedWorkers }, 'server ready');
+    await startOptionalService('conceptGrouping', async () => {
+      if (!process.env.AZURE_OPENAI_KEY && !process.env.OPENAI_API_KEY) throw new Error('Concept grouping requires an AI API key');
+      const worker = await import('./services/conceptGroupingWorker.js');
+      worker.startConceptGroupingWorker();
+    }, {
+      enabled: standaloneConceptGroupingEnabled(),
+      cleanup: async () => {
+        const worker = await import('./services/conceptGroupingWorker.js');
+        worker.stopConceptGroupingWorker();
+        if (!await worker.waitForConceptGroupingWorkerIdle(12000)) throw new Error('Concept grouping worker failed to drain');
+      },
+    });
     let stopCatalogPrewarm;
     void startOptionalService('catalogPrewarm', async () => {
       stopCatalogPrewarm = startTopicCountPrewarm();

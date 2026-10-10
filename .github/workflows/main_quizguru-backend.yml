@@ -134,12 +134,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          ai_configured="$(az webapp config appsettings list --name quizguru-backend --resource-group "$RESOURCE_GROUP" --query "[?name=='AZURE_OPENAI_KEY' || name=='OPENAI_API_KEY'].value | [?@ != '' && @ != null] | length(@)" --output tsv)"
+          if [ "$ai_configured" = "0" ]; then
+            echo "::error::Automatic concept grouping requires an AI key in the Web App settings."
+            exit 1
+          fi
           az webapp config appsettings set \
             --name quizguru-backend \
             --resource-group "$RESOURCE_GROUP" \
             --settings \
               "QUIZ_ONLY_MODE=true" \
               "RUN_EMBEDDED_WORKERS=false" \
+              "RUN_CONCEPT_GROUPING_WORKER=true" \
               "DEPLOYMENT_ENVIRONMENT=production" \
               "PROCESS_ROLE=api" \
             --output none
@@ -168,7 +174,7 @@ jobs:
             echo "Readiness attempt $attempt/24"
             : > health.json
             status="$(curl --silent --show-error --max-time 20 --output health.json --write-out '%{http_code}' "https://$APP_HOST/health")" || status="transport-error"
-            if [ "$status" = "200" ] && jq -e --arg release "$EXPECTED_RELEASE" '.ok == true and .releaseId == $release and .environment == "production"' health.json; then
+            if [ "$status" = "200" ] && jq -e --arg release "$EXPECTED_RELEASE" '.ok == true and .releaseId == $release and .environment == "production" and .dependencies.optionalServices.conceptGrouping == "healthy"' health.json; then
               # Exercise the lazy-loaded AI router used by translation admission.
               # No credentials: a healthy route must reject with 401, never 500.
               : > quota.json

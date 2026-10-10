@@ -16,6 +16,7 @@ import {
 } from "@/lib/quiz-index";
 import { useCallback, useMemo, useState } from "react";
 import type { QuizMode } from "@/features/quiz/model/types";
+import { parseConceptSelection, serializeConceptSelection } from '../model/conceptSelection';
 export function useQuizFilters({
   subjectConfig,
   slug,
@@ -37,7 +38,7 @@ export function useQuizFilters({
   const [resumeWindow, setResumeWindow] = useState<{ index?: number; anchor?: string; filters?: { exam?: string; concept?: string; letter?: string } }>(() => ({ index: resumeEntry?.currentIndex, anchor: resumeEntry?.questionAnchor }));
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [selectedClassificationConcepts, setSelectedClassificationConcepts] =
-    useState<Set<string>>(() => new Set(resumeEntry?.sessionFilters?.concept?.split(',').filter(Boolean) ?? []));
+    useState<Set<string>>(() => new Set(parseConceptSelection(resumeEntry?.sessionFilters?.concept)));
   const [examFilter, setExamFilter] = useState<string>(resumeEntry?.sessionFilters?.exam ?? '');
   const [classificationSearch, setClassificationSearch] = useState("");
   const [classificationCategory, setClassificationCategory] = useState<
@@ -61,7 +62,7 @@ export function useQuizFilters({
     setResumeEntry(restoredEntry);
     setResumeWindow({ index: restoredEntry.currentIndex, anchor: restoredEntry.questionAnchor });
     setExamFilter(restoredEntry.sessionFilters?.exam ?? '');
-    setSelectedClassificationConcepts(new Set(restoredEntry.sessionFilters?.concept?.split(',').filter(Boolean) ?? []));
+    setSelectedClassificationConcepts(new Set(parseConceptSelection(restoredEntry.sessionFilters?.concept)));
     setSelectedLetters(new Set((restoredEntry.sessionFilters?.letter ?? initialLetterParam ?? '').split(',').filter(Boolean)));
   }
 
@@ -80,7 +81,7 @@ export function useQuizFilters({
   }, [examFilter, meta?.exams]);
   const savedFilters = resumeWindow.filters ?? resumeEntry?.sessionFilters;
   const matchesResumeFilters = (examFilter || '') === (savedFilters?.exam || '')
-    && Array.from(selectedClassificationConcepts).join(',') === (savedFilters?.concept || '')
+    && serializeConceptSelection(Array.from(selectedClassificationConcepts)) === (savedFilters?.concept || '')
     && Array.from(selectedLetters).join(',') === (savedFilters?.letter || initialLetterParam || '');
 
   const {
@@ -104,7 +105,7 @@ export function useQuizFilters({
     exam: selectedRawExams,
     concept:
       selectedClassificationConcepts.size > 0
-        ? Array.from(selectedClassificationConcepts).join(",")
+        ? serializeConceptSelection(Array.from(selectedClassificationConcepts))
         : undefined,
     letter: selectedLetters.size > 0 ? Array.from(selectedLetters).join(",") : undefined,
   });

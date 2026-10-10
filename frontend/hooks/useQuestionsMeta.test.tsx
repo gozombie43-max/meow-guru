@@ -10,6 +10,47 @@ const fingerprint = 'a'.repeat(64);
 const metadata = { total: 12, exams: ['SSC'], concepts: ['equations'], letters: {}, groupingStatus: 'processing', groupingFingerprint: fingerprint };
 const response = (data: unknown) => ({ ok: true, json: async () => data });
 
+it('recovers when the first status request fails temporarily', async () => {
+  vi.useFakeTimers();
+  let statusCalls = 0;
+  fetchMock.mockImplementation(async (url: string) => {
+    if (url.includes('/meta?')) return response(metadata);
+    if (++statusCalls === 1) throw new Error('Temporary network failure');
+    return response({ groupingFingerprint: fingerprint, groupingStatus: 'ready', conceptGroups: [] });
+  });
+  const cache = new Map();
+  const { result, unmount } = renderHook(() => useQuestionsMeta({ topic: 'algebra' }), {
+    wrapper: ({ children }) => <SWRConfig value={{ provider: () => cache }}>{children}</SWRConfig>,
+  });
+  await act(async () => { await vi.advanceTimersByTimeAsync(50); });
+  await act(async () => { await vi.advanceTimersByTimeAsync(10001); });
+  expect(statusCalls).toBe(1);
+  await act(async () => { await vi.advanceTimersByTimeAsync(60000); });
+  expect(result.current.meta.groupingStatus).toBe('ready');
+  expect(fetchMock.mock.calls.filter(([url]) => url.includes('/meta?'))).toHaveLength(1);
+  unmount();
+});
+
+it('refreshes metadata when an upload supersedes the polled concept snapshot', async () => {
+  vi.useFakeTimers();
+  let metadataCalls = 0;
+  const nextFingerprint = 'c'.repeat(64);
+  fetchMock.mockImplementation(async (url: string) => response(url.includes('/meta?')
+    ? (++metadataCalls === 1 ? metadata : { ...metadata, groupingFingerprint: nextFingerprint, groupingStatus: 'ready', conceptGroups: [] })
+    : { groupingFingerprint: fingerprint, groupingStatus: 'processing', metadataChanged: true }));
+  const cache = new Map();
+  const { result, unmount } = renderHook(() => useQuestionsMeta({ topic: 'algebra' }), {
+    wrapper: ({ children }) => <SWRConfig value={{ provider: () => cache }}>{children}</SWRConfig>,
+  });
+  await act(async () => { await vi.advanceTimersByTimeAsync(50); });
+  await act(async () => { await vi.advanceTimersByTimeAsync(10001); });
+  expect(result.current.meta.groupingFingerprint).toBe(nextFingerprint);
+  expect(result.current.meta.groupingStatus).toBe('ready');
+  await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+  expect(metadataCalls).toBe(2);
+  unmount();
+});
+
 it('polls status rather than metadata and stops on completion without losing totals', async () => {
   vi.useFakeTimers();
   let ready = false;

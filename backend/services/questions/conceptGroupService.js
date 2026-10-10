@@ -58,6 +58,7 @@ export async function fetchConceptGroupingStatus(fingerprint) {
   return {
     groupingFingerprint: fingerprint,
     groupingStatus: doc.status === 'completed' ? 'ready' : doc.status === 'failed' ? 'failed' : 'processing',
+    ...(doc.status === 'superseded' ? { metadataChanged: true } : {}),
     ...(doc.status === 'completed' ? { conceptGroups: doc.result.groups } : {}),
   };
 }

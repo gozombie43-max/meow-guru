@@ -53,6 +53,8 @@ router.get('/practice-test', questionController.generatePracticeTest);
 router.post('/analyze', adminAuth, questionController.runAnalysis);
 router.get("/image", questionController.getImageQuestions);
 router.get('/session', questionController.getQuestionsSession);
+// Read-only POST avoids request URL limits for large concept/exam selections.
+router.post('/session', questionController.getQuestionsSession);
 router.get('/meta', questionController.getQuestionsMeta);
 router.get('/concept-groups/:fingerprint', async (req, res) => {
   try {

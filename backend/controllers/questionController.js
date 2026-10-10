@@ -289,8 +289,8 @@ const getImageQuestions = async (req, res) => {
 // ── GET /api/questions/session ────────────────────────
 const getQuestionsSession = async (req, res) => {
   try {
-    const result = await questionService.fetchQuestionsSession(req.query);
-    res.set('Cache-Control', 'public, max-age=10, stale-while-revalidate=30');
+    const result = await questionService.fetchQuestionsSession(req.method === 'POST' ? req.body : req.query);
+    res.set('Cache-Control', req.method === 'POST' ? 'no-store' : 'public, max-age=10, stale-while-revalidate=30');
     res.json(result);
   } catch (err) {
     res.status(err.statusCode || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });

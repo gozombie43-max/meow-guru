@@ -15,7 +15,14 @@ interface SessionResponse {
 }
 
 const fetcher = async (url: string): Promise<SessionResponse> => {
-  const res = await fetchWithRetry(url, {}, { auth: 'none' });
+  const parsed = new URL(url, 'http://localhost');
+  // Use the same SWR key and pagination parameters for both read transports.
+  const useBody = url.length > 2000;
+  const res = await fetchWithRetry(useBody ? url.split('?')[0] : url, useBody ? {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.fromEntries(parsed.searchParams)),
+  } : {}, { auth: 'none' });
   if (!res.ok) throw new Error("Failed to fetch quiz session");
   return res.json();
 };

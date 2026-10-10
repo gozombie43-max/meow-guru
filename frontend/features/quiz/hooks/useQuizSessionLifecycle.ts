@@ -13,6 +13,7 @@ import api from '@/shared/api/client';
 import { createResumeSaver } from '../model/resumeDelta';
 import { authSessionIdentity } from '@/lib/auth-session-identity';
 import type { RecentQuizPayload } from '@/lib/userApi';
+import { serializeConceptSelection } from '../model/conceptSelection';
 
 export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, routeBase, resumeRequested,
   jumpIdRaw, filters, closePalette }: {
@@ -86,7 +87,7 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   }, [initialization, hasMore, questions.length, resumeRequested, resumeEntry?.status, savedIndex, jumpIdRaw, jumpId, targetIndex, fetchMore]);
 
   const sessionFilters = useMemo(() => ({ exam: examFilter || undefined,
-    concept: Array.from(selectedClassificationConcepts).join(',') || undefined,
+    concept: serializeConceptSelection(Array.from(selectedClassificationConcepts)) || undefined,
     letter: Array.from(filters.selectedLetters ?? []).join(',') || undefined,
   }), [examFilter, selectedClassificationConcepts, filters.selectedLetters]);
   const identity = authSessionIdentity(token);
@@ -136,7 +137,7 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     if (authLoading) return;
     if (resumeData) {
       filters.setResumeWindow?.({ index: resumeData.currentIndex, anchor: resumeData.questionAnchor,
-        filters: { exam: resumeData.examFilter, concept: resumeData.selectedClassificationConcepts?.join(',') } });
+        filters: { exam: resumeData.examFilter, concept: serializeConceptSelection(resumeData.selectedClassificationConcepts ?? []) } });
       dispatch({ type: 'RESTORE', snapshot: resumeData });
       if (resumeData.conceptFilter) setConceptFilter(resumeData.conceptFilter);
       if (resumeData.examFilter) setExamFilter(resumeData.examFilter);

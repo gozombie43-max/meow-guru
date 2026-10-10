@@ -46,6 +46,14 @@ export async function enqueueConceptGrouping(fingerprint, doc) {
       await collection.updateOne({ _id: fingerprint }, { $setOnInsert: doc }, { upsert: true });
       existing = await collection.findOne({ _id: fingerprint });
     }
+    // A bank edit can restore a previously superseded concept set.
+    if (existing?.status === 'superseded') {
+      await collection.updateOne({ _id: fingerprint, status: 'superseded' }, {
+        $set: { status: 'queued', attempts: 0, availableAt: new Date() },
+        $unset: { finishedAt: '' },
+      });
+      existing = await collection.findOne({ _id: fingerprint });
+    }
     if (existing?.status === 'completed') state.completed.set(fingerprint, existing);
     return existing;
   })();
@@ -56,6 +64,18 @@ export async function enqueueConceptGrouping(fingerprint, doc) {
 export const claimConceptGrouping = leaseMs => claimJob(groups(), 'concept-grouping', new Date(), leaseMs);
 export const renewConceptGrouping = (job, leaseMs) => renewJob(groups(), job, new Date(), leaseMs);
 export const completeConceptGrouping = (job, result) => completeJob(groups(), job, result);
+export const supersedeQueuedConceptGroupings = (job, currentFingerprint) => groups().updateMany({
+  'scope.subject': job.scope.subject, 'scope.topic': job.scope.topic, 'scope.mode': job.scope.mode,
+  'params.subject': job.params.subject ?? null, 'params.topic': job.params.topic ?? null,
+  'params.mode': job.params.mode ?? null, version: job.version,
+  _id: { $ne: currentFingerprint }, status: 'queued', createdAt: { $lte: job.startedAt },
+}, { $set: { status: 'superseded', finishedAt: new Date() } });
+export const supersedeConceptGrouping = job => groups().updateOne({
+  _id: job._id, owner: job.owner, status: 'running', leaseUntil: { $gt: new Date() },
+}, {
+  $set: { status: 'superseded', finishedAt: new Date() },
+  $unset: { owner: '', leaseUntil: '' },
+});
 export const retryConceptGrouping = (job, retry, error) => groups().updateOne({ _id: job._id, owner: job.owner, status: 'running', leaseUntil: { $gt: new Date() } }, {
   $set: { status: retry ? 'queued' : 'failed', error: String(error.message).slice(0, 300), availableAt: new Date(Date.now() + Math.round(15000 * 2 ** (job.attempts - 1) * (0.8 + Math.random() * 0.6))) },
   $unset: { owner: '', leaseUntil: '' },

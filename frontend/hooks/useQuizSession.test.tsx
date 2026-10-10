@@ -46,6 +46,22 @@ function setup(topic = "algebra") {
 }
 describe("quiz cursor pages", () => {
   beforeEach(() => fetchMock.mockReset());
+  it('sends large concept selections in a POST body and preserves filters on later pages', async () => {
+    const concept = JSON.stringify(Array.from({ length: 100 }, (_, i) => `principal, rate and time ${i}`));
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ questions: [{ id: 'a' }], nextCursor: 'next', hasMore: true, totalCount: 100 }) })
+      .mockResolvedValueOnce(page('b', null));
+    const { result } = renderHook(() => useQuizSession({ subject: 'mathematics', topic: 'simple-interest', concept, includeTotal: true }), {
+      wrapper: ({ children }) => <SWRConfig value={{ provider: () => new Map() }}>{children}</SWRConfig>,
+    });
+    await waitFor(() => expect(result.current.totalCount).toBe(100));
+    expect(fetchMock.mock.calls[0][0]).not.toContain('?');
+    expect(fetchMock.mock.calls[0][1].method).toBe('POST');
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ concept, includeTotal: 'true' });
+    await act(async () => { await result.current.fetchMore(); });
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({ concept, cursor: 'next', includeTotal: 'false' });
+    expect(result.current.questions.map(q => q.id)).toEqual(['a', 'b']);
+    expect(result.current.totalCount).toBe(100);
+  });
   it("requests 50 and appends one cursor page even with concurrent triggers", async () => {
     fetchMock
       .mockResolvedValueOnce(page("1", "cursor-1"))

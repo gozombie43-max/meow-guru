@@ -1,6 +1,10 @@
 **Single App Service deployment**
 
-The checked-in production workflow currently selects `QUIZ_ONLY_MODE=true` and `RUN_EMBEDDED_WORKERS=false`. The full-runtime B1 instructions below describe a separate intended configuration, not settings activated by the 2026-10-02 implementation. See [the current implementation evidence](../ARCHITECTURE_IMPLEMENTATION.md) and [canary rollout requirements](CANARY_RUNBOOK.md) before changing runtime settings.
+The checked-in production workflow selects `QUIZ_ONLY_MODE=true`, `RUN_EMBEDDED_WORKERS=false`, and `RUN_CONCEPT_GROUPING_WORKER=true`. Single and bulk question uploads refresh their question-derived metadata and queue AI grouping whenever the concept set changes. The API runs the dedicated grouping worker independently of other maintenance services. Deployment requires an AI key and verifies `dependencies.optionalServices.conceptGrouping == "healthy"` on `/health`.
+
+On Azure Free (F1), Always On is unavailable and the app can be unloaded after inactivity. The grouping queue and leases persist in MongoDB, so unfinished work resumes on the next startup. UI status polling keeps an active quiz page requesting updates. Continuous processing without traffic requires a plan supporting Always On or a separately supervised worker; do not silently upgrade the hosting plan. On a supported plan, enable Always On rather than deploying the current `--always-on false` setting.
+
+The full-runtime B1 instructions below describe a separate intended configuration. See [the current implementation evidence](../ARCHITECTURE_IMPLEMENTATION.md) and [canary rollout requirements](CANARY_RUNBOOK.md) before changing unrelated runtime settings.
 
 Live discovery on 2026-09-10 IST found a mismatch with the intended configuration below: the current deployment is F1 Free, Always On is false, `QUIZ_ONLY_MODE=true`, and `RUN_EMBEDDED_WORKERS=false`; migration 004 is not applied. Treat the following B1/full-runtime configuration as the intended baseline, not verified current state. See `../PRODUCTION_RELEASE_EVIDENCE.md` for actual checks and missing staging inputs.
 

@@ -7,10 +7,22 @@ const objectId = z.union([z.literal(''), z.string().regex(/^[a-fA-F0-9]{24}$/)])
 const flag = z.union([z.boolean(), z.string().max(5)]).optional().transform(value => value === true || value === 'true');
 const number = z.union([z.number(), z.string().max(20)]).optional();
 const filters = { topic: text, subject: text, chapter: text, concept: text, difficulty: text, quizName: text, questionType: text, exam: text };
+// A selection contains many full labels, rather than a single short label.
+const sessionSelection = z.union([
+  z.string().max(65536),
+  z.array(z.string().min(1).max(1000)).max(2000),
+]).optional();
+
+export function parseSessionSelection(value) {
+  const values = Array.isArray(value) ? value : value.startsWith('[') ? JSON.parse(value) : value.split(',');
+  const parsed = z.array(z.string().max(1000)).max(2000).safeParse(values);
+  if (!parsed.success) throw Object.assign(new Error('Invalid question query'), { statusCode: 400 });
+  return parsed.data.map(item => item.trim()).filter(Boolean);
+}
 const schemas = {
   legacy: z.object({ ...filters, offset: number, limit: number, search: text, sort: text, includeTotal: flag, includeFacets: flag }),
   cursor: z.object({ ...filters, cursor, limit: number, search: text, sort: text, before: flag, last: flag, includeTotal: flag, includeFacets: flag }),
-  session: z.object({ topic: text, subject: text, mode: text, letter: text, exam: text, concept: text, cursor: objectId, anchor: objectId, resumeIndex: number, windowOffset: number, limit: number, includeTotal: flag }),
+  session: z.object({ topic: text, subject: text, mode: text, letter: text, exam: sessionSelection, concept: sessionSelection, cursor: objectId, anchor: objectId, resumeIndex: number, windowOffset: number, limit: number, includeTotal: flag }),
   counts: z.object({ topic: text, subject: text }),
   metadata: z.object({ topic: text, subject: text, mode: text }),
 };
@@ -46,7 +58,11 @@ export function canonicalQuestionQuery(family, input, normalized = process.env.Q
     for (const field of ['letter', 'exam', 'concept']) {
       if (!query[field]) continue;
       if (field !== 'letter' && query[field] === 'all') { delete query[field]; continue; }
-      query[field] = [...new Set(query[field].split(',').map(value => field === 'letter' ? value.trim().toUpperCase() : value.trim()).filter(Boolean))].sort().join(',');
+      let values;
+      try { values = parseSessionSelection(query[field]); }
+      catch { throw Object.assign(new Error('Invalid question query'), { statusCode: 400 }); }
+      values = [...new Set(values.map(value => field === 'letter' ? value.toUpperCase() : value))].sort();
+      query[field] = values.some(value => value.includes(',') || value.startsWith('[')) ? JSON.stringify(values) : values.join(',');
     }
     if (query.windowOffset !== undefined) { query.windowOffset = Number(query.windowOffset); delete query.resumeIndex; }
     else if (query.resumeIndex !== undefined) query.resumeIndex = Number(query.resumeIndex);

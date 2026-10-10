@@ -1,5 +1,5 @@
 import { cachedQuestionPage } from './questionCache.js';
-import { canonicalQuestionQuery } from './questionQueryIdentity.js';
+import { canonicalQuestionQuery, parseSessionSelection } from './questionQueryIdentity.js';
 import { getQuestionsCollection } from "../../config/mongodb.js";
 import { isNormalizedQuestionKeysEnabled } from "./questionCache.js";
 import { normalizeSearchKey } from "./questionNormalizer.js";
@@ -55,14 +55,14 @@ async function buildfetchQuestionsSession(params) {
   }
 
   if (exam && exam !== "all") {
-    const examsArray = exam.split(',').map(e => e.trim()).filter(Boolean);
+    const examsArray = parseSessionSelection(exam);
     if (examsArray.length > 0) {
       conditions.push(useNormalizedKeys ? { exam: { $in: examsArray } } : { exam: { $in: examsArray.map(e => caseInsensitiveExact(e)) } });
     }
   }
 
   if (concept && concept !== "all") {
-    const conceptsArray = concept.split(',').map(c => c.trim()).filter(Boolean);
+    const conceptsArray = parseSessionSelection(concept);
     if (conceptsArray.length > 0) {
       conditions.push(useNormalizedKeys ? { concept: { $in: conceptsArray } } : { concept: { $in: conceptsArray.map(c => caseInsensitiveExact(c)) } });
     }
