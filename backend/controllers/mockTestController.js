@@ -121,7 +121,7 @@ export const adminDeleteSlot = async (req, res) => {
 export const adminFetchAllSlots = async (req, res) => {
   try {
     const examFilter = req.query.exam || null;
-    const slots = await fetchAllAdminSlots(examFilter);
+    const slots = await fetchAllAdminSlots(examFilter, req.query.examMode);
     res.json({ success: true, slots });
   } catch (err) {
     runtimeLog.error('Admin fetch all slots error:', err);
@@ -134,20 +134,20 @@ export const adminUploadPaper = async (req, res) => {
     const { slot, questions } = req.body;
     if (!slot) return res.status(400).json({ error: 'slot metadata is required' });
     if (!Array.isArray(questions) || questions.length === 0) return res.status(400).json({ error: 'questions array is required and must not be empty' });
-    const result = await uploadFullPaper({ slotData: slot, questions });
+    const result = await uploadFullPaper({ slotData: slot, questions, examMode: req.query.examMode });
     if (result.isNewSlot && result.type === "mock") {
       void notifyNewMockPublished({ id: result.slotId, examSlug: result.examSlug, title: result.title, tier: result.tier, type: result.type }).catch(runtimeLog.error);
     }
     res.status(201).json(result);
   } catch (err) {
     runtimeLog.error('Admin upload paper error:', err);
-    res.status(500).json({ error: err.message || 'Failed to upload mock test / PYQ paper' });
+    res.status(err.statusCode || 500).json({ error: err.message || 'Failed to upload mock test / PYQ paper' });
   }
 };
 
 export const adminSeedSlots = async (req, res) => {
   try {
-    const result = await seedDefaultSlots();
+    const result = await seedDefaultSlots(req.query.examMode);
     res.json({ success: true, ...result });
   } catch (err) {
     runtimeLog.error('Admin seed slots error:', err);

@@ -6,13 +6,14 @@ export async function POST(req: Request) {
     return Response.json({ error: "Authentication required" }, { status: 401 });
   }
   const formData = await req.formData();
+  const examMode = new URL(req.url).searchParams.get('examMode');
   const backendUrl =
     process.env.API_URL ||
     "http://localhost:10000";
 
   try {
     const res = await fetchWithRetry(
-      `${backendUrl}/api/upload/image-question`,
+      `${backendUrl}/api/upload/image-question${examMode ? `?examMode=${encodeURIComponent(examMode)}` : ''}`,
       {
         method: "POST",
         headers: {

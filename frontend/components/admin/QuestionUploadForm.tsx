@@ -4,7 +4,9 @@ import { questionWriteResponse } from "@/features/quiz/api/questionWrites";
 
 import { type ReactNode, useState, Fragment } from "react";
 import styles from "./AdminTool.module.css";
-import { QUIZ_TREE, SUBJECT_TOPICS } from "@/lib/quiz-constants";
+import { useExamMode } from '@/context/ExamModeContext';
+import { adminScopedUrl, adminTopicLabel, getAdminExamCatalog, prepareAdminQuestion } from '@/lib/admin-exam-mode';
+import { JAM_SUBJECT } from '@/lib/exam-mode';
 import "katex/dist/katex.min.css";
 import { InlineMath, BlockMath } from "react-katex";
 import { API_BASE } from "@/lib/api-base";
@@ -43,7 +45,9 @@ function renderMath(text: string) {
 }
 
 export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode }) {
-  const [form, setForm] = useState({ subject: "", tier: "", exam: "", chapter: "", concept: "", formula: "", trapType: "", tags: "", difficulty: "medium", question: "", options: ["", "", "", ""], correctIndex: "0", solution: "", quizSubject: "", quizTopic: "", quizName: "" });
+  const { mode, isJam } = useExamMode();
+  const { quizTree: QUIZ_TREE, chapters: SUBJECT_TOPICS } = getAdminExamCatalog(mode);
+  const [form, setForm] = useState({ subject: isJam ? JAM_SUBJECT : "", tier: "", exam: isJam ? "IIT JAM Physics" : "", chapter: "", concept: "", formula: "", trapType: "", tags: "", difficulty: "medium", question: "", options: ["", "", "", ""], correctIndex: "0", solution: "", quizSubject: isJam ? JAM_SUBJECT : "", quizTopic: "", quizName: "" });
   const [images, setImages] = useState<Images>({});
   const [imageUrls, setImageUrls] = useState<Partial<Record<ImageField, string>>>({});
   const [status, setStatus] = useState<{ text: string; error?: boolean } | null>(null);
@@ -66,7 +70,8 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
     setSaving(true); setStatus(null);
     try {
       const body = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
+      const payload = prepareAdminQuestion(form, mode, form.quizSubject, form.quizTopic);
+      Object.entries(payload).forEach(([key, value]) => {
         if (key !== "options" && key !== "question" && key !== "solution") {
            body.append(key, typeof value === "string" ? value : JSON.stringify(value));
         }
@@ -82,7 +87,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
       
       Object.entries(images).forEach(([key, file]) => file && body.append(key, file));
       
-      const response = await questionWriteResponse(`${API}/api/questions`, { method: "POST", headers: { Authorization: `Bearer ${adminToken}` }, body });
+      const response = await questionWriteResponse(adminScopedUrl(`${API}/api/questions`, mode), { method: "POST", headers: { Authorization: `Bearer ${adminToken}` }, body });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || `Upload failed (${response.status})`);
       setStatus({ text: `Question created successfully${data.question?.id ? `: #${data.question.id}` : ""}.` });
@@ -148,7 +153,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
         </section>
 
         {/* Study Mode Blueprint Prototype Notice */}
-        <section className={styles.macGroup} style={{ background: "var(--admin-success-soft)", borderColor: "var(--admin-success-border)" }}>
+        {!isJam && <section className={styles.macGroup} style={{ background: "var(--admin-success-soft)", borderColor: "var(--admin-success-border)" }}>
           <div className={styles.macGroupHeader} style={{ borderColor: "var(--admin-success-soft)" }}>
             <h2 className={styles.macGroupTitle} style={{ color: "var(--admin-success)" }}>📖 Study Mode Schema Blueprint</h2>
           </div>
@@ -166,7 +171,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
   "synonyms": [{ "word": "forsake", "translation": "ত্যাগ করা" }],
   "antonyms": [{ "word": "retain", "translation": "ধরে রাখা" }]
 }`}</pre>
-        </section>
+        </section>}
 
         {/* Question Statement */}
         <section className={styles.macGroup}>
@@ -246,14 +251,14 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
               Subject (Meta)
               <select value={form.subject} onChange={(e) => { change("subject", e.target.value); change("chapter", ""); }} className={styles.macSelect}>
                 <option value="">Select subject</option>
-                {Object.keys(SUBJECT_TOPICS).map(k => <option key={k} value={k}>{k}</option>)}
+                {Object.keys(SUBJECT_TOPICS).map(k => <option key={k} value={k}>{k === JAM_SUBJECT ? 'IIT JAM Physics' : k}</option>)}
               </select>
             </label>
             <label className={styles.fieldLabel}>
               Chapter
               <select value={form.chapter} onChange={(e) => change("chapter", e.target.value)} disabled={!form.subject} className={styles.macSelect}>
                 <option value="">Select chapter</option>
-                {availableChapters.map(c => <option key={c} value={c}>{c}</option>)}
+                {availableChapters.map(c => <option key={c} value={c}>{adminTopicLabel(c)}</option>)}
               </select>
             </label>
             <label className={styles.fieldLabel}>
@@ -262,7 +267,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
             </label>
             <label className={styles.fieldLabel}>
               Exam
-              <input value={form.exam} onChange={(e) => change("exam", e.target.value)} placeholder="e.g. SSC CGL" className={styles.macInput}  aria-label="e.g. SSC CGL"/>
+              <input value={form.exam} onChange={(e) => change("exam", e.target.value)} placeholder={isJam ? 'IIT JAM Physics' : 'e.g. SSC CGL'} className={styles.macInput} aria-label="Exam"/>
             </label>
             <label className={styles.fieldLabel}>
               Concept

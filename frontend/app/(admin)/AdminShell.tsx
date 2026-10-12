@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { useExamMode } from "@/context/ExamModeContext";
+import ExamModeSwitch from "@/components/ExamModeSwitch";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import styles from "./AdminShell.module.css";
@@ -43,6 +45,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAuth();
+  const { mode, isJam } = useExamMode();
   const isAdmin = user?.role === "admin" || user?.role === "superadmin";
 
   useEffect(() => {
@@ -67,7 +70,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
             <ChevronLeft size={22} strokeWidth={2.25} aria-hidden="true" />
             <span>{pathname === "/admincontrol" ? "App" : "Admin"}</span>
           </Link>
-          <h1>{title}</h1>
+          <h1><small className={styles.examLabel}>{isJam ? 'IIT JAM' : 'SSC'} Admin</small>{title}</h1>
           <span className={styles.status} aria-label="Secure admin workspace">
             <ShieldCheck size={17} aria-hidden="true" />
           </span>
@@ -89,10 +92,11 @@ export default function AdminShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
+        <div className={styles.modeBar}><ExamModeSwitch /><span>{isJam ? 'IIT JAM Physics question bank' : 'SSC question bank'}</span></div>
       </header>
 
       <div className={styles.scroller} id="admin-scroll-region">
-        <div className={styles.content}>{children}</div>
+        <div key={mode} className={styles.content}>{children}</div>
       </div>
     </div>
   );

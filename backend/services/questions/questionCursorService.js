@@ -1,4 +1,5 @@
 import { cachedQuestionPage } from './questionCache.js';
+import { questionExamModeCondition } from './questionExamMode.js';
 import { canonicalQuestionQuery } from './questionQueryIdentity.js';
 import { ObjectId } from 'mongodb';
 import { createHash } from 'node:crypto';
@@ -12,13 +13,13 @@ import { isNormalizedQuestionKeysEnabled } from './questionCache.js';
 async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
   const collection = getQuestionsCollection();
   const normalized = isNormalizedQuestionKeysEnabled();
-  const conditions = [];
+  const conditions = [questionExamModeCondition(params.examMode)];
   const sorted = params.sort === 'asc' || params.sort === 'desc';
   const reverse = params.before === 'true' || params.before === true || params.last === 'true' || params.last === true;
   if (reverse && !sorted) throw Object.assign(new Error('Reverse pagination requires an explicit sort'), { statusCode: 400 });
   const direction = (params.sort === 'desc' ? -1 : 1) * (reverse ? -1 : 1);
   const collation = { locale: 'en', numericOrdering: true, strength: 2 };
-  const fingerprint = createHash('sha256').update(JSON.stringify(['topic', 'subject', 'chapter', 'concept', 'difficulty', 'quizName', 'questionType', 'exam', 'search', 'sort'].map(key => params[key] || ''))).digest('hex').slice(0, 24);
+  const fingerprint = createHash('sha256').update(JSON.stringify(['topic', 'subject', 'chapter', 'concept', 'difficulty', 'quizName', 'questionType', 'exam', 'search', 'sort'].map(key => params[key] || '').concat(params.examMode ? [params.examMode] : []))).digest('hex').slice(0, 24);
   let boundary;
   if (params.cursor && (sorted || !/^[a-fA-F0-9]{24}$/.test(String(params.cursor)))) {
     try {
@@ -102,12 +103,12 @@ async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
   const hasPrevious = reverse ? moreInDirection : Boolean(params.cursor);
   const prevCursor = hasPrevious && first ? Buffer.from(JSON.stringify({ v: 1, f: fingerprint, _id: first._id.toString(), ...(sorted ? { id: first.id } : {}), fallback })).toString('base64url') : null;
   const result = { count: total ?? page.length, total, questions: page.map(({ _id, ...row }) => row), nextCursor: last ? nextCursor : null, prevCursor, hasMore: hasMore && Boolean(last) };
-  if (params.includeFacets === 'true') result.facets = await readQuestionFacets(params.subject);
+  if (params.includeFacets === 'true') result.facets = await readQuestionFacets(params.subject, params.examMode);
   return result;
 }
 
 export async function fetchQuestionCursorPage(params) {
   const query = canonicalQuestionQuery('cursor', params);
-  const legacyFingerprint = createHash('sha256').update(JSON.stringify(['topic', 'subject', 'chapter', 'concept', 'difficulty', 'quizName', 'questionType', 'exam', 'search', 'sort'].map(key => params[key] || ''))).digest('hex').slice(0, 24);
+  const legacyFingerprint = createHash('sha256').update(JSON.stringify(['topic', 'subject', 'chapter', 'concept', 'difficulty', 'quizName', 'questionType', 'exam', 'search', 'sort'].map(key => params[key] || '').concat(params.examMode ? [params.examMode] : []))).digest('hex').slice(0, 24);
   return cachedQuestionPage("fetchQuestionCursorPage", query, () => buildfetchQuestionCursorPage(query, legacyFingerprint));
 }

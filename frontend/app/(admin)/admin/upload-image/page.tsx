@@ -3,15 +3,18 @@ import styles from "@/components/admin/AdminTool.module.css";
 import { getAccessToken } from "@/shared/api/client";
 import { questionWriteResponse as fetchWithRetry } from "@/features/quiz/api/questionWrites";
 import { useEffect,useState } from "react";
+import { useExamMode } from '@/context/ExamModeContext';
+import { adminScopedUrl, getAdminExamCatalog } from '@/lib/admin-exam-mode';
+import { JAM_SUBJECT } from '@/lib/exam-mode';
 
 type Region = { x: number; y: number; w: number; h: number };
 
-function readDraft() {
+function readDraft(key: string) {
   if (typeof window === "undefined") {
     return { regions: {} as Record<string, Region>, correct: "a" };
   }
 
-  const saved = localStorage.getItem("image_mcq_draft");
+  const saved = localStorage.getItem(key);
   if (!saved) {
     return { regions: {} as Record<string, Region>, correct: "a" };
   }
@@ -28,7 +31,11 @@ function readDraft() {
 }
 
 export default function UploadImage() {
-  const draft = readDraft();
+  const { mode, isJam } = useExamMode();
+  const draftKey = `image_mcq_draft:${mode}`;
+  const draft = readDraft(draftKey);
+  const [topic, setTopic] = useState(isJam ? '' : 'visual_reasoning');
+  const topics = getAdminExamCatalog(mode).subjectTopics[JAM_SUBJECT] || [];
   const [image, setImage] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [regions, setRegions] = useState<Record<string, Region>>(draft.regions);
@@ -39,8 +46,8 @@ export default function UploadImage() {
 
   useEffect(() => {
     const data = { regions, correct };
-    localStorage.setItem("image_mcq_draft", JSON.stringify(data));
-  }, [regions, correct]);
+    localStorage.setItem(draftKey, JSON.stringify(data));
+  }, [draftKey, regions, correct]);
 
   const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -51,20 +58,22 @@ export default function UploadImage() {
 
   const handleUpload = async () => {
     if (!file) return alert("Select image");
+    if (!topic) return alert('Select an IIT JAM section');
     if (Object.keys(regions).length < 2) {
       return alert("Mark at least 2 options");
     }
 
     const formData = new FormData();
     formData.append("questionImage", file);
-    formData.append("topic", "visual_reasoning");
+    formData.append("topic", topic);
+    formData.append("subject", isJam ? JAM_SUBJECT : 'reasoning');
     formData.append("correctLetter", correct);
     formData.append("optionRegions", JSON.stringify(regions));
 
     const token = getAccessToken();
     if (!token) throw new Error("Your admin session has expired");
     const res = await fetchWithRetry(
-      "/api/upload-image",
+      adminScopedUrl('/api/upload-image', mode),
       {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -91,7 +100,7 @@ export default function UploadImage() {
     }
 
     console.log(data);
-    localStorage.removeItem("image_mcq_draft");
+    localStorage.removeItem(draftKey);
     setRegions({});
     setCorrect("a");
     alert("Uploaded");
@@ -123,6 +132,7 @@ export default function UploadImage() {
   return (
     <div className={styles.shell} style={{ padding: 0, maxWidth: "100%", margin: "0 auto" }}>
       <h2 className={styles.pageTitle}>Image Question Builder</h2>
+      {isJam && <label className={styles.fieldLabel}>IIT JAM section<select value={topic} onChange={event => setTopic(event.target.value)} className={styles.macSelect}><option value="">Select section</option>{topics.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>}
 
       <input className={styles.macInput} aria-label="Question image" type="file" accept="image/*" onChange={handleImage} />
 

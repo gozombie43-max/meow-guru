@@ -3,6 +3,8 @@ import { X } from "lucide-react";
 import RichContent from "@/components/RichContent";
 import type { Dispatch, SetStateAction } from "react";
 import { DIFFICULTIES, LETTERS, type Question } from "./admin-question-bank-model";
+import { useExamMode } from '@/context/ExamModeContext';
+import { getAdminExamCatalog } from '@/lib/admin-exam-mode';
 
 type QuestionEditorDialogProps = {
   formData: Omit<Question, "id">;
@@ -31,6 +33,9 @@ const labelStyle = {
 } as const;
 
 export function QuestionEditorDialog({ formData, isNew, onClose, onSave, setFormData }: QuestionEditorDialogProps) {
+  const { mode } = useExamMode();
+  const { subjectOptions, subjectTopics } = getAdminExamCatalog(mode);
+  const topics = subjectTopics[formData.subject] || [];
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
       <Dialog onClose={onClose} style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "100%", maxWidth: 640, maxHeight: "calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px)", overflowY: "auto", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }} role="dialog" aria-modal="true" aria-labelledby="question-editor-title">
@@ -40,7 +45,22 @@ export function QuestionEditorDialog({ formData, isNew, onClose, onSave, setForm
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 12 }}>
-          {(["topic", "subject", "chapter", "subtopic", "exam", "concept", "source"] as const).map((field) => (
+          <div>
+            <label htmlFor="question-subject" style={labelStyle}>Subject</label>
+            <select id="question-subject" value={formData.subject} onChange={event => setFormData({ ...formData, subject: event.target.value, topic: '' })} style={fieldStyle}>
+              <option value="">Select subject</option>
+              {subjectOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="question-topic" style={labelStyle}>Topic</label>
+            <select id="question-topic" value={formData.topic} disabled={!formData.subject} onChange={event => setFormData({ ...formData, topic: event.target.value })} style={fieldStyle}>
+              <option value="">Select topic</option>
+              {formData.topic && !topics.some(option => option.value === formData.topic) && <option value={formData.topic}>{formData.topic}</option>}
+              {topics.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </div>
+          {(["chapter", "subtopic", "exam", "concept", "source"] as const).map((field) => (
             <div key={field}>
               <label htmlFor={`question-${field}`} style={{ ...labelStyle, textTransform: "capitalize" }}>{field}</label>
               <input id={`question-${field}`} value={(formData as unknown as Record<string, string>)[field] || ""} onChange={(event) => setFormData({ ...formData, [field]: event.target.value })} style={fieldStyle} aria-label={field} />

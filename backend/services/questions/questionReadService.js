@@ -1,4 +1,5 @@
 import { resolveQuestion } from './questionIdentity.js';
+import { questionExamModeCondition } from './questionExamMode.js';
 import { canonicalQuestionQuery } from './questionQueryIdentity.js';
 import { createSingleFlight } from '../../infrastructure/singleFlight.js';
 import { fetchQuestionCursorPage } from "./questionCursorService.js";
@@ -117,6 +118,7 @@ export async function fetchQuestions(params) {
         quizName,
         questionType,
         exam: params.exam,
+        examMode: params.examMode,
         sort: params.sort,
         includeTotal: params.includeTotal === 'true' || params.includeTotal === true,
         offset: parsedOffset,
@@ -130,7 +132,7 @@ export async function fetchQuestions(params) {
     let resources;
 
     // ── Build MongoDB filter ─────────────────────────────
-    const conditions = [];
+    const conditions = [questionExamModeCondition(params.examMode)];
 
     if (subject && (!topic || normalizeSearchKey(subject) === 'iitjamphysics')) {
       const subKey = normalizeSearchKey(subject);
@@ -296,7 +298,7 @@ export async function fetchQuestions(params) {
     if (params.includeFacets === 'true') {
       // Compact filter choices, never full question documents. Keep choices stable
       // across pages so values outside the current page remain selectable.
-      result.facets = await readQuestionFacets(params.subject);
+      result.facets = await readQuestionFacets(params.subject, params.examMode);
     }
     if (cacheKey) questionsQueryCache.set(cacheKey, result, resources.length ? undefined : { ttl: 5000 });
     return result;
@@ -435,10 +437,10 @@ export async function analyzeAnswers(answers) {
   };
 }
 
-export async function fetchQuestionById(id, topic = undefined) {
+export async function fetchQuestionById(id, topic = undefined, examMode = undefined) {
   const collection = getQuestionsCollection();
 
-  const row = await resolveQuestion(collection, id, { topic });
+  const row = await resolveQuestion(collection, id, { topic, examMode });
   if (!row) return null;
   const { _id, ...question } = row;
 

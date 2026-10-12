@@ -1,4 +1,5 @@
 import { runtimeLog } from '../infrastructure/runtimeLog.js';
+import { assertQuestionExamMode } from '../services/questions/questionExamMode.js';
 import { createQuestion } from "../services/questions/questionWriteService.js";
 import sharp from "sharp";
 import pLimit from "p-limit";
@@ -117,6 +118,7 @@ export const uploadImageQuestion = async (req, res) => {
         ? chapter.trim()
         : normalizedTopic;
     const questionId = `${normalizedTopic}_${Date.now()}`;
+    assertQuestionExamMode({ subject, topic: normalizedTopic }, req.query.examMode);
 
     const compressed = await sharp(file.buffer)
       .resize({ width: 1400, withoutEnlargement: true })
@@ -173,7 +175,7 @@ export const uploadImageQuestion = async (req, res) => {
       createdAt: new Date().toISOString(),
     };
 
-    await createQuestion(doc);
+    await createQuestion(doc, { examMode: req.query.examMode });
 
     return res.status(201).json({
       success: true,
@@ -182,13 +184,15 @@ export const uploadImageQuestion = async (req, res) => {
     });
   } catch (err) {
     runtimeLog.error("uploadImageQuestion:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(err.statusCode || 500).json({ error: err.message });
   }
 };
 
 // POST /api/upload/bulk-image
 export const bulkUpload = async (req, res) => {
   try {
+    const routing = { subject: req.body.subject, topic: req.body.topic || 'visual_reasoning', quizName: req.body.quizName };
+    assertQuestionExamMode(routing, req.query.examMode);
     const files = Array.isArray(req.files) ? req.files : [];
     if (files.length === 0) {
       return res.status(400).json({
@@ -224,7 +228,7 @@ export const bulkUpload = async (req, res) => {
           const doc = {
             id,
             questionType: "image_mcq",
-            topic: "visual_reasoning",
+            ...routing,
             questionImage: imageUrl,
             questionImageWidth: dimensions.width,
             questionImageHeight: dimensions.height,
@@ -234,7 +238,7 @@ export const bulkUpload = async (req, res) => {
             createdAt: new Date().toISOString(),
           };
 
-          await createQuestion(doc);
+          await createQuestion(doc, { examMode: req.query.examMode });
           results.push({ id, imageUrl });
         })
       )
@@ -247,7 +251,7 @@ export const bulkUpload = async (req, res) => {
     });
   } catch (err) {
     runtimeLog.error("bulkUpload:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(err.statusCode || 500).json({ error: err.message });
   }
 };
 
@@ -280,6 +284,6 @@ export const uploadSolutionImage = async (req, res) => {
     return res.json({ url, key });
   } catch (err) {
     runtimeLog.error("uploadSolutionImage:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(err.statusCode || 500).json({ error: err.message });
   }
 };

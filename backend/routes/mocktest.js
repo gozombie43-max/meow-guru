@@ -2,6 +2,7 @@ import express from 'express';
 import { idempotency } from '../middleware/idempotency.js';
 import { protect } from '../middleware/protect.js';
 import adminAuth from '../middleware/auth.js';
+import { parseQuestionExamMode } from '../services/questions/questionExamMode.js';
 
 import {
   fetchExamSlots,
@@ -21,6 +22,17 @@ import {
 } from '../controllers/mockTestController.js';
 
 const router = express.Router();
+
+router.use('/admin', (req, res, next) => {
+  try {
+    const mode = parseQuestionExamMode(req.query.examMode);
+    if (mode && req.method !== 'GET' && req.path !== '/slots/seed') {
+      const slug = req.body?.slot?.examSlug || req.body?.examSlug || req.query.examSlug;
+      if (!slug || String(slug).startsWith('iit-jam') !== (mode === 'iit-jam')) return res.status(400).json({ error: 'Choose a mock paper from the current exam mode' });
+    }
+    next();
+  } catch (error) { res.status(error.statusCode || 400).json({ error: error.message }); }
+});
 
 // ─── Public Slot Routes ───────────────────────────────────
 

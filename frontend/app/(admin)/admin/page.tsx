@@ -9,15 +9,17 @@ import { ChevronLeft,ChevronRight,ChevronsLeft,ChevronsRight } from "lucide-reac
 import MassImageUpload from "../../../components/admin/MassImageUpload";
 import {
 DIFFICULTIES,
-SUBJECT_OPTIONS,
-SUBJECTS,
 type SubjectKey
 } from "./admin-question-bank-model";
 import { ConfirmDialog,ImagePreviewDialog,QuestionEditorDialog } from "./AdminQuestionDialogs";
 import BulkImageQuestionUpload from "./BulkImageQuestionUpload";
+import { useExamMode } from '@/context/ExamModeContext';
+import { adminTopicLabel, getAdminExamCatalog } from '@/lib/admin-exam-mode';
 
 
 export default function AdminPanel() {
+  const { mode, isJam } = useExamMode();
+  const { subjectOptions: SUBJECT_OPTIONS } = getAdminExamCatalog(mode);
   const { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor } = useAdminQuestionBank();
 
 
@@ -27,7 +29,7 @@ export default function AdminPanel() {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: "1.5rem" }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 500, margin: 0, color: "var(--color-text-primary)" }}>Question Bank Admin</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 500, margin: 0, color: "var(--color-text-primary)" }}>{isJam ? 'IIT JAM' : 'SSC'} Question Bank</h1>
           <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "4px 0 0" }}>
             {questions.length} of {totalCount} questions
             {selected.size > 0 && <span style={{ marginLeft: 8, color: "var(--admin-blue)", fontWeight: 500 }}>· {selected.size} selected</span>}
@@ -195,27 +197,27 @@ export default function AdminPanel() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))", gap: 10, marginBottom: "1rem" }}>
         <input type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off" placeholder="Search question, chapter, ID..." value={search} onChange={(e) => setSearch(e.target.value)}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}  aria-label="Search question, chapter, ID..."/>
-        <select value={filterSubject} onChange={(e) => setFilterSubject(e.target.value)}
+        <select aria-label="Filter by subject" value={filterSubject} onChange={(e) => setFilterSubject(e.target.value)}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
           <option value="">All subjects</option>
-          {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
+          {SUBJECT_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
-        <select value={filterTopic} onChange={(e) => setFilterTopic(e.target.value)}
+        <select aria-label="Filter by topic" value={filterTopic} onChange={(e) => setFilterTopic(e.target.value)}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
           <option value="">All topics</option>
-          {topics.map((t) => <option key={t} value={t}>{t}</option>)}
+          {topics.map((t) => <option key={t} value={t}>{adminTopicLabel(t)}</option>)}
         </select>
-        <select value={filterDifficulty} onChange={(e) => setFilterDifficulty(e.target.value)}
+        <select aria-label="Filter by difficulty" value={filterDifficulty} onChange={(e) => setFilterDifficulty(e.target.value)}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
           <option value="">All difficulties</option>
           {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
         </select>
-        <select value={filterExam} onChange={(e) => setFilterExam(e.target.value)}
+        <select aria-label="Filter by exam" value={filterExam} onChange={(e) => setFilterExam(e.target.value)}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
           <option value="">All exams</option>
           {exams.map((e) => <option key={e} value={e}>{e}</option>)}
         </select>
-        <select value={filterQuizName} onChange={(e) => setFilterQuizName(e.target.value)}
+        <select aria-label="Filter by quiz" value={filterQuizName} onChange={(e) => setFilterQuizName(e.target.value)}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
           <option value="">All quiz names</option>
           {quizNames.map((name) => <option key={name} value={name}>{name}</option>)}
@@ -275,7 +277,7 @@ export default function AdminPanel() {
                 </td>
                 <td data-label="ID" title={q.id} style={{ padding: "10px 14px", color: "var(--color-text-secondary)", fontFamily: "monospace", fontSize: 11 }}>{q.id}</td>
                 <td data-label="Topic" style={{ padding: "10px 14px" }}>
-                  <span style={{ background: "var(--admin-blue-soft)", color: "var(--admin-blue)", padding: "2px 8px", borderRadius: 6, fontSize: 12 }}>{q.topic}</span>
+                  <span style={{ background: "var(--admin-blue-soft)", color: "var(--admin-blue)", padding: "2px 8px", borderRadius: 6, fontSize: 12 }}>{adminTopicLabel(q.topic)}</span>
                 </td>
                 <td data-label="Chapter" style={{ padding: "10px 14px", color: "var(--color-text-secondary)", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{q.chapter}</td>
                 <td data-label="Difficulty" style={{ padding: "10px 14px" }}>
@@ -295,10 +297,10 @@ export default function AdminPanel() {
                 </td>
                 <td className={styles.mobileDetails} aria-label="Question details">
                   <details>
-                    <summary>Details<span>{q.topic || "Question metadata"}</span></summary>
+                    <summary>Details<span>{adminTopicLabel(q.topic) || "Question metadata"}</span></summary>
                     <dl>
                       <div><dt>ID</dt><dd>{q.id}</dd></div>
-                      <div><dt>Topic</dt><dd>{q.topic || "—"}</dd></div>
+                      <div><dt>Topic</dt><dd>{adminTopicLabel(q.topic) || "—"}</dd></div>
                       <div><dt>Chapter</dt><dd>{q.chapter || "—"}</dd></div>
                       <div><dt>Exam</dt><dd>{q.exam || "—"}</dd></div>
                     </dl>

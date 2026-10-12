@@ -1,6 +1,7 @@
 'use client';
 
 import ExamModeSwitch from '@/components/ExamModeSwitch';
+import { useModalSurface } from '@/components/ui/Dialog';
 import ExamHomeContent from '@/components/ExamHomeContent';
 import { useExamMode } from '@/context/ExamModeContext';
 import { JAM_SECTIONS, jamSectionHref } from '@/lib/exam-mode';
@@ -14,20 +15,17 @@ import { useAuth } from '@/context/AuthContext';
 import { useThemeMode } from '@/hooks/useTheme';
 import {
   BookOpen,
-  Crown,
   FileCheck2,
   Home as HomeIcon,
-  LayoutDashboard,
   Menu,
   Moon,
-  Play,
   Search,
   Sun,
-  Swords,
   UserRound,
   X,
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { desktopSubjects, recentQuizzesData } from './home-data';
@@ -35,14 +33,31 @@ import styles from './page.module.css';
 
 const railItems = [
   { label: 'Home', href: '/', icon: HomeIcon },
-  { label: 'Mock', href: '/mock-test', icon: FileCheck2 },
-  { label: 'Play', href: '/play', icon: Play },
-  { label: 'Battle Mode', href: '/battle', icon: Swords },
-  { label: 'All Books & Notes', href: '/resource', icon: BookOpen },
-  { label: 'Profile', href: '/profile', icon: UserRound },
+  { label: 'Mock Tests', href: '/mock-test', icon: FileCheck2 },
+  { label: 'Books & Notes', href: '/resource', icon: BookOpen },
   { label: 'AI Chat', href: '/ai-chat', icon: AiChatIcon },
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Profile', href: '/profile', icon: UserRound },
 ] as const;
+
+const adminContacts = [
+  { label: 'WhatsApp', href: 'https://wa.me/919064084753', icon: '/icons8-whatsapp.svg' },
+  { label: 'Instagram', href: 'https://www.instagram.com/guru__charan7/', icon: '/icons8-instagram-logo.svg' },
+  { label: 'Telegram', href: 'https://t.me/gurucharan123', icon: '/icons8-telegram-logo.svg' },
+] as const;
+
+function AdminContactCard() {
+  return <section className={styles.adminContactCard} aria-label="Contact Admin: Guru Charan Murmu">
+    <p className={styles.contactEyebrow}>Contact Admin</p>
+    <h2>Guru Charan Murmu</h2>
+    <p className={styles.contactDescription}>Questions or feedback? Let’s talk.</p>
+    <div className={styles.contactLinks}>
+      {adminContacts.map(contact => <a key={contact.label} href={contact.href} target="_blank" rel="noopener noreferrer" aria-label={`Contact Guru Charan Murmu on ${contact.label} (opens in a new tab)`}>
+        <Image src={contact.icon} alt="" width={28} height={28} />
+        <span>{contact.label}</span>
+      </a>)}
+    </div>
+  </section>;
+}
 
 function SkillLearnLogo() {
   return (
@@ -77,10 +92,21 @@ export default function HomeClient({
   const { user } = useAuth();
   const { theme, toggleThemeMode } = useThemeMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+  useModalSurface(sidebarRef, sidebarOpen, () => setSidebarOpen(false), { initialFocus: '[aria-label="Close sidebar"]' });
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const isDark = theme === 'dark';
+
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 1024px)');
+    const closeOnDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) setSidebarOpen(false);
+    };
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => desktop.removeEventListener('change', closeOnDesktop);
+  }, []);
 
   useEffect(() => {
     document.body.classList.add('home-redesign');
@@ -90,25 +116,6 @@ export default function HomeClient({
       document.documentElement.classList.remove('home-redesign');
     };
   }, []);
-
-  // Prevent background scrolling when mobile sidebar is open
-  useEffect(() => {
-    if (!sidebarOpen) return;
-
-    const prevBodyOverflow = document.body.style.overflow;
-    const prevHtmlOverflow = document.documentElement.style.overflow;
-    const prevTouchAction = document.body.style.touchAction;
-
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
-
-    return () => {
-      document.body.style.overflow = prevBodyOverflow;
-      document.documentElement.style.overflow = prevHtmlOverflow;
-      document.body.style.touchAction = prevTouchAction;
-    };
-  }, [sidebarOpen]);
 
   // Keyboard shortcut ⌘K / Ctrl+K for search & ESC to close
   useEffect(() => {
@@ -143,6 +150,7 @@ export default function HomeClient({
         onClick={() => setSidebarOpen(true)}
         aria-label="Open menu"
         aria-expanded={sidebarOpen}
+        aria-controls="home-navigation-drawer"
       >
         <Menu size={30} />
       </button>
@@ -188,19 +196,7 @@ export default function HomeClient({
               })}
             </nav>
 
-            {/* Go Premium Card */}
-            <div className={styles.premiumCard}>
-              <div className={styles.premiumHeader}>
-                <div className={styles.crownIcon}>
-                  <Crown size={16} strokeWidth={2.4} fill="currentColor" />
-                </div>
-                <h3>Go Premium</h3>
-              </div>
-              <p>Unlock all features and learn without limits.</p>
-              <Link data-ui-button="primary" href="/resource" className={styles.premiumButton}>
-                Upgrade Now
-              </Link>
-            </div>
+            <AdminContactCard />
           </aside>
 
           {/* Main Desktop Workspace */}
@@ -325,10 +321,13 @@ export default function HomeClient({
           onClick={() => setSidebarOpen(false)}
           onTouchMove={(e) => e.preventDefault()}
           aria-label="Close menu"
+          data-dialog-backdrop
+          tabIndex={-1}
+          aria-hidden={!sidebarOpen}
         />
 
         {/* Mobile Slide-out Sidebar */}
-        <aside className={`${styles.mobileSidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
+        <aside ref={sidebarRef} id="home-navigation-drawer" role="dialog" aria-modal={sidebarOpen || undefined} aria-label="Main menu" aria-hidden={!sidebarOpen} inert={!sidebarOpen} tabIndex={-1} className={`${styles.mobileSidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
           <div className={styles.mobileSidebarHeader}>
             <SkillLearnLogo />
             <button data-ui-button="state" data-ui-shape="icon"
@@ -341,23 +340,27 @@ export default function HomeClient({
             </button>
           </div>
 
-          <button data-ui-button="state"
-            type="button"
-            className={styles.sidebarThemeToggle}
-            onClick={toggleThemeMode}
-            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            aria-pressed={isDark}
-          >
-            <span className={styles.sidebarThemeIcon} aria-hidden="true">
-              {isDark ? <Moon size={16} /> : <Sun size={16} />}
-            </span>
-            <span>{isDark ? 'Dark mode' : 'Light mode'}</span>
-            <span className={styles.sidebarThemeSwitch} aria-hidden="true">
-              <span />
-            </span>
-          </button>
-          <ExamModeSwitch />
+          <section className={styles.sidebarPreferences} aria-label="Preferences">
+            <button data-ui-exam-switch="true"
+              type="button"
+              className={styles.sidebarThemeToggle}
+              onClick={toggleThemeMode}
+              aria-label="Dark mode"
+              role="switch"
+              aria-checked={isDark}
+            >
+              <span className={styles.sidebarThemeIcon} aria-hidden="true">
+                {isDark ? <Moon size={20} /> : <Sun size={20} />}
+              </span>
+              <span>Dark mode</span>
+              <span className={styles.sidebarThemeSwitch} aria-hidden="true">
+                <span />
+              </span>
+            </button>
+            <ExamModeSwitch />
+          </section>
           <nav className={styles.railNav} aria-label="Primary Mobile">
+            <p className={styles.sidebarSectionLabel}>Workspace</p>
             {railItems.map((item) => {
               const active = pathname === item.href;
               return (
@@ -375,16 +378,7 @@ export default function HomeClient({
             })}
           </nav>
 
-          <section className={styles.premium}>
-            <div className={styles.premiumHeader}>
-              <div className={styles.crownIcon}>
-                <Crown size={16} strokeWidth={2.4} fill="currentColor" />
-              </div>
-              <h2>Go Premium</h2>
-            </div>
-            <p>Unlock all features and learn without limits.</p>
-            <Link href="/resource" onClick={() => setSidebarOpen(false)}>Upgrade Now</Link>
-          </section>
+          <AdminContactCard />
         </aside>
 
         {/* Mobile Page Content */}

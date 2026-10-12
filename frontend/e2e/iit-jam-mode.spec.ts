@@ -40,6 +40,7 @@ for (const width of [320, 390, 1366]) for (const theme of ['dark', 'light']) {
       await expect(page.getByRole('button', { name: 'Close sidebar' })).not.toBeInViewport();
     }
     await expect(page.getByRole('heading', { name: /Big breakthroughs/ }).filter({ visible: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'View all', exact: true }).filter({ visible: true })).toHaveCount(0);
     await page.screenshot({ path: info.outputPath('jam-home.png'), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.reload();
@@ -59,8 +60,8 @@ for (const width of [320, 390, 1366]) for (const theme of ['dark', 'light']) {
 
     await expect(page.getByRole('heading', { name: 'Mathematical Methods', exact: true })).toBeVisible();
     await expect(page.getByText('Formula practice', { exact: true })).toBeVisible();
-    await page.goto('/subjects/iit-jam-physics');
-    await expect(page.getByText('Mathematical Methods', { exact: true }).first()).toBeVisible();
+    const removedOverview = await page.goto('/subjects/iit-jam-physics');
+    expect(removedOverview?.status()).toBe(404);
     await page.goto('/resource');
     await expect(page.getByText('Mathematical Methods', { exact: true }).first()).toBeVisible();
     await page.goto('/ai-chat');

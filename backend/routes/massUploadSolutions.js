@@ -374,7 +374,7 @@ router.post(
 
 
         const existing =
-          await findQuestionForSolution(questionId);
+          await findQuestionForSolution(questionId, req.query.examMode);
 
         if (!existing) {
           errors.push({
@@ -429,7 +429,7 @@ router.post(
         } =
           await uploadSolutionToB2(
             webpBuffer,
-            questionId
+            existing.questionUid || questionId
           );
 
 
@@ -439,7 +439,8 @@ router.post(
           questionId,
           url,
           key,
-          await sharp(webpBuffer).metadata().then(({ width, height }) => ({ solutionImageWidth: width, solutionImageHeight: height }))
+          await sharp(webpBuffer).metadata().then(({ width, height }) => ({ solutionImageWidth: width, solutionImageHeight: height })),
+          req.query.examMode
         );
 
 

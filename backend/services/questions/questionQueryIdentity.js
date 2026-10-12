@@ -6,7 +6,7 @@ const cursor = z.string().max(2048).optional();
 const objectId = z.union([z.literal(''), z.string().regex(/^[a-fA-F0-9]{24}$/)]).optional();
 const flag = z.union([z.boolean(), z.string().max(5)]).optional().transform(value => value === true || value === 'true');
 const number = z.union([z.number(), z.string().max(20)]).optional();
-const filters = { topic: text, subject: text, chapter: text, concept: text, difficulty: text, quizName: text, questionType: text, exam: text };
+const filters = { topic: text, subject: text, chapter: text, concept: text, difficulty: text, quizName: text, questionType: text, exam: text, examMode: z.enum(['ssc', 'iit-jam']).optional() };
 // A selection contains many full labels, rather than a single short label.
 const sessionSelection = z.union([
   z.string().max(65536),

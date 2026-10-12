@@ -10,11 +10,16 @@ import { API_BASE } from "@/lib/api-base";
 import { getAccessToken } from "@/shared/api/client";
 import { useCallback,useEffect,useRef,useState } from "react";
 import { useQuestionUploads } from "./useQuestionUploads";
+import { useExamMode } from '@/context/ExamModeContext';
+import { adminScopedUrl, getAdminExamCatalog, prepareAdminQuestion } from '@/lib/admin-exam-mode';
+import { JAM_SUBJECT } from '@/lib/exam-mode';
 
 const API = API_BASE;
 
 const getAdminToken = () => getAccessToken() || "";
 export function useAdminQuestionBank() {
+  const { mode, isJam } = useExamMode();
+  const scopedUrl = (url: string) => adminScopedUrl(url, mode);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [facets, setFacets] = useState<{ topics: string[]; exams: string[]; quizNames: string[] }>({ topics: [], exams: [], quizNames: [] });
@@ -27,7 +32,7 @@ export function useAdminQuestionBank() {
   // Filters
   const [search, setSearch] = useState("");
   const [filterTopic, setFilterTopic] = useState("");
-  const [filterSubject, setFilterSubject] = useState("");
+  const [filterSubject, setFilterSubject] = useState(isJam ? JAM_SUBJECT : "");
   const [filterDifficulty, setFilterDifficulty] = useState("");
   const [filterExam, setFilterExam] = useState("");
   const [filterQuizName, setFilterQuizName] = useState("");
@@ -46,7 +51,7 @@ export function useAdminQuestionBank() {
   const [page, setPage] = useState(1);
   const cursorsRef = useRef<{ filter: string; pages: Map<number, { cursor: string; before?: boolean }> }>({ filter: '', pages: new Map() });
   const PAGE_SIZE = 50;
-  const filterKey = JSON.stringify([filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName, search, sortOrder]);
+  const filterKey = JSON.stringify([mode, filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName, search, sortOrder]);
   const [previousFilterKey, setPreviousFilterKey] = useState(filterKey);
   if (previousFilterKey !== filterKey) {
     setPreviousFilterKey(filterKey);
@@ -72,7 +77,7 @@ export function useAdminQuestionBank() {
 
 
 
-  const topics = filterTopicsForSubject(facets.topics.filter(Boolean), filterSubject).slice().sort();
+  const topics = isJam ? getAdminExamCatalog(mode).subjectTopics[JAM_SUBJECT].map(topic => topic.value) : filterTopicsForSubject(facets.topics.filter(Boolean), filterSubject).slice().sort();
   const exams = facets.exams.filter(Boolean).slice().sort();
   const quizNames = facets.quizNames.filter(Boolean).slice().sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
   const fetchQuestions = useCallback(async () => {
@@ -84,6 +89,7 @@ export function useAdminQuestionBank() {
     setError("");
     try {
       const params = new URLSearchParams();
+      params.set('examMode', mode);
       if (filterTopic) params.set("topic", filterTopic);
       if (filterSubject) params.set("subject", filterSubject);
       if (filterDifficulty) params.set("difficulty", filterDifficulty);
@@ -133,7 +139,7 @@ export function useAdminQuestionBank() {
         setLoading(false);
       }
     }
-  }, [filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName, page, search, sortOrder, filterKey]);
+  }, [mode, filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName, page, search, sortOrder, filterKey]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => void fetchQuestions(), 200);
@@ -169,7 +175,7 @@ export function useAdminQuestionBank() {
       const { url } = await uploadRes.json(); // expects { url: "https://..." }
 
       // Step 2: patch the question's solution field with image markdown
-      const patchRes = await fetchWithRetry(`${API}/api/questions/${encodeURIComponent(questionId)}`, {
+      const patchRes = await fetchWithRetry(scopedUrl(`${API}/api/questions/${encodeURIComponent(questionId)}`), {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -230,7 +236,7 @@ export function useAdminQuestionBank() {
 
     try {
       // 1. Try fast batch bulk delete endpoint first
-      const res = await fetchWithRetry(`${API}/api/questions/bulk-delete`, {
+      const res = await fetchWithRetry(scopedUrl(`${API}/api/questions/bulk-delete`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -247,7 +253,7 @@ export function useAdminQuestionBank() {
         // 2. Fallback to concurrent chunked single deletes if bulk-delete endpoint is unavailable
         const results = await Promise.allSettled(
           idsToDelete.map((id) =>
-            fetchWithRetry(`${API}/api/questions/${encodeURIComponent(id)}`, {
+            fetchWithRetry(scopedUrl(`${API}/api/questions/${encodeURIComponent(id)}`), {
               method: "DELETE",
               headers: { Authorization: `Bearer ${secret}` },
             })
@@ -273,21 +279,29 @@ export function useAdminQuestionBank() {
   };
 
   // ── Single CRUD ───────────────────────────────────────
-  const openEdit = (q: Question) => { setEditing(q); setIsNew(false); setFormData({ ...q }); };
-  const openNew = () => { setEditing({ id: "" } as Question); setIsNew(true); setFormData({ ...EMPTY_Q }); };
+  const openEdit = (q: Question) => {
+    const key = (value: string) => {
+      const normalized = value.toLowerCase().replace(/[-_\s]/g, '');
+      return normalized === 'logicalreasoning' ? 'reasoning' : ['math', 'quant'].includes(normalized) ? 'mathematics' : normalized;
+    };
+    const subject = getAdminExamCatalog(mode).subjectOptions.find(option => key(option.value) === key(q.subject))?.value || q.subject;
+    setEditing(q); setIsNew(false); setFormData({ ...q, subject });
+  };
+  const openNew = () => { setEditing({ id: "" } as Question); setIsNew(true); setFormData({ ...EMPTY_Q, ...(isJam ? { subject: JAM_SUBJECT, exam: 'IIT JAM Physics' } : {}) }); };
   const closeModal = () => { setEditing(null); setIsNew(false); };
 
   const handleSave = async () => {
     try {
       const secret = getAdminToken();
+      const payload = prepareAdminQuestion(formData, mode, formData.subject, formData.topic);
       if (isNew) {
-        const res = await fetchWithRetry(`${API}/api/questions`, {
+        const res = await fetchWithRetry(scopedUrl(`${API}/api/questions`), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${secret}`,
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         });
         if (!res.ok) {
           let msg = `Server error ${res.status}`;
@@ -299,13 +313,13 @@ export function useAdminQuestionBank() {
         }
         showMsg("Question created ✓");
       } else {
-        const res = await fetchWithRetry(`${API}/api/questions/${editing!.id}`, {
+        const res = await fetchWithRetry(scopedUrl(`${API}/api/questions/${encodeURIComponent(editing!.id)}`), {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${secret}`,
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         });
         if (!res.ok) {
           let msg = `Server error ${res.status}`;
@@ -327,7 +341,7 @@ export function useAdminQuestionBank() {
   const handleDelete = async (id: string) => {
     try {
       const secret = getAdminToken();
-      const res = await fetchWithRetry(`${API}/api/questions/${encodeURIComponent(id)}`, {
+      const res = await fetchWithRetry(scopedUrl(`${API}/api/questions/${encodeURIComponent(id)}`), {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${secret}`,

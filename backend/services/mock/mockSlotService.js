@@ -1,3 +1,4 @@
+import { parseQuestionExamMode } from '../questions/questionExamMode.js';
 import { cleanMongoDoc, summarizeSlot } from './mockModel.js';
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
 
@@ -26,17 +27,20 @@ export async function fetchSlotsForExam(examSlug) {
 }
 
 export async function fetchAllAdminSlots(
-  examFilter = null
+  examFilter = null,
+  examMode = undefined
 ) {
+  const mode = parseQuestionExamMode(examMode);
+  const inMode = slot => !mode || String(slot.examSlug).startsWith('iit-jam') === (mode === 'iit-jam');
   try {
-    const filter = {};
+    const filter = mode ? { examSlug: mode === 'iit-jam' ? /^iit-jam/ : { $not: /^iit-jam/ } } : {};
 
     if (
       examFilter &&
       examFilter !== 'all'
     ) {
-      filter.examSlug =
-        examFilter;
+      if (mode && !inMode({ examSlug: examFilter })) return [];
+      filter.examSlug = examFilter;
     }
 
     const resources =
@@ -83,7 +87,7 @@ export async function fetchAllAdminSlots(
     }
 
     let filtered =
-      MOCK_TEST_SLOTS;
+      MOCK_TEST_SLOTS.filter(inMode);
 
     if (
       examFilter &&
@@ -117,7 +121,7 @@ export async function fetchAllAdminSlots(
     );
 
     let filtered =
-      MOCK_TEST_SLOTS;
+      MOCK_TEST_SLOTS.filter(inMode);
 
     if (
       examFilter &&
@@ -193,12 +197,14 @@ export async function fetchSlotById(
   }
 }
 
-export async function seedDefaultSlots() {
+export async function seedDefaultSlots(examMode = undefined) {
+  const mode = parseQuestionExamMode(examMode);
   const slots =
     getMockSlotsCollection();
   let createdCount = 0;
 
   for (const slot of MOCK_TEST_SLOTS) {
+    if (mode && String(slot.examSlug).startsWith('iit-jam') !== (mode === 'iit-jam')) continue;
     try {
       const now =
         new Date().toISOString();

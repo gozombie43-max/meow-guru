@@ -1,3 +1,4 @@
+import { scopedQuestionFilter } from '../services/questions/questionExamMode.js';
 import { resolveQuestion } from '../services/questions/questionIdentity.js';
 
 
@@ -30,12 +31,13 @@ export function mergeQuestionContent(
 export async function patchQuestionImage(
   questionId,
   questionImage,
-  questionImageKey
+  questionImageKey,
+  examMode = undefined
 ) {
   const questions =
     getQuestionsCollection();
 
-  const doc = await resolveQuestion(questions, questionId);
+  const doc = await resolveQuestion(questions, questionId, { examMode });
 
   if (!doc) {
     throw new Error(
@@ -50,9 +52,7 @@ export async function patchQuestionImage(
     );
 
   await questions.updateOne(
-    {
-      _id: doc._id,
-    },
+    scopedQuestionFilter({ _id: doc._id }, examMode),
     {
       $set: {
         questionImage,
@@ -101,13 +101,14 @@ export async function patchSolutionImage(
   questionId,
   solutionImage,
   solutionImageKey,
-  dimensions = {}
+  dimensions = {},
+  examMode = undefined
 ) {
   const questions =
     getQuestionsCollection();
 
   const doc =
-    await resolveQuestion(questions, questionId);
+    await resolveQuestion(questions, questionId, { examMode });
 
   if (!doc) {
     throw new Error(
@@ -122,9 +123,7 @@ export async function patchSolutionImage(
     );
 
   await questions.updateOne(
-    {
-      _id: doc._id,
-    },
+    scopedQuestionFilter({ _id: doc._id }, examMode),
     {
       $set: {
         ...dimensions,
@@ -147,4 +146,4 @@ export async function patchSolutionImage(
     solution,
   };
 }
-export const findQuestionForSolution = questionId => resolveQuestion(getQuestionsCollection(), questionId);
+export const findQuestionForSolution = (questionId, examMode) => resolveQuestion(getQuestionsCollection(), questionId, { examMode });

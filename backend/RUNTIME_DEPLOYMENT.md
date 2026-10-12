@@ -1,12 +1,12 @@
 **Single App Service deployment**
 
-The checked-in production workflow selects `QUIZ_ONLY_MODE=true`, `RUN_EMBEDDED_WORKERS=false`, and `RUN_CONCEPT_GROUPING_WORKER=true`. Single and bulk question uploads refresh their question-derived metadata and queue AI grouping whenever the concept set changes. The API runs the dedicated grouping worker independently of other maintenance services. Deployment requires an AI key and verifies `dependencies.optionalServices.conceptGrouping == "healthy"` on `/health`.
+The checked-in production workflow selects `QUIZ_ONLY_MODE=false`, `RUN_EMBEDDED_WORKERS=true`, and `RUN_CONCEPT_GROUPING_WORKER=true`, with Always On for the B1 plan. It verifies the full runtime, battle service, workers, and Socket.IO handshake after deployment. Single and bulk question uploads refresh their question-derived metadata and queue AI grouping whenever the concept set changes. Embedded maintenance owns concept grouping; the standalone grouping worker is a fallback. Deployment requires an AI key.
 
-On Azure Free (F1), Always On is unavailable and the app can be unloaded after inactivity. The grouping queue and leases persist in MongoDB, so unfinished work resumes on the next startup. UI status polling keeps an active quiz page requesting updates. Continuous processing without traffic requires a plan supporting Always On or a separately supervised worker; do not silently upgrade the hosting plan. On a supported plan, enable Always On rather than deploying the current `--always-on false` setting.
+The local `.env.example` also enables the full runtime. Existing `.env` files must set `QUIZ_ONLY_MODE=false` and `RUN_EMBEDDED_WORKERS=true`; restart `npm run dev` after changing them. Quiz-only mode deliberately omits Socket.IO and battle routes, so the battle page cannot connect even when HTTP quiz requests work.
 
-The full-runtime B1 instructions below describe a separate intended configuration. See [the current implementation evidence](../ARCHITECTURE_IMPLEMENTATION.md) and [canary rollout requirements](CANARY_RUNBOOK.md) before changing unrelated runtime settings.
+The full-runtime B1 instructions below match the production workflow. See [the current implementation evidence](../ARCHITECTURE_IMPLEMENTATION.md) and [canary rollout requirements](CANARY_RUNBOOK.md) before changing unrelated runtime settings.
 
-Live discovery on 2026-09-10 IST found a mismatch with the intended configuration below: the current deployment is F1 Free, Always On is false, `QUIZ_ONLY_MODE=true`, and `RUN_EMBEDDED_WORKERS=false`; migration 004 is not applied. Treat the following B1/full-runtime configuration as the intended baseline, not verified current state. See `../PRODUCTION_RELEASE_EVIDENCE.md` for actual checks and missing staging inputs.
+Historical discovery on 2026-09-10 IST recorded F1 Free, Always On disabled, and quiz-only mode. That snapshot predates the B1 switch and is not current runtime evidence. See `../PRODUCTION_RELEASE_EVIDENCE.md` for historical checks and missing staging inputs.
 
 The API default is HTTP and, when full runtime is enabled, Socket.IO. Embedded maintenance and attachment workers require explicit `RUN_EMBEDDED_WORKERS=true`. Independently supervised `worker` and `attachments` roles are available; each entry point rejects an incompatible `PROCESS_ROLE`. OCR/PDF extraction runs in bounded child processes.
 
@@ -16,7 +16,7 @@ The API default is HTTP and, when full runtime is enabled, Socket.IO. Embedded m
 | Maintenance worker | `PROCESS_ROLE=worker npm run start:worker` | Maintenance, scheduled notifications and battle relay |
 | Attachment worker | `PROCESS_ROLE=attachments npm run start:attachments` | Durable tutor extraction |
 
-For a deliberately combined full-runtime deployment, set `RUN_EMBEDDED_WORKERS=true`. The checked-in quiz-only workflow keeps it false. A quiz-only API starts an on-demand attachment worker only when this flag is explicitly true; otherwise an attachment role must process queued uploads.
+The combined full-runtime deployment sets `RUN_EMBEDDED_WORKERS=true`. A quiz-only API starts an on-demand attachment worker only when this flag is explicitly true; otherwise an attachment role must process queued uploads.
 
 When adopting dedicated workers, verify both worker roles are healthy before disabling existing embedded workers. The optional `Dockerfile.worker` remains available for that topology. Set Azure TTS and Translator keys on the backend; Next requires only `API_URL` and forwards requests to Express.
 

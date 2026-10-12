@@ -5,5 +5,5 @@ export default async function Page({ params }: { params: Promise<{ subject: stri
   const { subject, topic } = await params;
   const section = JAM_SECTIONS.find(item => item.slug === topic);
   if (subject !== JAM_SUBJECT || !section) notFound();
-  return <SubjectTopicPage subject={JAM_SUBJECT} title={section.title} slug={topic} questionTopic={jamQuestionTopic(topic)} routeBase={jamSectionHref(topic)} backHref={`/subjects/${JAM_SUBJECT}`} bannerHref="/resource" bannerSubtitle="IIT JAM Physics notes and revision" />;
+  return <SubjectTopicPage subject={JAM_SUBJECT} title={section.title} slug={topic} questionTopic={jamQuestionTopic(topic)} routeBase={jamSectionHref(topic)} backHref="/" bannerHref="/resource" bannerSubtitle="IIT JAM Physics notes and revision" />;
 }

@@ -1,14 +1,16 @@
 import { getQuestionsCollection } from '../../config/mongodb.js';
+import { questionExamModeCondition } from './questionExamMode.js';
 import { buildExcludeStudyModeCondition, caseInsensitiveExact } from './questionQueryBuilder.js';
 import { isNormalizedQuestionKeysEnabled, questionCountsCache, revisionedQuestionCacheKey } from './questionCache.js';
 import { normalizeSearchKey } from './questionNormalizer.js';
 
-export async function readQuestionFacets(subject) {
+export async function readQuestionFacets(subject, examMode) {
   const normalizedSubject = subject ? normalizeSearchKey(subject) : '';
-  const key = await revisionedQuestionCacheKey(`admin-question-facets:${normalizedSubject || 'all'}`);
+  const key = await revisionedQuestionCacheKey(`admin-question-facets:${examMode || 'all'}:${normalizedSubject || 'all'}`);
   let facets = questionCountsCache.get(key);
   if (!facets) {
     const matchConditions = [buildExcludeStudyModeCondition()];
+    if (examMode !== undefined) matchConditions.push(questionExamModeCondition(examMode));
     if (subject) {
       if (isNormalizedQuestionKeysEnabled()) {
         matchConditions.push({ subjectKey: normalizedSubject });

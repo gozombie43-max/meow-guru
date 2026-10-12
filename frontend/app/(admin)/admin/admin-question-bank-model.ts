@@ -1,3 +1,5 @@
+import { JAM_SECTIONS, jamQuestionTopic } from '@meow/contracts/jam';
+
 export type Question = {
   id: string;
   topic: string;
@@ -30,7 +32,7 @@ export const DIFFICULTIES = ["easy", "medium", "hard"];
 export const LETTERS = ["a", "b", "c", "d"];
 export const SUBJECTS = ["mathematics", "reasoning", "english", "general awareness"];
 
-export type SubjectKey = "mathematics" | "reasoning" | "english" | "general-awareness";
+export type SubjectKey = "mathematics" | "reasoning" | "english" | "general-awareness" | "iit-jam-physics";
 export type TopicOption = { value: string; label: string };
 export type BulkStats = { total: number; ready: number; errors: number };
 export type BulkImageItem = {
@@ -217,6 +219,7 @@ const GA_TOPICS = [
 ];
 
 export const SUBJECT_TOPIC_OPTIONS: Record<SubjectKey, TopicOption[]> = {
+  "iit-jam-physics": JAM_SECTIONS.map(section => ({ value: jamQuestionTopic(section.slug), label: section.title })),
   mathematics: MATH_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
   reasoning: REASONING_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
   english: ENGLISH_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
@@ -230,6 +233,7 @@ export const normalizeSubjectKey = (s: string) =>
   String(s || "").toLowerCase().replace(/[-_\s]/g, "");
 
 const ALL_SUBJECT_TOPICS: Record<string, string[]> = {
+  iitjamphysics: JAM_SECTIONS.map(section => jamQuestionTopic(section.slug)),
   mathematics: [...MATH_TOPICS, "mathematical-symbolic-operations"],
   reasoning: REASONING_TOPICS,
   english: ENGLISH_TOPICS,

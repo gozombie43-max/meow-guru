@@ -1,6 +1,7 @@
 import { validateEntry, stemOf, isImage, findImageInZip } from './../services/uploads/questionImageArchive.js';
-import { patchQuestionImage } from './../repositories/questionImageRepository.js';
+import { patchQuestionImage, findQuestionForSolution } from './../repositories/questionImageRepository.js';
 import { createQuestion } from "../services/questions/questionWriteService.js";
+import { assertQuestionExamMode } from '../services/questions/questionExamMode.js';
 // routes/massUploadImages.js
 
 import express from "express";
@@ -81,8 +82,8 @@ async function toWebP(buffer) {
 // MongoDB helpers
 // ───────────────────────────────────────────────────────
 
-async function saveQuestion(doc) {
-  await createQuestion(doc);
+async function saveQuestion(doc, examMode) {
+  await createQuestion(doc, { examMode });
 
   return doc;
 }
@@ -137,6 +138,9 @@ router.post(
             "subjectId, topicId, and quizId are required.",
         });
     }
+
+    try { assertQuestionExamMode({ subject: subjectId, topic: topicId }, req.query.examMode); }
+    catch (error) { return res.status(error.statusCode || 400).json({ error: error.message }); }
 
     // ── Parse ZIP ──────────────────────────────────────
 
@@ -299,6 +303,10 @@ router.post(
                * questionImageKey.
                */
               const doc = {
+                subject: subjectId,
+                topic: topicId,
+                quizSubject: subjectId,
+                quizTopic: topicId,
                 questionImageWidth: dimensions.width,
                 questionImageHeight: dimensions.height,
                 id:
@@ -348,7 +356,7 @@ router.post(
               };
 
               await saveQuestion(
-                doc
+                doc, req.query.examMode
               );
 
               results.push({
@@ -597,6 +605,8 @@ router.post(
             limit(
               async () => {
                 try {
+                  const existing = await findQuestionForSolution(questionId, req.query.examMode);
+                  if (!existing) throw new Error(`Question "${questionId}" not found in this exam mode`);
                   const imageFile =
                     findImageInZip(
                       zip,
@@ -630,13 +640,14 @@ router.post(
                   } =
                     await uploadQuestionImageToB2(
                       webpBuffer,
-                      questionId
+                      existing.questionUid || questionId
                     );
 
                   await patchQuestionImage(
                     questionId,
                     url,
-                    key
+                    key,
+                    req.query.examMode
                   );
 
                   results.push({

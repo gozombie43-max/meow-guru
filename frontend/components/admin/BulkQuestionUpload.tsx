@@ -5,7 +5,9 @@ import { questionWriteResponse } from "@/features/quiz/api/questionWrites";
 import { API_BASE } from "@/lib/api-base";
 import { getAccessToken } from "@/shared/api/client";
 import { getGeneralAwarenessTopicGroup } from "@/lib/general-awareness-topic-groups";
-import { QUIZ_TREE } from "@/lib/quiz-constants";
+import { useExamMode } from '@/context/ExamModeContext';
+import { adminScopedUrl, getAdminExamCatalog, prepareAdminQuestion } from '@/lib/admin-exam-mode';
+import { JAM_SUBJECT } from '@/lib/exam-mode';
 import { type ReactNode,useEffect,useMemo,useRef,useState } from "react";
 import styles from "./AdminTool.module.css";
 
@@ -59,9 +61,11 @@ function muGetDisplayText(q: RecordItem) {
 }
 
 export default function BulkQuestionUpload({}: { backLink?: ReactNode }) {
+  const { mode, isJam } = useExamMode();
+  const { quizTree: QUIZ_TREE } = getAdminExamCatalog(mode);
   const adminToken = () => getAccessToken() || "";
   const [fileName, setFileName] = useState("");
-  const [quiz, setQuiz] = useState({ subject: "", topic: "", chapter: "", name: "" });
+  const [quiz, setQuiz] = useState({ subject: isJam ? JAM_SUBJECT : "", topic: "", chapter: "", name: "" });
   const [rows, setRows] = useState<RowData[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [filters, setFilters] = useState({ subject: "", difficulty: "", status: "", chapter: "" });
@@ -115,7 +119,7 @@ export default function BulkQuestionUpload({}: { backLink?: ReactNode }) {
     if (!toCheck.length) return;
     addLog(`Checking ${toCheck.length} questions against the database...`, "info");
     try {
-      const res = await questionWriteResponse(`${API}/api/questions/check-duplicates`, {
+      const res = await questionWriteResponse(adminScopedUrl(`${API}/api/questions/check-duplicates`, mode), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -228,14 +232,15 @@ export default function BulkQuestionUpload({}: { backLink?: ReactNode }) {
 
     const selectedChapter = availableChapters.find(c => c.slug === quiz.chapter || c.title === quiz.chapter);
 
-    const toUpload = toUploadRaw.map(({ _idx, _status, _issue, _existingText, _incomingText, ...clean }) => {
+    let toUpload: RecordItem[];
+    try { toUpload = toUploadRaw.map(({ _idx, _status, _issue, _existingText, _incomingText, ...clean }) => {
       const itemChapter = clean.chapter || clean.quizChapter;
       const matchedChapter = selectedChapter || (isGeneralAwareness && itemChapter ? availableChapters.find(c => c.slug === itemChapter || c.title.toLowerCase() === String(itemChapter).toLowerCase()) : null);
 
       return {
-        ...clean,
+        ...prepareAdminQuestion(clean, mode, quiz.subject, matchedChapter ? matchedChapter.title : (isJam ? quiz.topic : String(clean.quizTopic || quiz.topic))),
         quizSubject: quiz.subject,
-        quizTopic: matchedChapter ? matchedChapter.title : (clean.quizTopic || quiz.topic),
+        quizTopic: matchedChapter ? matchedChapter.title : (isJam ? quiz.topic : (clean.quizTopic || quiz.topic)),
         quizName: quiz.name,
         ...(matchedChapter ? {
           chapter: matchedChapter.title,
@@ -244,7 +249,7 @@ export default function BulkQuestionUpload({}: { backLink?: ReactNode }) {
           topicGroup: quiz.topic,
         } : (isGeneralAwareness ? { topicGroup: quiz.topic } : {})),
       };
-    });
+    }); } catch (error) { addLog(error instanceof Error ? error.message : 'Invalid exam mode', 'err'); return; }
 
     if (!toUpload.length) return alert("No valid rows selected for deployment.");
 
@@ -259,7 +264,7 @@ export default function BulkQuestionUpload({}: { backLink?: ReactNode }) {
       const batch = toUpload.slice(i, i + BATCH);
       const batchNum = Math.floor(i / BATCH) + 1;
       try {
-        const res = await questionWriteResponse(`${API}/api/questions/bulk`, {
+        const res = await questionWriteResponse(adminScopedUrl(`${API}/api/questions/bulk`, mode), {
           method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken()}` },
           body: JSON.stringify(batch)
         });
@@ -412,10 +417,7 @@ export default function BulkQuestionUpload({}: { backLink?: ReactNode }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginBottom: 12 }}>
             <select value={filters.subject} onChange={e => setFilters(old => ({ ...old, subject: e.target.value }))} className={styles.macSelect} style={{ width: "auto" }}>
               <option value="">All Subjects</option>
-              <option value="math">Mathematics</option>
-              <option value="reasoning">Reasoning</option>
-              <option value="english">English</option>
-              <option value="general-awareness">General Awareness</option>
+              {Object.entries(QUIZ_TREE).map(([value, subject]) => <option key={value} value={value}>{subject.label}</option>)}
             </select>
             {isGeneralAwareness && availableChapters.length > 0 && (
               <select

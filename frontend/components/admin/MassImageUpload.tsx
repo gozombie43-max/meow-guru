@@ -4,6 +4,8 @@ import { questionWriteResponse as fetchWithRetry } from "@/features/quiz/api/que
 import styles from "./AdminTool.module.css";
 import { API_BASE } from "@/lib/api-base";
 
+import { useExamMode } from '@/context/ExamModeContext';
+import { adminScopedUrl } from '@/lib/admin-exam-mode';
 const API = API_BASE;
 
 type Props = {
@@ -31,6 +33,7 @@ type UploadResponse = {
 };
 
 export default function MassImageUpload({}: Props) {
+  const { mode: examMode } = useExamMode();
   const [zipFile, setZipFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [response, setResponse] = useState<UploadResponse | null>(null);
@@ -67,7 +70,7 @@ export default function MassImageUpload({}: Props) {
       const formData = new FormData();
       formData.append("zipFile", zipFile);
 
-      const res = await fetchWithRetry(`${API}/api/mass-upload-question-images`, {
+      const res = await fetchWithRetry(adminScopedUrl(`${API}/api/mass-upload-question-images`, examMode), {
         method: "POST",
         body: formData,
       }, {

@@ -3,8 +3,6 @@ import {
   DEFAULT_QUIZ_OPTIONS,
   MAX_BULK_IMAGES,
   QUIZ_OPTIONS_BY_TOPIC,
-  SUBJECT_OPTIONS,
-  SUBJECT_TOPIC_OPTIONS,
   type BulkImageItem,
   type BulkStats,
   type SubjectKey
@@ -13,13 +11,18 @@ import { questionWriteResponse as fetchWithRetry } from "@/features/quiz/api/que
 import { API_BASE } from "@/lib/api-base";
 import { getAccessToken } from "@/shared/api/client";
 import { useRef,useState,type ChangeEvent } from "react";
+import { useExamMode } from '@/context/ExamModeContext';
+import { adminScopedUrl, getAdminExamCatalog, prepareAdminQuestion } from '@/lib/admin-exam-mode';
+import { JAM_SUBJECT } from '@/lib/exam-mode';
 
 const API = API_BASE;
 
 const getAdminToken = () => getAccessToken() || "";
 export function useQuestionUploads(showMsg: (message: string, isError?: boolean) => void) {
+  const { mode, isJam } = useExamMode();
+  const { subjectOptions: SUBJECT_OPTIONS, subjectTopics: SUBJECT_TOPIC_OPTIONS, quizOptions: modeQuizzes } = getAdminExamCatalog(mode);
   // Mass upload
-  const [muSubject, setMuSubject] = useState<SubjectKey | "">("");
+  const [muSubject, setMuSubject] = useState<SubjectKey | "">(isJam ? JAM_SUBJECT : "");
   const [muTopic, setMuTopic] = useState("");
   const [muQuiz, setMuQuiz] = useState("");
   const [muFileName, setMuFileName] = useState("");
@@ -42,7 +45,7 @@ export function useQuestionUploads(showMsg: (message: string, isError?: boolean)
   const selectedSubjectName = SUBJECT_OPTIONS.find((s) => s.value === muSubject)?.label || "";
   const selectedTopicName = muTopicOptions.find((t) => t.value === muTopic)?.label || "";
   const selectedQuizName = muQuiz || "";
-  const quizOptions = QUIZ_OPTIONS_BY_TOPIC[muTopic] ?? DEFAULT_QUIZ_OPTIONS;
+  const quizOptions = modeQuizzes ?? QUIZ_OPTIONS_BY_TOPIC[muTopic] ?? DEFAULT_QUIZ_OPTIONS;
 
   const parseBulkFile = async (file: File) => {
     const text = await file.text();
@@ -133,14 +136,12 @@ export function useQuestionUploads(showMsg: (message: string, isError?: boolean)
     setMuUploading(true);
     try {
       const payload = muQuestions.map((q) => ({
-        ...q,
-        quizSubject: muSubject,
-        quizTopic: muTopic,
+        ...prepareAdminQuestion(q, mode, muSubject, muTopic),
         quizName: muQuiz,
       }));
 
       const secret = getAdminToken();
-      const res = await fetchWithRetry(muApiUrl, {
+      const res = await fetchWithRetry(adminScopedUrl(muApiUrl, mode), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -210,6 +211,7 @@ export function useQuestionUploads(showMsg: (message: string, isError?: boolean)
   };
 
   const handleBulkImageUpload = async () => {
+    if (!muSubject || !muTopic) { setBulkImageNotice('Select a subject and topic before uploading images.'); return; }
     if (!bulkImages.length) {
       setBulkImageNotice("Select images before uploading.");
       return;
@@ -220,9 +222,12 @@ export function useQuestionUploads(showMsg: (message: string, isError?: boolean)
     try {
       const secret = getAdminToken();
       const formData = new FormData();
+      formData.set('subject', muSubject);
+      formData.set('topic', muTopic);
+      formData.set('quizName', muQuiz);
       bulkImages.forEach((item) => formData.append("images", item.file));
 
-      const res = await fetchWithRetry(`${API}/api/upload/bulk-image`, {
+      const res = await fetchWithRetry(adminScopedUrl(`${API}/api/upload/bulk-image`, mode), {
         method: "POST",
         headers: { Authorization: `Bearer ${secret}` },
         body: formData,

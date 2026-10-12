@@ -8,7 +8,7 @@
   --color-background-secondary: var(--admin-surface-muted);
   --color-background-danger: var(--admin-danger-soft);
   --color-text-danger: var(--admin-danger);
-  --app-header-height: 105px;
+  --app-header-height: 153px;
   --admin-bg: var(--light-canvas);
   --admin-surface: rgba(255, 255, 255, 0.88);
   --admin-surface-solid: var(--light-surface);
@@ -113,6 +113,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.examLabel { display: block; margin-bottom: 2px; color: var(--admin-blue); font-size: 10px; font-weight: 600; letter-spacing: .8px; }
+.modeBar { display: flex; align-items: center; justify-content: center; gap: 18px; height: 48px; max-width: 900px; margin: auto; }
+.modeBar > button { width: auto !important; min-height: 44px !important; margin: 0; padding: 4px 0 !important; gap: 9px !important; font-size: 13px !important; color: var(--admin-text); }
+.modeBar > span { color: var(--admin-text-secondary); font-size: 12px; }
+@media (max-width: 480px) { .modeBar > span { display: none; } }
+
 .back span {
   margin-left: -2px;
 }
@@ -214,7 +220,7 @@
 }
 
 @media (min-width: 768px) {
-  .shell { --app-header-height: 111px; }
+  .shell { --app-header-height: 159px; }
   .header {
     padding-bottom: 10px;
   }

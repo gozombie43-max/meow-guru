@@ -1,4 +1,5 @@
 import { JAM_SECTIONS, jamQuestionTopic } from '@meow/contracts/jam';
+import { assertQuestionSourceMode } from '../questions/questionExamMode.js';
 import { assignQuestionIdentity, resolveQuestion } from '../questions/questionIdentity.js';
 import { battleQuestionMetadata } from '../questions/battleQuestionMetadata.js';
 import { fetchSlotById } from './mockSlotService.js';
@@ -12,13 +13,14 @@ import { validateQuestions, validateConfidentialUpload, invalidPaper } from '../
 import { getExamConfig } from '../../config/exam-config.js';
 import { getQuestionsCollection, getMockSlotsCollection } from '../../config/mongodb.js';
 
-export async function uploadFullPaper({ slotData, questions }) {
+export async function uploadFullPaper({ slotData, questions, examMode }) {
   if (!slotData || !slotData.id || !slotData.examSlug || !slotData.configKey || !slotData.title) {
     throw new Error('Missing slot metadata (id, examSlug, configKey, title)');
   }
   if (!Array.isArray(questions) || questions.length === 0) {
     throw new Error('Questions array cannot be empty');
   }
+  if (examMode) questions.forEach(question => assertQuestionSourceMode(question, examMode));
 
   const slotCollection =
     getMockSlotsCollection();
@@ -54,7 +56,8 @@ export async function uploadFullPaper({ slotData, questions }) {
   const isJam = String(slotData.examSlug).startsWith('iit-jam-physics');
   const normalizedQuestions = questions.map((q, idx) => {
     const rawTopic = String(q.topic || 'general');
-    const jamSection = JAM_SECTIONS.find(s => s.slug === rawTopic || s.title.toLowerCase() === rawTopic.toLowerCase() || jamQuestionTopic(s.slug) === rawTopic);
+    const jamSection = JAM_SECTIONS.find(s => s.slug === rawTopic || s.title.toLowerCase() === rawTopic.toLowerCase() || jamQuestionTopic(s.slug) === rawTopic || s.topics.some(topic => topic.toLowerCase() === rawTopic.toLowerCase()) || (!q.topic && slotData.examSlug === `iit-jam-physics-${s.slug}`));
+    if (examMode === 'iit-jam' && String(q.questionType || 'MCQ').toUpperCase() === 'MCQ' && !jamSection) throw invalidPaper('Assign each JAM MCQ to one of the seven Physics sections');
     const topic = isJam ? jamQuestionTopic(jamSection?.slug || rawTopic.replace(/^iit-jam-/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-')) : rawTopic;
     const qId = q.id ? String(q.id).trim() : `${slotData.id}_q${idx + 1}`;
     const options = Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []);
@@ -86,7 +89,7 @@ export async function uploadFullPaper({ slotData, questions }) {
   });
 
   for (const question of normalizedQuestions) {
-    const existing = slotData.assessmentMode === 'confidential' ? null : await resolveQuestion(questionsCollection, question.id, { topic: question.topic });
+    const existing = slotData.assessmentMode === 'confidential' ? null : await resolveQuestion(questionsCollection, question.id, { topic: question.topic, examMode });
     const identity = existing?.questionUid || assignQuestionIdentity({ ingestionKey: `mock:${slotData.examSlug}:${slotData.id}:${question.id}` }).questionUid;
     question.questionUid = identity;
   }

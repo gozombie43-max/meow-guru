@@ -1,4 +1,5 @@
 import { battleQuestionMetadata } from './battleQuestionMetadata.js';
+import { assertQuestionExamMode, parseQuestionExamMode, scopedQuestionFilter } from './questionExamMode.js';
 import { assignQuestionIdentity, resolveQuestion } from './questionIdentity.js';
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
 import crypto from "crypto";
@@ -10,7 +11,8 @@ import { normalizedQuestionKeys } from "./questionNormalizer.js";
 import { trainingQuestionMetadata } from '../training/domain/questionMetadata.js';
 import { normalizeLocalizedQuestion } from "./questionLocalization.js";
 
-export async function createQuestion(newQuestion) {
+export async function createQuestion(newQuestion, { examMode } = {}) {
+  assertQuestionExamMode(newQuestion, examMode);
   const collection = getQuestionsCollection();
   const normalizedInput = normalizeLocalizedQuestion(newQuestion);
   const item = assignQuestionIdentity({ ...normalizedInput, questionUid: undefined });
@@ -32,7 +34,10 @@ export async function createQuestion(newQuestion) {
   return resource;
 }
 
-export async function createQuestionsBulk(questionsData, { importId } = {}) {
+export async function createQuestionsBulk(questionsData, { importId, examMode } = {}) {
+  // Validate the entire batch before writing any rows to prevent mixed-bank imports.
+  parseQuestionExamMode(examMode);
+  if (examMode) questionsData.forEach(question => assertQuestionExamMode(question, examMode));
   const collection = getQuestionsCollection();
   const invalid = new Set();
 
@@ -123,13 +128,14 @@ export async function createQuestionsBulk(questionsData, { importId } = {}) {
   }
 }
 
-export async function modifyQuestion(id, updates, topic = undefined) {
+export async function modifyQuestion(id, updates, topic = undefined, examMode = undefined) {
   const collection = getQuestionsCollection();
-  const existing = await resolveQuestion(collection, id, { topic });
+  const existing = await resolveQuestion(collection, id, { topic, examMode });
   if (!existing) return null;
 
   const normalizedUpdates = normalizeLocalizedQuestion(updates);
   const updated = { ...existing, ...normalizedUpdates, id: existing.id, questionUid: existing.questionUid };
+  assertQuestionExamMode(updated, examMode);
   delete updated._id;
 
   if (!updated.topic) {
@@ -138,7 +144,7 @@ export async function modifyQuestion(id, updates, topic = undefined) {
   }
 
   Object.assign(updated, normalizedQuestionKeys(updated), trainingQuestionMetadata(updated), battleQuestionMetadata(updated));
-  await collection.updateOne({ _id: existing._id }, { $set: updated });
+  await collection.updateOne(scopedQuestionFilter({ _id: existing._id }, examMode), { $set: updated });
   questionsQueryCache.clear();
   questionCountsCache.clear();
   await invalidateQuestionMetadata();
@@ -146,11 +152,11 @@ export async function modifyQuestion(id, updates, topic = undefined) {
   return updated;
 }
 
-export async function removeQuestion(id, topic = undefined) {
+export async function removeQuestion(id, topic = undefined, examMode = undefined) {
   const collection = getQuestionsCollection();
-  const existing = await resolveQuestion(collection, id, { topic });
+  const existing = await resolveQuestion(collection, id, { topic, examMode });
   if (!existing) return false;
-  const result = await collection.deleteOne({ _id: existing._id });
+  const result = await collection.deleteOne(scopedQuestionFilter({ _id: existing._id }, examMode));
 
   questionsQueryCache.clear();
   questionCountsCache.clear();
@@ -158,7 +164,8 @@ export async function removeQuestion(id, topic = undefined) {
   return result.deletedCount > 0;
 }
 
-export async function removeQuestionsBulk(ids) {
+export async function removeQuestionsBulk(ids, examMode = undefined) {
+  parseQuestionExamMode(examMode);
   const collection = getQuestionsCollection();
 
   if (!Array.isArray(ids) || ids.length === 0) {
@@ -176,10 +183,10 @@ export async function removeQuestionsBulk(ids) {
   try {
     const resolved = [];
     for (const id of uniqueIds) {
-      const question = await resolveQuestion(collection, id);
+      const question = await resolveQuestion(collection, id, { examMode });
       if (question) resolved.push(question._id);
     }
-    const result = await collection.deleteMany({ _id: { $in: resolved } });
+    const result = await collection.deleteMany(scopedQuestionFilter({ _id: { $in: resolved } }, examMode));
     questionsQueryCache.clear();
     questionCountsCache.clear();
     await invalidateQuestionMetadata();
@@ -201,7 +208,8 @@ export async function removeQuestionsBulk(ids) {
   }
 }
 
-export async function checkDuplicates(questions) {
+export async function checkDuplicates(questions, examMode = undefined) {
+  parseQuestionExamMode(examMode);
   const collection = getQuestionsCollection();
 
   const ids = questions
@@ -224,7 +232,7 @@ export async function checkDuplicates(questions) {
 
   if (uniqueIds.length > 0) {
     const existingById = await collection
-      .find({ id: { $in: uniqueIds } })
+      .find(scopedQuestionFilter({ id: { $in: uniqueIds } }, examMode))
       .project({
         _id: 0,
         id: 1,
@@ -244,9 +252,9 @@ export async function checkDuplicates(questions) {
   for (let i = 0; i < uniqueTexts.length; i += textBatchSize) {
     const batch = uniqueTexts.slice(i, i + textBatchSize);
     const existingByText = await collection
-      .find({
+      .find(scopedQuestionFilter({
         $or: [{ question: { $in: batch } }, { questionText: { $in: batch } }],
-      })
+      }, examMode))
       .project({
         _id: 0,
         id: 1,

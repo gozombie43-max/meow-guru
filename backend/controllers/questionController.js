@@ -31,7 +31,7 @@ const addQuestion = async (req, res) => {
       options: optionsBody, correctAnswer: correctAnswerBody,
       correctIndex, solution: solutionBody, solutionText,
       quizSubject, quizTopic, quizName,
-      word, letter, exam, correctLetter,
+      word, letter, exam, correctLetter, topic,
     } = req.body;
 
     const normalizedQuizSubject = String(quizSubject || "").trim();
@@ -39,7 +39,7 @@ const addQuestion = async (req, res) => {
     const normalizedQuizName = String(quizName || "").trim();
     const normalizedSubject = String(subject || normalizedQuizSubject || "").trim();
     const normalizedChapter = String(chapter || normalizedQuizTopic || "").trim();
-    const normalizedTopic = String(normalizedQuizTopic || chapter || subject || normalizedQuizSubject || "").trim();
+    const normalizedTopic = String(normalizedQuizTopic || topic || chapter || subject || normalizedQuizSubject || "").trim();
 
     if (/study\s*mode/i.test(normalizedQuizName)) {
       return res.status(400).json({
@@ -125,7 +125,7 @@ const addQuestion = async (req, res) => {
       createdAt:   new Date().toISOString(),
     };
 
-    const resource = await questionService.createQuestion(newQuestion);
+    const resource = await questionService.createQuestion(newQuestion, { examMode: req.query.examMode });
     res.status(201).json({ message: 'Question added ✅', question: resource });
 
   } catch (err) {
@@ -192,7 +192,8 @@ const getQuestionById = async (req, res) => {
     const question =
       await questionService.fetchQuestionById(
         req.params.id,
-        req.query.topic
+        req.query.topic,
+        req.query.examMode
       );
     if (!question) return res.status(404).json({ error: 'Not found' });
     res.set("Cache-Control", "no-store, max-age=0");
@@ -205,7 +206,7 @@ const getQuestionById = async (req, res) => {
 // ── PUT /api/questions/:id ─────────────────────────────
 const updateQuestion = async (req, res) => {
   try {
-    const updated = await questionService.modifyQuestion(req.params.id, req.body, req.query.topic);
+    const updated = await questionService.modifyQuestion(req.params.id, req.body, req.query.topic, req.query.examMode);
     if (!updated) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Updated ✅', question: updated });
   } catch (err) {
@@ -216,7 +217,7 @@ const updateQuestion = async (req, res) => {
 // ── DELETE /api/questions/:id ──────────────────────────
 const deleteQuestion = async (req, res) => {
   try {
-    const success = await questionService.removeQuestion(req.params.id, req.query.topic);
+    const success = await questionService.removeQuestion(req.params.id, req.query.topic, req.query.examMode);
     if (!success) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Deleted ✅' });
   } catch (err) {
@@ -234,7 +235,7 @@ const bulkCreateQuestions = async (req, res) => {
 
     const importId = req.get('Idempotency-Key');
     if (importId && !/^[a-zA-Z0-9_-]{8,100}$/.test(importId)) return res.status(400).json({ error: 'Invalid Idempotency-Key' });
-    const results = await questionService.createQuestionsBulk(questions, { importId });
+    const results = await questionService.createQuestionsBulk(questions, { importId, examMode: req.query.examMode });
     
     const inserted = results.filter((r) => r.status === 'fulfilled').length;
     const failed = results.filter((r) => r.status === 'rejected').length;
@@ -253,7 +254,7 @@ const bulkDeleteQuestions = async (req, res) => {
       return res.status(400).json({ error: 'ids must be a non-empty array' });
     }
 
-    const result = await questionService.removeQuestionsBulk(ids);
+    const result = await questionService.removeQuestionsBulk(ids, req.query.examMode);
     return res.json({ message: `Deleted ${result.deleted} questions`, ...result });
   } catch (err) {
     return res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
@@ -268,7 +269,7 @@ const checkDuplicates = async (req, res) => {
       return res.status(400).json({ error: 'questions must be a non-empty array' });
     }
 
-    const duplicates = await questionService.checkDuplicates(questions);
+    const duplicates = await questionService.checkDuplicates(questions, req.query.examMode);
     return res.json({ results: duplicates });
   } catch (err) {
     return res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
