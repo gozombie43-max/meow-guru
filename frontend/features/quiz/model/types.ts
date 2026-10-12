@@ -23,6 +23,7 @@ export interface SubjectConfig {
   topicConcepts: Record<string, string[]>;
   /** Label for the "formula" quiz mode. Defaults to "Pattern Practice" */
   formulaModeLabel?: string;
+  modeLabels?: Partial<Record<QuizMode, string>>;
   /** Classification categories for concept filter UI */
   classificationCategories: readonly ClassificationCategory[];
   /** Classify a concept string into one of the category IDs */

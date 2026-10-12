@@ -38,7 +38,7 @@ const {
     isListening,
     toggleVoiceSearch,
   } = useSubjectHub();
-const [activeCategory, setActiveCategory] = useState<string>("very-high");
+const [activeCategory, setActiveCategory] = useState<string>(config.initialCategory ?? "very-high");
 const [selectedChapterSlug, setSelectedChapterSlug] = useState<string>("");
 const [mobileCategory, setMobileCategory] = useState("all");
 const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
@@ -144,7 +144,7 @@ const selectedChapter = useMemo(() => {
     );
   }, [chapters, selectedChapterSlug]);
 const hasStudyMode = STUDY_MODE_TOPICS.has(selectedTopic.slug);
-const targetQuestionTopic = isChapterMode ? (selectedChapter ? selectedChapter.title : selectedTopic.name) : selectedTopic.slug;
+const targetQuestionTopic = isChapterMode ? (selectedChapter ? selectedChapter.title : selectedTopic.name) : selectedTopic.questionTopic ?? selectedTopic.slug;
 const { counts: modeQuestionCounts } = useQuestionCounts({
     topic: targetQuestionTopic,
     subject: config.subjectId,

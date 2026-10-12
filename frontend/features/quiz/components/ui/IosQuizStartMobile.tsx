@@ -53,7 +53,9 @@ export function IosQuizStartMobile({
     else setInternalSearch(val);
   };
 
-  const modeInfo = MODE_DETAILS[mode] || MODE_DETAILS.concept;
+  const baseModeInfo = MODE_DETAILS[mode] || MODE_DETAILS.concept;
+  const label = subjectConfig.modeLabels?.[mode];
+  const modeInfo = label ? { ...baseModeInfo, label, badge: label } : baseModeInfo;
   const selectedCount = selected.size;
   const isEnglishSynonymsFormula =
     subjectConfig.subjectId === "english" &&

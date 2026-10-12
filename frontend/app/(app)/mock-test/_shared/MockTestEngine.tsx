@@ -1,6 +1,7 @@
 'use client';
 import { X } from "lucide-react";
 import MathRenderer from '@/components/MathRenderer';
+import { isUnanswered } from '@meow/contracts/mock-answer';
 import { useAuth } from '@/context/AuthContext';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import QuestionImage from '@/components/QuestionImage';
@@ -57,13 +58,13 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const [currentSection, setCurrentSection] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [questionStatuses, setQuestionStatuses] = useState<Record<string, QuestionStatus>>({});
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
-  
+
   const [deadline, setDeadline] = useState(0);
-  
+
   const autosaveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const saveRevisionRef = useRef(0);
   const attemptIdRef = useRef(resumeAttemptId || '');
@@ -241,9 +242,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     setQuestionStatuses(prev => ({ ...prev, [qId]: status }));
   };
 
-  const handleSelectOption = (qId: string, optId: string) => {
+  const handleSelectOption = (qId: string, optId: MockAnswer) => {
     setAnswers(prev => ({ ...prev, [qId]: optId }));
-    // Just answering doesn't change status to 'answered' yet until 'Save & Next' according to common engine patterns, 
+    // Just answering doesn't change status to 'answered' yet until 'Save & Next' according to common engine patterns,
     // but we can mark it immediately if preferred. Let's wait for Save & Next for strict SSC/banking pattern.
   };
 
@@ -258,7 +259,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const handleSaveAndNext = () => {
     if (!paper) return;
     const qId = paper.sections[currentSection].questions[currentQuestion].id;
-    if (answers[qId]) {
+    if (!isUnanswered(answers[qId])) {
       updateStatus(qId, 'answered');
     } else {
       updateStatus(qId, 'not_answered');
@@ -269,7 +270,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const handleMarkForReview = () => {
     if (!paper) return;
     const qId = paper.sections[currentSection].questions[currentQuestion].id;
-    if (answers[qId]) {
+    if (!isUnanswered(answers[qId])) {
       updateStatus(qId, 'answered_marked');
     } else {
       updateStatus(qId, 'marked');
@@ -371,7 +372,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
       {/* Main Layout */}
       <div className={styles.mainLayout}>
-        
+
         {/* Desktop Left Panel */}
         {isDesktop && (
           <div className={styles.leftPanel}>
@@ -387,8 +388,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
                 const status = questionStatuses[q.id];
                 const isCurrent = currentQuestion === idx;
                 return (
-                  <div 
-                    key={q.id} 
+                  <div
+                    key={q.id}
                     className={`${styles.qBubble} ${getStatusClass(status)} ${isCurrent ? styles.current : ''}`}
                     onClick={() => jumpToQuestion(currentSection, idx)}
                    role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
@@ -409,7 +410,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
         {/* Right / Main Panel */}
         <div className={`${styles.rightPanel} ${!isDesktop ? styles.mobileMain : ''}`}>
-          
+
           {!isDesktop && (
             <div className={styles.mobileSectionControl}>
               {paper.sections.map((sec: MockSection, idx: number) => (
@@ -433,18 +434,24 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
                 critical
               />
             )}
-            
+
+            {currentQ.questionType === 'NAT' && <label className={styles.optionLabel}>Numerical answer
+              <input type="text" inputMode="decimal" aria-label="Numerical answer" placeholder="Enter a number" value={String(answers[currentQ.id] ?? '')} onChange={event => handleSelectOption(currentQ.id, event.target.value)} />
+            </label>}
+            {currentQ.questionType === 'MSQ' && <p>Select all correct options. No partial credit.</p>}
             <div className={styles.options}>
               {(currentQ.options ?? []).map((rawOption, optionIndex) => {
                 const opt = normalizeOption(rawOption, optionIndex);
-                const isSelected = answers[currentQ.id] === opt.id;
+                const answer = answers[currentQ.id];
+                const selected = Array.isArray(answer) ? answer : [];
+                const isSelected = currentQ.questionType === 'MSQ' ? selected.includes(opt.id) : answer === opt.id;
                 return (
                   <label key={opt.id} className={`${styles.optionLabel} ${isSelected ? styles.selected : ''}`}>
-                    <input 
-                      type="radio" 
-                      name={`q-${currentQ.id}`} 
+                    <input
+                      type={currentQ.questionType === 'MSQ' ? 'checkbox' : 'radio'}
+                      name={`q-${currentQ.id}`}
                       checked={isSelected}
-                      onChange={() => handleSelectOption(currentQ.id, opt.id)}
+                      onChange={() => handleSelectOption(currentQ.id, currentQ.questionType === 'MSQ' ? isSelected ? selected.filter(value => value !== opt.id) : [...selected, opt.id] : opt.id)}
                       aria-label={`Answer ${opt.text}`}
                     />
                     <span>{renderMath(opt.text)}</span>
@@ -490,8 +497,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
                 const status = questionStatuses[q.id];
                 const isCurrent = currentQuestion === idx;
                 return (
-                  <div 
-                    key={q.id} 
+                  <div
+                    key={q.id}
                     className={`${styles.qBubble} ${getStatusClass(status)} ${isCurrent ? styles.current : ''}`}
                     onClick={() => jumpToQuestion(currentSection, idx)}
                    role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>

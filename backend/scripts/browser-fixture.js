@@ -44,6 +44,18 @@ await db.collection('questions').insertMany(Array.from({ length: 250 }, (_, i) =
   const row = { id: `fixture-${i}`, topic: 'algebra', subject: 'Mathematics', exam: 'SSC CGL', quizName: 'PYQ', concept: 'Addition', question: `Solve the equation: x + ${i + 1} = ${i + 3}. What is x?`, options: ['1', '2', '3', '4'], correctAnswer: 'B', solution: 'Subtract the constant from both sides to get x = 2.', difficulty: 'easy', expectedTime: 60 };
   return { ...row, ...normalizedQuestionKeys(row), ...trainingQuestionMetadata(row) };
 }));
+// Opt-in JAM fixture: synthetic content in this disposable database only.
+if (process.env.JAM_MODE_FIXTURE === '1') {
+  const { JAM_MOCK_CONFIGS } = await import('@meow/contracts/jam');
+  await db.collection('questions').insertMany(Array.from({ length: 20 }, (_, i) => {
+    const row = { id: `jam-fixture-${i}`, subject: 'iit-jam-physics', topic: 'iit-jam-mathematical-methods', exam: 'IIT JAM Physics', quizName: 'PYQ', concept: 'Vector algebra', question: `Physics fixture ${i + 1}: magnitude of a unit vector?`, options: ['0', '1', '2', '3'], correctAnswer: 'B', solution: 'A unit vector has magnitude one.', difficulty: 'easy' };
+    return { ...row, ...normalizedQuestionKeys(row), ...trainingQuestionMetadata(row) };
+  }));
+  const fixedQuestions = JAM_MOCK_CONFIGS['iit-jam-physics'].sections.flatMap(section => Array.from({ length: section.questionCount }, (_, i) => ({
+    id: `jam-${section.key}-${i}`, sectionKey: section.key, questionType: section.questionType, question: `JAM fixture ${section.key} ${i + 1}`, options: section.questionType === 'NAT' ? [] : ['One', 'Two', 'Three', 'Four'], correctAnswer: section.questionType === 'NAT' ? { min: 0, max: 0 } : section.questionType === 'MSQ' ? ['A', 'C'] : 'A', solution: 'Synthetic fixture solution',
+  })));
+  await db.collection('mockSlots').insertOne({ id: 'jam-browser-test', examSlug: 'iit-jam-physics', configKey: 'iit-jam-physics', title: 'JAM browser fixture', assessmentMode: 'practice', isFree: true, fixedQuestions });
+}
 const { initializePublicCatalogs } = await import('../services/questions/topicCountSnapshot.js');
 await initializePublicCatalogs();
 const { createTrainingSessionCommand } = await import('../services/training/application/createTrainingSession.js');

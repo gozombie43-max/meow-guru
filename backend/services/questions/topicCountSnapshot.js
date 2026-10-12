@@ -1,3 +1,4 @@
+import { JAM_SECTIONS, jamQuestionTopic } from '@meow/contracts/jam';
 import { findPersistedQuestionMetadata, saveTopicCountSnapshot } from '../../repositories/questionMetadataRepository.js';
 import { createTieredCache } from '../../infrastructure/tieredCache.js';
 import { getQuestionRevision, isNormalizedQuestionKeysEnabled } from "./questionCache.js";
@@ -36,7 +37,10 @@ const SUBJECT_TOPICS = {
     "ancient-history", "medieval-history", "modern-history", "polity", "geography",
     "physics", "chemistry", "biology", "economy", "current-affairs", "static-gk",
   ],
+  'iit-jam-physics': JAM_SECTIONS.map(section => jamQuestionTopic(section.slug)),
 };
+
+const PUBLIC_CATALOG_SUBJECTS = ['mathematics', 'reasoning', 'english', 'general-awareness'];
 
 const MODES = ["concept", "formula", "mixed", "aiChallenge", "easy", "hard"];
 const MAX_SNAPSHOT_AGE_MS = 60 * 60 * 1000;
@@ -80,14 +84,14 @@ export function refreshPublicCatalogs() {
   if (catalogRefresh) return catalogRefresh;
   catalogRefresh = (async () => {
     // Keep the existing <=4 topic-query budget across subjects as well.
-    for (const subject of Object.keys(SUBJECT_TOPICS)) await refreshPublicSnapshot(subject);
+    for (const subject of PUBLIC_CATALOG_SUBJECTS) await refreshPublicSnapshot(subject);
   })().finally(() => { catalogRefresh = undefined; });
   return catalogRefresh;
 }
 
 export async function initializePublicCatalogs({ fresh = false } = {}) {
   const results = [];
-  for (const subject of Object.keys(SUBJECT_TOPICS)) {
+  for (const subject of PUBLIC_CATALOG_SUBJECTS) {
     const id = `topic-counts:v2:${subject}:${isNormalizedQuestionKeysEnabled()}`;
     const saved = await findPersistedQuestionMetadata(id);
     if (!fresh && validSnapshot(saved?.data, subject, saved?.revision, MAX_PUBLIC_AGE_MS)) {

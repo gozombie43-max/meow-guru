@@ -3,7 +3,7 @@ import Link from "next/link";
 import TopicPracticeModes from "@/features/quiz/components/TopicPracticeModes.client";
 
 export interface SubjectTopicPageProps {
-  subject: "mathematics" | "reasoning" | "english" | "general-awareness";
+  subject: "mathematics" | "reasoning" | "english" | "general-awareness" | "iit-jam-physics";
   title: string;
   slug: string;
   questionTopic?: string;
@@ -42,6 +42,7 @@ const IconBack = () => (
 );
 
 const SUBJECT_DEFAULTS = {
+  "iit-jam-physics": { eyebrow: "IIT JAM Physics", formulaSubtitle: "Physics formulas & methods", headline: "Formula & Notes", notesSubtitle: "Physics revision sheets", mixedSubtitle: "Mixed Physics practice" },
   mathematics: {
     eyebrow: "Mathematics",
     formulaSubtitle: "Core formulas & shortcuts",

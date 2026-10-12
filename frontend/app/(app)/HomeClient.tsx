@@ -1,5 +1,10 @@
 'use client';
 
+import ExamModeSwitch from '@/components/ExamModeSwitch';
+import ExamHomeContent from '@/components/ExamHomeContent';
+import { useExamMode } from '@/context/ExamModeContext';
+import { JAM_SECTIONS, jamSectionHref } from '@/lib/exam-mode';
+import { Atom } from 'lucide-react';
 import { AiChatIcon } from '@/components/AiChatIcon';
 import MacTrafficLights from '@/components/MacTrafficLights';
 import QuizChartArt from '@/components/QuizChartArt';
@@ -66,6 +71,8 @@ export default function HomeClient({
   desktopContent: ReactNode;
   mobileContent: ReactNode;
 }) {
+  const { isJam } = useExamMode();
+  const searchSubjects = isJam ? JAM_SECTIONS.map(s => ({ title: s.title, subtitle: 'IIT JAM Physics', href: jamSectionHref(s.slug), Icon: Atom })) : desktopSubjects;
   const pathname = usePathname() || '/';
   const { user } = useAuth();
   const { theme, toggleThemeMode } = useThemeMode();
@@ -126,8 +133,8 @@ export default function HomeClient({
       {user ? (
         <UserProfileMenu size={34} align="right" />
       ) : (
-        <Link data-ui-button="secondary" href="/login" className={styles.loginPillButton} aria-label="Log in">
-          LOGIN
+        <Link data-ui-button="icon" href="/login" className={styles.loginIconButton} aria-label="Log in" title="Log in">
+          <UserRound size={21} strokeWidth={1.8} aria-hidden="true" />
         </Link>
       )}
       <button data-ui-button="state" data-ui-shape="icon"
@@ -161,6 +168,7 @@ export default function HomeClient({
               <SkillLearnLogo />
             </div>
 
+            <ExamModeSwitch />
             {/* Navigation Items */}
             <nav className={styles.railNav} aria-label="Primary Desktop">
               {railItems.map((item) => {
@@ -233,7 +241,7 @@ export default function HomeClient({
                       </button>
                     </div>
                     <div className={styles.searchDropdownList}>
-                      {desktopSubjects
+                      {searchSubjects
                         .filter(
                           (s) =>
                             s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -253,7 +261,7 @@ export default function HomeClient({
                             </div>
                           </Link>
                         ))}
-                      {recentQuizzesData
+                      {(isJam ? [] : recentQuizzesData)
                         .filter((q) => q.title.toLowerCase().includes(searchQuery.toLowerCase()))
                         .map((q) => (
                           <Link
@@ -294,14 +302,14 @@ export default function HomeClient({
                 {user ? (
                   <UserProfileMenu size={34} align="right" />
                 ) : (
-                  <Link data-ui-button="secondary" href="/login" className={styles.loginPillButton} aria-label="Log in">
-                    LOGIN
+                  <Link data-ui-button="icon" href="/login" className={styles.loginIconButton} aria-label="Log in" title="Log in">
+                    <UserRound size={21} strokeWidth={1.8} aria-hidden="true" />
                   </Link>
                 )}
               </div>
             </header>
 
-            {desktopContent}
+            {isJam ? <ExamHomeContent /> : desktopContent}
           </div>
         </div>
       </div>
@@ -348,6 +356,7 @@ export default function HomeClient({
               <span />
             </span>
           </button>
+          <ExamModeSwitch />
           <nav className={styles.railNav} aria-label="Primary Mobile">
             {railItems.map((item) => {
               const active = pathname === item.href;
@@ -386,7 +395,7 @@ export default function HomeClient({
           </header>
 
           <div className={styles.mobileScrollContent}>
-            {mobileContent}
+            {isJam ? <ExamHomeContent /> : mobileContent}
           </div>
         </div>
       </div>

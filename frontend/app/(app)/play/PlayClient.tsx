@@ -15,6 +15,8 @@ import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Sparkles, Target } from "lucide-react";
 
+import { useExamMode } from '@/context/ExamModeContext';
+import { JAM_SUBJECT } from '@/lib/exam-mode';
 import { useThemeMode } from "@/hooks/useTheme";
 import { TrainingSelectDropdown } from "@/components/training/TrainingSelectDropdown";
 const TrainingInsights = dynamic(
@@ -42,7 +44,9 @@ function SearchParamsSync({
 }) {
   const searchParams = useSearchParams();
   const tab = playTab(searchParams.get("view"));
-  const exam = searchParams.get("exam") || "ssc-cgl";
+  const { isJam } = useExamMode();
+  const requestedExam = searchParams.get("exam");
+  const exam = isJam ? JAM_SUBJECT : requestedExam === JAM_SUBJECT ? "ssc-cgl" : requestedExam || "ssc-cgl";
   const raw = searchParams.toString();
 
   useEffect(() => {
@@ -98,7 +102,9 @@ export default function PlayClient({
 
   const contentRef = useRef<HTMLElement>(null);
   const [tab, setTab] = useState("Play");
-  const [exam, setExam] = useState("ssc-cgl");
+  const { isJam } = useExamMode();
+  const [selectedExam, setExam] = useState("ssc-cgl");
+  const exam = isJam ? JAM_SUBJECT : selectedExam === JAM_SUBJECT ? "ssc-cgl" : selectedExam;
   const rawParamsRef = useRef("");
 
   const handleParamsChange = useCallback(
@@ -158,7 +164,7 @@ export default function PlayClient({
                 value={exam}
                 placement="bottom"
                 options={(
-                  capabilities?.exams || [
+                  isJam ? [{ id: JAM_SUBJECT, label: "IIT JAM Physics" }] : capabilities?.exams?.filter(item => item.id !== JAM_SUBJECT) || [
                     { id: "ssc-cgl", label: "SSC CGL" },
                     { id: "ssc-chsl", label: "SSC CHSL" },
                     { id: "cat", label: "CAT" },

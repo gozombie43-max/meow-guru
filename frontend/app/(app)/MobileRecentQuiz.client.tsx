@@ -1,7 +1,9 @@
 'use client';
 
+import { useExamMode } from '@/context/ExamModeContext';
+import { isJamContent, JAM_SUBJECT } from '@/lib/exam-mode';
 import { useAuth } from '@/context/AuthContext';
-import { BookOpen, Brain, Globe, Play, Sigma } from 'lucide-react';
+import { Atom, BookOpen, Brain, Globe, Play, Sigma } from 'lucide-react';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 import styles from './page.module.css';
@@ -11,7 +13,8 @@ export default function MobileRecentQuiz({ desktop = false }: { desktop?: boolea
   const { user, loading } = useAuth();
   const carouselRef = useRef<HTMLDivElement>(null);
   const [activeSlide, setActiveSlide] = useState(0);
-  const recent = user?.recentQuizzes?.slice(0, desktop ? 4 : 5) ?? [];
+  const { isJam } = useExamMode();
+  const recent = user?.recentQuizzes?.filter(quiz => isJamContent(quiz.href || '') === isJam).slice(0, desktop ? 4 : 5) ?? [];
   const headingId = desktop ? 'recent-quizzes-title' : 'mobile-recent-title';
 
   return (
@@ -51,9 +54,10 @@ export default function MobileRecentQuiz({ desktop = false }: { desktop?: boolea
           url.searchParams.set('resume', '1');
           const subject = url.pathname.includes('/arithmetic/') ? 'Arithmetic'
             : url.pathname.includes('/advance/') ? 'Advanced Mathematics'
-            : ({ mathematics: 'Mathematics', reasoning: 'Reasoning', english: 'English', 'general-awareness': 'General Awareness' }[quiz.subject]
+            : ({ mathematics: 'Mathematics', reasoning: 'Reasoning', english: 'English', 'general-awareness': 'General Awareness', [JAM_SUBJECT]: 'IIT JAM Physics' }[quiz.subject]
               ?? quiz.subject.replace(/[-_]/g, ' '));
-          const Icon = quiz.subject === 'mathematics' ? Sigma : quiz.subject === 'reasoning' ? Brain : quiz.subject === 'english' ? BookOpen : Globe;
+          const Icon = quiz.subject === JAM_SUBJECT ? Atom : quiz.subject === 'mathematics' ? Sigma : quiz.subject === 'reasoning' ? Brain : quiz.subject === 'english' ? BookOpen : Globe;
+
           return (
             <article key={quiz.quizKey} className={cardStyles.card} aria-roledescription={!desktop ? 'slide' : undefined} aria-label={!desktop ? `${index + 1} of ${recent.length}: ${quiz.title || 'Quiz'}` : undefined}>
               <div className={cardStyles.header}>

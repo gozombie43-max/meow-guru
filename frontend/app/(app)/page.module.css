@@ -1945,3 +1945,22 @@
 
 
 :global(html.theme-dark) .pageWrapper :is(.mobileHeroDesc, .heroSubtitle, .resourceCard small, .battleCard small) { color: var(--oled-secondary); }
+
+/* Signed-out profile action matches the compact header controls. */
+.loginIconButton[data-ui-button] {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  padding:0!important;
+  flex-shrink:0;
+  border-radius:50%!important;
+  border:1px solid rgb(var(--ios-system-blue-rgb)/.22)!important;
+  background:rgb(var(--ios-system-blue-rgb)/.1)!important;
+  color:var(--ios-system-blue)!important;
+  text-decoration:none;
+}
+.loginIconButton[data-ui-button]:hover { background:rgb(var(--ios-system-blue-rgb)/.18)!important; }
+.loginIconButton:focus-visible { outline:2px solid var(--ios-system-blue); outline-offset:3px; }

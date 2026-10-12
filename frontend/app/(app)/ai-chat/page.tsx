@@ -1,6 +1,7 @@
 'use client';
 
 import { Dialog } from "@/components/ui/Dialog";
+import { useExamMode } from '@/context/ExamModeContext';
 import { AiChatIcon } from '@/components/AiChatIcon';
 import BackButton from "@/components/BackButton";
 import RiskyWidgetBoundary from '@/components/RiskyWidgetBoundary';
@@ -44,6 +45,7 @@ normalizeTutorMarkdown,
 type ChatSession,
 } from './formatting';
 function AiChatPageContent() {
+  const { isJam } = useExamMode();
   const { theme } = useThemeMode();
   const [hasDraft, setHasDraft] = useState(false);
   const composerRef = useRef<ChatComposerHandle>(null);
@@ -78,7 +80,7 @@ function AiChatPageContent() {
     setMessages,
   } = useAiChatHistory();
 
-  const context = useMemo(() => ASSISTANT_CONTEXT, []);
+  const context = useMemo(() => isJam ? ASSISTANT_CONTEXT.replace('SSC CGL and CHSL aspirants', 'IIT JAM Physics aspirants') + '\nFocus on undergraduate Physics: mathematical methods, mechanics, waves and optics, electromagnetism, thermodynamics, modern physics, solid state and electronics. Explain derivations, units and assumptions; distinguish MCQ, MSQ and numerical-answer practice.' : ASSISTANT_CONTEXT, [isJam]);
 
   useEffect(() => {
     const body = document.body;
@@ -204,12 +206,18 @@ function AiChatPageContent() {
     }
   }
 
-  const starterPrompts = [
+  const starterPrompts = isJam ? [
+    'Vector calculus & Gauss law',
+    "Maxwell's equations derivation",
+    'Schrödinger equation solutions',
+    'Thermodynamic potentials & Carnot cycle',
+  ] : [
     'Mensuration formula revision',
     'Percentage shortcut method',
     'Current affairs quick quiz',
     'Cloze test strategy',
   ];
+
 
   const hasMessages = messages.length > 0;
   const visibleSessions = chatSessions.filter((session) =>
@@ -348,7 +356,7 @@ function AiChatPageContent() {
         <div className={styleClasses("sidebar-footer")}>
           <div className={styleClasses("mini-avatar")}>AI</div>
           <div>
-            <strong>SSC Tutor</strong>
+            <strong>{isJam ? 'IIT JAM Tutor' : 'SSC Tutor'}</strong>
             <span>Desktop mode</span>
           </div>
         </div>
@@ -367,7 +375,7 @@ function AiChatPageContent() {
               <div className={styleClasses("chat-title")}>AI Tutor</div>
               <div className={styleClasses("chat-status")}>
                 <span />
-                SSC CGL and CHSL study assistant
+                {isJam ? 'IIT JAM Physics study assistant' : 'SSC CGL and CHSL study assistant'}
               </div>
             </div>
           </div>

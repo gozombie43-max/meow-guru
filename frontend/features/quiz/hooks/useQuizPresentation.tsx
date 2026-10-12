@@ -27,9 +27,10 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
   const modeLabels = useMemo(
     () => ({
       ...MODE_LABELS,
+      ...subjectConfig.modeLabels,
       formula: subjectConfig.formulaModeLabel ?? MODE_LABELS.formula,
     }),
-    [subjectConfig.formulaModeLabel],
+    [subjectConfig.formulaModeLabel, subjectConfig.modeLabels],
   );
   const themeStyles = (
     <QuizThemeStyles cssClassName={subjectConfig.cssClassName} />

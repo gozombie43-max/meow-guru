@@ -1,5 +1,5 @@
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
-import { mockAnswerIndex } from '../mockAnswer.js';
+import { mockAnswerCorrect, isUnanswered } from '../mockAnswer.js';
 import { getExamConfig } from '../../config/exam-config.js';
 import { getMockAttemptsCollection } from '../../config/mongodb.js';
 
@@ -23,11 +23,9 @@ export function gradeAttempt({ attemptDoc }) {
       const userAnswer = attemptDoc.answers?.[q.id];
       const correctAnswer = attemptDoc.answerKey?.[q.id];
 
-      if (userAnswer === undefined || userAnswer === null || userAnswer === '') {
+      if (isUnanswered(userAnswer)) {
         skipped++;
-      } else if (Array.isArray(q.options) && q.options.length > 0
-        ? mockAnswerIndex(correctAnswer, q.options) !== null && mockAnswerIndex(userAnswer, q.options, true) === mockAnswerIndex(correctAnswer, q.options)
-        : correctAnswer != null && String(userAnswer) === String(correctAnswer)) {
+      } else if (mockAnswerCorrect(q, userAnswer, correctAnswer)) {
         correct++;
       } else {
         incorrect++;

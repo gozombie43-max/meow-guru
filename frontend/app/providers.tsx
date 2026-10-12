@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { SWRConfig, useSWRConfig, type Middleware } from 'swr';
+import { ExamModeProvider } from '@/context/ExamModeContext';
 import { useAuth } from '@/context/AuthContext';
 import StyledJsxRegistry from '@/lib/styled-jsx-registry';
 import { isQuestionQuery, subscribeQuestionChanges } from '@/features/quiz/api/questionWrites';
@@ -42,7 +43,7 @@ function AccountQueries({ children }: { children: ReactNode }) {
 export default function ApplicationProviders({ children }: { children: ReactNode }) {
   return (
       <StyledJsxRegistry>
-        <AccountQueries>{children}</AccountQueries>
+        <ExamModeProvider><AccountQueries>{children}</AccountQueries></ExamModeProvider>
       </StyledJsxRegistry>
   );
 }

@@ -1,4 +1,5 @@
-import { BookOpen, Calculator, Globe2, Shapes } from "lucide-react";
+import { JAM_SECTIONS } from '@/lib/exam-mode';
+import { Atom, BookOpen, Calculator, Globe2, Shapes } from "lucide-react";
 
 export const resourceTabs = ["Books", "Chapter Wise", "Extra", "DPP"] as const;
 
@@ -33,7 +34,8 @@ export const subjects = [
   },
 ] as const;
 
-export type SubjectId = (typeof subjects)[number]["id"];
+export const jamSubjects = JAM_SECTIONS.map(s => ({ id: `iit-jam-${s.slug}` as const, label: s.title, shortLabel: s.title, Icon: Atom, accent: s.color }));
+export type SubjectId = (typeof subjects)[number]["id"] | (typeof jamSubjects)[number]["id"];
 export type ResourceTab = (typeof resourceTabs)[number];
 
 export type ResourceFile = {

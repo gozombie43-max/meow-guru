@@ -26,7 +26,7 @@ describe('Profile page', () => {
     render(<ProfileClient />);
     expect(screen.getByText(user.name)).toBeInTheDocument();
     expect(screen.getByText(user.email)).toBeInTheDocument();
-    const stats = screen.getByLabelText('Study statistics');
+    const stats = screen.getByLabelText(/Study statistics/);
     for (const value of ['10', '80%', '2']) expect(within(stats).getByText(value)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Notifications/ })).toHaveAttribute('href', '/notifications');
     expect(screen.getByRole('link', { name: 'My dashboard' })).toHaveAttribute('href', '/dashboard');

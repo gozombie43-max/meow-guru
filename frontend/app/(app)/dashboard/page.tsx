@@ -1,13 +1,15 @@
 "use client";
 
 import Link from 'next/link';
-import { ArrowLeft, ArrowUpRight, BookOpen, Calculator, ChevronRight, ClipboardList, Globe2, Puzzle, Target } from 'lucide-react';
+import { Atom, ArrowLeft, ArrowUpRight, BookOpen, Calculator, ChevronRight, ClipboardList, Globe2, Puzzle, Target } from 'lucide-react';
+import { useExamMode } from '@/context/ExamModeContext';
+import { JAM_SECTIONS, jamSectionHref, isJamContent } from '@/lib/exam-mode';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import styles from './page.module.css';
 
 type RecentQuiz = NonNullable<NonNullable<ReturnType<typeof useAuth>['user']>['recentQuizzes']>[number];
-const subjects = [
+const sscSubjects = [
   { name: 'Mathematics', detail: 'Numbers, formulas & problem solving', href: '/mathematics', icon: Calculator },
   { name: 'Reasoning', detail: 'Patterns, logic & analytical thinking', href: '/reasoning', icon: Puzzle },
   { name: 'English', detail: 'Vocabulary, grammar & comprehension', href: '/english', icon: BookOpen },
@@ -28,6 +30,8 @@ export default function DashboardPage() {
   return <ProtectedRoute><DashboardContent /></ProtectedRoute>;
 }
 function DashboardContent() {
+  const { isJam } = useExamMode();
+  const subjects = isJam ? JAM_SECTIONS.map(s => ({ name: s.title, detail: "IIT JAM Physics", href: jamSectionHref(s.slug), icon: Atom })) : sscSubjects;
   const { user } = useAuth();
   if (!user) return null;
   const progress = Object.values(user.progress || {});
@@ -37,6 +41,7 @@ function DashboardContent() {
   const minutes = Math.floor(Math.max(0, user.studyTime || 0) / 60);
   const studyTime = minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes}m`;
   const recent = [...(user.recentQuizzes || [])]
+    .filter(entry => isJamContent(entry.href || '') === isJam)
     .filter(entry => entry?.quizKey && entry.href?.startsWith('/') && !entry.href.startsWith('//'))
     .sort((a, b) => (Date.parse(b.updatedAt || '') || 0) - (Date.parse(a.updatedAt || '') || 0));
   const resume = recent.find(entry => entry.status !== 'completed');
@@ -55,9 +60,9 @@ function DashboardContent() {
           <Link href="/mock-test" className={styles.mockLink} data-ui-button="secondary"><ClipboardList size={18} /> Take a mock test <ArrowUpRight size={17} /></Link>
         </section>
         <dl className={styles.stats} aria-label="Study totals">
-          <div><dt>Questions attempted</dt><dd>{attempted.toLocaleString('en-IN')}</dd></div>
-          <div><dt>Accuracy</dt><dd>{accuracy}</dd></div>
-          <div><dt>Study time</dt><dd>{studyTime}</dd></div>
+          <div><dt>Questions attempted · all exams</dt><dd>{attempted.toLocaleString('en-IN')}</dd></div>
+          <div><dt>Accuracy · all exams</dt><dd>{accuracy}</dd></div>
+          <div><dt>Study time · all exams</dt><dd>{studyTime}</dd></div>
           <div><dt>Saved questions</dt><dd>{(user.bookmarks?.length || 0).toLocaleString('en-IN')}</dd></div>
         </dl>
         <div className={styles.columns}>

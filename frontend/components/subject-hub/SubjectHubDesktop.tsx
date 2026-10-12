@@ -507,7 +507,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                             </td>
                             <td>
                               <span className={styles.tableWeightBadge}>
-                                {topic.questions} Qs ({topic.expectedMarks})
+                                {topic.questions} Qs {topic.expectedMarks && `(${topic.expectedMarks})`}
                               </span>
                             </td>
                             <td>
@@ -741,7 +741,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                   )}
 
                   <Link
-                    href={isChapterMode && selectedChapter && currentGroup ? `${config.chapterBasePrefix}/${selectedTopic.slug}/${selectedChapter.slug}/formula-notes` : `${selectedTopic.routeBase}/formula-notes`}
+                    href={config.notesHref || (isChapterMode && selectedChapter && currentGroup ? `${config.chapterBasePrefix}/${selectedTopic.slug}/${selectedChapter.slug}/formula-notes` : `${selectedTopic.routeBase}/formula-notes`)}
                     prefetch={false}
                     className={styles.resourceCard}
                     title={`View ${config.notesLabel}`}

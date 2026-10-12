@@ -1,5 +1,6 @@
 'use client';
 
+import ExamModeSwitch from '@/components/ExamModeSwitch';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -61,7 +62,8 @@ export default function ProfileClient() {
       </header>
 
       <div className={styles.scrollContent}>
-      <dl className={styles.stats} aria-label="Study statistics">
+      <ExamModeSwitch />
+      <dl className={styles.stats} aria-label="Study statistics across all exams">
         <div><dt>Attempted</dt><dd>{attempted.toLocaleString()}</dd></div>
         <div><dt>Accuracy</dt><dd>{accuracy}</dd></div>
         <div><dt>Saved</dt><dd>{(user.bookmarks?.length || 0).toLocaleString()}</dd></div>

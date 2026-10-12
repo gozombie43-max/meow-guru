@@ -1,7 +1,8 @@
 import { Dialog } from "@/components/ui/Dialog";
 import { X } from "lucide-react";
 import type { CSSProperties } from "react";
-import { resourceTabs, subjects, type ResourceTab, type SubjectId } from "./resource-model";
+import { useExamMode } from '@/context/ExamModeContext';
+import { resourceTabs, subjects as sscSubjects, jamSubjects, type ResourceTab, type SubjectId } from "./resource-model";
 
 type Props = {
   activeSubject: SubjectId;
@@ -11,6 +12,8 @@ type Props = {
 };
 
 export default function ResourceUploadDialog({ activeSubject, activeTab, onBeginUpload, onClose }: Props) {
+  const { isJam } = useExamMode();
+  const subjects = isJam ? jamSubjects : sscSubjects;
   return (
     <div className="res-modal-backdrop">
       <Dialog onClose={onClose} className="res-modal" role="dialog" aria-modal="true" aria-labelledby="res-upload-title">

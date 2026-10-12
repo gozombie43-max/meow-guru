@@ -36,7 +36,8 @@ async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
     const key = normalizeSearchKey(params.topic);
     const aliases = ['synonymsantonyms', 'antosynopyq'].includes(key);
     conditions.push(normalized ? { topicKey: aliases ? { $in: ['synonymsantonyms', 'antosynopyq'] } : key } : { topic: aliases ? { $in: [params.topic, 'synonyms-antonyms', 'antosynopyq'] } : params.topic });
-  } else if (params.subject) {
+  }
+  if (params.subject && (!params.topic || normalizeSearchKey(params.subject) === 'iitjamphysics')) {
     const subKey = normalizeSearchKey(params.subject);
     conditions.push(normalized ? { subjectKey: subKey } : (
       subKey === 'reasoning'

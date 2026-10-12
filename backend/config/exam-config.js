@@ -1,9 +1,16 @@
+import { JAM_MOCK_CONFIGS } from '@meow/contracts/jam';
 // Backend mirror of frontend/app/mock-test/_shared/exam-config.ts
 // Plain JS (ESM) — same data, no TypeScript types.
 
 // ─── Exam Configs ─────────────────────────────────────────────────
 
 export const EXAM_CONFIGS = {
+  ...JAM_MOCK_CONFIGS,
+  'iit-jam-physics-practice': {
+    key: 'iit-jam-physics-practice', name: 'IIT JAM Physics Practice', compositeTimer: true, totalDurationMin: 30,
+    sections: [{ key: 'physics', label: 'Physics practice', questionCount: 20, timeLimitMin: 0, marking: { correct: 1, incorrect: 0 }, topics: ['iit-jam-physics'] }],
+  },
+
 
   // ── SSC ──────────────────────────────────────────────────────────
 

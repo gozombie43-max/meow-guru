@@ -1,5 +1,7 @@
 "use client";
 
+import { useExamMode } from '@/context/ExamModeContext';
+import { JAM_SECTIONS, JAM_SUBJECT, jamQuestionTopic } from '@/lib/exam-mode';
 import { Dialog } from "@/components/ui/Dialog";
 import RichContent from "@/components/RichContent";
 import { useAuth } from "@/context/AuthContext";
@@ -244,8 +246,16 @@ function BattlePageContent() {
   const searchParams = useSearchParams();
   const battle = useBattle(token, user?.id || "");
   const { state, connection, pending, inviteStatus } = battle;
-  const [subject, setSubject] = useState("mathematics");
+  const { isJam } = useExamMode();
+  const [sscSubject, setSubject] = useState("mathematics");
+  const subject = isJam ? JAM_SUBJECT : sscSubject;
+  const subjects = isJam ? [{ value: JAM_SUBJECT, label: "IIT JAM Physics" }] : SUBJECTS;
   const [topic, setTopic] = useState("all");
+  const [prevIsJam, setPrevIsJam] = useState(isJam);
+  if (prevIsJam !== isJam) {
+    setPrevIsJam(isJam);
+    setTopic("all");
+  }
   const [questionCount, setQuestionCount] = useState(10);
   const [modeOverride, setModeOverride] = useState<"create" | "join" | null>(null);
   const [joinCode, setJoinCode] = useState<string | null>(null);
@@ -275,7 +285,7 @@ function BattlePageContent() {
   </section></main>;
 
   if (state.phase === "lobby") {
-    const topicOptions = TOPICS[subject] || TOPICS.mathematics;
+    const topicOptions = isJam ? [{ value: "all", label: "All Physics sections" }, ...JAM_SECTIONS.map(s => ({ value: jamQuestionTopic(s.slug), label: s.title }))] : TOPICS[subject] || TOPICS.mathematics;
     const submit = () => {
       if (!effectivePlayerName.trim()) return;
       if (mode === "create") battle.create({ playerName: effectivePlayerName.trim(), subject, topic, questionCount });
@@ -288,7 +298,7 @@ function BattlePageContent() {
       </section>
       <section className="battle-setup-card" aria-labelledby="setup-title"><div className="battle-card-heading"><div><p className="battle-kicker">Match setup</p><h2 id="setup-title">Start a battle</h2></div><Users aria-hidden="true" /></div>
         <div className="battle-tabs" role="tablist" aria-label="Battle mode"><button data-ui-button="state" type="button" role="tab" aria-selected={mode === "create"} className={mode === "create" ? "is-active" : ""} onClick={() => setModeOverride("create")}>Create room</button><button data-ui-button="state" type="button" role="tab" aria-selected={mode === "join"} className={mode === "join" ? "is-active" : ""} onClick={() => setModeOverride("join")}>Join room</button></div>
-        {mode === "create" ? <><div className="battle-field-grid"><label className="battle-field"><span>Subject</span><select value={subject} onChange={(event) => { setSubject(event.target.value); setTopic("all"); }}>{SUBJECTS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label className="battle-field"><span>Topic</span><select value={topic} onChange={(event) => setTopic(event.target.value)}>{topicOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label></div>
+        {mode === "create" ? <><div className="battle-field-grid"><label className="battle-field"><span>Subject</span><select value={subject} onChange={(event) => { setSubject(event.target.value); setTopic("all"); }}>{subjects.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label className="battle-field"><span>Topic</span><select value={topic} onChange={(event) => setTopic(event.target.value)}>{topicOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label></div>
           <fieldset className="battle-count-field"><legend>Questions</legend><div>{QUESTION_COUNTS.map((count) => <button data-ui-button="state" type="button" key={count} className={questionCount === count ? "is-active" : ""} onClick={() => setQuestionCount(count)}>{count}</button>)}</div></fieldset></>
           : <label className="battle-field battle-code-field"><span>Room code</span><input value={effectiveJoinCode} onChange={(event) => setJoinCode(event.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="0000" inputMode="numeric" autoComplete="one-time-code" maxLength={4}  aria-label="0000"/></label>}
         <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />

@@ -1,5 +1,6 @@
 'use client';
 
+import { mockAnswerCorrect, mockAnswerIndex, isUnanswered } from '@meow/contracts/mock-answer';
 import { useAuth } from '@/context/AuthContext';
 import { ArrowLeft,CheckCircle2,ChevronLeft,ChevronRight,XCircle } from 'lucide-react';
 import QuestionImage from '@/components/QuestionImage';
@@ -8,6 +9,7 @@ import { useEffect,useRef,useMemo,useState } from 'react';
 import {
 getAttempt,
 type MockAnswer,
+type MockAnswerKey,
 type MockAttempt,
 type MockQuestion,
 type MockSection,
@@ -27,7 +29,7 @@ interface QuestionAnalysis {
   question: MockQuestion;
   index: number;
   userAns: MockAnswer | undefined;
-  correctAns: MockAnswer | undefined;
+  correctAns: MockAnswerKey | undefined;
   status: ReviewStatus;
 }
 
@@ -87,8 +89,8 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
     return questions.map((q: MockQuestion, index: number): QuestionAnalysis => {
       const userAns = answers[q.id];
       const correctAns = answerKey[q.id];
-      const isSkipped = !userAns || userAns === '';
-      const isCorrect = !isSkipped && String(userAns) === String(correctAns);
+      const isSkipped = isUnanswered(userAns);
+      const isCorrect = mockAnswerCorrect(q, userAns, correctAns);
       const isIncorrect = !isSkipped && !isCorrect;
 
       return {
@@ -270,13 +272,14 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                 )}
               </div>
 
+              {currentQ.questionType === 'NAT' && <div className={styles.solutionBox}><p>Your answer: {String(currentItem.userAns ?? 'Not answered')}</p><p>Accepted answer: {currentItem.correctAns && typeof currentItem.correctAns === 'object' && !Array.isArray(currentItem.correctAns) ? `${currentItem.correctAns.min} to ${currentItem.correctAns.max}` : String(currentItem.correctAns ?? '')}</p></div>}
               {/* Options */}
               <div className={styles.optionsList}>
                 {currentQ.options?.map((option, oIdx: number) => {
                   const opt = typeof option === 'string' ? option : option.text;
                   const letter = String.fromCharCode(65 + oIdx); // 'A', 'B', 'C', 'D'
-                  const isUserPick = String(currentItem.userAns) === String(letter) || String(currentItem.userAns) === String(oIdx) || currentItem.userAns === opt;
-                  const isCorrect = String(currentItem.correctAns) === String(letter) || String(currentItem.correctAns) === String(oIdx) || currentItem.correctAns === opt;
+                  const isUserPick = [currentItem.userAns].flat().some(value => mockAnswerIndex(value, currentQ.options, true) === oIdx);
+                  const isCorrect = [currentItem.correctAns].flat().some(value => mockAnswerIndex(value, currentQ.options) === oIdx);
 
                   let optClass = styles.optionNormal;
                   if (isCorrect) optClass = styles.optionCorrect;

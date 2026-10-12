@@ -4,6 +4,7 @@ export interface HubTopic {
   name: string;
   slug: string;
   routeBase: string;
+  questionTopic?: string;
   subtopics: string[];
   priority: string;
   questions: string;
@@ -40,6 +41,8 @@ export interface SubjectHubConfig {
   styles?: Record<string, string>;
   mobileAppearance?: "oled";
   mobileTopicDetails?: Record<string, { color: string; questionCount?: number }>;
+  initialCategory?: string;
+  notesHref?: string;
   notesLabel: string;
   searchPlaceholder: string;
   mobileSearchPlaceholder: string;

@@ -39,7 +39,8 @@ async function buildfetchQuestionsSession(params) {
           : { topic },
       );
     }
-  } else if (subject) {
+  }
+  if (subject && (!topic || normalizeSearchKey(subject) === 'iitjamphysics')) {
     conditions.push(
       useNormalizedKeys
         ? { subjectKey: normalizeSearchKey(subject) }

@@ -21,7 +21,7 @@ export default function TopicPracticeModes({
   mixedSubtitle,
   hasStudyMode,
 }: {
-  subject: "mathematics" | "reasoning" | "english" | "general-awareness";
+  subject: "mathematics" | "reasoning" | "english" | "general-awareness" | "iit-jam-physics";
   questionTopic: string;
   base: string;
   formulaSubtitle: string;
@@ -74,6 +74,8 @@ export default function TopicPracticeModes({
     }] : []),
   ];
 
+  const jamLabels: Record<string, string> = { formula: 'Formula practice', mixed: 'Mixed practice', 'ai-challenge': 'Speed practice', hard: 'Advanced practice' };
+  if (subject === 'iit-jam-physics') modes.forEach(item => { if (jamLabels[item.mode]) item.title = jamLabels[item.mode]; });
   return (
     <div className="sg-grid">
       {modes.map((mode) => {

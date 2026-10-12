@@ -1,5 +1,7 @@
 "use client";
 
+import { useExamMode } from '@/context/ExamModeContext';
+import { JAM_SUBJECT } from '@/lib/exam-mode';
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -88,7 +90,9 @@ export default function PlaySetupPage() {
   const searchParams = useSearchParams();
 
   const modeParam = (params?.mode as string) || "adaptive";
-  const exam = searchParams?.get("exam") || "ssc-cgl";
+  const { isJam } = useExamMode();
+  const requestedExam = searchParams?.get("exam");
+  const exam = isJam ? JAM_SUBJECT : requestedExam === JAM_SUBJECT ? "ssc-cgl" : requestedExam || "ssc-cgl";
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
   const [count, setCount] = useState<number | "full">(modeParam === "section" ? 25 : 20);
@@ -127,12 +131,12 @@ export default function PlaySetupPage() {
   const selectedPolicy = capabilities?.modes[modeParam];
 
   const examOptions = useMemo(() => {
-    return (capabilities?.exams || [
+    return (isJam ? [{ id: JAM_SUBJECT, label: "IIT JAM Physics" }] : capabilities?.exams?.filter(item => item.id !== JAM_SUBJECT) || [
       { id: "ssc-cgl", label: "SSC CGL" },
       { id: "ssc-chsl", label: "SSC CHSL" },
       { id: "cat", label: "CAT" },
     ]).map((item) => ({ value: item.id, label: item.label }));
-  }, [capabilities]);
+  }, [capabilities, isJam]);
 
   const examLabel = examOptions.find((e) => e.value === exam)?.label || exam.toUpperCase().replace("-", " ");
 
@@ -149,6 +153,7 @@ export default function PlaySetupPage() {
 
   const currentTier = tier || "1";
   const expectedMarking = useMemo(() => {
+    if (exam === JAM_SUBJECT) return { correct: 1, wrong: 0 };
     if (exam === "cat") return { correct: 3, wrong: 1 };
     if (currentTier === "2") return { correct: 3, wrong: 1 };
     return { correct: 2, wrong: 0.5 };
@@ -262,7 +267,7 @@ export default function PlaySetupPage() {
             aria-busy={isFormDisabled}
           >
             {/* 2. Tier Selection Row (only when supported and not CAT) */}
-            {selectedPolicy?.supportsTier && exam !== "cat" && (
+            {selectedPolicy?.supportsTier && exam !== "cat" && exam !== JAM_SUBJECT && (
               <TrainingSelectDropdown
                 variant="card"
                 label="Tier"
@@ -362,7 +367,7 @@ export default function PlaySetupPage() {
           <div className="play-setup-scoring-content">
             <div className="play-setup-scoring-head">
               <span className="play-setup-scoring-title">
-                Official {examLabel} {selectedPolicy?.supportsTier && exam !== "cat" ? `Tier ${currentTier === "2" ? "II" : "I"}` : ""} Scoring:
+                {isJam ? "Practice" : "Official"} {examLabel} {selectedPolicy?.supportsTier && exam !== "cat" && exam !== JAM_SUBJECT ? `Tier ${currentTier === "2" ? "II" : "I"}` : ""} Scoring:
               </span>
               <div className="play-setup-scoring-pills">
                 <span className="play-setup-pill-pos">+{expectedMarking.correct} correct</span>

@@ -61,7 +61,9 @@ export function MacOsQuizStartStudio({
 
   const fallbackSubjectIcon = SUBJECT_DEFAULT_ICONS[subjectConfig.subjectId] || Brain;
   const TopicIcon = TOPIC_ICONS[slug] || fallbackSubjectIcon;
-  const modeInfo = MODE_DETAILS[mode] || MODE_DETAILS.concept;
+  const baseModeInfo = MODE_DETAILS[mode] || MODE_DETAILS.concept;
+  const label = subjectConfig.modeLabels?.[mode];
+  const modeInfo = label ? { ...baseModeInfo, label, badge: label } : baseModeInfo;
   const ModeIcon = modeInfo.icon;
 
   const handleBack = useCallback(() => {

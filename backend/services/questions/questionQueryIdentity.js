@@ -43,7 +43,7 @@ export function canonicalQuestionQuery(family, input, normalized = process.env.Q
     query.topic = normalizeSearchKey(query.topic);
     if (query.topic === 'antosynopyq') query.topic = 'synonymsantonyms';
   }
-  if (['legacy', 'cursor', 'counts', 'session'].includes(family) && query.topic && !query.includeFacets) delete query.subject;
+  if (['legacy', 'cursor', 'counts', 'session'].includes(family) && query.topic && !query.includeFacets && normalizeSearchKey(query.subject) !== 'iitjamphysics') delete query.subject;
   if (query.quizName) query.quizName = query.quizName.trim().toLowerCase();
   if (query.difficulty) query.difficulty = query.difficulty.trim().toLowerCase();
   if (query.questionType) {

@@ -1,5 +1,7 @@
 'use client';
 
+import { JAM_SECTIONS, JAM_SUBJECT } from '@/lib/exam-mode';
+import ExamModeSwitch from '@/components/ExamModeSwitch';
 import { useAuth } from '@/context/AuthContext';
 import {
 Award,
@@ -10,7 +12,7 @@ Clock,
 Layers,
 Lock
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect,useRef,useMemo,useState } from 'react';
 import { getExamHistory,getExamSlots,type MockAttemptHistory } from './api';
 import {
@@ -51,26 +53,28 @@ const EXAM_META: Record<string, { name: string; category: string; subtitle: stri
 
 export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { token, user, loading: authLoading } = useAuth();
   const owner = user?.id;
   const ready = !authLoading && !!token && !!owner;
   const tokenRef = useRef(token);
   useEffect(() => { tokenRef.current = token; }, [token]);
 
-  const meta = EXAM_META[examSlug] || {
+  const jamSection = JAM_SECTIONS.find(section => `${JAM_SUBJECT}-${section.slug}` === examSlug);
+  const meta = (examSlug === JAM_SUBJECT || jamSection ? { name: jamSection?.title || 'IIT JAM Physics', category: 'IIT JAM', subtitle: jamSection ? 'Physics section practice' : 'Physics mock tests and previous year papers', icon: '⚛️' } : EXAM_META[examSlug]) || {
     name: examSlug.toUpperCase(),
     category: 'Exam',
     subtitle: 'Comprehensive preparation series',
     icon: '📝',
   };
 
-  const [activeTab, setActiveTab] = useState<'mock' | 'overview' | 'prev'>('mock');
+  const [activeTab, setActiveTab] = useState<'mock' | 'overview' | 'prev'>(searchParams.get('tab') === 'prev' ? 'prev' : 'mock');
   const [historyState, setHistory] = useState<{ owner: string | undefined; exam: string; attempts: MockAttemptHistory[] } | null>(null);
   const history = historyState && historyState.owner === owner && historyState.exam === examSlug && ready ? historyState.attempts : [];
   const [slotState, setSlotState] = useState<{ exam: string; slots: MockTestSlot[] } | null>(null);
-  const allSlots = useMemo(() => slotState?.exam === examSlug ? slotState.slots.filter(s => !s.isPyq) : getSlotsForExam(examSlug), [slotState, examSlug]);
-  const pyqSlots = useMemo(() => slotState?.exam === examSlug ? slotState.slots.filter(s => s.isPyq) : getPyqSlotsForExam(examSlug), [slotState, examSlug]);
-  const [, setLoadingSlots] = useState(true);
+  const allSlots = useMemo(() => slotState?.exam === examSlug ? slotState.slots.filter(s => !(s.isPyq || s.type === 'pyq')) : getSlotsForExam(examSlug), [slotState, examSlug]);
+  const pyqSlots = useMemo(() => slotState?.exam === examSlug ? slotState.slots.filter(s => s.isPyq || s.type === 'pyq') : getPyqSlotsForExam(examSlug), [slotState, examSlug]);
+  const [loadingSlots, setLoadingSlots] = useState(true);
 
   useEffect(() => {
     const body = document.body;
@@ -204,6 +208,8 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
             <span>All Exams</span>
           </button>
 
+          <ExamModeSwitch />
+
           <div className={styles.sidebarExamCard}>
             <div className={styles.sidebarExamIcon}>{meta.icon}</div>
             <div className={styles.sidebarExamDetails}>
@@ -330,6 +336,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                 {/* Tab 1: Mock Tests List */}
                 {activeTab === 'mock' && (
                   <div className={styles.testList}>
+                    {displayMockSlots.length === 0 && <div className={styles.placeholderTab}><h3>{loadingSlots ? 'Loading tests…' : 'No tests published yet'}</h3><p>{loadingSlots ? 'Fetching available papers.' : 'Published papers will appear here when available.'}</p></div>}
                     {displayMockSlots.map((slot) => {
                       const state = getSlotState(slot);
                       const config = getExamConfig(slot.configKey);

@@ -42,3 +42,12 @@ it('preserves commas in structured concept labels and canonicalizes equivalent s
 it.each([{ concept: 'x'.repeat(65537) }, { concept: ['x'.repeat(1001)] }, { concept: Array(2001).fill('x') }, { concept: '[invalid' }, { concept: '[1]' }, { concept: { $ne: '' } }])('rejects malformed or excessive selections %j', input => {
   expect(() => canonicalQuestionQuery('session', input)).toThrow('Invalid question query');
 });
+
+
+it.each(['legacy', 'cursor', 'counts', 'session'])('retains JAM subject isolation in %s query identities', family => {
+  for (const normalized of [false, true]) {
+    const jam = canonicalQuestionQuery(family, { subject: 'iit-jam-physics', topic: 'iit-jam-mechanics' }, normalized);
+    expect(jam.subject).toBe(normalized ? 'iitjamphysics' : 'iit-jam-physics');
+    expect(jam).not.toEqual(canonicalQuestionQuery(family, { subject: 'mathematics', topic: 'mechanics' }, normalized));
+  }
+});

@@ -1,3 +1,4 @@
+import { JAM_SECTIONS, jamQuestionTopic } from '@meow/contracts/jam';
 import { assignQuestionIdentity, resolveQuestion } from '../questions/questionIdentity.js';
 import { battleQuestionMetadata } from '../questions/battleQuestionMetadata.js';
 import { fetchSlotById } from './mockSlotService.js';
@@ -50,7 +51,11 @@ export async function uploadFullPaper({ slotData, questions }) {
   }
 
   // Normalize questions
+  const isJam = String(slotData.examSlug).startsWith('iit-jam-physics');
   const normalizedQuestions = questions.map((q, idx) => {
+    const rawTopic = String(q.topic || 'general');
+    const jamSection = JAM_SECTIONS.find(s => s.slug === rawTopic || s.title.toLowerCase() === rawTopic.toLowerCase() || jamQuestionTopic(s.slug) === rawTopic);
+    const topic = isJam ? jamQuestionTopic(jamSection?.slug || rawTopic.replace(/^iit-jam-/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-')) : rawTopic;
     const qId = q.id ? String(q.id).trim() : `${slotData.id}_q${idx + 1}`;
     const options = Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []);
     const correctAnswer = q.correctAnswer ?? q.answer ?? q.correctOption;
@@ -58,11 +63,12 @@ export async function uploadFullPaper({ slotData, questions }) {
     return {
       id: qId,
       question: q.question || '',
+      questionType: String(q.questionType || 'MCQ').toUpperCase(),
       options,
       correctAnswer,
       solution: q.solution || q.explanation || '',
-      subject: q.subject || 'General',
-      topic: q.topic || 'General',
+      subject: isJam ? 'iit-jam-physics' : q.subject || 'General',
+      topic: isJam ? topic : q.topic || 'General',
       sectionKey: q.sectionKey || q.section || null,
       difficulty: q.difficulty || 'medium',
       questionImage: q.questionImage || null,
@@ -132,7 +138,7 @@ export async function uploadFullPaper({ slotData, questions }) {
 
   // 2. Also optionally batch upsert questions into question bank
   let insertedToBank = 0;
-  for (const q of slotDoc.assessmentMode === 'confidential' ? [] : normalizedQuestions) {
+  for (const q of slotDoc.assessmentMode === 'confidential' ? [] : normalizedQuestions.filter(question => question.questionType === 'MCQ')) {
     try {
       await questionsCollection.updateOne(
         {
@@ -172,6 +178,7 @@ export async function buildPaper({ examSlug, testId, slot: loadedSlot }) {
 
   const config = getExamConfig(slot.configKey);
   if (!config) throw new Error(`Config not found: ${slot.configKey}`);
+  if (config.requireFixedPaper && !slot.fixedQuestions?.length) throw invalidPaper('This exam requires a published, complete fixed paper.');
 
   const questionsCollection =
     getQuestionsCollection();

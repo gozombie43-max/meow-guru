@@ -1,4 +1,5 @@
 "use client";
+import { JAM_MOCK_CONFIGS } from '@meow/contracts/jam';
 import { requestResponse } from "@/shared/api/request";
 
 import { getAccessToken } from "@/shared/api/client";
@@ -10,6 +11,7 @@ import styles from "./AdminTool.module.css";
 
 const API = API_BASE;
 const EXAMS: Record<string, { name: string; tiers: { tier: string; configKey: string }[] }> = {
+  ...Object.fromEntries(Object.values(JAM_MOCK_CONFIGS).map(config => [config.key, { name: config.name, tiers: [{ tier: "Physics", configKey: config.key }] }])),
   "ssc-cgl": { name: "SSC CGL", tiers: [{ tier: "Tier I", configKey: "ssc-cgl-tier1" }, { tier: "Tier II", configKey: "ssc-cgl-tier2" }] },
   "ssc-chsl": { name: "SSC CHSL", tiers: [{ tier: "Tier I", configKey: "ssc-chsl-tier1" }, { tier: "Tier II", configKey: "ssc-chsl-tier2" }] },
   "ssc-mts": { name: "SSC MTS", tiers: [{ tier: "Tier I", configKey: "ssc-mts" }] }, 
@@ -42,7 +44,7 @@ function parse(text: string): Question[] {
     return Array.isArray(data) ? data.filter((x): x is Question => !!x && typeof x === "object") : []; 
   } catch { 
     return []; 
-  } 
+  }
 }
 
 export default function MockTestManager({}: { backLink?: ReactNode }) {
@@ -51,7 +53,7 @@ export default function MockTestManager({}: { backLink?: ReactNode }) {
   const [examSlug, setExamSlug] = useState("ssc-cgl"); 
   const [tierIndex, setTierIndex] = useState(0); 
   const [type, setType] = useState<"mock" | "pyq">("mock"); 
-  const [source, setSource] = useState<"upload" | "dynamic">("upload"); 
+  const [selectedSource, setSource] = useState<"upload" | "dynamic">("upload");
   const [questionsText, setQuestionsText] = useState(""); 
   const [title, setTitle] = useState(""); 
   const [id, setId] = useState(""); 
@@ -64,6 +66,8 @@ export default function MockTestManager({}: { backLink?: ReactNode }) {
   const [status, setStatus] = useState(""); 
   const [busy, setBusy] = useState(false);
 
+  const requiresFixedPaper = examSlug.startsWith('iit-jam-physics');
+  const source = requiresFixedPaper ? 'upload' : selectedSource;
   const exam = EXAMS[examSlug]; 
   const tier = exam.tiers[tierIndex] || exam.tiers[0]; 
   const questions = useMemo(() => parse(questionsText), [questionsText]);
@@ -153,7 +157,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
         <div className={styles.macGroupHeader}>
           <h2 className={styles.macGroupTitle}>🎯 Target Exam &amp; Configuration</h2>
         </div>
-        
+
         <div className={styles.formGrid}>
           <label className={styles.fieldLabel}>
             Mock Engine API
@@ -188,7 +192,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
             <button data-ui-button="state" type="button" onClick={() => setSource("upload")} className={source === "upload" ? styles.btnPrimary : styles.btnSecondary} style={{ borderRadius: 6, padding: "5px 12px", fontSize: 12 }}>
               📄 Upload Full Paper
             </button>
-            <button data-ui-button="state" type="button" onClick={() => setSource("dynamic")} className={source === "dynamic" ? styles.btnPrimary : styles.btnSecondary} style={{ borderRadius: 6, padding: "5px 12px", fontSize: 12 }}>
+            <button data-ui-button="state" type="button" disabled={requiresFixedPaper} onClick={() => setSource("dynamic")} className={source === "dynamic" ? styles.btnPrimary : styles.btnSecondary} style={{ borderRadius: 6, padding: "5px 12px", fontSize: 12 }}>
               ⚡ Dynamic Slot
             </button>
           </div>
@@ -233,6 +237,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
         </div>
       </section>
 
+      {requiresFixedPaper && <p role="note">JAM requires a complete fixed paper. Full syllabus: sectionKey a1 (10 MCQ), a2 (20 MCQ), b (10 MSQ), c1 (10 NAT), c2 (10 NAT). Use questionType MCQ, MSQ or NAT; MSQ keys are arrays, numerical keys are numbers or {'{ min, max }'} ranges. Section practice uses 20 MCQs with sectionKey physics.</p>}
       {/* Paper Upload & Inspection */}
       {source === 'upload' && <label className={styles.fieldLabel} style={{ minHeight: 44 }}>
         <span><input type="checkbox" checked={confidential} onChange={event => setConfidential(event.target.checked)} aria-label="Confidential assessment" /> Confidential assessment</span>

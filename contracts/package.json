@@ -16,7 +16,9 @@
     "./notifications": "./notifications.js",
     "./questions": "./questions.js",
     "./quiz-grading": "./quiz-grading.js",
-    "./tutor": "./tutor.js"
+    "./tutor": "./tutor.js",
+    "./jam": "./jam.js",
+    "./mock-answer": "./mock-answer.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node scripts/publish-declarations.js",

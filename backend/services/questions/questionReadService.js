@@ -132,7 +132,7 @@ export async function fetchQuestions(params) {
     // ── Build MongoDB filter ─────────────────────────────
     const conditions = [];
 
-    if (!topic && subject) {
+    if (subject && (!topic || normalizeSearchKey(subject) === 'iitjamphysics')) {
       const subKey = normalizeSearchKey(subject);
       conditions.push(useNormalizedKeys ? { subjectKey: subKey } : (
         subKey === 'reasoning'

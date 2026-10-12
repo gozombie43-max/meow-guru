@@ -1,5 +1,8 @@
 'use client';
 
+import { useExamMode } from '@/context/ExamModeContext';
+import ExamModeSwitch from '@/components/ExamModeSwitch';
+import JamMockCatalog from '@/components/JamMockCatalog';
 import ShinyPill from '@/components/ShinyPill';
 import { Layers } from 'lucide-react';
 import Link from 'next/link';
@@ -281,6 +284,11 @@ const examCards: ExamCard[] = [
 ];
 
 export default function MockTestPage() {
+  const { isJam } = useExamMode();
+  return isJam ? <JamMockCatalog /> : <StandardMockTestPage />;
+}
+
+function StandardMockTestPage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
 
@@ -311,6 +319,8 @@ export default function MockTestPage() {
             <div className={`${styles.trafficLight} ${styles.minimize}`}></div>
             <div className={`${styles.trafficLight} ${styles.maximize}`}></div>
           </div>
+
+          <ExamModeSwitch />
 
           <h2 className={styles.sidebarTitle}>Categories</h2>
           <div className={styles.sidebarNav}>

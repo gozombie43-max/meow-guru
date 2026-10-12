@@ -42,13 +42,14 @@ async function buildQuestionCounts(params) {
   if (isNormalizedQuestionKeysEnabled()) {
     const topicKey = normalizeSearchKey(topic);
     const filter = topic ? { topicKey: ['synonymsantonyms', 'antosynopyq'].includes(topicKey) ? { $in: ['synonymsantonyms', 'antosynopyq'] } : topicKey } : { subjectKey: normalizeSearchKey(subject) };
+    if (subject && normalizeSearchKey(subject) === 'iitjamphysics') filter.subjectKey = normalizeSearchKey(subject);
     const grouped = await aggregateQuestionModeCounts([{ $match: filter }, { $group: { _id: '$modeKey', count: { $sum: 1 } } }]);
     const counts = { concept: 0, formula: 0, mixed: 0, aiChallenge: 0, easy: 0, hard: 0, studyMode: 0 };
     for (const row of grouped) if (Object.hasOwn(counts, row._id)) counts[row._id] += Number(row.count) || 0;
     return counts;
   }
   const commonConditions = [];
-  if (!topic && subject) {
+  if (subject && (!topic || normalizeSearchKey(subject) === 'iitjamphysics')) {
     commonConditions.push({ subject: caseInsensitiveExact(subject) });
   }
 

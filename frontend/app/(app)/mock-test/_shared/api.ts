@@ -4,7 +4,8 @@ import type { MockTestSlot } from './exam-config';
 
 const BASE = API_BASE;
 
-export type MockAnswer = string | number;
+export type MockAnswer = string | number | Array<string | number>;
+export type MockAnswerKey = MockAnswer | { min: number; max: number };
 export type QuestionStatus =
   | 'not_visited'
   | 'not_answered'
@@ -18,6 +19,7 @@ export interface MockOption {
 }
 
 export interface MockQuestion {
+  questionType?: "MCQ" | "MSQ" | "NAT";
   id: string;
   text?: string;
   question?: string;
@@ -52,7 +54,7 @@ export interface MockAttempt {
   attemptId?: string;
   paper?: MockPaper;
   answers?: Record<string, MockAnswer>;
-  answerKey?: Record<string, MockAnswer>;
+  answerKey?: Record<string, MockAnswerKey>;
   questionStatuses?: Record<string, QuestionStatus>;
   timeLeft?: number;
   status?: 'in_progress' | 'submitting' | 'completed';

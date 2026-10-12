@@ -7,6 +7,7 @@ import styles from './Resource.module.css';
 import { bindStyleClasses } from '@/lib/styleClasses';
 
 const styleClasses = bindStyleClasses(styles);
+import { useExamMode } from '@/context/ExamModeContext';
 import ResourceUploadDialog from "./ResourceUploadDialog";
 import { fetchWithRetry } from "@/lib/api/http";
 import { announceFeedback } from "@/lib/feedback";
@@ -29,18 +30,26 @@ import {
   getCategory,
   resourceTabs,
   sortFiles,
-  subjects,
+  subjects as sscSubjects,
+  jamSubjects,
   type ResourceFile,
   type ResourceTab,
   type SubjectId,
 } from "./resource-model";
 
 export default function ResourcePage() {
+  const { mode } = useExamMode();
+  return <ResourceContent key={mode} />;
+}
+
+function ResourceContent() {
+  const { isJam } = useExamMode();
+  const subjects = isJam ? jamSubjects : sscSubjects;
   const API = API_BASE;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadTargetRef = useRef<{ subject: SubjectId; tab: ResourceTab } | null>(null);
 
-  const [activeSubject, setActiveSubject] = useState<SubjectId>("math");
+  const [activeSubject, setActiveSubject] = useState<SubjectId>(subjects[0].id);
   const [activeTab, setActiveTab] = useState<ResourceTab>("Books");
   const [files, setFiles] = useState<ResourceFile[]>([]);
   const [loading, setLoading] = useState(true);

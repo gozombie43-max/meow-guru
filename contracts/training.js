@@ -10,6 +10,7 @@ export const TRAINING_MODES = [
   "survival",
 ];
 export const TRAINING_EXAMS = [
+  { id: "iit-jam-physics", label: "IIT JAM Physics" },
   { id: "ssc-cgl", label: "SSC CGL" },
   { id: "ssc-chsl", label: "SSC CHSL" },
   { id: "cat", label: "CAT" },

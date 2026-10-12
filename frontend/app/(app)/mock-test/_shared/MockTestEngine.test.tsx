@@ -199,3 +199,24 @@ it('keeps a late autosave completion from replacing another attempt revision', a
   await act(async () => vi.advanceTimersByTime(20_000));
   expect(autosaveAttempt).toHaveBeenLastCalledWith('new', expect.objectContaining({ baseRevision: 1, revision: 2 }), 'test-token');
 });
+
+
+describe('shared JAM answer controls', () => {
+  it('saves multiple selections as a set and deselects individual options', async () => {
+    vi.mocked(startTest).mockResolvedValueOnce({ attemptId: 'attempt', timeLeft: 60, paper: { sections: [{ key: 'b', questions: [{ id: 'q', question: 'Select all', questionType: 'MSQ', options: ['A', 'B', 'C'] }] }] } });
+    await mount();
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Answer A' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Answer C' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Answer A' }));
+    await act(async () => { vi.advanceTimersByTime(20000); });
+    expect(autosaveAttempt).toHaveBeenCalledWith('attempt', expect.objectContaining({ answers: { q: ['2'] } }), 'test-token');
+  });
+  it('saves numerical zero as an answer', async () => {
+    vi.mocked(startTest).mockResolvedValueOnce({ attemptId: 'attempt', timeLeft: 60, paper: { sections: [{ key: 'c1', questions: [{ id: 'q', question: 'Number?', questionType: 'NAT', options: [] }] }] } });
+    await mount();
+    fireEvent.change(screen.getByRole('textbox', { name: 'Numerical answer' }), { target: { value: '0' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save & Next' }));
+    await act(async () => { vi.advanceTimersByTime(20000); });
+    expect(autosaveAttempt).toHaveBeenCalledWith('attempt', expect.objectContaining({ answers: { q: '0' }, questionStatuses: { q: 'answered' } }), 'test-token');
+  });
+});

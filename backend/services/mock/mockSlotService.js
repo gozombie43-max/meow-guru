@@ -2,7 +2,7 @@ import { cleanMongoDoc, summarizeSlot } from './mockModel.js';
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
 
 import { invalidPaper } from '../assessmentPolicy.js';
-import { getSlotById as getStaticSlotById, getSlotsForExam as getStaticSlotsForExam, MOCK_TEST_SLOTS } from '../../config/exam-config.js';
+import { getExamConfig, getSlotById as getStaticSlotById, getSlotsForExam as getStaticSlotsForExam, MOCK_TEST_SLOTS } from '../../config/exam-config.js';
 import { getMockSlotsCollection } from '../../config/mongodb.js';
 
 // Compute paper metadata inside Mongo; question arrays never cross the driver.
@@ -243,6 +243,7 @@ export async function seedDefaultSlots() {
 export async function createMockSlot(
   slotData
 ) {
+  if (getExamConfig(slotData.configKey)?.requireFixedPaper) throw invalidPaper('Upload a complete fixed paper for IIT JAM; dynamic slots are not supported.');
   if (slotData.assessmentMode === 'confidential') throw invalidPaper('Upload a fixed paper to create a confidential assessment');
   if (
     !slotData.id ||

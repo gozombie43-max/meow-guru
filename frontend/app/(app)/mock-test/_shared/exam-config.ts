@@ -1,3 +1,4 @@
+import { JAM_MOCK_CONFIGS } from '@meow/contracts/jam';
 // ─── Types ────────────────────────────────────────────────────────
 
 export type SectionConfig = {
@@ -6,6 +7,7 @@ export type SectionConfig = {
   questionCount: number;
   timeLimitMin: number;       // 0 = shares composite timer
   marking: { correct: number; incorrect: number };
+  questionType?: string;
   topics: string[];           // maps to Cosmos c.subject / c.topic
 };
 
@@ -14,6 +16,7 @@ export type ExamConfig = {
   name: string;
   compositeTimer: boolean;    // true = one timer for whole paper, false = per-section
   totalDurationMin: number;
+  requireFixedPaper?: boolean;
   sections: SectionConfig[];
 };
 
@@ -41,6 +44,12 @@ export type QuestionStatus =
 // ─── Exam Configs ─────────────────────────────────────────────────
 
 export const EXAM_CONFIGS: Record<string, ExamConfig> = {
+  ...JAM_MOCK_CONFIGS,
+  'iit-jam-physics-practice': {
+    key: 'iit-jam-physics-practice', name: 'IIT JAM Physics Practice', compositeTimer: true, totalDurationMin: 30,
+    sections: [{ key: 'physics', label: 'Physics practice', questionCount: 20, timeLimitMin: 0, marking: { correct: 1, incorrect: 0 }, topics: ['iit-jam-physics'] }],
+  },
+
 
   // ── SSC ──────────────────────────────────────────────────────────
 
@@ -651,6 +660,14 @@ export const EXAM_SLUGS = [
   'ibps-po', 'ibps-clerk', 'sbi-po', 'sbi-clerk',
   'cat', 'nda', 'cds', 'cuet',
   'upsc', 'uppsc', 'wbcs',
+  'iit-jam-physics',
+  'iit-jam-physics-mathematical-methods',
+  'iit-jam-physics-mechanics',
+  'iit-jam-physics-oscillations-waves-optics',
+  'iit-jam-physics-electricity-magnetism',
+  'iit-jam-physics-thermodynamics',
+  'iit-jam-physics-modern-physics',
+  'iit-jam-physics-solid-state-electronics',
 ] as const;
 
 export type ExamSlug = typeof EXAM_SLUGS[number];

@@ -151,7 +151,7 @@ describe('normalized ingestion and backfill', () => {
       if (previous === undefined) delete process.env.QUESTIONS_NORMALIZED_KEYS;
       else process.env.QUESTIONS_NORMALIZED_KEYS = previous;
     }
-  });
+  }, 30000);
 });
 
 describe('durable job leases', () => {

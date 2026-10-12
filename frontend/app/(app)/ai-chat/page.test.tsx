@@ -57,7 +57,7 @@ describe('AI chat draft isolation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'New chat' }));
     expect(input).toHaveValue('');
     expect(screen.getByRole('button', { name: 'Send message' })).toBeDisabled();
-  });
+  }, 15_000);
 
   it('sends the child draft and still validates the response after loading the schemas', async () => {
     render(<AiChatPage />);

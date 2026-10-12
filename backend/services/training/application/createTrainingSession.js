@@ -44,7 +44,7 @@ export async function createTrainingSessionCommand(userId, config, now) {
   if (sectional && !config.subject)
     throw new Error("Choose a subject for sectional training.");
   const examConfig = getExamConfig(
-    config.exam === "cat" ? "cat" : `${config.exam}-tier${config.tier || 1}`,
+    config.exam === "iit-jam-physics" ? "iit-jam-physics-practice" : config.exam === "cat" ? "cat" : `${config.exam}-tier${config.tier || 1}`,
   );
   const normalizedSubject = (config.subject || "")
     .toLowerCase()
