@@ -1,4 +1,5 @@
 import { test, expect, type BrowserContext } from '@playwright/test';
+import { JAM_SECTIONS, JAM_SUBJECT } from '../lib/exam-mode';
 const frontend = process.env.JAM_UI_ORIGIN || 'http://127.0.0.1:3110';
 const backend = 'http://127.0.0.1:3111';
 async function connect(context: BrowserContext, token: string) {
@@ -47,7 +48,11 @@ for (const width of [320, 390, 1366]) for (const theme of ['dark', 'light']) {
     await expect(page.getByRole('heading', { name: /Big breakthroughs/ }).filter({ visible: true })).toBeVisible();
     await page.goto('/mock-test');
     await expect(page.getByRole('heading', { name: 'IIT JAM Physics Mock Test', exact: true })).toBeVisible();
-    await expect(page.getByRole('link', { name: /20 questions per test/ })).toHaveCount(7);
+    const sectionLinks = page.getByRole('link').and(page.locator(`a[href^="/mock-test/${JAM_SUBJECT}-"]`));
+    await expect(sectionLinks).toHaveCount(JAM_SECTIONS.length);
+    for (const section of JAM_SECTIONS) {
+      await expect(sectionLinks.and(page.locator(`a[href="/mock-test/${JAM_SUBJECT}-${section.slug}"]`))).toBeVisible();
+    }
     await page.screenshot({ path: info.outputPath('jam-mocks.png'), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.getByRole('button', { name: 'Previous Years', exact: true }).click();
@@ -58,7 +63,8 @@ for (const width of [320, 390, 1366]) for (const theme of ['dark', 'light']) {
     await expect(page.getByRole('heading', { name: 'Mathematical Methods', exact: true })).toBeVisible();
     await page.goto('/subjects/iit-jam-physics/mathematical-methods');
 
-    await expect(page.getByRole('heading', { name: 'Mathematical Methods', exact: true })).toBeVisible();
+    const chapterHeading = width < 768 ? 'Mathematical Methods Chapters' : 'Mathematical Methods';
+    await expect(page.getByRole('heading', { name: chapterHeading, exact: true })).toBeVisible();
     await page.getByRole('link', { name: /Vector Algebra and Vector Calculus/ }).filter({ visible: true }).click();
     await expect(page.getByRole('heading', { name: 'Vector Algebra and Vector Calculus', exact: true })).toBeVisible();
     await expect(page.getByText('Formula practice', { exact: true })).toBeVisible();
