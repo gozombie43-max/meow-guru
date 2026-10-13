@@ -29,6 +29,7 @@ import ExamLandingLoader from './ExamLandingLoader';
 
 interface ExamLandingPageProps {
   examSlug: string;
+  loadingOnly?: boolean;
 }
 
 const EXAM_META: Record<string, { name: string; category: string; subtitle: string; icon: string }> = {
@@ -52,7 +53,7 @@ const EXAM_META: Record<string, { name: string; category: string; subtitle: stri
   'wbcs': { name: 'WBCS (Exe)', category: 'UPSC & State PSC', subtitle: 'West Bengal Civil Service (Executive) & Allied Services', icon: '🏛️' },
 };
 
-export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
+export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamLandingPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { token, user, loading: authLoading } = useAuth();
@@ -80,6 +81,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
 
   // Fetch slots from API (with fallback to static config)
   useEffect(() => {
+    if (loadingOnly) return;
     let isMounted = true;
     const controller = new AbortController();
     getExamSlots(examSlug, controller.signal)
@@ -95,7 +97,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
         }
       });
     return () => { isMounted = false; controller.abort(); };
-  }, [examSlug]);
+  }, [examSlug, loadingOnly]);
 
   // Compute dynamic tiers/stages from loaded mock and pyq slots
   const tiers = useMemo(() => {
@@ -110,7 +112,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
 
   // Fetch attempt history for this exam
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || loadingOnly) return;
     const controller = new AbortController();
     getExamHistory(examSlug, tokenRef.current!, controller.signal)
       .then((res) => {
@@ -124,7 +126,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
         }
       });
     return () => controller.abort();
-  }, [examSlug, owner, ready]);
+  }, [examSlug, owner, ready, loadingOnly]);
 
   // Filtered by selected tier (if exam has tiers)
   const displayMockSlots = useMemo(() => {
@@ -179,7 +181,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
     router.push('/access-code');
   };
 
-  if (loadingSlots || authLoading || loadingHistory) return <ExamLandingLoader />;
+  const isLoading = loadingOnly || loadingSlots || authLoading || loadingHistory;
 
   return (
     <main className={`${styles.page} ${styles.loadedPage}`}>
@@ -324,7 +326,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
               <div className={styles.contentBody}>
                 {/* Tab 1: Mock Tests List */}
                 {activeTab === 'mock' && (
-                  <div className={styles.testList}>
+                  isLoading ? <ExamLandingLoader /> : <div className={styles.testList}>
                     {displayMockSlots.length === 0 && <div className={styles.placeholderTab}><h3>No tests published yet</h3><p>Published papers will appear here when available.</p></div>}
                     {displayMockSlots.map((slot) => {
                       const state = getSlotState(slot);
@@ -440,7 +442,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
 
                 {/* Tab 3: Previous Year Papers */}
                 {activeTab === 'prev' && (
-                  <div className={styles.testList}>
+                  isLoading ? <ExamLandingLoader /> : <div className={styles.testList}>
                     {displayPyqSlots.length === 0 ? (
                       <div className={styles.placeholderTab}>
                         <div className={styles.placeholderIcon}>📚</div>
