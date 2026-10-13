@@ -16,6 +16,7 @@ import { useThemeMode } from '@/hooks/useTheme';
 import {
   BookOpen,
   FileCheck2,
+  ArrowUpRight,
   Home as HomeIcon,
   Menu,
   Moon,
@@ -47,13 +48,25 @@ const adminContacts = [
 
 function AdminContactCard() {
   return <section className={styles.adminContactCard} aria-label="Contact Admin: Guru Charan Murmu">
-    <p className={styles.contactEyebrow}>Contact Admin</p>
-    <h2>Guru Charan Murmu</h2>
-    <p className={styles.contactDescription}>Questions or feedback? Let’s talk.</p>
+    <p className={styles.contactEyebrow}>Here to help</p>
+    <div className={styles.contactIdentity}>
+      <Image className={styles.contactAvatar} src="/images/admin-portrait-wide.webp" alt="" width={36} height={36} />
+      <div>
+        <h2>Guru Charan Murmu</h2>
+        <p className={styles.contactRole}>Your admin</p>
+      </div>
+    </div>
+    <p className={styles.contactDescription}>Have a question or an idea?<br /><span>Get in touch directly.</span></p>
+    <a className={styles.contactWhatsapp} href={adminContacts[0].href} target="_blank" rel="noopener noreferrer" aria-label="Contact Guru Charan Murmu on WhatsApp (opens in a new tab)">
+      <Image src={adminContacts[0].icon} alt="" width={24} height={24} />
+      <span>Chat on WhatsApp</span><ArrowUpRight size={18} aria-hidden="true" />
+    </a>
+    <div className={styles.contactDivider}>Or reach me on</div>
     <div className={styles.contactLinks}>
-      {adminContacts.map(contact => <a key={contact.label} href={contact.href} target="_blank" rel="noopener noreferrer" aria-label={`Contact Guru Charan Murmu on ${contact.label} (opens in a new tab)`}>
-        <Image src={contact.icon} alt="" width={28} height={28} />
+      {adminContacts.slice(1).map(contact => <a key={contact.label} href={contact.href} target="_blank" rel="noopener noreferrer" aria-label={`Contact Guru Charan Murmu on ${contact.label} (opens in a new tab)`}>
+        <Image src={contact.icon} alt="" width={20} height={20} />
         <span>{contact.label}</span>
+        <ArrowUpRight size={12} aria-hidden="true" />
       </a>)}
     </div>
   </section>;

@@ -244,6 +244,48 @@
 .empty a {
   color:var(--ios-system-blue);
 }
+.customCard {
+  max-width:560px;
+  padding:24px;
+  border-radius:22px;
+  background:var(--surface);
+  color:var(--foreground);
+}
+.customIcon {
+  display:grid;
+  place-items:center;
+  width:48px;
+  height:48px;
+  margin-bottom:20px;
+  border-radius:14px;
+  background:rgb(var(--ios-system-blue-rgb)/.12);
+  color:var(--ios-system-blue);
+}
+.customCard .customEyebrow { margin:0 0 6px; color:var(--text-secondary); font-size:11px; font-weight:600; line-height:16px; letter-spacing:.08em; text-transform:uppercase; }
+.customCard h2 { margin:0; font-size:22px; font-weight:650; line-height:28px; letter-spacing:-.03em; }
+.customCard .customDescription { max-width:42ch; margin:10px 0 24px; color:var(--text-secondary); font-size:14px; line-height:22px; }
+.customCard .customAction {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:46px;
+  padding:12px 16px;
+  border-radius:12px;
+  background:#0866d9;
+  color:#fff;
+  font-size:13px;
+  font-weight:600;
+  line-height:20px;
+  text-decoration:none;
+}
+.customAction svg { flex-shrink:0; }
+.customCard .customAction:hover { background:#0759bf; }
+.customCard .customAction:focus-visible { outline:2px solid var(--ios-system-blue); outline-offset:4px; }
+@media(max-width:600px) {
+  .customCard { padding:22px 20px; }
+  .customCard .customAction { display:flex; width:100%; }
+}
 @media(max-width:600px) {
   .home,.catalog {
     padding-left:14px;

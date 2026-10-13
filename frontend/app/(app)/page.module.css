@@ -1968,54 +1968,35 @@
   .mobileSidebar, .sidebarBackdrop { transition: none; }
 }
 
-.mobileSidebar .adminContactCard { margin-bottom: 40px; }
+.mobileSidebar .adminContactCard { margin-bottom: 20px; }
 .adminContactCard {
   margin-top: auto;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid var(--line);
-  border-radius: 18px;
-  background: linear-gradient(145deg, rgb(var(--ios-system-blue-rgb) / .06), transparent 70%), var(--surface-soft);
+  border-radius: 16px;
+  background: var(--surface-soft);
   color: var(--text);
 }
-.contactEyebrow {
-  margin: 0 0 5px;
-  color: var(--purple);
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 16px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-}
-.adminContactCard h2 {
-  margin: 0;
-  color: var(--text);
-  font-size: 16px;
-  font-weight: 650;
-  line-height: 22px;
-  letter-spacing: -.02em;
-}
-.contactDescription { margin: 6px 0 14px; color: var(--muted); font-size: 12px; line-height: 18px; }
-.contactLinks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-.adminContactCard .contactLinks a {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  min-height: 68px;
-  gap: 6px;
-  padding: 10px 2px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  color: var(--text);
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 14px;
-  text-decoration: none;
-  transition: background .15s ease, border-color .15s ease;
-}
-.contactLinks img { flex-shrink: 0; width: 28px; height: 28px; }
-.adminContactCard .contactLinks a:hover { border-color: var(--purple); background: rgb(var(--ios-system-blue-rgb) / .08); }
-.adminContactCard .contactLinks a:focus-visible { outline: 2px solid var(--ios-system-blue); outline-offset: 3px; }
+.contactEyebrow { margin: 0 0 9px; color: var(--muted); font-size: 9px; font-weight: 650; line-height: 12px; letter-spacing: .12em; text-transform: uppercase; }
+.adminContactCard h2 { margin: 0; color: var(--text); font-size: 13px; font-weight: 650; line-height: 18px; letter-spacing: -.02em; }
+.contactIdentity { display: flex; align-items: center; gap: 9px; }
+.contactIdentity > div { min-width: 0; }
+.contactAvatar { display: block; flex: 0 0 36px; width: 36px; height: 36px; object-fit: cover; border-radius: 50%; background: var(--surface); }
+.contactRole { margin: 1px 0 0; color: var(--muted); font-size: 10px; line-height: 14px; }
+.contactDescription { margin: 10px 0; color: var(--text); font-size: 11px; line-height: 17px; }
+.contactDescription > span { color: var(--muted); }
+.adminContactCard .contactWhatsapp { display: flex; align-items: center; gap: 7px; min-height: 44px; padding: 9px; border: 0; border-radius: 10px; background: #008344; color: #fff; font-size: 11px; font-weight: 600; line-height: 16px; text-decoration: none; }
+.contactWhatsapp img { width: 22px; height: 22px; flex-shrink: 0; }
+.contactWhatsapp > span { flex: 1; }
+.contactWhatsapp > svg { flex-shrink: 0; width: 18px; height: 18px; }
+.contactDivider { display: flex; align-items: center; gap: 8px; margin: 9px 0; color: var(--muted); font-size: 8px; font-weight: 600; line-height: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.contactDivider::before, .contactDivider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.contactLinks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.adminContactCard .contactLinks a { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 44px; gap: 4px; padding: 7px 4px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--text); font-size: 10px; font-weight: 550; line-height: 16px; text-decoration: none; transition: background .15s ease; }
+.contactLinks img { flex-shrink: 0; width: 17px; height: 17px; }
+.contactLinks svg { flex-shrink: 0; color: var(--muted); }
+.adminContactCard .contactLinks a:hover { background: var(--surface-soft); }
+.adminContactCard .contactWhatsapp:hover { background: #006f39; }
+.adminContactCard a:active { opacity: .85; }
+.adminContactCard a:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .adminContactCard .contactLinks a { transition: none; } }

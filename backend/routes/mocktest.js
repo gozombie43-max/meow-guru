@@ -42,7 +42,7 @@ router.get('/:examSlug/slots', fetchExamSlots);
 // GET /slots/:slotId — Fetch a single slot by ID
 router.get('/slots/:slotId', fetchSingleSlot);
 
-// ─── Admin Slot Management Routes (adminAuth: x-admin-secret) ───
+// ─── Admin Slot Management Routes (active admin/superadmin session) ───
 
 // POST /admin/slots — Create a new mock test slot
 router.post('/admin/slots', adminAuth, adminCreateSlot);

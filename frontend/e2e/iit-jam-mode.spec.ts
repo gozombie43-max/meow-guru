@@ -59,6 +59,8 @@ for (const width of [320, 390, 1366]) for (const theme of ['dark', 'light']) {
     await page.goto('/subjects/iit-jam-physics/mathematical-methods');
 
     await expect(page.getByRole('heading', { name: 'Mathematical Methods', exact: true })).toBeVisible();
+    await page.getByRole('link', { name: /Vector Algebra and Vector Calculus/ }).filter({ visible: true }).click();
+    await expect(page.getByRole('heading', { name: 'Vector Algebra and Vector Calculus', exact: true })).toBeVisible();
     await expect(page.getByText('Formula practice', { exact: true })).toBeVisible();
     const removedOverview = await page.goto('/subjects/iit-jam-physics');
     expect(removedOverview?.status()).toBe(404);
