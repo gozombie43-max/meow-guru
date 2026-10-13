@@ -6,6 +6,10 @@ test('pending grouping polls only status and stops when the quiz unmounts', asyn
     email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!',
   } });
   expect(login.ok()).toBeTruthy();
+  await context.route('**/backend-api/**', route => {
+    const path = new URL(route.request().url()).pathname.replace('/backend-api', '');
+    return route.fetch({ url: `http://127.0.0.1:3111${path}${new URL(route.request().url()).search}` }).then(response => route.fulfill({ response }));
+  });
   await page.clock.install();
   const metadata: string[] = [], statuses: string[] = [];
   page.on('request', request => {
