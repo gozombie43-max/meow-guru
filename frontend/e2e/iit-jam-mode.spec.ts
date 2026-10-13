@@ -25,7 +25,7 @@ for (const width of [320, 390, 1366]) for (const theme of ['dark', 'light']) {
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto('/');
-    await expect(page.getByRole('link', { name: 'Your profile', exact: true }).filter({ visible: true })).toBeVisible({ timeout: 30000 });
+    await expect(page.getByRole('link', { name: width < 1024 ? 'You' : 'Your profile', exact: true }).filter({ visible: true })).toBeVisible({ timeout: 30000 });
     if (width < 768) {
       await page.getByRole('button', { name: 'Open menu' }).click();
       await expect(page.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'true');
@@ -77,7 +77,7 @@ for (const width of [320, 390, 1366]) for (const theme of ['dark', 'light']) {
     await page.goto('/play');
     await expect(page.getByText('IIT JAM Physics', { exact: true }).first()).toBeVisible();
     await page.goto('/');
-    await expect(page.getByRole('link', { name: 'Your profile', exact: true }).filter({ visible: true })).toBeVisible({ timeout: 30000 });
+    await expect(page.getByRole('link', { name: width < 1024 ? 'You' : 'Your profile', exact: true }).filter({ visible: true })).toBeVisible({ timeout: 30000 });
     if (width < 768) {
       await page.getByRole('button', { name: 'Open menu' }).click();
       await expect(page.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'true');

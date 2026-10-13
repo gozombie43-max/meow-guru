@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { hidesPrimaryNavigation } from '@/lib/shell-policy';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { ClipboardList, Home as HomeIcon, Play, UserRound } from 'lucide-react';
+import { ClipboardList, Home as HomeIcon, Play } from 'lucide-react';
 import { useThemeMode } from '@/hooks/useTheme';
 import { AiChatIcon } from '@/components/AiChatIcon';
 import { useKeyboardOpen } from '@/components/VirtualKeyboardProvider';
+import { useAuth } from '@/context/AuthContext';
+import GoogleAvatarRing from '@/components/GoogleAvatarRing';
 
 export default function BottomNav() {
   const navRef = useRef<HTMLElement>(null);
@@ -15,6 +17,7 @@ export default function BottomNav() {
   const keyboardOpen = useKeyboardOpen();
   const shouldHideNav = hidesPrimaryNavigation(pathname) || keyboardOpen;
   const { theme } = useThemeMode();
+  const { user } = useAuth();
   const isLightSurface = theme === 'light';
 
   useEffect(() => {
@@ -111,8 +114,8 @@ export default function BottomNav() {
         className={`bottom-nav-item${isProfile ? ' is-active' : ''}`}
         aria-current={isProfile ? 'page' : undefined}
       >
-        <UserRound className="bottom-nav-icon" />
-        <span className="bottom-nav-label">Profile</span>
+        <GoogleAvatarRing size={26} initial={user?.name?.trim().charAt(0).toUpperCase() || 'U'} avatarUrl={user?.avatar || undefined} />
+        <span className="bottom-nav-label">You</span>
       </Link>
     </nav>
   );

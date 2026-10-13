@@ -150,13 +150,6 @@ export default function HomeClient({
   const renderMobileHeaderActions = () => (
     <div className={styles.headerActionsMobile}>
       <NotificationBell />
-      {user ? (
-        <UserProfileMenu size={34} align="right" />
-      ) : (
-        <Link data-ui-button="icon" href="/login" className={styles.loginIconButton} aria-label="Log in" title="Log in">
-          <UserRound size={21} strokeWidth={1.8} aria-hidden="true" />
-        </Link>
-      )}
       <button data-ui-button="state" data-ui-shape="icon"
         type="button"
         className={styles.menuButton}

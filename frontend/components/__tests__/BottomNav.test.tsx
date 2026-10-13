@@ -5,6 +5,8 @@ import BottomNav from '../BottomNav';
 import { VirtualKeyboardProvider } from '../VirtualKeyboardProvider';
 
 const render = (ui: React.ReactNode) => renderUI(ui, { wrapper: VirtualKeyboardProvider });
+const auth = vi.hoisted(() => ({ user: null as null | { name: string; avatar?: string } }));
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => auth }));
 
 let mockPathname = '/mock-test';
 vi.mock('next/navigation', () => ({
@@ -14,6 +16,7 @@ vi.mock('next/navigation', () => ({
 describe('BottomNav Component', () => {
   beforeEach(() => {
     mockPathname = '/mock-test';
+    auth.user = null;
     vi.stubGlobal('matchMedia', () => Object.assign(new EventTarget(), { matches: false }));
   });
   afterEach(() => {
@@ -106,8 +109,21 @@ describe('BottomNav Component', () => {
     expect(screen.getByText('Home')).toBeDefined();
     expect(screen.getByText('Mock')).toBeDefined();
     expect(screen.getByText('Play')).toBeDefined();
-    expect(screen.getByText('Profile')).toBeDefined();
+    expect(screen.getByRole('link', { name: 'You' })).toHaveAttribute('href', '/profile');
     expect(screen.getByLabelText('AI Assistant')).toBeDefined();
+  });
+
+  it('uses the current profile photo and updates when the account changes', () => {
+    auth.user = { name: 'Alex', avatar: '/images/alex.webp' };
+    const { rerender } = render(<BottomNav />);
+    const you = screen.getByRole('link', { name: 'You' });
+    expect(you.querySelector('[style*="background-image"]')).toHaveStyle({ backgroundImage: 'url("/images/alex.webp")' });
+    auth.user = { name: 'Blair' };
+    mockPathname = '/profile';
+    rerender(<BottomNav />);
+    expect(you.querySelector('[style*="background-image"]')).toBeNull();
+    expect(you).toHaveTextContent('B');
+    expect(you).toHaveAttribute('aria-current', 'page');
   });
 
   it('dismisses search focus on pages without bottom navigation', () => {
