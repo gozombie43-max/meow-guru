@@ -25,6 +25,7 @@ getTotalQuestions,
 type MockTestSlot,
 } from './exam-config';
 import styles from './ExamLandingPage.module.css';
+import ExamLandingLoader from './ExamLandingLoader';
 
 interface ExamLandingPageProps {
   examSlug: string;
@@ -72,20 +73,10 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
   const [historyState, setHistory] = useState<{ owner: string | undefined; exam: string; attempts: MockAttemptHistory[] } | null>(null);
   const history = historyState && historyState.owner === owner && historyState.exam === examSlug && ready ? historyState.attempts : [];
   const [slotState, setSlotState] = useState<{ exam: string; slots: MockTestSlot[] } | null>(null);
-  const allSlots = useMemo(() => slotState?.exam === examSlug ? slotState.slots.filter(s => !(s.isPyq || s.type === 'pyq')) : getSlotsForExam(examSlug), [slotState, examSlug]);
-  const pyqSlots = useMemo(() => slotState?.exam === examSlug ? slotState.slots.filter(s => s.isPyq || s.type === 'pyq') : getPyqSlotsForExam(examSlug), [slotState, examSlug]);
-  const [loadingSlots, setLoadingSlots] = useState(true);
-
-  useEffect(() => {
-    const body = document.body;
-    const root = document.documentElement;
-    body.classList.add('mock-test-surface');
-    root.classList.add('mock-test-surface');
-    return () => {
-      body.classList.remove('mock-test-surface');
-      root.classList.remove('mock-test-surface');
-    };
-  }, []);
+  const allSlots = useMemo(() => slotState?.exam === examSlug ? slotState.slots.filter(s => !(s.isPyq || s.type === 'pyq')) : [], [slotState, examSlug]);
+  const pyqSlots = useMemo(() => slotState?.exam === examSlug ? slotState.slots.filter(s => s.isPyq || s.type === 'pyq') : [], [slotState, examSlug]);
+  const loadingSlots = slotState?.exam !== examSlug;
+  const loadingHistory = ready && !(historyState?.owner === owner && historyState?.exam === examSlug);
 
   // Fetch slots from API (with fallback to static config)
   useEffect(() => {
@@ -93,15 +84,15 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
     const controller = new AbortController();
     getExamSlots(examSlug, controller.signal)
       .then((res) => {
-        if (isMounted && res.slots && res.slots.length > 0) {
-          setSlotState({ exam: examSlug, slots: res.slots });
+        if (isMounted) {
+          setSlotState({ exam: examSlug, slots: res.slots || [] });
         }
       })
       .catch((err) => {
-        if (!controller.signal.aborted) console.warn('API slots fetch fallback to static:', err);
-      })
-      .finally(() => {
-        if (isMounted) setLoadingSlots(false);
+        if (!controller.signal.aborted) {
+          console.warn('API slots fetch fallback to static:', err);
+          setSlotState({ exam: examSlug, slots: [...getSlotsForExam(examSlug), ...getPyqSlotsForExam(examSlug)] });
+        }
       });
     return () => { isMounted = false; controller.abort(); };
   }, [examSlug]);
@@ -115,14 +106,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
 
   const tierInfo = useMemo(() => getTierLabel(examSlug), [examSlug]);
   const [selectedTier, setSelectedTier] = useState<string>('');
-
-  // Update selected tier when tiers list is populated or changes
-  useEffect(() => {
-    if (tiers.length > 0 && (!selectedTier || !tiers.includes(selectedTier))) {
-      const timer = window.setTimeout(() => setSelectedTier(tiers[0]), 0);
-      return () => window.clearTimeout(timer);
-    }
-  }, [tiers, selectedTier]);
+  const effectiveTier = tiers.includes(selectedTier) ? selectedTier : tiers[0] || '';
 
   // Fetch attempt history for this exam
   useEffect(() => {
@@ -134,7 +118,10 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
         setHistory({ owner, exam: examSlug, attempts: res.attempts || [] });
       })
       .catch((err) => {
-        if (!controller.signal.aborted) console.warn('History fetch error:', err);
+        if (!controller.signal.aborted) {
+          console.warn('History fetch error:', err);
+          setHistory({ owner, exam: examSlug, attempts: [] });
+        }
       });
     return () => controller.abort();
   }, [examSlug, owner, ready]);
@@ -142,13 +129,13 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
   // Filtered by selected tier (if exam has tiers)
   const displayMockSlots = useMemo(() => {
     if (tiers.length === 0) return allSlots;
-    return allSlots.filter((slot) => !slot.tier || slot.tier === selectedTier);
-  }, [allSlots, selectedTier, tiers]);
+    return allSlots.filter((slot) => !slot.tier || slot.tier === effectiveTier);
+  }, [allSlots, effectiveTier, tiers]);
 
   const displayPyqSlots = useMemo(() => {
     if (tiers.length === 0) return pyqSlots;
-    return pyqSlots.filter((slot) => !slot.tier || slot.tier === selectedTier);
-  }, [pyqSlots, selectedTier, tiers]);
+    return pyqSlots.filter((slot) => !slot.tier || slot.tier === effectiveTier);
+  }, [pyqSlots, effectiveTier, tiers]);
 
   // Merge slot status with user history
   const getSlotState = (slot: MockTestSlot) => {
@@ -192,8 +179,10 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
     router.push('/access-code');
   };
 
+  if (loadingSlots || authLoading || loadingHistory) return <ExamLandingLoader />;
+
   return (
-    <main className={styles.page}>
+    <main className={`${styles.page} ${styles.loadedPage}`}>
       <div className={styles.macosWindow}>
         {/* Desktop macOS Sidebar */}
         <aside className={styles.macosSidebar}>
@@ -225,7 +214,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
               onClick={() => setActiveTab('mock')}
             >
               <Layers size={14} />
-              <span>Mock Tests ({allSlots.length})</span>
+              <span>Mock Tests{!loadingSlots && ` (${allSlots.length})`}</span>
             </button>
             <button data-ui-button="state"
               className={`${styles.sidebarTab} ${activeTab === 'overview' ? styles.activeSidebarTab : ''}`}
@@ -239,7 +228,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
               onClick={() => setActiveTab('prev')}
             >
               <Award size={14} />
-              <span>Previous Papers ({pyqSlots.length})</span>
+              <span>Previous Papers{!loadingSlots && ` (${pyqSlots.length})`}</span>
             </button>
           </div>
 
@@ -251,7 +240,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                 {tiers.map((t) => (
                   <button data-ui-button="state"
                     key={t}
-                    className={`${styles.sidebarTierTab} ${selectedTier === t ? styles.activeSidebarTierTab : ''}`}
+                    className={`${styles.sidebarTierTab} ${effectiveTier === t ? styles.activeSidebarTierTab : ''}`}
                     onClick={() => setSelectedTier(t)}
                   >
                     <span>{t}</span>
@@ -288,7 +277,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                       <div className={styles.tierDropdownWrap}>
                         <select
                           className={styles.tierDropdown}
-                          value={selectedTier}
+                          value={effectiveTier}
                           onChange={(e) => setSelectedTier(e.target.value)}
                           aria-label={`Select ${tierInfo.singular || 'Stage'}`}
                         >
@@ -314,7 +303,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                     className={`${styles.mobileTabBtn} ${activeTab === 'mock' ? styles.activeMobileTabBtn : ''}`}
                     onClick={() => setActiveTab('mock')}
                   >
-                    Mocks ({allSlots.length})
+                    Mocks{!loadingSlots && ` (${allSlots.length})`}
                   </button>
                   <button data-ui-button="state"
                     className={`${styles.mobileTabBtn} ${activeTab === 'overview' ? styles.activeMobileTabBtn : ''}`}
@@ -326,7 +315,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                     className={`${styles.mobileTabBtn} ${activeTab === 'prev' ? styles.activeMobileTabBtn : ''}`}
                     onClick={() => setActiveTab('prev')}
                   >
-                    PYQs ({pyqSlots.length})
+                    PYQs{!loadingSlots && ` (${pyqSlots.length})`}
                   </button>
                 </div>
               </header>
@@ -336,7 +325,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                 {/* Tab 1: Mock Tests List */}
                 {activeTab === 'mock' && (
                   <div className={styles.testList}>
-                    {displayMockSlots.length === 0 && <div className={styles.placeholderTab}><h3>{loadingSlots ? 'Loading tests…' : 'No tests published yet'}</h3><p>{loadingSlots ? 'Fetching available papers.' : 'Published papers will appear here when available.'}</p></div>}
+                    {displayMockSlots.length === 0 && <div className={styles.placeholderTab}><h3>No tests published yet</h3><p>Published papers will appear here when available.</p></div>}
                     {displayMockSlots.map((slot) => {
                       const state = getSlotState(slot);
                       const config = getExamConfig(slot.configKey);

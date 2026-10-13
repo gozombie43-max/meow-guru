@@ -20,7 +20,9 @@
 }
 
 :global(html.mock-test-surface),
-:global(body.mock-test-surface) {
+:global(body.mock-test-surface),
+:global(html):has(.page),
+:global(body):has(.page) {
   background: var(--light-canvas);
   overflow: hidden;
 }
@@ -62,6 +64,17 @@
 :global(body.mock-test-surface.theme-dark) {
   background: var(--dark-canvas);
 }
+
+:global(html.theme-dark):has(.page),
+:global(body.theme-dark):has(.page) { background: var(--dark-canvas); }
+
+.page.loadingPage { display:grid; place-items:center; padding:0; background:var(--bg) !important; }
+.loadingIndicator { display:flex; flex-direction:column; align-items:center; gap:12px; color:var(--text-muted); font-size:13px; line-height:20px; }
+.loadingSpinner { display:block; width:32px; height:32px; border:3px solid color-mix(in srgb,var(--text-muted) 20%,transparent); border-top-color:var(--primary); border-radius:50%; animation:exam-loader-spin .75s linear infinite; }
+.loadedPage { animation:exam-content-enter .16s ease-out; }
+@keyframes exam-loader-spin { to { transform:rotate(360deg); } }
+@keyframes exam-content-enter { from { opacity:0; } to { opacity:1; } }
+@media(prefers-reduced-motion:reduce) { .loadingSpinner, .loadedPage { animation:none; } }
 
 /* Base Mobile Layout - Fixed Screen with Scrollable Cards */
 .app {

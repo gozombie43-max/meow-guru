@@ -47,7 +47,7 @@ for (const width of [320, 390, 1366]) for (const theme of ['dark', 'light']) {
     await expect(page.getByRole('heading', { name: /Big breakthroughs/ }).filter({ visible: true })).toBeVisible();
     await page.goto('/mock-test');
     await expect(page.getByRole('heading', { name: 'IIT JAM Physics Mock Test', exact: true })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Topic-wise & full mocks/ })).toHaveCount(7);
+    await expect(page.getByRole('link', { name: /20 questions per test/ })).toHaveCount(7);
     await page.screenshot({ path: info.outputPath('jam-mocks.png'), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.getByRole('button', { name: 'Previous Years', exact: true }).click();

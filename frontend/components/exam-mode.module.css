@@ -374,7 +374,35 @@
 .catalogHeader h1 { font-size:18px; line-height:24px; white-space:nowrap; }
 .catalogToolbar .tabs { margin-bottom:0; padding-bottom:6px; gap:4px; }
 .catalogToolbar .tabs button { padding:10px 12px; font-size:12px; }
-.catalog .mockGrid { grid-template-columns:repeat(auto-fit,minmax(140px,180px)); gap:10px; }
+.catalog .mockGrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+.mockCard {
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  overflow:hidden;
+  padding:6px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:var(--surface);
+  color:inherit;
+  text-decoration:none;
+  transition:border-color .15s ease;
+}
+.mockArtwork {
+  position:relative;
+  display:block;
+  overflow:hidden;
+  aspect-ratio:2.1;
+  border-radius:10px;
+  background:#0b1018;
+}
+.mockArtwork img { object-fit:cover; }
+.mockCardCopy { display:flex; flex:1; flex-direction:column; align-items:flex-start; gap:4px; padding:10px 6px 6px; }
+.mockCardCopy strong { font-size:14px; font-weight:650; line-height:19px; letter-spacing:-.02em; text-wrap:balance; }
+.mockCardCopy small { margin-top:auto; color:var(--text-secondary); font-size:11px; line-height:16px; }
+.mockCard:hover { border-color:var(--ios-system-blue); }
+.mockCard:focus-visible { outline:2px solid var(--ios-system-blue); outline-offset:3px; }
+@media(prefers-reduced-motion:reduce) { .mockCard { transition:none; } }
 .catalog .mockGrid .card {
   display:grid;
   grid-template-rows:36px minmax(0,1fr) auto;

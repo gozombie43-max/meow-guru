@@ -3,12 +3,14 @@ import PhysicsArtwork from './PhysicsArtwork';
 import Link from 'next/link';
 import Image from 'next/image';
 import { BookOpen, ChevronRight, ClipboardList } from 'lucide-react';
-import { JAM_SECTIONS, JAM_SUBJECT, jamSectionHref } from '@/lib/exam-mode';
+import { JAM_SECTIONS, jamSectionHref } from '@/lib/exam-mode';
 import styles from './exam-mode.module.css';
+import JamMockSectionCards from './JamMockSectionCards';
 export function JamSectionCards({ mock = false }: { mock?: boolean }) {
-  return <div className={`${styles.grid} ${mock ? styles.mockGrid : ''}`}>{JAM_SECTIONS.map(section => <Link key={section.slug} href={mock ? `/mock-test/${JAM_SUBJECT}-${section.slug}` : jamSectionHref(section.slug)} className={styles.card}>
+  if (mock) return <JamMockSectionCards />;
+  return <div className={styles.grid}>{JAM_SECTIONS.map(section => <Link key={section.slug} href={jamSectionHref(section.slug)} className={styles.card}>
     <span className={styles.art} style={{ color: section.color }} aria-hidden="true"><PhysicsArtwork section={section.slug} /></span>
-    <span><strong>{section.title}</strong>{mock && <small>Topic-wise & full mocks</small>}</span>
+    <span><strong>{section.title}</strong></span>
   </Link>)}</div>;
 }
 export default function ExamHomeContent() {
