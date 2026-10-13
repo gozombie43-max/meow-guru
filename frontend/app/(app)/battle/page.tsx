@@ -1,5 +1,6 @@
 "use client";
 
+import BattleStudents from "@/components/battle/BattleStudents";
 import { useExamMode } from '@/context/ExamModeContext';
 import { JAM_SECTIONS, JAM_SUBJECT, jamQuestionTopic } from '@/lib/exam-mode';
 import { Dialog } from "@/components/ui/Dialog";
@@ -8,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useBattle } from "@/hooks/useBattle";
 import { battleOutcome, type BattleReviewItem, type PlayerScore, type Reveal } from "@/lib/battle-state";
 import { motion } from "framer-motion";
-import { AlertTriangle, ArrowLeft, Check, Copy, Crown, FileText, LoaderCircle, LogOut, Mail, RotateCcw, Shield, Swords, Trophy, Users, Wifi, WifiOff, Zap } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, Copy, FileText, LoaderCircle, LogOut, Mail, RotateCcw, Shield, Swords, Trophy, Users, Wifi, WifiOff, Zap } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
@@ -296,16 +297,16 @@ function BattlePageContent() {
         <h1>Think fast.<br />Win the round.</h1><p>Create a private room or enter a four-digit invite code. Both players answer the same questions in real time.</p>
         <div className="battle-trust-row"><span><Zap /> Instant duel</span><span><Shield /> Reconnect safe</span><span><Trophy /> Ranked results</span></div>
       </section>
-      <section className="battle-setup-card" aria-labelledby="setup-title"><div className="battle-card-heading"><div><p className="battle-kicker">Match setup</p><h2 id="setup-title">Start a battle</h2></div><Users aria-hidden="true" /></div>
+      <section className="battle-setup-card" aria-labelledby="setup-title"><div className="battle-card-heading"><Users aria-hidden="true" /><h2 id="setup-title">Start a battle</h2><select className="battle-question-count" aria-label="Question count" value={questionCount} onChange={(event) => setQuestionCount(Number(event.target.value))}>{QUESTION_COUNTS.map(count => <option key={count} value={count}>{count} Qs</option>)}</select></div>
         <div className="battle-tabs" role="tablist" aria-label="Battle mode"><button data-ui-button="state" type="button" role="tab" aria-selected={mode === "create"} className={mode === "create" ? "is-active" : ""} onClick={() => setModeOverride("create")}>Create room</button><button data-ui-button="state" type="button" role="tab" aria-selected={mode === "join"} className={mode === "join" ? "is-active" : ""} onClick={() => setModeOverride("join")}>Join room</button></div>
         {mode === "create" ? <><div className="battle-field-grid"><label className="battle-field"><span>Subject</span><select value={subject} onChange={(event) => { setSubject(event.target.value); setTopic("all"); }}>{subjects.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label className="battle-field"><span>Topic</span><select value={topic} onChange={(event) => setTopic(event.target.value)}>{topicOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label></div>
-          <fieldset className="battle-count-field"><legend>Questions</legend><div>{QUESTION_COUNTS.map((count) => <button data-ui-button="state" type="button" key={count} className={questionCount === count ? "is-active" : ""} onClick={() => setQuestionCount(count)}>{count}</button>)}</div></fieldset></>
+</>
           : <label className="battle-field battle-code-field"><span>Room code</span><input value={effectiveJoinCode} onChange={(event) => setJoinCode(event.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="0000" inputMode="numeric" autoComplete="one-time-code" maxLength={4}  aria-label="0000"/></label>}
         <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
         <button data-ui-button="primary" type="button" className="battle-primary-button" disabled={!canSend || !effectivePlayerName.trim() || (mode === "join" && effectiveJoinCode.length !== 4)} onClick={submit}>{pending ? <LoaderCircle className="battle-spinner" /> : <Swords />}{pending === "create" ? "Creating room…" : pending === "join" ? "Joining room…" : mode === "create" ? "Create battle room" : "Join battle"}</button>
         <p className="battle-helper">The match starts automatically when both players are ready.</p>
       </section>
-      <nav className="battle-quick-links" aria-label="Battle features"><Link href="/battle/profile"><Crown /><span><b>Profile</b><small>Rating and record</small></span></Link><Link href="/battle/leaderboard"><Trophy /><span><b>Leaderboard</b><small>Top contenders</small></span></Link><Link href="/battle/missions"><Zap /><span><b>Missions</b><small>Earn battle XP</small></span></Link><Link href="/battle/social"><Users /><span><b>Social</b><small>Friends and rivals</small></span></Link></nav>
+      <BattleStudents disabled={!canSend} onInvite={(targetUserId) => battle.challenge(targetUserId, { subject, topic, questionCount })} />
     </div></main>;
   }
 

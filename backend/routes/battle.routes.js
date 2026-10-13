@@ -17,6 +17,7 @@ router.get("/cosmetics", protect, controller.getCosmetics);
 router.put("/cosmetics/equip", protect, controller.equipCosmetic);
 router.get("/profile", protect, controller.getProfile);
 router.get("/players/:userId/summary", protect, controller.getPlayerSummary);
+router.get("/students", protect, battleReadLimiter, controller.getStudents);
 router.get("/social", protect, controller.getSocial);
 router.post("/social/friends/:userId", protect, controller.sendFriendRequestRoute);
 router.post("/social/friends/:userId/respond", protect, controller.respondFriendRequestRoute);

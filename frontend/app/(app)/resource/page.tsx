@@ -8,10 +8,13 @@ import { bindStyleClasses } from '@/lib/styleClasses';
 
 const styleClasses = bindStyleClasses(styles);
 import { useExamMode } from '@/context/ExamModeContext';
+import { Dialog } from "@/components/ui/Dialog";
 import ResourceUploadDialog from "./ResourceUploadDialog";
 import { fetchWithRetry } from "@/lib/api/http";
 import { announceFeedback } from "@/lib/feedback";
 import {
+Check,
+ChevronDown,
 ChevronLeft,
 ChevronRight,
 FileText,
@@ -58,6 +61,7 @@ function ResourceContent() {
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showSections, setShowSections] = useState(false);
 
   const selectedSubject = subjects.find((s) => s.id === activeSubject) || subjects[0];
   const activeCategory = getCategory(activeTab);
@@ -205,7 +209,7 @@ function ResourceContent() {
   };
 
   return (
-    <main className={styleClasses("resource-page scope")}>
+    <main className={styleClasses("resource-page scope res-picker-layout")}>
       {/* ── Fixed Position Top Area ── */}
       <div className={styleClasses("res-top-pinned")}>
         <header data-ui-chrome="header" className={styleClasses("res-header")}>
@@ -272,31 +276,16 @@ function ResourceContent() {
 
           {/* ── Unified Filter Architecture ── */}
           <div className={styleClasses("res-filter-container")}>
-            {/* Level 1: Primary Subject Segmented Control (iOS UISegmentedControl style) */}
-            <div className={styleClasses("res-subject-segment")} role="tablist" aria-label="Subjects">
-              {subjects.map((subject) => {
-                const Icon = subject.Icon;
-                const isActive = subject.id === activeSubject;
-
-                return (
-                  <button data-ui-button="state"
-                    key={subject.id}
-                    type="button"
-                    className={styleClasses(`res-segment-btn ${isActive ? "active" : ""}`)}
-                    style={{
-                      "--subject-accent": subject.accent,
-                    } as React.CSSProperties}
-                    onClick={() => setActiveSubject(subject.id)}
-                    role="tab"
-                    aria-selected={isActive}
-                  >
-                    <Icon size={14} strokeWidth={2.2} className={styleClasses("res-segment-icon")} />
-                    <span className={styleClasses("res-segment-label")}>{subject.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
+            {/* Subject picker shared by both exam modes. */}
+              <button type="button" data-ui-button="state"
+                className={styleClasses("res-section-trigger")}
+                aria-haspopup="dialog" aria-expanded={showSections}
+                aria-controls={showSections ? "res-section-picker" : undefined}
+                onClick={() => setShowSections(true)}>
+                <selectedSubject.Icon size={18} style={{ color: selectedSubject.accent }} aria-hidden="true" />
+                <span>{selectedSubject.label}</span>
+                <ChevronDown size={18} aria-hidden="true" />
+              </button>
             {/* Level 2: Secondary Category Chip Bar */}
             <div className={styleClasses("res-category-strip")} role="tablist" aria-label="Resource Categories">
               {resourceTabs.map((tab) => {
@@ -394,9 +383,10 @@ function ResourceContent() {
                   className={styleClasses("res-empty-btn")}
                   onClick={triggerUploadCurrent}
                   disabled={uploading}
+                  aria-label={`Add ${selectedSubject.label} ${activeTab}`}
                 >
                   <Plus size={16} strokeWidth={2.4} />
-                  <span>Add {selectedSubject.label} {activeTab}</span>
+                  <span>Add files</span>
                 </button>
               )}
             </div>
@@ -426,6 +416,34 @@ function ResourceContent() {
         className={styleClasses("res-file-input")}
         onChange={handleUpload}
        aria-label="Choose file"/>
+
+      {showSections && (
+        <div className={styleClasses("res-section-backdrop")}
+          onPointerDown={(event) => { if (event.target === event.currentTarget) setShowSections(false); }}>
+          <Dialog id="res-section-picker" onClose={() => setShowSections(false)}
+            initialFocus='[aria-pressed="true"]'
+            className={styleClasses("res-section-picker")} aria-labelledby="res-section-title">
+            <div className={styleClasses("res-section-picker-header")}>
+              <h2 id="res-section-title">{isJam ? "Select section" : "Select subject"}</h2>
+              <button type="button" data-ui-button="secondary" data-ui-shape="icon"
+                className={styleClasses("res-nav-btn")} aria-label="Close section picker"
+                onClick={() => setShowSections(false)}><X size={18} /></button>
+            </div>
+            <div className={styleClasses("res-section-options")}>
+              {subjects.map(subject => (
+                <button key={subject.id} type="button" data-ui-button="state"
+                  className={styleClasses("res-section-option")}
+                  aria-pressed={subject.id === activeSubject}
+                  onClick={() => { setActiveSubject(subject.id); setShowSections(false); }}>
+                  <subject.Icon size={18} style={{ color: subject.accent }} aria-hidden="true" />
+                  <span>{subject.label}</span>
+                  {subject.id === activeSubject && <Check size={18} aria-hidden="true" />}
+                </button>
+              ))}
+            </div>
+          </Dialog>
+        </div>
+      )}
 
       {/* ── Upload Destination Modal ── */}
       {showUploadModal && (

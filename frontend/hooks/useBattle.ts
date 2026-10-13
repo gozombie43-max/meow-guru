@@ -148,6 +148,7 @@ export function useBattle(token: string | null, userId: string) {
   };
   return {
     state, connection, pending, inviteStatus,
+    challenge: (targetUserId: string, settings: Omit<Settings, "playerName">) => send("create", "battle:challengeUser", { targetUserId, ...settings }),
     create: (settings: Settings) => send("create", "room:create", settings),
     join: (code: string, playerName: string) => send("join", "room:join", { code, playerName }),
     leave: () => send("leave", "room:leave", { code: state.code }),

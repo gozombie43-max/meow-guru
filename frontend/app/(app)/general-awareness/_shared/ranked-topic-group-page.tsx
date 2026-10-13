@@ -24,6 +24,7 @@ BatteryCharging,
 BookOpen,
 BookOpenCheck,
 Boxes,
+Box,
 Brain,
 Briefcase,
 Bug,
@@ -97,8 +98,11 @@ PieChart,
 Pill,
 Receipt,
 RefreshCw,
+Radiation,
 Route,
 Scale,
+ScanLine,
+Sigma,
 Scroll,
 Search,
 Shield,
@@ -170,6 +174,109 @@ export interface TopicMeta {
 }
 
 export const TOPIC_META: Record<string, TopicMeta> = {
+  // IIT JAM electricity-magnetism
+  "coulombs-law": { icon: Zap, color: "#7c3aed" },
+  "gauss-law": { icon: CircleDot, color: "#2563eb" },
+  "electrostatic-potential": { icon: Gauge, color: "#0891b2" },
+  "energy-in-electrostatic-system": { icon: BatteryCharging, color: "#059669" },
+  "electric-dipole-and-multipole-terms": { icon: ArrowLeftRight, color: "#d97706" },
+  "laplace-and-poisson-equations": { icon: Sigma, color: "#7c3aed" },
+  "dielectric-material": { icon: Layers, color: "#2563eb" },
+  "magnetostatics-biot-savart-law": { icon: Magnet, color: "#0891b2" },
+  "lorentz-force": { icon: MoveRight, color: "#059669" },
+  "amperes-law": { icon: Orbit, color: "#d97706" },
+  "magnetic-dipole": { icon: Magnet, color: "#7c3aed" },
+  "torque-on-a-loop-inside-magnetic-field": { icon: RefreshCw, color: "#2563eb" },
+  "electrodynamics-electromotive-force": { icon: Zap, color: "#0891b2" },
+  "magnetic-induction-and-inductance": { icon: Activity, color: "#059669" },
+  "maxwell-equations-and-boundary-conditions": { icon: Sigma, color: "#d97706" },
+  "poynting-vector": { icon: MoveRight, color: "#7c3aed" },
+  "skin-depth": { icon: Layers, color: "#2563eb" },
+  "electromagnetic-radiation": { icon: Radiation, color: "#0891b2" },
+  // IIT JAM oscillations-waves-optics
+  "differential-equation-for-simple-harmonic-oscillator-and-its-general-solution": { icon: Activity, color: "#7c3aed" },
+  "superposition-of-two-or-more-simple-harmonic-oscillators": { icon: Layers, color: "#2563eb" },
+  "lissajous-figures": { icon: Orbit, color: "#0891b2" },
+  "damped-and-forced-oscillators": { icon: Activity, color: "#059669" },
+  "group-velocity-and-phase-velocity": { icon: Gauge, color: "#d97706" },
+  "sound-waves-in-media": { icon: Volume2, color: "#7c3aed" },
+  "doppler-effect": { icon: Waves, color: "#2563eb" },
+  "fermats-principle": { icon: Route, color: "#0891b2" },
+  "general-theory-of-image-formation": { icon: Eye, color: "#059669" },
+  "thick-lens-thin-lens-and-lens-combinations": { icon: Glasses, color: "#d97706" },
+  "interference-of-light": { icon: Waves, color: "#7c3aed" },
+  "fraunhofer-diffraction": { icon: ScanLine, color: "#2563eb" },
+  "rayleigh-criterion-and-resolving-power": { icon: Microscope, color: "#0891b2" },
+  "diffraction-gratings": { icon: Grid, color: "#059669" },
+  "polarization": { icon: Filter, color: "#d97706" },
+  "double-refraction-and-optical-rotation": { icon: RefreshCw, color: "#7c3aed" },
+  // IIT JAM mechanics
+  "kinematics-fluid-mechanics-rigid-body-dynamics": { icon: Cog, color: "#7c3aed" },
+  "simple-harmonic-motion": { icon: Activity, color: "#2563eb" },
+  "collision-and-impulse": { icon: ArrowLeftRight, color: "#0891b2" },
+  "centrifugal-and-coriolis-force": { icon: RefreshCw, color: "#059669" },
+  "small-oscillations": { icon: Waves, color: "#d97706" },
+  "central-force-motion-gravitation": { icon: Orbit, color: "#7c3aed" },
+  "velocity-and-acceleration-in-plane-polar-and-cylindrical-coordinate": { icon: Compass, color: "#2563eb" },
+  // IIT JAM solid-state-electronics
+  "semiconductor-devices": { icon: Cpu, color: "#7c3aed" },
+  "application-of-junction-diode": { icon: MoveRight, color: "#2563eb" },
+  "bipolar-junction-transistor": { icon: Network, color: "#0891b2" },
+  "circuit-analysis": { icon: Route, color: "#059669" },
+  "operational-amplifiers-and-its-applications": { icon: Volume2, color: "#d97706" },
+  "zener-diode-and-its-applications": { icon: Zap, color: "#7c3aed" },
+  "boolean-expression-and-gates": { icon: Network, color: "#2563eb" },
+  "number-system": { icon: Sigma, color: "#0891b2" },
+  "lcr-circuits": { icon: Activity, color: "#059669" },
+  "crystal-structure": { icon: Gem, color: "#d97706" },
+  "x-ray-diffraction": { icon: ScanLine, color: "#7c3aed" },
+  "specific-heat": { icon: Thermometer, color: "#2563eb" },
+  "magnetic-properties": { icon: Magnet, color: "#0891b2" },
+  "fermi-level": { icon: Layers, color: "#059669" },
+  "semiconductor": { icon: Cpu, color: "#d97706" },
+  // IIT JAM thermodynamics
+  "elements-of-kinetic-theory-of-gases": { icon: Wind, color: "#7c3aed" },
+  "degree-of-freedom-and-equipartition-theorem-and-specific-heat": { icon: Thermometer, color: "#2563eb" },
+  "mean-free-path": { icon: Route, color: "#0891b2" },
+  "ideal-gas-van-der-waals-gas-and-equation-of-state": { icon: Gauge, color: "#059669" },
+  "calorimetry-work-and-state-functions": { icon: Flame, color: "#d97706" },
+  "laws-of-thermodynamics-zeroth-law-and-concept-of-thermal-equilibrium-1st-law-and-its-consequences": { icon: Scale, color: "#7c3aed" },
+  "isothermal-and-adiabatic-process": { icon: LineChart, color: "#2563eb" },
+  "reversible-irreversible-quasi-static-process": { icon: ArrowLeftRight, color: "#0891b2" },
+  "2nd-law-of-thermodynamics-entropy-carnot-cycle": { icon: RefreshCw, color: "#059669" },
+  "maxwells-thermodynamic-relations-and-simple-applications": { icon: Sigma, color: "#d97706" },
+  "phase-transition-and-clausius-clapeyron-equation": { icon: Droplets, color: "#7c3aed" },
+  "black-body-radiation": { icon: Sun, color: "#2563eb" },
+  "ideas-of-ensembles-mb-fd-be-distribution": { icon: BarChart3, color: "#0891b2" },
+
+  // IIT JAM Mathematical Methods
+  "vector-algebra-and-vector-calculus": { icon: Compass, color: "#7c3aed" },
+  "matrices": { icon: Grid, color: "#2563eb" },
+  "eigenvalues-and-eigenvectors": { icon: MoveRight, color: "#0891b2" },
+  "linear-ordinary-differential-equations-of-first-second-order": { icon: LineChart, color: "#059669" },
+  "fourier-series": { icon: Waves, color: "#0284c7" },
+  "complex-analysis": { icon: Orbit, color: "#9333ea" },
+  "taylor-laurent-series": { icon: Sigma, color: "#d97706" },
+
+  // IIT JAM Modern Physics
+  "blackbody-radiation": { icon: Sun, color: "#ea580c" },
+  "photoelectric-effect": { icon: Zap, color: "#ca8a04" },
+  "compton-effect": { icon: ArrowLeftRight, color: "#0284c7" },
+  "x-rays": { icon: ScanLine, color: "#0891b2" },
+  "wave-particle-duality": { icon: Waves, color: "#7c3aed" },
+  "uncertainty-principle": { icon: Target, color: "#db2777" },
+  "superposition-principle": { icon: Layers, color: "#4f46e5" },
+  "calculation-of-expectation-values": { icon: Sigma, color: "#059669" },
+  "schrodinger-equation-and-its-solution-for-one-dimensional-box": { icon: Box, color: "#7c3aed" },
+  "two-dimensional-box": { icon: Grid, color: "#2563eb" },
+  "three-dimensional-boxes": { icon: Boxes, color: "#0891b2" },
+  "one-dimensional-harmonic-oscillator": { icon: Activity, color: "#0284c7" },
+  "step-potential": { icon: TrendingUp, color: "#059669" },
+  "paulis-spin-matrices": { icon: RefreshCw, color: "#9333ea" },
+  "basic-properties-of-nucleus": { icon: Atom, color: "#4f46e5" },
+  "relativistic-behavior-binding-energy-semf": { icon: Gauge, color: "#ea580c" },
+  "radioactivity": { icon: Radiation, color: "#d97706" },
+
   // ── Geography Chapters (30) ────────────────────────────────────────────────
   "indian-rivers-drainage-system": { icon: Waves, color: "#0284c7" },
   "physiography-of-india": { icon: Mountain, color: "#059669" },
@@ -384,6 +491,8 @@ export const TOPIC_META: Record<string, TopicMeta> = {
 };
 
 const GROUP_META: Record<string, TopicMeta> = {
+  "mathematical-methods": { icon: Sigma, color: "#7c3aed" },
+  "modern-physics": { icon: Atom, color: "#4f46e5" },
   "ancient-history": { icon: Landmark, color: "#d97706" },
   "medieval-history": { icon: Castle, color: "#7c3aed" },
   "modern-history": { icon: Flag, color: "#2563eb" },
@@ -401,8 +510,14 @@ const GROUP_META: Record<string, TopicMeta> = {
 
 import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
 
-export default function RankedTopicGroupPage({ group }: { group: RankedTopicGroup }) {
-  const { data } = useTopicQuestionTotals("general-awareness");
+export default function RankedTopicGroupPage({ group, subject = "general-awareness", routeBase = `/general-awareness/${group.slug}`, backHref = "/general-awareness", backLabel = "General Awareness" }: {
+  group: RankedTopicGroup;
+  subject?: string;
+  routeBase?: string;
+  backHref?: string;
+  backLabel?: string;
+}) {
+  const { data } = useTopicQuestionTotals(subject);
   const [query, setQuery] = useState("");
   const [priority, setPriority] = useState<PriorityFilter>("All");
   const [filterOpen, setFilterOpen] = useState(false);
@@ -542,21 +657,21 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
       <div className={styles.desktopContainer}>
         <header data-ui-chrome="header" className={styles.header}>
           <Link replace data-ui-button="secondary"
-            href="/general-awareness"
+            href={backHref}
             className={styles.backButton}
-            aria-label="Back to General Awareness"
+            aria-label={`Back to ${backLabel}`}
           >
             <ChevronLeft size={23} strokeWidth={2.2} />
           </Link>
           <h1 className={styles.headerTitle}>{group.label}</h1>
-          {filterButton}
+          {group.filters.length > 0 ? filterButton : null}
         </header>
 
         <main className={styles.content}>
           <section className={styles.intro} aria-labelledby="ranked-topics-heading">
             <p className={styles.eyebrow}>{group.eyebrow}</p>
             <h2 id="ranked-topics-heading" className={styles.heading}>
-              {group.topics.length} chapters, ranked
+              {group.topics.length} chapters{group.filters.length ? ", ranked" : ""}
             </h2>
             <p className={styles.description}>
               {group.description}
@@ -593,7 +708,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
             <div className={styles.tableHeader} aria-hidden="true">
               <span>Rank</span>
               <span>Chapter</span>
-              <span>{group.metricLabel}</span>
+              <span>{group.filters.length ? group.metricLabel : ""}</span>
             </div>
 
             {topics.length > 0 ? (
@@ -601,12 +716,12 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
                 <Link
                   key={topic.slug}
                   className={styles.row}
-                  href={`/general-awareness/${group.slug}/${topic.slug}`}
-                  aria-label={`Rank ${topic.rank}: ${topic.title}, ${topic.priority} ${group.metricLabel.toLowerCase()}. Open topic.`}
+                  href={`${routeBase}/${topic.slug}`}
+                  aria-label={group.filters.length ? `Rank ${topic.rank}: ${topic.title}, ${topic.priority} ${group.metricLabel.toLowerCase()}. Open topic.` : `${topic.rank}. ${topic.title}. Open chapter.`}
                 >
                   <span className={styles.rank}>{topic.rank}</span>
                   <span className={styles.chapter}>{topic.title}</span>
-                  <span className={styles.weightage}>
+                  <span className={styles.weightage} hidden={!group.filters.length}>
                     <span
                       className={`${styles.weightDot} ${PRIORITY_CLASS[topic.priority]}`}
                       aria-hidden="true"
@@ -629,16 +744,16 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
         {/* Mobile Topbar */}
         <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={`${hubStyles.mobileTopbar} ${styles.mobileHeader}`}>
           <Link replace
-            href="/general-awareness"
+            href={backHref}
             className={`${hubStyles.mobileBackBtn} ${styles.mobileBackBtn}`}
-            aria-label="Back to General Awareness"
+            aria-label={`Back to ${backLabel}`}
           >
             <ArrowLeft size={18} strokeWidth={2.4} />
           </Link>
           <h1 className={`${hubStyles.mobileTopbarTitle} ${styles.mobileTopbarTitle}`}>
             {group.label} Chapters
           </h1>
-          {filterButton}
+          {group.filters.length > 0 ? filterButton : null}
         </header>
 
         <div data-hub-part="mobileBody" className={hubStyles.mobileBody}>
@@ -698,7 +813,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
                 return (
                   <Link
                     key={topic.slug}
-                    href={`/general-awareness/${group.slug}/${topic.slug}`}
+                    href={`${routeBase}/${topic.slug}`}
                     data-hub-part="mobileTopicRow" className={styles.chapterRow}
                     aria-label={`${topic.rank}. ${topic.title}`}
                   >

@@ -1,5 +1,5 @@
 import { JAM_SECTIONS } from '@/lib/exam-mode';
-import { Atom, BookOpen, Calculator, Globe2, Shapes } from "lucide-react";
+import { Atom, BookOpen, Calculator, Cog, Cpu, Globe2, Magnet, Shapes, Sigma, Thermometer, Waves, type LucideIcon } from "lucide-react";
 
 export const resourceTabs = ["Books", "Chapter Wise", "Extra", "DPP"] as const;
 
@@ -34,7 +34,17 @@ export const subjects = [
   },
 ] as const;
 
-export const jamSubjects = JAM_SECTIONS.map(s => ({ id: `iit-jam-${s.slug}` as const, label: s.title, shortLabel: s.title, Icon: Atom, accent: s.color }));
+const jamSectionIcons: Record<string, LucideIcon> = {
+  'mathematical-methods': Sigma,
+  mechanics: Cog,
+  'oscillations-waves-optics': Waves,
+  'electricity-magnetism': Magnet,
+  thermodynamics: Thermometer,
+  'modern-physics': Atom,
+  'solid-state-electronics': Cpu,
+};
+
+export const jamSubjects = JAM_SECTIONS.map(s => ({ id: `iit-jam-${s.slug}` as const, label: s.title, shortLabel: s.title, Icon: jamSectionIcons[s.slug] ?? Atom, accent: s.color }));
 export type SubjectId = (typeof subjects)[number]["id"] | (typeof jamSubjects)[number]["id"];
 export type ResourceTab = (typeof resourceTabs)[number];
 

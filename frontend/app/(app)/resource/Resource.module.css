@@ -774,3 +774,109 @@
           :global(html.theme-dark) .res-card-title { line-height: 1.45; }
           :global(html.theme-dark) .res-search-input { font-size: 16px; }
         }
+
+/* Shared compact picker layout for SSC and IIT JAM. */
+.res-picker-layout .res-filter-container {
+  min-width: 0;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.res-picker-layout .res-category-strip {
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom-color: var(--border);
+}
+
+.res-picker-layout .res-chip {
+  min-height: 44px;
+  padding: 8px 4px;
+}
+
+.resource-page.res-picker-layout .res-empty-state {
+  margin-top: 0;
+  padding: 32px 20px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--card-bg);
+}
+
+.res-picker-layout .res-empty-btn {
+  min-height: 44px;
+  max-width: 100%;
+  justify-content: center;
+  padding: 10px 24px;
+  border-radius: 12px;
+}
+
+.res-picker-layout .res-segment-btn:focus-visible,
+.res-picker-layout .res-chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.res-section-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.res-section-trigger span { flex: 1; min-width: 0; text-align: center; }
+.res-section-trigger svg { flex-shrink: 0; }
+.res-section-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: calc(56px + var(--safe-top, 0px)) 12px 20px;
+  background: rgba(0, 0, 0, 0.4);
+}
+.res-section-picker {
+  width: min(100%, 360px);
+  max-height: calc(100dvh - 96px - var(--safe-top, 0px));
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+}
+.res-section-picker-header { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 6px 10px; }
+.res-section-picker-header h2 { margin: 0; font-size: 15px; font-weight: 650; }
+.res-section-options { overflow-y: auto; min-height: 0; }
+.res-section-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.res-section-option span { flex: 1; min-width: 0; }
+.res-section-option svg { flex-shrink: 0; }
+.res-section-option[aria-pressed="true"] { background: var(--tab-bg); font-weight: 650; }
+.res-section-option:focus-visible, .res-section-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }

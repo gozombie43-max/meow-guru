@@ -19,6 +19,7 @@ import {
 import {
   getQuestionsCollection,
   getUsersCollection,
+  getBattleFriendshipsCollection,
   getSocketIoAdapterCollection,
 } from '../config/mongodb.js';
 import { sendPushToUser } from '../services/pushNotificationService.js';
@@ -41,7 +42,7 @@ const answerPayloadSchema = z.object({
   selectedIndex: z.number().int().min(0).max(20),
 });
 const matchmakingSchema = z.object({ subject: z.enum(["mathematics", "reasoning", "english", "general-awareness"]), topic: z.string().min(1).max(80), questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]) });
-const socialChallengeSchema = z.object({ targetUserId: z.string().min(1).max(200), subject: z.enum(["mathematics", "reasoning", "english", "general-awareness"]), topic: z.string().min(1).max(80), questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]) });
+const socialChallengeSchema = z.object({ targetUserId: z.string().min(1).max(200), subject: z.enum(["mathematics", "reasoning", "english", "general-awareness", "iit-jam-physics"]), topic: z.string().min(1).max(80), questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]) });
 
 export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) {
   // Build an explicit origin allowlist for Socket.IO.
@@ -103,6 +104,8 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
 
     const userRoom = `user:${String(socket.user.id)}`;
     socket.join(userRoom);
+    const recordActive = () => getUsersCollection().updateOne({ id: String(socket.user.id) }, { $max: { battleLastActiveAt: new Date() } }).catch(runtimeLog.error);
+    void recordActive();
     if (socket.user.sid) socket.join(`session:${socket.user.sid}`);
 
     let lastRoomCreateTime = 0;
@@ -135,9 +138,15 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     onEvent('battle:challengeUser', async (raw) => {
       if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
       const parsed = socialChallengeSchema.safeParse(raw);
-      if (!parsed.success || parsed.data.targetUserId === socket.user.id) return;
+      if (!parsed.success || parsed.data.targetUserId === socket.user.id) return socket.emit('room:error', { message: 'Invalid battle invitation.' });
+      if (Date.now() - lastRoomCreateTime < ROOM_CREATE_COOLDOWN_MS) return socket.emit('room:error', { message: 'Please wait before sending another invitation.' });
+      lastRoomCreateTime = Date.now();
       try {
         const { targetUserId, subject, topic, questionCount } = parsed.data;
+        const target = await getUsersCollection().findOne({ id: targetUserId, status: { $nin: ['banned', 'suspended'] } }, { projection: { id: 1 } });
+        if (!target) return socket.emit('room:error', { message: 'This student is unavailable.' });
+        const friendship = await getBattleFriendshipsCollection().findOne({ users: { $all: [String(socket.user.id), targetUserId] }, status: 'accepted' });
+        if (!friendship) return socket.emit('room:error', { message: 'Add this student as a friend before inviting them to battle.' });
         const code = await createRoom(socket.id, socket.user.name || 'Player', subject, topic, questionCount, socket.user.id);
         socket.join(code);
         const payload = {
@@ -154,6 +163,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
           centerKey: `social-battle:${code}:${targetUserId}`,
         }).catch(runtimeLog.error);
         socket.emit('battle:challengeSent', { roomCode: code, targetUserId });
+        socket.emit('room:created', { code, playerName: payload.challenger.name, subject, topic, questionCount });
       } catch (error) {
         runtimeLog.error('battle:challengeUser:', error);
         socket.emit('room:error', { message: 'Could not send challenge.' });
@@ -530,6 +540,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
 
     // ── Disconnect ───────────────────────────────────────
     onEvent('disconnect', async (reason) => {
+      void recordActive();
       void cancelMatchmakingQueue(socket.user.id).catch((error) => runtimeLog.error('Matchmaking disconnect cleanup:', error));
       try {
         const found = await markSocketDisconnected(socket.id, {

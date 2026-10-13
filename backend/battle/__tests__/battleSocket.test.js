@@ -3,9 +3,11 @@ import { createRoom, deleteRoom } from '../roomManager.js';
 import { signBattleRematchToken } from '../../auth/jwt.js';
 
 const mockUsersCollection = {
+  updateOne: vi.fn().mockResolvedValue({}),
   findOne: vi.fn(),
 };
 
+const mockFriendshipsCollection = { findOne: vi.fn().mockResolvedValue({ status: "accepted" }) };
 const battleRooms = new Map();
 const mockBattleRoomsCollection = {
   insertOne: vi.fn(async (room) => {
@@ -32,6 +34,7 @@ const mockSendPushToUser = vi.fn();
 vi.mock('../../config/mongodb.js', () => ({
   getQuestionsCollection: vi.fn(),
   getUsersCollection: () => mockUsersCollection,
+  getBattleFriendshipsCollection: () => mockFriendshipsCollection,
   getBattleRoomsCollection: () => mockBattleRoomsCollection,
   getBattleSeasonsCollection: () => ({ findOne: vi.fn().mockResolvedValue(null) }),
   getSocketIoAdapterCollection: () => ({}),
@@ -91,6 +94,26 @@ describe('Battle Socket - room:invite', () => {
     };
 
     connectionHandler(socket);
+  });
+
+  it('requires an accepted friendship before creating a battle invitation', async () => {
+    mockUsersCollection.findOne.mockResolvedValueOnce({ id: 'stranger' });
+    mockFriendshipsCollection.findOne.mockResolvedValueOnce(null);
+    await socketHandlers['battle:challengeUser']({ targetUserId: 'stranger', subject: 'mathematics', topic: 'all', questionCount: 10 });
+    expect(socket.emit).toHaveBeenCalledWith('room:error', { message: 'Add this student as a friend before inviting them to battle.' });
+    expect(battleRooms.size).toBe(0);
+  });
+
+  it('creates an IIT JAM invitation and opens the matching waiting room', async () => {
+    mockUsersCollection.findOne.mockResolvedValueOnce({ id: 'friend_id' });
+    mockSendPushToUser.mockResolvedValueOnce({ successCount: 1 });
+    const settings = { targetUserId: 'friend_id', subject: 'iit-jam-physics', topic: 'iit-jam-modern-physics', questionCount: 15 };
+    await socketHandlers['battle:challengeUser'](settings);
+    expect(socket.emit).toHaveBeenCalledWith('battle:challengeSent', { roomCode: expect.stringMatching(/^\d{4}$/), targetUserId: 'friend_id' });
+    expect(socket.emit).toHaveBeenCalledWith('room:created', expect.objectContaining({ subject: settings.subject, topic: settings.topic, questionCount: 15 }));
+    await socketHandlers['battle:challengeUser'](settings);
+    expect(socket.emit).toHaveBeenCalledWith('room:error', { message: 'Please wait before sending another invitation.' });
+    expect(battleRooms.size).toBe(1);
   });
 
   it('blocks direct room creation when the new-match kill switch is off', async () => {
