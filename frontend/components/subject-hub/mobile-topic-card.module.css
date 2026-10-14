@@ -3,6 +3,10 @@
   --topic-text: #edf1f7;
   --topic-muted: #a2aab8;
   --topic-divider: rgb(175 194 218 / 13%);
+  --topic-solved: #f8fafc;
+  --topic-slash: rgba(255 255 255 / 26%);
+  --topic-total: #94a3b8;
+  --topic-label: #7c8899;
   position: relative;
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr) 20px;
@@ -46,13 +50,44 @@
 .iconTile img { width: 100%; height: 100%; object-fit: cover; }
 .topicCopy { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 .topicTitle { font-size: 15px; line-height: 1.4; font-weight: 600; color: var(--topic-text); overflow-wrap: anywhere; }
-.topicCount { font-size: 13px; line-height: 1.4; color: var(--topic-muted); font-variant-numeric: tabular-nums; }
+.topicCount {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: 13px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+.countSolved {
+  font-weight: 600;
+  color: var(--topic-solved);
+  letter-spacing: -0.1px;
+}
+.countDivider {
+  font-weight: 400;
+  color: var(--topic-slash);
+  margin: 0 1px;
+}
+.countTotal {
+  font-weight: 500;
+  color: var(--topic-total);
+}
+.countLabel {
+  font-weight: 450;
+  font-size: 11.5px;
+  color: var(--topic-label);
+  margin-left: 4.5px;
+  letter-spacing: 0.15px;
+}
 .chevron { color: var(--topic-muted); justify-self: end; }
 
 :global(html.theme-light) .card {
   --topic-text: var(--light-text, #172033);
   --topic-muted: var(--light-text-secondary, #596579);
   --topic-divider: var(--light-border, #dce3ed);
+  --topic-solved: #0f172a;
+  --topic-slash: rgba(15 23 42 / 28%);
+  --topic-total: #64748b;
+  --topic-label: #64748b;
 }
 
 @media (max-width: 340px) {

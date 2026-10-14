@@ -163,7 +163,7 @@ describe("SubjectHub", () => {
     expect(screen.getAllByText("Simple Interest").length).toBeGreaterThanOrEqual(1);
 
     // Keep nonempty totals and explicit zero counts on their respective cards.
-    expect(screen.getByText("0 / 705")).toBeInTheDocument();
+    expect(container).toHaveTextContent("0/705 Solved");
     const emptyTopic = screen.getByRole("link", { name: "Simple Interest, 0 questions" });
     expect(within(emptyTopic).getByText("0 Questions")).toBeInTheDocument();
     expect(screen.queryByText("Coming soon")).not.toBeInTheDocument();

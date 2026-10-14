@@ -47,9 +47,18 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
       <div className={styles.topicCopy}>
         <span className={styles.topicTitle}>{name}</span>
         <span className={styles.topicCount}>
-          {count === 0
-            ? "0 Questions"
-            : `${userSolved.toLocaleString("en-US")} / ${count.toLocaleString("en-US")}`}
+          {count === 0 ? (
+            <span className={styles.countTotal}>0 Questions</span>
+          ) : (
+            <>
+              <span className={styles.countSolved}>
+                {userSolved.toLocaleString("en-US")}
+              </span>
+              <span className={styles.countDivider}>/</span>
+              <span className={styles.countTotal}>{count.toLocaleString("en-US")}</span>{" "}
+              <span className={styles.countLabel}>Solved</span>
+            </>
+          )}
         </span>
       </div>
       <ChevronRight size={19} strokeWidth={1.8} className={styles.chevron} aria-hidden="true" />
