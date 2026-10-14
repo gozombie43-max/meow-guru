@@ -93,6 +93,32 @@
   border-radius: 26px;
   background: var(--mac-card-bg);
   color: var(--mac-text-primary);
+  overflow: hidden;
+}
+
+.card > :not([class*="artwork"]) {
+  position: relative;
+  z-index: 2;
+}
+
+:global(html.theme-dark) .card {
+  background: var(--oled-surface);
+  border-color: transparent;
+}
+
+:global(html.theme-dark) .card .copy h3 {
+  color: #ffffff !important;
+}
+
+:global(html.theme-dark) .card .copy p,
+:global(html.theme-dark) .card .detail,
+:global(html.theme-dark) .card .count {
+  color: var(--oled-secondary) !important;
+}
+
+:global(html.theme-dark) .card .icon {
+  background: rgba(10, 132, 255, 0.16);
+  color: #5aabff;
 }
 
 .header {
