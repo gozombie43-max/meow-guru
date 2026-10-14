@@ -4,7 +4,7 @@
   --topic-muted: #a2aab8;
   --topic-divider: rgb(175 194 218 / 13%);
   --topic-solved: #c8d3e2;
-  --topic-slash: rgba(255 255 255 / 22%);
+  --topic-slash: rgba(235 235 245 / 48%);
   --topic-total: #94a3b8;
   --topic-label: #7c8899;
   position: relative;
@@ -65,7 +65,7 @@
 .countDivider {
   font-weight: 400;
   color: var(--topic-slash);
-  margin: 0 1px;
+  margin: 0 1.5px;
 }
 .countTotal {
   font-weight: 500;
@@ -85,7 +85,7 @@
   --topic-muted: var(--light-text-secondary, #596579);
   --topic-divider: var(--light-border, #dce3ed);
   --topic-solved: #334155;
-  --topic-slash: rgba(15 23 42 / 24%);
+  --topic-slash: rgba(15 23 42 / 40%);
   --topic-total: #64748b;
   --topic-label: #64748b;
 }
