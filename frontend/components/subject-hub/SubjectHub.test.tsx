@@ -143,7 +143,7 @@ describe("SubjectHub", () => {
     });
   });
 
-  it("renders OLED cards without chevrons and displays zero question / solved counts", () => {
+  it("renders thumbnail rows with chevrons and displays zero question / solved counts", () => {
     const mobileTopicDetails = {
       percentages: { color: "#5DA6FF", questionCount: 705, userSolved: 0, progress: 0 },
       "simple-interest": { color: "#F3B54A", questionCount: 0 },
@@ -163,7 +163,7 @@ describe("SubjectHub", () => {
     expect(screen.getAllByText("Simple Interest").length).toBeGreaterThanOrEqual(1);
 
     // Keep nonempty totals and explicit zero counts on their respective cards.
-    expect(screen.getByText("0 / 705 solved")).toBeInTheDocument();
+    expect(screen.getByText("0 / 705")).toBeInTheDocument();
     const emptyTopic = screen.getByRole("link", { name: "Simple Interest, 0 questions" });
     expect(within(emptyTopic).getByText("0 Questions")).toBeInTheDocument();
     expect(screen.queryByText("Coming soon")).not.toBeInTheDocument();
@@ -174,10 +174,11 @@ describe("SubjectHub", () => {
       expect(card.querySelector('[class*="progress"]')).toBeNull();
     });
 
-    // Verify NO chevrons exist in mobile topic rows
+    // Every topic has an image and a navigation affordance.
     const rows = container.querySelectorAll('[data-hub-part="mobileTopicRow"]');
     rows.forEach((row) => {
-      expect(row.querySelector('svg.lucide-chevron-right')).toBeNull();
+      expect(row.querySelector('svg.lucide-chevron-right')).not.toBeNull();
+      expect(row.querySelector('img[data-topic-thumbnail]')).not.toBeNull();
     });
   });
 });

@@ -1,225 +1,68 @@
-/* ============================================================
-   MobileTopicCard — Square Exam-Preparation Card
-   Disciplined fixed vertical zones & typography baseline alignment
-   ============================================================ */
-
 .card {
+  --topic-accent: #8ab4e8;
+  --topic-text: #edf1f7;
+  --topic-muted: #a2aab8;
+  --topic-divider: rgb(175 194 218 / 13%);
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 20px;
   align-items: center;
-  justify-content: space-between;
+  gap: 16px;
   width: 100%;
   min-width: 0;
-  aspect-ratio: 1 / 1;
-  border-radius: 14px;
-  padding: 14px 10px 14px;
-  text-decoration: none;
-  background: #19191C;
-  border: 1px solid rgba(255, 255, 255, 0.025);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transition: transform 100ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              background-color 100ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  -webkit-tap-highlight-color: transparent;
-  cursor: pointer;
+  min-height: 104px;
+  padding: 15px 4px;
   box-sizing: border-box;
-  overflow: hidden;
+  color: var(--topic-text);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 120ms ease;
 }
 
-/* Subject topics use the compact catalog rhythm of the mock-test hub. */
-:global([data-topic-layout="compact"]) .card {
-  aspect-ratio: auto;
-  min-height: 140px;
-  padding: 12px 10px 10px;
-  gap: 8px;
-  border: 0;
-  border-radius: 12px;
-  background: var(--oled-surface, #1c1c1e);
-  box-shadow: none;
+.card:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 92px;
+  right: 4px;
+  bottom: 0;
+  height: 1px;
+  background: var(--topic-divider);
 }
 
-:global([data-topic-layout="compact"]) .iconTile {
-  width: 48px;
-  height: 48px;
-  flex-basis: 48px;
-  margin-bottom: 6px;
-  border-radius: 0;
-}
+.card:active { background: rgb(135 165 204 / 8%); }
+.card:focus-visible { outline: 2px solid var(--ios-system-blue, #007aff); outline-offset: -2px; border-radius: 10px; }
 
-
-:global([data-topic-layout="compact"]) .topicTitleWrap {
-  height: auto;
-  min-height: 34px;
-  max-height: none;
-  overflow: visible;
-}
-
-:global([data-topic-layout="compact"]) .topicTitle {
-  display: block;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 17px;
-  letter-spacing: -0.01em;
-  color: var(--oled-text, #e5eaf0);
-  overflow: visible;
-}
-
-:global([data-topic-layout="compact"]) .topicCount {
-  height: auto;
-  min-height: 16px;
-  max-height: none;
-  margin-top: 2px;
-  font-size: 11px;
-  line-height: 16px;
-  font-weight: 500;
-  color: var(--oled-secondary, #a2a9b4);
-}
-
-:global(html.theme-light [data-topic-layout="compact"]) .card {
-  background: var(--light-surface);
-}
-
-:global(html.theme-light [data-topic-layout="compact"]) .topicTitle {
-  color: var(--light-text);
-}
-
-:global(html.theme-light [data-topic-layout="compact"]) .topicCount {
-  color: var(--light-text-secondary);
-}
-
-.card:active {
-  transform: scale(0.985);
-  background: #202024;
-}
-
-.card:focus-visible {
-  outline: 2px solid rgba(52, 127, 209, 0.6);
-  outline-offset: 2px;
-}
-
-.cardComingSoon {
-  cursor: default;
-}
-
-.cardComingSoon:active {
-  transform: none;
-  background: #19191C;
-}
-
-/* ── Upper Content Block (Identical fixed baseline across all cards) ── */
-.cardBody {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  min-width: 0;
-}
-
-/* ── Centered Icon Tile ── */
 .iconTile {
-  width: 48px;
-  height: 48px;
-  flex: 0 0 48px;
-  border-radius: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  color: var(--ios-system-blue);
-  margin-top: 0;
-  margin-bottom: 8px;
-}
-
-:global(html.theme-dark) .iconTile {
-  color: var(--ios-system-blue);
-}
-
-.iconTile img {
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  object-fit: contain;
-}
-
-/* ── Topic Title & Solved Meta (Rigid Fixed Baseline Zones) ── */
-.topicTitleWrap {
-  width: 100%;
-  height: 28px;
-  min-height: 20px;
-  max-height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
   overflow: hidden;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--topic-accent) 14%, #fff), color-mix(in srgb, var(--topic-accent) 38%, #e4eaf3));
+  border: 1px solid rgb(255 255 255 / 38%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 45%);
 }
 
-.topicTitle {
-  font-size: 12.2px;
-  font-weight: 680;
-  line-height: 14.5px;
-  letter-spacing: -0.1px;
-  color: #EEEEF1;
-  text-align: center;
-  width: 100%;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  word-break: normal;
-  overflow-wrap: break-word;
+.iconTile img { width: 56px; height: 56px; object-fit: contain; }
+.topicCopy { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.topicTitle { font-size: 15px; line-height: 1.4; font-weight: 600; color: var(--topic-text); overflow-wrap: anywhere; }
+.topicCount { font-size: 13px; line-height: 1.4; color: var(--topic-muted); font-variant-numeric: tabular-nums; }
+.chevron { color: var(--topic-muted); justify-self: end; }
+
+:global(html.theme-light) .card {
+  --topic-text: var(--light-text, #172033);
+  --topic-muted: var(--light-text-secondary, #596579);
+  --topic-divider: var(--light-border, #dce3ed);
 }
 
-.cardComingSoon .topicTitle {
-  color: #9A9AA1;
-}
-
-.topicCount {
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 15px;
-  height: 15px;
-  min-height: 15px;
-  max-height: 15px;
-  color: #9A9CA4;
-  margin-top: 4px;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-}
-
-.cardComingSoon .topicCount {
-  color: #72747D;
-}
-
-/* ── Very small phone override (≤ 340px) ── */
 @media (max-width: 340px) {
-  .card {
-    padding: 12px 8px 12px;
-    border-radius: 12px;
-  }
-  .iconTile {
-    width: 44px;
-    height: 44px;
-    flex: 0 0 44px;
-    border-radius: 0;
-    margin-bottom: 6px;
-  }
-  .topicTitleWrap {
-    height: 26px;
-    min-height: 20px;
-    max-height: 28px;
-  }
-  .topicTitle {
-    font-size: 11.5px;
-    line-height: 13.5px;
-  }
-  .topicCount {
-    font-size: 10px;
-    line-height: 13px;
-    height: 13px;
-    margin-top: 3px;
-  }
+  .card { grid-template-columns: 64px minmax(0, 1fr) 18px; gap: 12px; min-height: 92px; padding-block: 13px; }
+  .card:not(:last-child)::after { left: 80px; }
+  .iconTile { width: 64px; height: 64px; border-radius: 10px; }
+  .iconTile img { width: 50px; height: 50px; }
+  .topicTitle { font-size: 14px; }
+  .topicCount { font-size: 12px; }
 }
+
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }

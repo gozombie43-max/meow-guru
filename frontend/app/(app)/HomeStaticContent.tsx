@@ -118,9 +118,8 @@ export function MobileHomeContent() {
           <Image src="/images/home-carousel/study-overlay.webp" alt="" fill priority sizes="(max-width: 1023px) calc(100vw - 32px), 640px" quality={75} className={styles.mobileHeroStudyBackdrop} />
           <div className={styles.mobileHeroStudyOverlay} aria-hidden="true" />
           <div className={styles.mobileHeroCopy}>
-            <span className={styles.mobileHeroBadge}>SSC PREPARATION</span>
             <h1>Small steps.<br /><span>Big progress.</span></h1>
-            <p className={styles.mobileHeroDesc}>Build your skills,<br />one topic at a time.</p>
+            <p className={styles.mobileHeroDesc}>Learn more every day.</p>
           </div>
           <div className={styles.mobileHeroVisual}>
             <Image
