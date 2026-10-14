@@ -5,6 +5,7 @@ import { ChevronRight,GraduationCap } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import MobileRecentQuiz from './MobileRecentQuiz.client';
+import MobileHeroCarousel from './MobileHeroCarousel.client';
 import {
 desktopSubjects,
 HERO_BLUR_DATA_URL,
@@ -112,26 +113,30 @@ export function DesktopHomeContent() {
 export function MobileHomeContent() {
   return (
     <>
-      <section className={styles.mobileHero}>
-        <div className={styles.mobileHeroCopy}>
-          <span className={styles.mobileHeroBadge}>SSC PREPARATION</span>
-          <h1>Small steps.<br /><span>Big progress.</span></h1>
-          <p className={styles.mobileHeroDesc}>Build your skills,<br />one topic at a time.</p>
-        </div>
-        <div className={styles.mobileHeroVisual}>
-          <Image
-            src="/hero-image.webp"
-            alt="Graduate student"
-            fill
-            priority
-            placeholder="blur"
-            blurDataURL={HERO_BLUR_DATA_URL}
-            sizes="(max-width: 768px) 50vw, 240px"
-            quality={85}
-            className={styles.mobileHeroImage}
-          />
-        </div>
-      </section>
+      <MobileHeroCarousel>
+        <section className={styles.mobileHero}>
+          <Image src="/images/home-carousel/study-overlay.webp" alt="" fill priority sizes="(max-width: 1023px) calc(100vw - 32px), 640px" quality={75} className={styles.mobileHeroStudyBackdrop} />
+          <div className={styles.mobileHeroStudyOverlay} aria-hidden="true" />
+          <div className={styles.mobileHeroCopy}>
+            <span className={styles.mobileHeroBadge}>SSC PREPARATION</span>
+            <h1>Small steps.<br /><span>Big progress.</span></h1>
+            <p className={styles.mobileHeroDesc}>Build your skills,<br />one topic at a time.</p>
+          </div>
+          <div className={styles.mobileHeroVisual}>
+            <Image
+              src="/images/home-carousel/graduate.webp"
+              alt="Graduate student"
+              fill
+              priority
+              placeholder="blur"
+              blurDataURL={HERO_BLUR_DATA_URL}
+              sizes="(max-width: 768px) 50vw, 240px"
+              quality={75}
+              className={styles.mobileHeroImage}
+            />
+          </div>
+        </section>
+      </MobileHeroCarousel>
 
       <section className={styles.mobileContentGrid}>
         <div className={styles.mobileLeftColumn}>

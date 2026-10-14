@@ -1355,6 +1355,22 @@
 }
 
 /* Mobile Hero Banner */
+.mobileHeroStudyBackdrop {
+  object-fit: cover;
+  object-position: left center;
+  transform: scaleX(-1);
+  pointer-events: none;
+}
+.mobileHeroStudyOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(270deg, rgb(246 248 251 / 12%), rgb(246 248 251 / 72%) 38%, rgb(246 248 251 / 90%) 65%);
+}
+:global(html.theme-dark) .mobileHeroStudyOverlay {
+  background: linear-gradient(270deg, rgb(8 18 31 / 20%), rgb(8 18 31 / 70%) 38%, rgb(8 18 31 / 90%) 65%);
+}
 .mobileHero {
   border-radius: 26px;
   background: var(--surface);

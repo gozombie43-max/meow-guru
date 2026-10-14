@@ -1,0 +1,22 @@
+{
+  "generator": "Built-in image_gen",
+  "study-overlay.webp": "Use case: photorealistic-natural. Asset type: photographic background overlay for the first card of an Indian SSC exam-preparation mobile app. Wide landscape composition about 16:9. A premium close-up of a neat student study desk: a stack of textbooks with blank spines, an open ruled notebook with no writing, blue pens and pencil, a small analog study timer, softly blurred bookshelf behind. Arrange the study objects mostly on the LEFT and lower left, leaving the RIGHT half very calm, uncluttered blue-gray desk and softly lit wall so the app can overlay a headline. Restrained navy, slate blue, pale gray, and gentle warm amber desk light, realistic photographic detail and natural texture. The app will overlay a cutout graduate student on the left and text on the right, so do not generate any person. No landscape, no mountains, no paths, no readable text, no letters, no logos, no UI, no watermark.",
+  "study-focus.webp": "Use case: photorealistic-natural. Asset type: full-photo background for a small mobile SSC exam-preparation carousel card. Generate a premium cinematic close-up of focused studying at a desk, wide landscape about 16:9: on the RIGHT side of the image a young adult Indian student's hands writing revision notes with a blue pen beside an open textbook, a few neatly stacked reference books and a warm desk lamp near the upper-right edge. Show hands and study materials, do not show a face. The LEFT and especially lower-left third must be quiet and dark navy, with no important objects, so white title and subtitle can be placed there by the app. Cohesive deep navy and cool blue tones with subtle warm amber lighting, realistic photographic textures, clearly education-focused, simple and readable at 300 by 174 pixels. No landscapes, no readable writing, no letters, no logos, no UI, no watermark.",
+  "exam-focus.webp": "Use case: photorealistic-natural. Asset type: full-photo background for a small mobile SSC exam-preparation carousel card. Generate a premium cinematic close-up of competitive-exam practice materials, wide landscape about 16:9: on the RIGHT side an unbranded exam practice paper and optical answer sheet with a clean grid of empty and a few filled circular answer bubbles, a blue pencil, an eraser, an analog timer clock, and a closed navy notebook, arranged on a tidy dark blue desk. No legible words, letters, numbers, question content or logos on any sheet. Leave the LEFT and especially lower-left third quiet and dark navy so the app can add a white heading and subtitle. Cohesive cool navy and blue tones, soft warm amber highlight near the upper right, rich photographic detail and realistic paper texture, clean practical exam preparation mood, readable at 300 by 174 pixels. No people, no landscapes, no UI, no watermark.",
+  "optimization": {
+    "backgrounds": {
+      "format": "webp",
+      "width": 800,
+      "quality": 72,
+      "effort": 6,
+      "source": "Original generated PNGs"
+    },
+    "graduate": {
+      "format": "webp",
+      "width": 360,
+      "quality": 75,
+      "source": "/hero-image.webp"
+    },
+    "presentation": "First background is mirrored horizontally in CSS; the gradient fades from left to right."
+  }
+}

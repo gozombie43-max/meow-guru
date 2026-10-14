@@ -1,6 +1,8 @@
 "use client";
 
 import MacTrafficLights from "@/components/MacTrafficLights";
+import TopicThumbnail from "./TopicThumbnail";
+import { topicImage } from "@/lib/topic-images";
 
 import { ArrowLeft, BookOpen, BookOpenCheck, ChevronRight, LayoutGrid, List as ListIcon, Moon, Search, Sidebar as SidebarIcon, Sparkles, Sun, X } from "lucide-react";
 import Link from "next/link";
@@ -10,7 +12,7 @@ import React from "react";
 import type { SubjectHubView } from './useSubjectHubView';
 
 export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
- const { config, TOPICS, CATEGORIES, PRIORITY_CONFIG, HubIcon, STUDY_MODE_TOPICS, styles, router, toggleThemeMode, isDark, searchQuery, setSearchQuery, viewMode, setViewMode, selectedTopicId, setSelectedTopicId, sidebarOpen, setSidebarOpen, searchInputRef, activeCategory, setActiveCategory, setSelectedChapterSlug, isChapterMode, filteredTopics, selectedTopic, currentGroup, rawChapters, chapters, selectedChapter, modeQuestionCounts, topicPracticeModes, categoryCounts, SelectedIcon } = view;
+ const { config, TOPICS, CATEGORIES, PRIORITY_CONFIG, HubIcon, STUDY_MODE_TOPICS, styles, router, toggleThemeMode, isDark, searchQuery, setSearchQuery, viewMode, setViewMode, selectedTopicId, setSelectedTopicId, sidebarOpen, setSidebarOpen, searchInputRef, activeCategory, setActiveCategory, setSelectedChapterSlug, isChapterMode, filteredTopics, selectedTopic, currentGroup, rawChapters, chapters, selectedChapter, modeQuestionCounts, topicPracticeModes, categoryCounts } = view;
  return (<div className={styles.desktopContainer}>
         <div className={styles.macWindow}>
           {/* ── Titlebar & Toolbar (44px) ── */}
@@ -141,7 +143,6 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                     <div className={styles.sidebarHeading}>Topics ({TOPICS.length})</div>
                     {TOPICS.map((topic) => {
                       const active = selectedTopic.id === topic.id;
-                      const TopicIcon = topic.icon;
                       const group = config.getChapterGroup ? config.getChapterGroup(topic.slug) : null;
                       const chapterCount = group ? group.topics.length : topic.subtopics.length;
                       return (
@@ -157,7 +158,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                         >
                           <div className={styles.sidebarItemLeft}>
                             <span className={styles.sidebarItemIcon} style={{ color: active ? "#ffffff" : topic.color }}>
-                              <TopicIcon size={13} strokeWidth={2.4} />
+                              <TopicThumbnail src={topicImage(topic.slug)} size={18} />
                             </span>
                             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                               {topic.name}
@@ -205,7 +206,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
               {isChapterMode && (
                 <div className={styles.canvasHeader}>
                   <div className={styles.canvasHeaderTitle}>
-                    <SelectedIcon size={13} style={{ color: selectedTopic.color }} />
+                    <TopicThumbnail src={topicImage(selectedTopic.slug)} size={20} />
                     <span>{selectedTopic.name} &bull; Chapters</span>
                   </div>
                   <div className={styles.canvasMeta}>
@@ -246,8 +247,6 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                     <div className={styles.denseGrid}>
                       {chapters.map((chapter) => {
                         const isSelected = selectedChapter?.slug === chapter.slug;
-                        const ChapterIcon = selectedTopic.icon;
-                        const iconColor = selectedTopic.color;
                         const chapterHref = currentGroup
                           ? `${config.chapterBasePrefix}/${selectedTopic.slug}/${chapter.slug}`
                           : `${config.chapterBasePrefix}/${selectedTopic.slug}`;
@@ -276,16 +275,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                             </div>
 
                             <div className={styles.tileIconBox}>
-                              <ChapterIcon
-                                size={20}
-                                strokeWidth={2.3}
-                                color={isSelected ? "#ffffff" : iconColor}
-                                style={{
-                                  filter: isSelected
-                                    ? undefined
-                                    : `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${iconColor}80)`,
-                                }}
-                              />
+                              <TopicThumbnail src={topicImage(selectedTopic.slug)} size={36} />
                             </div>
                             <div className={styles.tileBody}>
                               <span className={styles.tileName} title={chapter.title}>
@@ -309,8 +299,6 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                       <tbody>
                         {chapters.map((chapter) => {
                           const isSelected = selectedChapter?.slug === chapter.slug;
-                          const ChapterIcon = selectedTopic.icon;
-                          const iconColor = selectedTopic.color;
                           const pBadge = PRIORITY_CONFIG[chapter.priority] || PRIORITY_CONFIG.Core || { badgeBg: "#e2e8f0", badgeColor: "#475569" };
                           const chapterHref = currentGroup
                             ? `${config.chapterBasePrefix}/${selectedTopic.slug}/${chapter.slug}`
@@ -338,14 +326,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                                   style={{ width: "100%", padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left" }}
                                 >
                                   <div className={styles.tableTopicIcon}>
-                                    <ChapterIcon
-                                      size={14}
-                                      strokeWidth={2.4}
-                                      color={iconColor}
-                                      style={{
-                                        filter: `drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 5px ${iconColor}80)`,
-                                      }}
-                                    />
+                                    <TopicThumbnail src={topicImage(selectedTopic.slug)} size={22} />
                                   </div>
                                   <span className={styles.tableTopicName}>{chapter.title}</span>
                                 </button>
@@ -415,7 +396,6 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                   <div className={styles.denseGrid}>
                     {filteredTopics.map((topic) => {
                       const isSelected = selectedTopicId === topic.id;
-                      const IconComp = topic.icon;
                       return (
                         <div
                           key={topic.id}
@@ -425,14 +405,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                           onClick={() => setSelectedTopicId(topic.id)}
                          role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                           <div className={styles.tileIconBox}>
-                            <IconComp
-                              size={22}
-                              strokeWidth={2.4}
-                              color={topic.color}
-                              style={{
-                                filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${topic.color}80)`,
-                              }}
-                            />
+                            <TopicThumbnail src={topicImage(topic.slug)} size={36} />
                           </div>
                           <div className={styles.tileBody}>
                             <span
@@ -462,7 +435,6 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                       {filteredTopics.map((topic) => {
                         const cfg = PRIORITY_CONFIG[topic.priority];
                         const isSelected = selectedTopicId === topic.id;
-                        const IconComp = topic.icon;
                         return (
                           <tr
                             key={topic.id}
@@ -480,14 +452,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                                 style={{ width: "100%", padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left" }}
                               >
                                 <div className={styles.tableTopicIcon}>
-                                  <IconComp
-                                    size={14}
-                                    strokeWidth={2.4}
-                                    color={topic.color}
-                                    style={{
-                                      filter: `drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 5px ${topic.color}80)`,
-                                    }}
-                                  />
+                                  <TopicThumbnail src={topicImage(topic.slug)} size={22} />
                                 </div>
                                 <span className={styles.tableTopicName}>
                                   {topic.name}
@@ -547,14 +512,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
               <div className={styles.heroCard}>
                 <div className={styles.heroCardHeader}>
                   <div className={styles.heroCardIconBox}>
-                    <SelectedIcon
-                      size={20}
-                      strokeWidth={2.4}
-                      color={selectedTopic.color}
-                      style={{
-                        filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${selectedTopic.color}80)`,
-                      }}
-                    />
+                    <TopicThumbnail src={topicImage(selectedTopic.slug)} size={32} />
                   </div>
                   <div className={styles.heroCardTitleGroup}>
                     <h2 className={styles.heroCardTitle}>
@@ -793,7 +751,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                     >
                       <div className={styles.resourceCardLeft}>
                         <div className={styles.resourceCardIcon}>
-                          <SelectedIcon size={13} strokeWidth={2.2} />
+                          <TopicThumbnail src={topicImage(selectedTopic.slug)} size={20} />
                         </div>
                         <div className={styles.resourceCardInfo}>
                           <span className={styles.resourceCardTitle}>

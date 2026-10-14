@@ -39,25 +39,13 @@
 }
 
 :global([data-topic-layout="compact"]) .iconTile {
-  width: 36px;
-  height: 36px;
-  flex-basis: 36px;
+  width: 48px;
+  height: 48px;
+  flex-basis: 48px;
   margin-bottom: 6px;
   border-radius: 0;
 }
 
-:global([data-topic-layout="compact"]) .iconTile svg {
-  width: 22px;
-  height: 22px;
-}
-
-:global([data-topic-layout="compact"]) .algebraIcon {
-  font-size: 19px;
-}
-
-:global([data-topic-layout="compact"]) .numberSystemIcon {
-  font-size: 13px;
-}
 
 :global([data-topic-layout="compact"]) .topicTitleWrap {
   height: auto;
@@ -129,9 +117,9 @@
 
 /* ── Centered Icon Tile ── */
 .iconTile {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
   border-radius: 0;
   display: flex;
   align-items: center;
@@ -146,19 +134,11 @@
   color: var(--ios-system-blue);
 }
 
-.algebraIcon {
-  font-size: 15px;
-  font-weight: 700;
-  font-style: italic;
-  font-family: serif, "Times New Roman", Times;
-  line-height: 1;
-}
-
-.numberSystemIcon {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  line-height: 1;
+.iconTile img {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 /* ── Topic Title & Solved Meta (Rigid Fixed Baseline Zones) ── */
@@ -221,9 +201,9 @@
     border-radius: 12px;
   }
   .iconTile {
-    width: 28px;
-    height: 28px;
-    flex: 0 0 28px;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
     border-radius: 0;
     margin-bottom: 6px;
   }

@@ -1,0 +1,30 @@
+.carousel { position: relative; min-width: 0; margin-top: 10px; }
+
+.track {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  border-radius: 26px;
+}
+.track::-webkit-scrollbar { display: none; }
+.slide { position: relative; flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+.slide > section { height: 100%; margin-top: 0; }
+.studyCard { position: relative; display: flex; align-items: flex-end; min-height: 180px; height: 100%; padding: 22px 22px 38px; overflow: hidden; border-radius: 26px; background: #101d2c; }
+.studyImage { object-fit: cover; object-position: center; }
+.studyCard::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 25%, rgb(5 12 23 / 40%) 60%, rgb(5 12 23 / 85%)); pointer-events: none; }
+.studyCopy { position: relative; z-index: 1; text-shadow: 0 1px 4px rgb(0 0 0 / 40%); }
+.studyCopy h2 { margin: 0; color: #fff; font-size: 20px; font-weight: 700; line-height: 1.2; letter-spacing: -.3px; }
+.studyCopy p { margin: 7px 0 0; color: #e4eaf1; font-size: 13px; line-height: 1.4; }
+.controls { position: absolute; bottom: 0; left: 50%; z-index: 4; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: 2px; height: 44px; }
+.carousel .dot[data-ui-button] { display: inline-flex; align-items: center; justify-content: center; width: 24px; min-width: 24px !important; height: 44px; padding: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; color: var(--ios-system-blue, #007aff); cursor: pointer; }
+.dot span { width: 7px; height: 6px; transform: translateY(8px); border-radius: 10px; background: var(--ui-secondary, #8e8e93); opacity: .7; transition: width 180ms ease, background-color 180ms ease; }
+.dot[aria-current='true'] span { width: 16px; background: var(--ios-system-blue, #007aff); opacity: 1; }
+
+.carousel .dot[data-ui-button]:focus-visible { outline: 2px solid var(--ios-system-blue, #007aff); outline-offset: -4px; border-radius: 10px !important; }
+@media (max-width: 480px) { .studyCard { min-height: 174px; padding: 18px 18px 36px; } }
+@media (prefers-reduced-motion: reduce) { .dot span { transition: none; } }

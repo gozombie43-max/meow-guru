@@ -138,7 +138,7 @@
   color: var(--geo-text);
   -webkit-tap-highlight-color: transparent;
 }
-.chapterRow .chapterIcon { width: 30px; height: 32px; }
+.chapterRow .chapterIcon { width: 32px; height: 32px; }
 .chapterChevron { color: var(--geo-secondary); }
 .chapterText {
   display: flex;
@@ -156,7 +156,7 @@
 .chapterRow:active { background: rgb(var(--ios-system-blue-rgb) / 8%); }
 @media (hover: hover) { .chapterRow:hover { background: rgb(var(--ios-system-blue-rgb) / 6%); } }
 @media (max-width: 360px) {
-  .chapterRow { grid-template-columns: 28px 22px minmax(0, 1fr) 16px; gap: 6px; }
+  .chapterRow { grid-template-columns: 32px 22px minmax(0, 1fr) 16px; gap: 6px; }
   .mobileTopicName, .mobileRankNum { font-size: 14px; }
 }
 
