@@ -651,8 +651,9 @@
 }
 
 .tileIconBox {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
   border-radius: 12px;
   background: var(--mac-icon-box-bg);
   color: var(--mac-text-primary);
@@ -743,8 +744,9 @@
 }
 
 .tableTopicIcon {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
   border-radius: 7px;
   background: var(--mac-icon-box-bg);
   color: var(--mac-text-primary);
@@ -865,8 +867,9 @@
 }
 
 .heroCardIconBox {
-  width: 42px;
-  height: 42px;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
   border-radius: 11px;
   background: var(--mac-icon-box-bg);
   border: 1px solid var(--mac-icon-box-border);
@@ -1374,7 +1377,8 @@
     overflow-y: auto;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
-    margin-bottom: 12px;
+    margin-bottom: 0;
+    padding-bottom: 12px;
   }
 }
 
@@ -2508,3 +2512,7 @@
   padding: 48px 16px;
   margin: 0;
 }
+
+/* Fill photograph frames without inherited icon padding. */
+:is(.tileIconBox, .tableTopicIcon, .heroCardIconBox) img { width: 100%; height: 100%; object-fit: cover; }
+.sidebarItemIcon img { border-radius: 4px; }

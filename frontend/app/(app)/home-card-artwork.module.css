@@ -1,0 +1,77 @@
+/* ─── Artwork container ───────────────────────────────────────────── */
+.artwork {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  color: var(--art-color);
+
+  /* Subtle glow restricted strictly to the right side where the art lives */
+  background: radial-gradient(ellipse 60% 80% at 100% 50%, var(--art-glow), transparent 72%);
+}
+
+/*
+  Black gradient overlay on the card:
+  - Left 0% to 45% is 100% transparent so subjects names, icons, and text NEVER fade
+  - Right 45% to 100% softly blends the art vector lines into the dark card theme
+*/
+.artwork::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    transparent 45%,
+    rgba(0, 0, 0, 0.18) 75%,
+    rgba(0, 0, 0, 0.32) 100%
+  );
+  pointer-events: none;
+}
+
+/* SVG art — right-anchored so it never overlaps the subject names on the left */
+.artwork svg {
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  height: 125%;
+  width: auto;
+  max-width: 65%;
+  transform: translateY(-50%);
+  opacity: var(--art-svg-opacity, .45);
+  mask-image: linear-gradient(90deg, transparent 0%, transparent 12%, #000 65%);
+}
+
+/* ─── Per-subject colour tokens ───────────────────────────────────── */
+/* Light — subtle hue tint */
+.math      { --art-color:#007aff; --art-glow:rgba(0,122,255,.07); }
+.reasoning { --art-color:#e5387a; --art-glow:rgba(229,56,122,.07); }
+.english   { --art-color:#00a88e; --art-glow:rgba(0,168,142,.07); }
+.gk        { --art-color:#b87c0a; --art-glow:rgba(184,124,10,.08); }
+.books     { --art-color:#c05f12; --art-glow:rgba(192,95,18,.08); }
+.battle    { --art-color:#0e85c0; --art-glow:rgba(14,133,192,.08); }
+.recent    { --art-color:#6452c8; --art-glow:rgba(100,82,200,.07); }
+
+/* Dark — soft restrained glow, matching theme colors without drowning the card */
+:global(html.theme-dark) .artwork { --art-svg-opacity: .68; }
+
+:global(html.theme-dark) .artwork::after {
+  background:
+    linear-gradient(90deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(0, 0, 0, 0.30) 75%,
+      rgba(0, 0, 0, 0.48) 100%
+    ),
+    radial-gradient(ellipse at 100% 100%, rgba(0, 0, 0, 0.40) 0%, transparent 60%);
+}
+
+:global(html.theme-dark) .math      { --art-color:#5aabff; --art-glow:rgba(10,132,255,.14); }
+:global(html.theme-dark) .reasoning { --art-color:#f07aaa; --art-glow:rgba(240,86,140,.12); }
+:global(html.theme-dark) .english   { --art-color:#3ec9b5; --art-glow:rgba(30,201,174,.11); }
+:global(html.theme-dark) .gk        { --art-color:#e8b840; --art-glow:rgba(232,168,37,.13); }
+:global(html.theme-dark) .books     { --art-color:#e08c50; --art-glow:rgba(224,120,48,.12); }
+:global(html.theme-dark) .battle    { --art-color:#40b8f0; --art-glow:rgba(26,174,232,.13); }
+:global(html.theme-dark) .recent    { --art-color:#9e8ef0; --art-glow:rgba(139,118,232,.11); }

@@ -1,3 +1,4 @@
+import HomeCardArtwork from './HomeCardArtwork';
 import BattleIcon from '@/components/BattleIcon';
 import BooksIcon from '@/components/BooksIcon';
 import Typewriter from '@/components/Typewriter';
@@ -82,6 +83,7 @@ export function DesktopHomeContent() {
                   className={styles.subjectCard}
                   title={`Explore ${subject.title}`}
                 >
+                  <HomeCardArtwork kind={subject.title === 'MATH' ? 'math' : subject.title === 'REASONING' ? 'reasoning' : subject.title === 'ENGLISH' ? 'english' : 'gk'} />
                   <SubjectIcon size={46} />
                   <div className={styles.subjectCardInfo}>
                     <h3 className={styles.subjectCardTitle}>{subject.title}</h3>
@@ -95,10 +97,12 @@ export function DesktopHomeContent() {
         </section>
         <div className={styles.desktopQuickLinks}>
           <Link href="/resource" className={styles.resourceCard}>
+            <HomeCardArtwork kind="books" />
             <span className={styles.resourceIcon}><BooksIcon size={40} /></span>
             <span><strong>All books & notes</strong><small>Books, chapter notes, extras & DPP</small></span>
           </Link>
           <Link href="/battle" className={styles.battleCard}>
+            <HomeCardArtwork kind="battle" />
             <span className={styles.battleIcon}><BattleIcon size={40} /></span>
             <span><strong>Battle mode</strong><small>Challenge yourself & win rewards</small></span>
           </Link>
@@ -143,6 +147,7 @@ export function MobileHomeContent() {
           <div id="subjects" className={styles.mobileSubjectGrid}>
             {mobileSubjects.map((subject) => (
               <Link key={subject.title} href={subject.href} className={styles.mobileSubjectCard}>
+                <HomeCardArtwork kind={subject.tone} />
                 <span className={`${styles.subjectIcon} ${styles[subject.tone]}`}>
                   <subject.icon size={30} />
                 </span>
@@ -152,10 +157,12 @@ export function MobileHomeContent() {
           </div>
           <div className={styles.sectionHeader}><h2>Study and compete</h2></div>
           <Link href="/resource" className={styles.resourceCard}>
+            <HomeCardArtwork kind="books" />
             <span className={styles.resourceIcon}><BooksIcon size={48} /></span>
             <span><strong>All books & notes</strong><small>Books, chapter notes, extras & DPP</small></span>
           </Link>
           <Link href="/battle" className={styles.battleCard}>
+            <HomeCardArtwork kind="battle" />
             <span className={styles.battleIcon}><BattleIcon size={48} /></span>
             <span><strong>Battle mode</strong><small>Challenge yourself & win rewards</small></span>
           </Link>

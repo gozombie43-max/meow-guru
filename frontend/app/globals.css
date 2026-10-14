@@ -1354,6 +1354,10 @@ body.theme-dark .bottom-nav-center-btn { box-shadow: 0 4px 14px rgb(var(--ios-sy
   transform: translateX(-50%) translateY(calc(100% + 24px + env(safe-area-inset-bottom)));
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .bottom-pill-nav { transition: none; }
+}
+
 .bottom-pill-nav.is-light {
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.06);

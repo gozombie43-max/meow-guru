@@ -2,7 +2,7 @@
 
 import MacTrafficLights from "@/components/MacTrafficLights";
 import TopicThumbnail from "./TopicThumbnail";
-import { topicImage } from "@/lib/topic-images";
+import { chapterImage, topicImage } from "@/lib/topic-images";
 
 import { ArrowLeft, BookOpen, BookOpenCheck, ChevronRight, LayoutGrid, List as ListIcon, Moon, Search, Sidebar as SidebarIcon, Sparkles, Sun, X } from "lucide-react";
 import Link from "next/link";
@@ -275,7 +275,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                             </div>
 
                             <div className={styles.tileIconBox}>
-                              <TopicThumbnail src={topicImage(selectedTopic.slug)} size={36} />
+                              <TopicThumbnail src={chapterImage(chapter.slug, selectedTopic.slug)} size={48} />
                             </div>
                             <div className={styles.tileBody}>
                               <span className={styles.tileName} title={chapter.title}>
@@ -326,7 +326,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                                   style={{ width: "100%", padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left" }}
                                 >
                                   <div className={styles.tableTopicIcon}>
-                                    <TopicThumbnail src={topicImage(selectedTopic.slug)} size={22} />
+                                    <TopicThumbnail src={chapterImage(chapter.slug, selectedTopic.slug)} size={32} />
                                   </div>
                                   <span className={styles.tableTopicName}>{chapter.title}</span>
                                 </button>
@@ -405,7 +405,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                           onClick={() => setSelectedTopicId(topic.id)}
                          role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                           <div className={styles.tileIconBox}>
-                            <TopicThumbnail src={topicImage(topic.slug)} size={36} />
+                            <TopicThumbnail src={topicImage(topic.slug)} size={48} />
                           </div>
                           <div className={styles.tileBody}>
                             <span
@@ -452,7 +452,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                                 style={{ width: "100%", padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left" }}
                               >
                                 <div className={styles.tableTopicIcon}>
-                                  <TopicThumbnail src={topicImage(topic.slug)} size={22} />
+                                  <TopicThumbnail src={topicImage(topic.slug)} size={32} />
                                 </div>
                                 <span className={styles.tableTopicName}>
                                   {topic.name}
@@ -512,7 +512,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
               <div className={styles.heroCard}>
                 <div className={styles.heroCardHeader}>
                   <div className={styles.heroCardIconBox}>
-                    <TopicThumbnail src={topicImage(selectedTopic.slug)} size={32} />
+                    <TopicThumbnail src={isChapterMode && selectedChapter ? chapterImage(selectedChapter.slug, selectedTopic.slug) : topicImage(selectedTopic.slug)} size={48} />
                   </div>
                   <div className={styles.heroCardTitleGroup}>
                     <h2 className={styles.heroCardTitle}>

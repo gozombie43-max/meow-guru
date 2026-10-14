@@ -5,13 +5,13 @@
   --topic-divider: rgb(175 194 218 / 13%);
   position: relative;
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) 20px;
+  grid-template-columns: 56px minmax(0, 1fr) 20px;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
   min-width: 0;
-  min-height: 104px;
-  padding: 15px 4px;
+  min-height: 84px;
+  padding: 14px 0;
   box-sizing: border-box;
   color: var(--topic-text);
   text-decoration: none;
@@ -22,8 +22,8 @@
 .card:not(:last-child)::after {
   content: '';
   position: absolute;
-  left: 92px;
-  right: 4px;
+  left: 0;
+  right: 0;
   bottom: 0;
   height: 1px;
   background: var(--topic-divider);
@@ -35,16 +35,15 @@
 .iconTile {
   display: grid;
   place-items: center;
-  width: 72px;
-  height: 72px;
-  border-radius: 12px;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
   overflow: hidden;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--topic-accent) 14%, #fff), color-mix(in srgb, var(--topic-accent) 38%, #e4eaf3));
-  border: 1px solid rgb(255 255 255 / 38%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 45%);
+  background: #28313b;
+  box-shadow: inset 0 0 0 1px rgb(127 140 160 / 15%);
 }
 
-.iconTile img { width: 56px; height: 56px; object-fit: contain; }
+.iconTile img { width: 100%; height: 100%; object-fit: cover; }
 .topicCopy { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 .topicTitle { font-size: 15px; line-height: 1.4; font-weight: 600; color: var(--topic-text); overflow-wrap: anywhere; }
 .topicCount { font-size: 13px; line-height: 1.4; color: var(--topic-muted); font-variant-numeric: tabular-nums; }
@@ -57,12 +56,12 @@
 }
 
 @media (max-width: 340px) {
-  .card { grid-template-columns: 64px minmax(0, 1fr) 18px; gap: 12px; min-height: 92px; padding-block: 13px; }
-  .card:not(:last-child)::after { left: 80px; }
-  .iconTile { width: 64px; height: 64px; border-radius: 10px; }
-  .iconTile img { width: 50px; height: 50px; }
+  .card { grid-template-columns: 48px minmax(0, 1fr) 18px; gap: 12px; min-height: 76px; padding-block: 13px; }
+  .iconTile { width: 48px; height: 48px; border-radius: 9px; }
   .topicTitle { font-size: 14px; }
   .topicCount { font-size: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+
+@media (hover: hover) { .card:hover { background: rgb(135 165 204 / 7%); } }

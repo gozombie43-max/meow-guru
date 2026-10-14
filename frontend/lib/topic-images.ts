@@ -1,4 +1,7 @@
-const IMAGE_ROOT = '/images/topic-thumbnails/';
+import { CHAPTER_PHOTOS } from './chapter-images';
+import { PHOTO_FILES } from './topic-photo-files';
+
+const IMAGE_ROOT = '/images/topic-photos/';
 
 export const TOPIC_IMAGE_NAMES: Record<string, string> = {
   percentages: 'abacus',
@@ -15,7 +18,7 @@ export const TOPIC_IMAGE_NAMES: Record<string, string> = {
   'number-system': 'input-numbers',
   averages: 'bar-chart',
   discount: 'label',
-  'mixture-and-alligation': 'alembic',
+  'mixture-and-alligation': 'test-tube',
   partnership: 'handshake',
   'square-roots': 'input-symbols',
   'statistics-probability': 'game-die',
@@ -64,7 +67,7 @@ export const TOPIC_IMAGE_NAMES: Record<string, string> = {
   'statement-conclusion': 'ballot-box-with-ballot',
   'statement-assumptions': 'thinking-face',
   'statement-arguments': 'crossed-swords',
-  'problem-solving-critical-thinking': 'brain',
+  'problem-solving-critical-thinking': 'thought-balloon',
   'non-verbal-figures': 'puzzle-piece',
   'paper-folding-cutting': 'scissors',
   'mirror-water-image': 'mirror',
@@ -74,57 +77,36 @@ export const TOPIC_IMAGE_NAMES: Record<string, string> = {
   'emotional-intelligence': 'red-heart',
   'social-intelligence': 'busts-in-silhouette',
   'word-building': 'input-latin-letters',
-  'ancient-history': 'classical-building',
+  'ancient-history': 'sanchi',
   'medieval-history': 'castle',
   'modern-history': 'scroll',
-  polity: 'balance-scale',
+  polity: 'office-building',
   geography: 'globe-showing-asia-australia',
   physics: 'magnet',
   chemistry: 'test-tube',
   biology: 'dna',
   economy: 'chart-increasing',
   'current-affairs': 'newspaper',
-  'static-gk': 'books',
-};
-
-// The chapter registry already assigns a distinct subject symbol to each row.
-export const CHAPTER_IMAGE_NAMES: Record<string, string> = {
-  Zap: 'electric-plug', CircleDot: 'globe-showing-asia-australia', Gauge: 'compass',
-  BatteryCharging: 'battery', ArrowLeftRight: 'link', Sigma: 'abacus', Layers: 'books',
-  Magnet: 'magnet', MoveRight: 'compass', Orbit: 'satellite', RefreshCw: 'gear',
-  Activity: 'bar-chart', Radiation: 'test-tube', Volume2: 'headphone', Waves: 'water-wave',
-  Route: 'world-map', Eye: 'eye', Glasses: 'glasses', ScanLine: 'camera',
-  Microscope: 'microscope', Grid: 'card-file-box', Filter: 'alembic', Cog: 'gear',
-  Compass: 'compass', Cpu: 'desktop-computer', Network: 'electric-plug', Gem: 'gem-stone',
-  Thermometer: 'thermometer', Wind: 'wind-face', Flame: 'fire', Scale: 'balance-scale',
-  LineChart: 'chart-increasing', Droplets: 'sweat-droplets', Sun: 'sun', BarChart3: 'bar-chart',
-  Target: 'bullseye', Box: 'package', Boxes: 'package', TrendingUp: 'chart-increasing',
-  Atom: 'satellite', Mountain: 'mountain', Sprout: 'seedling', Trees: 'deciduous-tree',
-  CloudRain: 'cloud-with-rain', MapPin: 'round-pushpin', Globe: 'globe-showing-asia-australia',
-  MountainSnow: 'snow-capped-mountain', CloudSun: 'sun-behind-cloud', TreePine: 'evergreen-tree',
-  Map: 'world-map', Users: 'busts-in-silhouette', Factory: 'factory', Clock: 'alarm-clock',
-  Anchor: 'anchor', CloudFog: 'cloud', Droplet: 'droplet', AlertTriangle: 'warning',
-  SunMedium: 'sun', Leaf: 'herb', Flower2: 'lotus', Crown: 'crown', Coins: 'coin',
-  Palette: 'artist-palette', ShieldAlert: 'shield', Globe2: 'globe-showing-asia-australia',
-  Feather: 'feather', Ship: 'ship', Columns: 'classical-building', Swords: 'crossed-swords',
-  Pickaxe: 'pick', GraduationCap: 'graduation-cap', Landmark: 'classical-building', Castle: 'castle',
-  Heart: 'red-heart', Shield: 'shield', Sparkles: 'sparkles', Building2: 'office-building',
-  Award: 'sports-medal', FileText: 'page-facing-up', Flag: 'scroll', Lightbulb: 'light-bulb',
-  Home: 'house', Footprints: 'footprints', Newspaper: 'newspaper', Megaphone: 'megaphone',
-  ShieldCheck: 'shield', BookOpen: 'open-book', HeartHandshake: 'handshake', PenTool: 'pencil',
-  Scroll: 'scroll', Vote: 'ballot-box-with-ballot', UserCheck: 'busts-in-silhouette',
-  Search: 'magnifying-glass-tilted-left', Briefcase: 'briefcase', Users2: 'busts-in-silhouette',
-  Languages: 'books', Building: 'classical-building', FlaskConical: 'alembic', Link2: 'link',
-  Pill: 'pill', Sparkle: 'sparkles', Apple: 'red-apple', Dna: 'dna', Brain: 'brain',
-  HeartPulse: 'hospital', Bug: 'lady-beetle', DollarSign: 'money-bag', Receipt: 'receipt',
-  PieChart: 'bar-chart', Calendar: 'calendar', Trophy: 'trophy', Medal: 'sports-medal',
-  Music: 'musical-notes', PartyPopper: 'party-popper', BookOpenCheck: 'books',
+  'static-gk': 'taj-mahal',
+  'mathematical-methods': 'spiral-notepad',
+  mechanics: 'gear',
+  'electricity-magnetism': 'magnet',
+  'oscillations-waves-optics': 'prism',
+  thermodynamics: 'thermometer',
+  'modern-physics': 'telescope',
+  'solid-state-electronics': 'circuit',
 };
 
 export function topicImage(slug: string) {
-  return `${IMAGE_ROOT}${Object.hasOwn(TOPIC_IMAGE_NAMES, slug) ? TOPIC_IMAGE_NAMES[slug] : 'books'}.webp`;
+  const key = Object.hasOwn(TOPIC_IMAGE_NAMES, slug) ? TOPIC_IMAGE_NAMES[slug] : 'books';
+  return photoImage(key);
 }
 
-export function chapterImage(slug: string, group: string, image?: string) {
-  return image ? `${IMAGE_ROOT}${image}.webp` : topicImage(Object.hasOwn(TOPIC_IMAGE_NAMES, slug) ? slug : group);
+export function chapterImage(slug: string, group: string) {
+  return Object.hasOwn(CHAPTER_PHOTOS, slug) ? photoImage(CHAPTER_PHOTOS[slug]) : topicImage(group);
+}
+
+function photoImage(key: string) {
+  const photo = Object.hasOwn(PHOTO_FILES, key) ? PHOTO_FILES[key] : PHOTO_FILES.books;
+  return `${IMAGE_ROOT}${photo}`;
 }

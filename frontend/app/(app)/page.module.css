@@ -766,9 +766,16 @@
   gap: 12px;
   text-decoration: none;
   color: var(--mac-text-primary);
+  position: relative;
+  overflow: hidden;
   transition: background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
   will-change: box-shadow, border-color;
   backface-visibility: hidden;
+}
+
+.subjectCard > :not([class*="artwork"]) {
+  position: relative;
+  z-index: 2;
 }
 
 .subjectCard:hover {
@@ -1544,6 +1551,21 @@
   font-weight: 600;
   line-height: 1.35;
   letter-spacing: -0.15px;
+  position: relative;
+  overflow: hidden;
+}
+
+.mobileSubjectCard > :not([class*="artwork"]) {
+  position: relative;
+  z-index: 2;
+}
+
+.mobileSubjectCard > span:last-child {
+  position: relative;
+  z-index: 2;
+  color: var(--text);
+  font-weight: 600;
+  opacity: 1;
 }
 
 .subjectIcon {
@@ -1611,6 +1633,13 @@
   grid-template-columns: 46px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+:is(.resourceCard, .battleCard) > :not([class*="artwork"]) {
+  position: relative;
+  z-index: 2;
 }
 
 .resourceIcon,
@@ -1858,6 +1887,11 @@
 :global(html.theme-dark) .pageWrapper :is(.railActive, .sidebarThemeToggle) { border: 0; box-shadow: none; }
 :global(html.theme-dark) .pageWrapper .railActive { background: var(--oled-selected-soft); }
 
+:global(html.theme-dark) .pageWrapper :is(.mobileSubjectCard > span:last-child, .subjectCardTitle, .resourceCard strong, .battleCard strong) {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
 
 :global(html.theme-dark) .pageWrapper :is(.mobileHeroDesc, .heroSubtitle, .resourceCard small, .battleCard small) { color: var(--oled-secondary); }
 
@@ -2016,3 +2050,12 @@
 .adminContactCard a:active { opacity: .85; }
 .adminContactCard a:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .adminContactCard .contactLinks a { transition: none; } }
+
+/* Isolate decorative artwork beneath card content and clip it to the rounded edge. */
+.subjectCard,
+.mobileSubjectCard,
+.resourceCard,
+.battleCard {
+  position: relative;
+  isolation: isolate;
+}

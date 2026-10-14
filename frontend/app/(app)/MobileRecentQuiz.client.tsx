@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Atom, BookOpen, Brain, Globe, Play, Sigma } from 'lucide-react';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
+import HomeCardArtwork from './HomeCardArtwork';
 import styles from './page.module.css';
 import cardStyles from './recent-quiz.module.css';
 
@@ -60,6 +61,7 @@ export default function MobileRecentQuiz({ desktop = false }: { desktop?: boolea
 
           return (
             <article key={quiz.quizKey} className={cardStyles.card} aria-roledescription={!desktop ? 'slide' : undefined} aria-label={!desktop ? `${index + 1} of ${recent.length}: ${quiz.title || 'Quiz'}` : undefined}>
+              <HomeCardArtwork kind="recent" />
               <div className={cardStyles.header}>
                 <span className={cardStyles.icon}><Icon size={32} strokeWidth={2.2} aria-hidden="true" /></span>
                 <div className={cardStyles.copy}>
@@ -83,6 +85,7 @@ export default function MobileRecentQuiz({ desktop = false }: { desktop?: boolea
         })}
         {recent.length === 0 ? (
           <div className={cardStyles.card}>
+            <HomeCardArtwork kind="recent" />
             <p className={cardStyles.detail}>{loading ? 'Loading recent quizzes…' : 'Your recent quizzes will appear here.'}</p>
             {!loading ? <Link href="/mathematics" data-ui-button="primary" className={cardStyles.resume}><Play size={18} fill="currentColor" aria-hidden="true" />Start Practice</Link> : null}
           </div>
