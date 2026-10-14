@@ -3,8 +3,8 @@
   --topic-text: #edf1f7;
   --topic-muted: #a2aab8;
   --topic-divider: rgb(175 194 218 / 13%);
-  --topic-solved: #f8fafc;
-  --topic-slash: rgba(255 255 255 / 26%);
+  --topic-solved: #c8d3e2;
+  --topic-slash: rgba(255 255 255 / 22%);
   --topic-total: #94a3b8;
   --topic-label: #7c8899;
   position: relative;
@@ -84,8 +84,8 @@
   --topic-text: var(--light-text, #172033);
   --topic-muted: var(--light-text-secondary, #596579);
   --topic-divider: var(--light-border, #dce3ed);
-  --topic-solved: #0f172a;
-  --topic-slash: rgba(15 23 42 / 28%);
+  --topic-solved: #334155;
+  --topic-slash: rgba(15 23 42 / 24%);
   --topic-total: #64748b;
   --topic-label: #64748b;
 }
