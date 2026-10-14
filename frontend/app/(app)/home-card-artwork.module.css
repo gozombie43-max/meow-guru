@@ -6,6 +6,8 @@
   overflow: hidden;
   border-radius: inherit;
   pointer-events: none;
+  --art-color: #007aff;
+  --art-glow: rgba(0, 122, 255, 0.07);
   color: var(--art-color);
 
   /* Subtle glow restricted strictly to the right side where the art lives */
@@ -44,17 +46,20 @@
   mask-image: linear-gradient(90deg, transparent 0%, transparent 12%, #000 65%);
 }
 
-/* ─── Per-subject colour tokens ───────────────────────────────────── */
-/* Light — subtle hue tint */
-.math      { --art-color:#007aff; --art-glow:rgba(0,122,255,.07); }
-.reasoning { --art-color:#e5387a; --art-glow:rgba(229,56,122,.07); }
-.english   { --art-color:#00a88e; --art-glow:rgba(0,168,142,.07); }
-.gk        { --art-color:#b87c0a; --art-glow:rgba(184,124,10,.08); }
-.books     { --art-color:#c05f12; --art-glow:rgba(192,95,18,.08); }
-.battle    { --art-color:#0e85c0; --art-glow:rgba(14,133,192,.08); }
-.recent    { --art-color:#6452c8; --art-glow:rgba(100,82,200,.07); }
+/* ─── Unified theme colour tokens (same across ALL cards) ─────────── */
+.artwork,
+.math,
+.reasoning,
+.english,
+.gk,
+.books,
+.battle,
+.recent {
+  --art-color: #007aff;
+  --art-glow: rgba(0, 122, 255, 0.07);
+}
 
-/* Dark — subtle left-edge feathering matching the dark theme, without overpowering card content */
+/* Dark — subtle left-edge feathering matching the dark theme, unified theme blue across all cards */
 :global(html.theme-dark) .artwork {
   --art-svg-opacity: .65;
   background:
@@ -72,10 +77,14 @@
     linear-gradient(180deg, transparent 75%, rgba(0, 0, 0, 0.12) 100%);
 }
 
-:global(html.theme-dark) .math      { --art-color:#5aabff; --art-glow:rgba(10,132,255,.14); }
-:global(html.theme-dark) .reasoning { --art-color:#f07aaa; --art-glow:rgba(240,86,140,.12); }
-:global(html.theme-dark) .english   { --art-color:#3ec9b5; --art-glow:rgba(30,201,174,.11); }
-:global(html.theme-dark) .gk        { --art-color:#e8b840; --art-glow:rgba(232,168,37,.13); }
-:global(html.theme-dark) .books     { --art-color:#e08c50; --art-glow:rgba(224,120,48,.12); }
-:global(html.theme-dark) .battle    { --art-color:#40b8f0; --art-glow:rgba(26,174,232,.13); }
-:global(html.theme-dark) .recent    { --art-color:#9e8ef0; --art-glow:rgba(139,118,232,.11); }
+:global(html.theme-dark) .artwork,
+:global(html.theme-dark) .math,
+:global(html.theme-dark) .reasoning,
+:global(html.theme-dark) .english,
+:global(html.theme-dark) .gk,
+:global(html.theme-dark) .books,
+:global(html.theme-dark) .battle,
+:global(html.theme-dark) .recent {
+  --art-color: #5aabff;
+  --art-glow: rgba(10, 132, 255, 0.14);
+}
