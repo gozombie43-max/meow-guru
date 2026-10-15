@@ -1,6 +1,6 @@
 // Local-only disposable fixture. Never imports .env files or connects to Atlas.
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
-import { generateKeyPairSync } from 'node:crypto';
+import { generateKeyPairSync, randomUUID } from 'node:crypto';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
@@ -11,6 +11,9 @@ process.env.JWT_SECRET = 'local-browser-access-secret-not-for-deployment';
 process.env.REFRESH_TOKEN_SECRET = 'local-browser-refresh-secret-not-for-deployment';
 process.env.DEPLOYMENT_ENVIRONMENT = 'test';
 process.env.REDIS_URL = '';
+process.env.RESEND_API_KEY = 're_local_fixture_only';
+process.env.RESEND_BASE_URL = 'http://127.0.0.1:3112';
+process.env.FRONTEND_URL = 'http://127.0.0.1:3110';
 process.env.BACKEND_PUBLIC_URL = '';
 process.env.B2_ENDPOINT = 'http://127.0.0.1:3112';
 process.env.B2_REGION = 'fixture';
@@ -72,6 +75,17 @@ app.get('/metrics', metricsHandler);
 // Disposable S3-compatible storage: real SDK requests stay entirely on loopback.
 const storageObjects = new Map();
 const storageApp = express();
+// Capture actual SDK email requests on loopback; no test message reaches Resend.
+const verificationEmails = new Map();
+storageApp.post('/emails', express.json(), (req, res) => {
+  verificationEmails.set(String(req.body.to), req.body.text);
+  res.json({ id: randomUUID() });
+});
+app.get('/__fixture/verification-email', (req, res) => {
+  const text = verificationEmails.get(String(req.query.email));
+  if (!text) return res.status(404).json({ error: 'Fixture email not found' });
+  return res.json({ text });
+});
 storageApp.put('/{*key}', express.raw({ type: '*/*', limit: '10mb' }), (req, res) => {
   storageObjects.set(req.path, { body: req.body, type: req.get('Content-Type') });
   res.set('ETag', '"fixture"').status(200).end();

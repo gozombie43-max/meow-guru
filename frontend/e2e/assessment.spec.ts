@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
+import { verifyFixtureEmail } from './helpers/verify-fixture-email';
 
 test('authenticated assessment survives reload and submits without leaking answers', async ({ page, context, request }, testInfo) => {
   // Confidential tests allow one attempt per user. Screenshot captures submit
@@ -9,6 +10,7 @@ test('authenticated assessment survives reload and submits without leaking answe
     data: { name: 'Assessment Student', ...credentials },
   });
   expect(registration.ok(), 'Create an isolated assessment account').toBeTruthy();
+  await verifyFixtureEmail(request, credentials.email);
   const login = await request.post('http://127.0.0.1:3111/auth/login', { data: credentials });
   expect(login.ok()).toBeTruthy();
   const refreshCookie = login.headers()['set-cookie'].split(';')[0].slice('refreshToken='.length);

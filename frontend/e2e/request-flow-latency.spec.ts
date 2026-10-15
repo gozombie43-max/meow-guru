@@ -1,5 +1,6 @@
 import { test, expect, type Request } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
+import { verifyFixtureEmail } from './helpers/verify-fixture-email';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { performance as nodePerformance } from 'node:perf_hooks';
@@ -96,6 +97,7 @@ test('measure real local request flows through the Next rewrite', async ({ brows
       const credentials = { email: `latency-${randomUUID()}@example.test`, password: 'Browser-fixture-123!' };
       const registration = await request.post('http://127.0.0.1:3111/auth/register', { data: { ...credentials, name: 'Latency Student' } });
       expect(registration.ok()).toBeTruthy();
+      await verifyFixtureEmail(request, credentials.email);
       await page.goto('/login?redirect=%2Fdashboard');
       await page.locator('#login-email').fill(credentials.email);
       await page.locator('#login-password').fill(credentials.password);
