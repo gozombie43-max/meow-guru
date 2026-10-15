@@ -10,7 +10,7 @@ import {
 
 import api from '@/shared/api/client';
 import { emailPattern } from '@/components/auth/validation';
-import styles from '@/components/auth/auth.module.css';
+import styles from '@/components/auth/verification.module.css';
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -109,30 +109,30 @@ export default function CheckEmailPage() {
       : 'your email address';
 
   return (
-    <main className={styles.authContainer}>
-      <section className="w-full max-w-md rounded-[24px] border border-black/10 bg-white p-8 text-center shadow-sm dark:border-white/10 dark:bg-[#111722]">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-black/[0.04] dark:bg-white/[0.06]">
+    <main className={styles.screen}>
+      <section className={styles.card}>
+        <div className={styles.icon}>
           <MailCheck
             size={28}
             aria-hidden="true"
           />
         </div>
 
-        <h1 className="mt-5 text-2xl font-semibold tracking-tight">
+        <h1 className={styles.heading}>
           Check your email
         </h1>
 
-        <p className="mt-3 text-sm leading-6 opacity-70">
+        <p className={styles.copy}>
           We sent a verification link to
         </p>
 
-        <p className="mt-1 break-words font-medium">
+        <p className={styles.email}>
           {maskedEmail}
         </p>
 
-        {!email && <p className="mt-3 text-sm opacity-70">Return to sign in or open this screen after registering to request another link.</p>}
+        {!email && <p className={styles.copy}>Return to sign in or open this screen after registering to request another link.</p>}
 
-        <p className="mt-4 text-sm leading-6 opacity-60">
+        <p className={styles.copy}>
           Open the email and tap
           <strong> Verify email</strong>.
           The verification link expires in
@@ -141,7 +141,7 @@ export default function CheckEmailPage() {
 
         {message && (
           <div
-            className="mt-5 rounded-xl bg-black/[0.04] px-4 py-3 text-sm dark:bg-white/[0.06]"
+            className={styles.message}
             role="status"
           >
             {message}
@@ -156,14 +156,14 @@ export default function CheckEmailPage() {
             sending ||
             seconds > 0
           }
-          className="mt-7 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-black px-5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-black"
+          className={styles.primary}
         >
           <RefreshCw
             size={16}
             aria-hidden="true"
             className={
               sending
-                ? 'animate-spin'
+                ? styles.spin
                 : ''
             }
           />
@@ -177,7 +177,7 @@ export default function CheckEmailPage() {
 
         <Link
           href="/login"
-          className="mt-4 inline-flex h-11 items-center justify-center gap-2 text-sm font-medium opacity-70 hover:opacity-100"
+          className={styles.secondary}
         >
           <ArrowLeft size={15} aria-hidden="true" />
           Back to sign in

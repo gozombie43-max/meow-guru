@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { CheckCircle2, CircleAlert, LoaderCircle } from 'lucide-react';
 
 import api from '@/shared/api/client';
+import styles from '@/components/auth/verification.module.css';
 
 type VerifyState =
   | 'verifying'
@@ -79,13 +80,13 @@ function VerifyEmailContent() {
   }, [searchParams]);
 
   return (
-    <main className="min-h-dvh flex items-center justify-center px-5 py-10">
-      <section className="w-full max-w-md rounded-[24px] border border-black/10 bg-white p-8 text-center shadow-sm dark:border-white/10 dark:bg-[#111722]">
-        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-black/[0.04] dark:bg-white/[0.06]">
+    <main className={styles.screen}>
+      <section className={styles.card}>
+        <div className={styles.icon}>
           {status === 'verifying' && (
             <LoaderCircle
               size={28}
-              className="animate-spin"
+              className={styles.spin}
               aria-hidden="true"
             />
           )}
@@ -105,7 +106,7 @@ function VerifyEmailContent() {
           )}
         </div>
 
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className={styles.heading}>
           {status === 'verifying'
             ? 'Verifying email'
             : status === 'success'
@@ -113,14 +114,14 @@ function VerifyEmailContent() {
               : 'Verification failed'}
         </h1>
 
-        <p role="status" aria-live="polite" className="mt-3 text-sm leading-6 opacity-70">
+        <p role="status" aria-live="polite" className={styles.copy}>
           {message}
         </p>
 
         {status === 'success' && (
           <Link
             href="/login"
-            className="mt-7 inline-flex h-12 w-full items-center justify-center rounded-xl bg-black px-5 text-sm font-semibold text-white dark:bg-white dark:text-black"
+            className={styles.primary}
           >
             Continue to sign in
           </Link>
@@ -129,7 +130,7 @@ function VerifyEmailContent() {
         {status === 'error' && (
           <Link
             href="/login"
-            className="mt-7 inline-flex h-12 w-full items-center justify-center rounded-xl bg-black px-5 text-sm font-semibold text-white dark:bg-white dark:text-black"
+            className={styles.primary}
           >
             Back to sign in
           </Link>
@@ -143,10 +144,10 @@ export default function VerifyEmailPage() {
   return (
     <Suspense
       fallback={
-        <main role="status" aria-label="Loading email verification" className="min-h-dvh flex items-center justify-center">
+        <main role="status" aria-label="Loading email verification" className={styles.screen}>
           <LoaderCircle
             size={28}
-            className="animate-spin"
+            className={styles.spin}
             aria-hidden="true"
           />
         </main>
