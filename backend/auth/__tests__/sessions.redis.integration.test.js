@@ -20,6 +20,7 @@ import {
 } from '../sessions.js';
 import { verifyToken } from '../jwt.js';
 import { redisGetJson, reportRedisFailure } from '../../config/redis.js';
+import { createSocketPrincipal } from '../socketPrincipal.js';
 
 let mongo, db;
 beforeAll(async () => {
@@ -85,8 +86,14 @@ it('receives cross-instance session invalidations and clears local entries on co
   expect(state.createClient).toHaveBeenCalledTimes(1);
 
   await db.collection('users').updateOne({ id: 'learner' }, { $set: { role: 'editor' } });
+  const disconnected = vi.fn();
+  const socketPrincipal = createSocketPrincipal(decoded, { onInvalidated: disconnected });
+  await socketPrincipal.get();
   state.values.clear();
   onMessage(JSON.stringify({ sid: decoded.sid, userId: decoded.id }));
+  expect(disconnected).toHaveBeenCalledOnce();
+  await expect(socketPrincipal.get()).rejects.toThrow('Session expired');
+  socketPrincipal.close();
   expect((await assertSession(decoded)).role).toBe('editor');
 
   await db.collection('users').updateOne({ id: 'learner' }, { $set: { role: 'admin' } });

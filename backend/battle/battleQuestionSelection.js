@@ -1,6 +1,6 @@
 import { randomBytes, randomInt } from 'node:crypto';
 import { normalizeSearchKey } from '../services/questions/questionNormalizer.js';
-import { mockAnswerIndex } from '../services/mockAnswer.js';
+import { battleAnswerKey } from './battleAnswers.js';
 
 export async function selectBattleQuestions(collection, room, { pivot = randomBytes(32).toString('hex') } = {}) {
   const base = { battleEligible: true,
@@ -28,5 +28,5 @@ export async function selectBattleQuestions(collection, room, { pivot = randomBy
   if (!selected.length) return [];
   const bodies = await collection.find({ ...base, _id: { $in: selected.map(row => row._id) } }, { maxTimeMS: 3000 }).limit(selected.length).toArray();
   const byId = new Map(bodies.map(row => [String(row._id), row]));
-  return selected.map(row => byId.get(String(row._id))).filter(row => row && Array.isArray(row.options) && row.options.length >= 2 && mockAnswerIndex(row.correctAnswer, row.options) !== null);
+  return selected.map(row => byId.get(String(row._id))).filter(row => row && battleAnswerKey(row));
 }

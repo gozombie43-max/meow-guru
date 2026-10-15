@@ -3,8 +3,8 @@ import { getBattleRoomsCollection } from "../config/mongodb.js";
 import { getBattleRealtimeServer } from "../battle/battleRealtime.js";
 import {
   advanceQuestion,
-  getScores,
   resolveExpiredQuestion,
+  getRoom, buildBattleReveal, claimBattleReveal, buildPublicQuestion,
 } from "../battle/roomManager.js";
 import { finishBattle } from "../battle/battleCompletion.js";
 
@@ -13,20 +13,24 @@ let timer = null;
 let running = false;
 
 async function resolveCandidate(candidate, now) {
-  const resolution = await resolveExpiredQuestion(candidate.code, candidate.currentIndex, now);
+  let resolution;
+  if (candidate.questionAdvanceAt) {
+    const room = await getRoom(candidate.code);
+    if (!room || room.status !== 'active' || room.currentIndex !== candidate.currentIndex) return;
+    resolution = { resolved: true, room, readyToAdvance: new Date(room.questionAdvanceAt) <= now };
+  } else if (candidate.players?.length === 2 && candidate.players.every(player => player.answered)) {
+    const room = await claimBattleReveal(candidate.code, candidate.currentIndex, now);
+    if (!room) return;
+    resolution = { resolved: true, room, readyToAdvance: false };
+  } else {
+    resolution = await resolveExpiredQuestion(candidate.code, candidate.currentIndex, now);
+  }
   if (!resolution.resolved || !resolution.room) return;
 
   const io = getBattleRealtimeServer();
   if (resolution.room.questionResolvedAt && new Date(resolution.room.questionResolvedAt).getTime() === now.getTime()) {
-    const question = resolution.room.questions?.[resolution.room.currentIndex];
-    if (io && question) {
-      io.to(resolution.room.code).emit("game:scores", { scores: await getScores(resolution.room.code) });
-      io.to(resolution.room.code).emit("game:reveal", {
-        questionIndex: resolution.room.currentIndex,
-        correctIndex: Number(question.correctAnswer),
-        selections: Object.fromEntries(resolution.room.players.map((player) => [player.userId, player.selectedIndex ?? null])),
-      });
-    }
+    const reveal = buildBattleReveal(resolution.room);
+    if (io && reveal) io.to(resolution.room.code).emit('game:reveal', reveal);
   }
 
   if (!resolution.readyToAdvance) return;
@@ -37,14 +41,7 @@ async function resolveCandidate(candidate, now) {
     return;
   }
 
-  const question = transition.room.questions[transition.room.currentIndex];
-  if (io) io.to(transition.room.code).emit("game:question", {
-    question: question.question,
-    options: question.options,
-    questionIndex: transition.room.currentIndex,
-    total: transition.room.questions.length,
-    deadline: transition.room.questionDeadline,
-  });
+  if (io) io.to(transition.room.code).emit('game:question', buildPublicQuestion(transition.room));
 }
 
 export async function runBattleQuestionDeadlineWorkerOnce() {
@@ -53,7 +50,8 @@ export async function runBattleQuestionDeadlineWorkerOnce() {
   try {
     const now = new Date();
     const candidates = await getBattleRoomsCollection()
-      .find({ status: "active", questionDeadline: { $lte: now } })
+      .find({ status: "active", $or: [{ questionDeadline: { $lte: now } }, { questionAdvanceAt: { $lte: now } },
+        { questionAdvanceAt: { $exists: false }, players: { $not: { $elemMatch: { answered: { $ne: true } } } } }] })
       .sort({ questionDeadline: 1 })
       .limit(50)
       .toArray();

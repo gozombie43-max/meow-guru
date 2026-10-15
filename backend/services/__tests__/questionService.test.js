@@ -434,6 +434,7 @@ describe('MongoDB-backed question reads', () => {
 
 describe('MongoDB-backed question writes', () => {
   const ineligibleAlgebra = { battleEligible: false, battleSelectionKey: expect.any(String), trainingMetadataVersion: 1, trainingCandidate: null, trainingEligible: false,
+    rankedEligible: false, battleDifficulty: '', battleConceptKey: 'algebra', battleLanguage: 'en', battleMedia: 'text', battleExamKey: 'unspecified', battleYear: 'unspecified',
     trainingExamSlugs: [], trainingSubjectSlug: 'unclassified', trainingTopicSlug: 'algebra' };
   it('creates a normalized question, clears cache, and hides _id', async () => {
     const collection = {

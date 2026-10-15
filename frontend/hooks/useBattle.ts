@@ -1,11 +1,12 @@
 "use client";
+import type { BattleAnswer } from "@/lib/battle-state";
 
 import { useEffect, useReducer, useRef, useState } from "react";
 import { getSocket } from "@/lib/socket";
 import { battleReducer, initialBattleState, type BattleQuestion, type BattleResult, type BattleSnapshot, type Reveal, type Scores } from "@/lib/battle-state";
 
 type Settings = { playerName: string; subject: string; topic: string; questionCount: number };
-type Command = "create" | "join" | "leave" | "rematch" | "invite" | "forfeit";
+type Command = "create" | "join" | "leave" | "rematch" | "invite" | "forfeit" | "matchmaking" | "cancel-matchmaking";
 const storageKey = (id: string) => `meow_active_battle_code:${id}`;
 function remember(id: string, code: string | null) {
   try { if (code) localStorage.setItem(storageKey(id), code); else localStorage.removeItem(storageKey(id)); } catch { /* Storage is optional. Server recovery still works. */ }
@@ -63,9 +64,9 @@ export function useBattle(token: string | null, userId: string) {
       dispatch({ type: "joined", ...data });
     };
     const onRoomError = ({ message }: { message: string }) => { finishCommand(); dispatch({ type: "error", message }); };
-    const onStart = () => { finishCommand(); clearAnswer(); dispatch({ type: "start" }); };
+    const onStart = (data?: { scores?: Scores; mode?: "ranked" | "casual"; origin?: string }) => { finishCommand(); clearAnswer(); dispatch({ type: "start", mode: data?.mode, origin: data?.origin }); if (data?.scores) dispatch({ type: "scores", scores: data.scores }); };
     const onQuestion = (question: BattleQuestion) => { clearAnswer(); dispatch({ type: "question", question }); };
-    const onAnswer = (data: { questionIndex: number; isCorrect: boolean }) => {
+    const onAnswer = (data: { questionIndex: number }) => {
       if (answerTimer.current) clearTimeout(answerTimer.current);
       dispatch({ type: "accepted", ...data });
     };
@@ -74,6 +75,19 @@ export function useBattle(token: string | null, userId: string) {
       sync();
     };
     const onScores = ({ scores }: { scores: Scores }) => dispatch({ type: "scores", scores });
+    const onOpponentAnswered = (data: { questionIndex: number; userId: string }) => dispatch({ type: "opponent-answered", ...data });
+    const onQueued = (data: { queuedAt: string; rating: number; subject: string; topic: string; questionCount: number }) => {
+      online(); remember(userId, null); dispatch({ type: "queued", ...data });
+    };
+    const onMatched = ({ roomCode }: { roomCode: string }) => {
+      finishCommand(); remember(userId, roomCode); dispatch({ type: "matched", code: roomCode }); sync();
+    };
+    const onMatchmakingCancelled = () => { finishCommand(); remember(userId, null); dispatch({ type: "reset" }); };
+    const onMatchmakingError = ({ code, message }: { code?: string; message?: string }) => {
+      finishCommand();
+      if (code === "RESUME_REQUIRED") { sync(); return; }
+      dispatch({ type: "error", message: message || "Matchmaking is unavailable. Please try again." });
+    };
     const onReveal = (reveal: Reveal) => { clearAnswer(); dispatch({ type: "reveal", reveal, userId }); };
     const onEnd = (result: BattleResult) => { finishCommand(); clearAnswer(); remember(userId, null); dispatch({ type: "end", result }); };
     const onResume = (snapshot: BattleSnapshot) => {
@@ -97,6 +111,8 @@ export function useBattle(token: string | null, userId: string) {
     socket.on("room:created", onCreated).on("room:joined", onJoined).on("room:error", onRoomError);
     socket.on("game:start", onStart).on("game:question", onQuestion).on("game:answerResult", onAnswer);
     socket.on("game:answerRejected", onRejected).on("game:scores", onScores).on("game:reveal", onReveal).on("game:end", onEnd);
+    socket.on("game:opponentAnswered", onOpponentAnswered);
+    socket.on("matchmaking:queued", onQueued).on("matchmaking:matched", onMatched).on("matchmaking:cancelled", onMatchmakingCancelled).on("matchmaking:error", onMatchmakingError);
     socket.on("battle:syncRequired", onSyncRequired);
     socket.on("battle:resumed", onResume).on("battle:resumeResult", onResumeResult);
     socket.on("room:playerDisconnected", onPresence).on("room:playerReconnected", onReconnected);
@@ -110,12 +126,24 @@ export function useBattle(token: string | null, userId: string) {
       socket.off("room:created", onCreated).off("room:joined", onJoined).off("room:error", onRoomError);
       socket.off("game:start", onStart).off("game:question", onQuestion).off("game:answerResult", onAnswer);
       socket.off("game:answerRejected", onRejected).off("game:scores", onScores).off("game:reveal", onReveal).off("game:end", onEnd);
+      socket.off("game:opponentAnswered", onOpponentAnswered);
+      socket.off("matchmaking:queued", onQueued).off("matchmaking:matched", onMatched).off("matchmaking:cancelled", onMatchmakingCancelled).off("matchmaking:error", onMatchmakingError);
       socket.off("battle:syncRequired", onSyncRequired);
       socket.off("battle:resumed", onResume).off("battle:resumeResult", onResumeResult);
       socket.off("room:playerDisconnected", onPresence).off("room:playerReconnected", onReconnected);
       socket.off("room:left", onLeft).off("room:closed", onClosed).off("room:inviteResult", onInvite).off("battle:rematchResult", onRematch);
     };
   }, [token, userId]);
+
+  useEffect(() => {
+    if (!token || state.phase !== 'queueing' || connection !== 'online') return;
+    // Recover a committed pairing whose notification was lost during a
+    // worker restart, and stop displaying tickets that have expired.
+    const timer = window.setInterval(() => {
+      if (!pendingRef.current) getSocket(token).emit('battle:resume', { code: null });
+    }, 10_000);
+    return () => window.clearInterval(timer);
+  }, [token, state.phase, connection]);
 
   const send = (command: Command, event: string, payload: object) => {
     if (!token || connection !== "online" || pendingRef.current) return;
@@ -130,7 +158,8 @@ export function useBattle(token: string | null, userId: string) {
     }, 12_000);
     socket.emit(event, payload);
   };
-  const submitAnswer = (index: number) => {
+  const submitAnswer = (input: number | BattleAnswer) => {
+    const answer: BattleAnswer = typeof input === "number" ? { type: "mcq", selectedIndex: input } : input;
     const q = state.question;
     if (!token || !q || state.phase !== "playing" || state.answerStatus !== "idle" || answerLock.current || state.reveal || connection !== "online") return;
     if (q.deadline && Date.now() >= new Date(q.deadline).getTime()) {
@@ -139,8 +168,8 @@ export function useBattle(token: string | null, userId: string) {
     }
     const socket = getSocket(token);
     if (!socket.connected) return;
-    answerLock.current = true; dispatch({ type: "select", index });
-    socket.emit("game:answer", { code: state.code, questionIndex: q.questionIndex, selectedIndex: index });
+    answerLock.current = true; dispatch({ type: "submit", answer });
+    socket.emit("game:answer", { code: state.code, questionIndex: q.questionIndex, ...answer });
     answerTimer.current = setTimeout(() => {
       setConnection("syncing");
       socket.disconnect().connect();
@@ -148,7 +177,8 @@ export function useBattle(token: string | null, userId: string) {
   };
   return {
     state, connection, pending, inviteStatus,
-    challenge: (targetUserId: string, settings: Omit<Settings, "playerName">) => send("create", "battle:challengeUser", { targetUserId, ...settings }),
+    matchmake: (settings: Omit<Settings, "playerName">) => send("matchmaking", "matchmaking:join", settings),
+    cancelMatchmaking: () => send("cancel-matchmaking", "matchmaking:cancel", {}),
     create: (settings: Settings) => send("create", "room:create", settings),
     join: (code: string, playerName: string) => send("join", "room:join", { code, playerName }),
     leave: () => send("leave", "room:leave", { code: state.code }),

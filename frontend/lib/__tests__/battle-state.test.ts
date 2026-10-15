@@ -48,7 +48,7 @@ describe("battleReducer", () => {
     expect(state.phase).toBe("playing");
     expect(state.answerStatus).toBe("accepted");
     expect(state.selectedIndex).toBe(1);
-    expect(state.correct).toBe(true);
+    expect(state.correct).toBeNull();
   });
 
   it("keeps a recoverable rejected answer selectable while match state is restored", () => {

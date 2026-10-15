@@ -14,6 +14,7 @@ import { getBattleRealtimeServer } from '../battle/battleRealtime.js';
 import { createSingleFlight } from '../infrastructure/singleFlight.js';
 import { AUTH_VALIDATION_COMMENT } from '../infrastructure/mongoOperationMetrics.js';
 import { authRequests, authBurstLatency } from '../infrastructure/metrics.js';
+import { invalidateSocketAuthorization } from './socketInvalidation.js';
 const disconnectSession = sid => getBattleRealtimeServer()?.in(`session:${sid}`).disconnectSockets(true);
 
 // Stateless refresh tokens issued by the final legacy release live for at most
@@ -100,10 +101,11 @@ export async function startSessionInvalidationSubscriber() {
       url: process.env.REDIS_URL,
       socket: { connectTimeout: 1000, reconnectStrategy: retries => Math.min(1000 * 2 ** retries, 5000) },
     });
-    client.on('error', () => { sessionCache.clear(); reportRedisFailure(); });
-    client.on('ready', () => sessionCache.clear());
+    client.on('error', () => { sessionCache.clear(); invalidateSocketAuthorization({ all: true, revalidate: true }); reportRedisFailure(); });
+    client.on('ready', () => { sessionCache.clear(); invalidateSocketAuthorization({ all: true, revalidate: true }); });
     client.on('end', () => {
       sessionCache.clear();
+      invalidateSocketAuthorization({ all: true, revalidate: true });
       if (invalidationSubscriber === client) invalidationSubscriber = null;
       scheduleInvalidationRetry();
     });
@@ -117,6 +119,7 @@ export async function startSessionInvalidationSubscriber() {
     await client.subscribe(redisKey('auth-evictions'), raw => {
       try {
         const event = JSON.parse(raw);
+        if (event.userId || event.sid) invalidateSocketAuthorization(event);
         if (event.userId && event.sid) sessionCache.delete(`${event.sid}:${event.userId}`);
         else if (event.userId) evictLocalUser(event.userId);
       } catch { /* Ignore malformed messages. */ }
@@ -187,6 +190,7 @@ async function readAuthorizationPayload(decoded, recordCache) {
 }
 
 export async function evictSessionCache(sid, userId) {
+  invalidateSocketAuthorization({ sid, userId: String(userId) });
   sessionCache.delete(`${sid}:${userId}`);
   await redisDelete(sharedSessionKey(sid, userId));
   await publishSessionEviction({ sid, userId: String(userId) });
@@ -196,6 +200,8 @@ export async function evictUserSessionCache(userId) {
   // Also fences asynchronous readers when Redis is offline or delivery is lost.
   await getUsersCollection().updateOne({ id: String(userId) }, { $inc: { authRevision: 1 } });
   evictLocalUser(userId);
+  invalidateSocketAuthorization({ userId: String(userId) });
+  getBattleRealtimeServer()?.in(`user:${String(userId)}`).disconnectSockets(true);
   if (!process.env.REDIS_URL) return;
   const rows = await sessions().find({ userId: String(userId) }, { projection: { _id: 1 } }).toArray();
   await redisDelete(...rows.map(row => sharedSessionKey(row._id, userId)));

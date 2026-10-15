@@ -1,3 +1,4 @@
+import { battleDecision } from './battleOutcome.js';
 import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { getScores, buildBattleReview } from './roomManager.js';
 import { settleBattleResult } from './battleResultService.js';
@@ -23,12 +24,11 @@ export async function finishBattle(io, finishedRoom) {
       io.to(player.socketId).emit('game:end', {
         scores: finalScores,
         finishReason: finishedRoom.finishReason,
-        winnerUserId: finishedRoom.winnerUserId || null,
-        loserUserId: finishedRoom.loserUserId || null,
+        ...battleDecision(finishedRoom),
         rematchToken,
         opponentName: opponent?.name || 'Opponent',
         matchStats: { me: stats(matchPlayer), opponent: stats(opponentMatchPlayer) },
-        rating: matchPlayer ? { lifetime: { before: matchPlayer.ratingBefore, after: matchPlayer.ratingAfter, delta: matchPlayer.ratingDelta }, season: matchPlayer.seasonRatingAfter !== null ? { before: matchPlayer.seasonRatingBefore, after: matchPlayer.seasonRatingAfter, delta: matchPlayer.seasonRatingDelta, tierBefore: matchPlayer.seasonTierBefore, tierAfter: matchPlayer.seasonTierAfter } : null } : null,
+        rating: matchPlayer && settlement.match.rated ? { lifetime: { before: matchPlayer.ratingBefore, after: matchPlayer.ratingAfter, delta: matchPlayer.ratingDelta }, season: matchPlayer.seasonRatingAfter !== null ? { before: matchPlayer.seasonRatingBefore, after: matchPlayer.seasonRatingAfter, delta: matchPlayer.seasonRatingDelta, tierBefore: matchPlayer.seasonTierBefore, tierAfter: matchPlayer.seasonTierAfter } : null } : null,
         review,
       });
     }
@@ -62,18 +62,7 @@ export async function sendBattleResultNotifications(
       })
     );
 
-  const maxScore =
-    Math.max(
-      ...scoredPlayers.map(
-        (entry) => entry.score
-      )
-    );
-
-  const winnerCount =
-    scoredPlayers.filter(
-      (entry) =>
-        entry.score === maxScore
-    ).length;
+  const decision = battleDecision(room);
 
   const jobs =
     scoredPlayers.map(
@@ -102,7 +91,7 @@ export async function sendBattleResultNotifications(
         let body;
         let result;
 
-        if (winnerCount > 1) {
+        if (!decision.winnerUserId) {
           title =
             "Battle Draw 🤝";
 
@@ -112,7 +101,7 @@ export async function sendBattleResultNotifications(
           result = "draw";
 
         } else if (
-          score === maxScore
+          player.userId === decision.winnerUserId
         ) {
           title =
             "You Won! 🏆";

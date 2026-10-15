@@ -1,18 +1,28 @@
 "use client";
+import BattleQuestionCard from "@/components/battle/BattleQuestionCard";
+import QuestionImage from "@/components/QuestionImage";
+import { battlePicked, battleKeyIncludes, revealCorrect } from "@/lib/battle-state";
 
-import BattleStudents from "@/components/battle/BattleStudents";
+
 import { useExamMode } from '@/context/ExamModeContext';
 import { JAM_SECTIONS, JAM_SUBJECT, jamQuestionTopic } from '@/lib/exam-mode';
 import { Dialog } from "@/components/ui/Dialog";
 import RichContent from "@/components/RichContent";
 import { useAuth } from "@/context/AuthContext";
 import { useBattle } from "@/hooks/useBattle";
+import { useThemeMode } from "@/hooks/useTheme";
+import "@/features/quiz/components/views/mobile-quiz-view.css";
 import { battleOutcome, type BattleReviewItem, type PlayerScore, type Reveal } from "@/lib/battle-state";
-import { motion } from "framer-motion";
-import { AlertTriangle, ArrowLeft, Check, Copy, FileText, LoaderCircle, LogOut, Mail, RotateCcw, Shield, Swords, Trophy, Users, Wifi, WifiOff, Zap } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AlertTriangle, ArrowLeft, Check, CheckCheck, Copy, FileText, LoaderCircle, LogOut, Mail, Minus, RotateCcw, Shield, Swords, Trophy, Users, Wifi, WifiOff, X, Zap } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
+import useSWR from 'swr';
+import api from '@/shared/api/client';
+
+const validRoomCode = (value: string) => /^(?:[A-Z2-9]{6}|\d{4})$/.test(value);
+const cleanRoomCode = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 
 const SUBJECTS = [
   { value: "mathematics", label: "Mathematics" }, { value: "reasoning", label: "Reasoning" },
@@ -36,10 +46,10 @@ const CONFETTI = Array.from({ length: 24 }, (_, index) => ({
 
 type Connection = "connecting" | "syncing" | "online" | "offline";
 
-function ConnectionStatus({ status }: { status: Connection }) {
+function ConnectionStatus({ status, compact = false }: { status: Connection; compact?: boolean }) {
   const online = status === "online";
-  return <span className={`battle-connection ${online ? "is-online" : ""}`} aria-live="polite">
-    {online ? <Wifi aria-hidden="true" /> : <WifiOff aria-hidden="true" />}
+  return <span className={`battle-connection ${online ? "is-online" : ""} ${compact ? "is-compact" : ""}`} aria-live="polite">
+    {compact ? <span className="battle-connection-dot" aria-hidden="true" /> : online ? <Wifi aria-hidden="true" /> : <WifiOff aria-hidden="true" />}
     {online ? "Live" : status === "offline" ? "Offline" : "Syncing"}
   </span>;
 }
@@ -59,7 +69,6 @@ function ErrorNotice({ message, onRetry }: { message: string; onRetry?: () => vo
 
 function RoundCenterBadge({ reveal }: { reveal: Reveal | null }) {
   const [secondsLeft, setSecondsLeft] = useState(5);
-  const [progress, setProgress] = useState(100);
 
   useEffect(() => {
     if (!reveal) return;
@@ -72,13 +81,11 @@ function RoundCenterBadge({ reveal }: { reveal: Reveal | null }) {
       const now = Date.now();
       const remainingMs = Math.max(0, revealEndTime - now);
       const secs = Math.ceil(remainingMs / 1000);
-      const prog = Math.min(100, Math.max(0, (remainingMs / 5000) * 100));
       setSecondsLeft(secs);
-      setProgress(prog);
     };
 
     const initialTimer = window.setTimeout(updateTimer, 0);
-    const interval = window.setInterval(updateTimer, 100);
+    const interval = window.setInterval(updateTimer, 250);
     return () => {
       window.clearTimeout(initialTimer);
       window.clearInterval(interval);
@@ -86,24 +93,50 @@ function RoundCenterBadge({ reveal }: { reveal: Reveal | null }) {
   }, [reveal]);
 
   if (!reveal) {
-    return <div className="battle-vs-badge" aria-label="Versus duel"><span>VS</span></div>;
+    return <span className="battle-round-center" aria-label="Versus">VS</span>;
   }
 
   return (
-    <div className="battle-timer is-reveal" aria-label={`Next question in ${secondsLeft} seconds`}>
-      <span>{secondsLeft}</span>
-      <svg viewBox="0 0 42 42" aria-hidden="true">
-        <circle cx="21" cy="21" r="18" />
-        <circle
-          cx="21"
-          cy="21"
-          r="18"
-          pathLength="100"
-          style={{ strokeDasharray: `${progress} 100` }}
-        />
-      </svg>
-    </div>
+    <span className="battle-round-center is-reveal" role="timer" aria-label={`Next question in ${secondsLeft} seconds`}>
+      {secondsLeft}s
+    </span>
   );
+}
+
+function BattleRoundResult({ reveal, userId }: { reveal: Reveal; userId: string }) {
+  const reduceMotion = useReducedMotion();
+  const [visible, setVisible] = useState(() => !reveal.revealEndsAt || new Date(reveal.revealEndsAt).getTime() > Date.now());
+  const mineCorrect = revealCorrect(reveal, userId);
+  const opponentId = Object.keys(reveal.selections).find(id => id !== userId);
+  const opponentCorrect = opponentId ? revealCorrect(reveal, opponentId) : false;
+  const result = mineCorrect ? (opponentCorrect ? "both-correct" : "won") : (opponentCorrect ? "lost" : "both-missed");
+  const partial = reveal.results?.[userId]?.points;
+  const label = partial && partial < 10 ? `Partial credit · +${partial}` : { won: "Round won", "both-correct": "Both correct", lost: "Round lost", "both-missed": "Both missed" }[result];
+  const Icon = { won: Check, "both-correct": CheckCheck, lost: X, "both-missed": Minus }[result];
+
+  useEffect(() => {
+    // Enter for 200ms, hold for 1400ms, then exit for 160ms. A resumed
+    // round must dismiss before its server-controlled reveal window ends.
+    const delay = reveal.revealEndsAt
+      ? Math.max(0, Math.min(1600, new Date(reveal.revealEndsAt).getTime() - Date.now() - 160))
+      : 1600;
+    const timer = window.setTimeout(() => setVisible(false), delay);
+    return () => window.clearTimeout(timer);
+  }, [reveal.revealEndsAt]);
+
+  return <AnimatePresence>
+      {visible && <motion.div
+        className="battle-result-pill"
+        data-result={result}
+        initial={reduceMotion ? false : { y: 12, opacity: 0, scale: .97 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={reduceMotion ? { opacity: 0 } : { y: 6, opacity: 0, scale: .98, transition: { duration: .16, ease: [.2, .8, .2, 1] } }}
+        transition={{ type: "tween", duration: reduceMotion ? 0 : .2, ease: [.2, .8, .2, 1] }}
+      >
+        <span className="battle-result-pill-icon" aria-hidden="true"><Icon /></span>
+        <span>{label}</span>
+      </motion.div>}
+  </AnimatePresence>;
 }
 
 function BattleReviewSection({ review, opponentName }: { review?: BattleReviewItem[]; opponentName?: string }) {
@@ -170,7 +203,7 @@ function BattleReviewSection({ review, opponentName }: { review?: BattleReviewIt
               <div className="battle-review-card-meta">
                 <span className="battle-review-qnum">Question {item.questionIndex + 1}</span>
                 <span className={`battle-review-pill ${item.myAnswer?.correct ? "is-correct" : "is-wrong"}`}>
-                  {item.myAnswer?.correct ? "You scored (+10)" : item.myAnswer ? "You missed" : "Unanswered"}
+                  {item.myAnswer?.points ? `You scored (+${item.myAnswer.points})` : item.myAnswer?.correct ? "You scored (+10)" : item.myAnswer ? "You missed" : "Unanswered"}
                 </span>
                 {item.opponentAnswer?.correct && (
                   <span className="battle-review-pill is-opp-correct">Opponent scored (+10)</span>
@@ -179,13 +212,14 @@ function BattleReviewSection({ review, opponentName }: { review?: BattleReviewIt
 
               <div className="battle-review-question">
                 <RichContent text={item.question} />
+                {item.questionImage && !item.question.includes(item.questionImage) && <QuestionImage src={item.questionImage} alt="Question diagram" />}
               </div>
 
               <div className="battle-review-options">
                 {item.options.map((option, optIdx) => {
-                  const isCorrectAnswer = item.correctIndex === optIdx;
-                  const isMyPick = mySelected === optIdx;
-                  const isOppPick = oppSelected === optIdx;
+                  const isCorrectAnswer = item.correctAnswer ? battleKeyIncludes(item.correctAnswer, optIdx) : item.correctIndex === optIdx;
+                  const isMyPick = item.myAnswer?.answer ? battlePicked(item.myAnswer.answer, optIdx) : mySelected === optIdx;
+                  const isOppPick = item.opponentAnswer?.answer ? battlePicked(item.opponentAnswer.answer, optIdx) : oppSelected === optIdx;
 
                   let optClass = "battle-review-opt";
                   if (isCorrectAnswer) optClass += " is-correct-answer";
@@ -194,7 +228,7 @@ function BattleReviewSection({ review, opponentName }: { review?: BattleReviewIt
                   return (
                     <div key={optIdx} className={optClass}>
                       <span className="battle-review-opt-label">{String.fromCharCode(65 + optIdx)}</span>
-                      <div className="battle-review-opt-text"><RichContent text={option} /></div>
+                      <div className="battle-review-opt-text"><RichContent text={option} />{item.optionImages?.[optIdx] && !option.includes(item.optionImages[optIdx]!) && <QuestionImage src={item.optionImages[optIdx]!} alt={`Option ${String.fromCharCode(65 + optIdx)} diagram`} />}</div>
                       <div className="battle-review-opt-badges">
                         {isCorrectAnswer && <span className="battle-badge-correct"><Check /> Right Answer</span>}
                         {isMyPick && (
@@ -213,6 +247,11 @@ function BattleReviewSection({ review, opponentName }: { review?: BattleReviewIt
                 })}
               </div>
 
+              {item.correctAnswer?.type === "nat" && <div className="battle-review-explanation">
+                <p>Accepted answer: {item.correctAnswer.min === item.correctAnswer.max ? item.correctAnswer.min : `${item.correctAnswer.min} to ${item.correctAnswer.max}`}</p>
+                <p>You: {item.myAnswer?.answer?.type === "nat" ? item.myAnswer.answer.numericAnswer : "Unanswered"}</p>
+                <p>Opponent: {item.opponentAnswer?.answer?.type === "nat" ? item.opponentAnswer.answer.numericAnswer : "Unanswered"}</p>
+              </div>}
               {item.explanation && (
                 <div className="battle-review-explanation">
                   <strong>Explanation:</strong>
@@ -230,8 +269,8 @@ function BattleReviewSection({ review, opponentName }: { review?: BattleReviewIt
 function PlayerBlock({ player, fallback, side }: { player?: PlayerScore; fallback: string; side: "me" | "opponent" }) {
   const name = player?.name || fallback;
   return <div className={`battle-player is-${side}`}>
-    <span className="battle-avatar">{name.charAt(0).toUpperCase() || "?"}</span>
-    <span className="battle-player-copy"><strong>{name}</strong><small>{player?.answered ? "Answer locked" : side === "me" ? "Choose your answer" : "Thinking…"}</small></span>
+    <span className="battle-avatar" aria-hidden="true">{name.charAt(0).toUpperCase() || "?"}</span>
+    <span className="battle-player-copy"><strong title={name}>{name}</strong><small>{player?.answered ? "Answer locked" : side === "me" ? "Choosing" : "Thinking…"}</small></span>
     <b>{player?.score ?? 0}</b>
   </div>;
 }
@@ -244,8 +283,11 @@ function Confetti() {
 
 function BattlePageContent() {
   const { user, token, loading } = useAuth();
+  const { theme } = useThemeMode();
   const searchParams = useSearchParams();
   const battle = useBattle(token, user?.id || "");
+  const { data: capabilities, error: capabilitiesError, mutate: refreshCapabilities } = useSWR<{ matchmaking: boolean; ranked: boolean; socialChallenges: boolean }>(user && token ? ['battle-capabilities', user.id] : null,
+    async () => (await api.get('/api/battle/capabilities')).data);
   const { state, connection, pending, inviteStatus } = battle;
   const { isJam } = useExamMode();
   const [sscSubject, setSubject] = useState("mathematics");
@@ -258,15 +300,15 @@ function BattlePageContent() {
     setTopic("all");
   }
   const [questionCount, setQuestionCount] = useState(10);
-  const [modeOverride, setModeOverride] = useState<"create" | "join" | null>(null);
+  const [modeOverride, setModeOverride] = useState<"quick" | "create" | "join" | null>(null);
   const [joinCode, setJoinCode] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");
   const [copied, setCopied] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showReview, setShowReview] = useState(false);
 
-  const invitationCode = searchParams.get("join")?.replace(/\D/g, "").slice(0, 4) || "";
-  const mode = modeOverride || (invitationCode.length === 4 ? "join" : "create");
+  const invitationCode = cleanRoomCode(searchParams.get("join") || '');
+  const mode = modeOverride || (validRoomCode(invitationCode) ? "join" : "quick");
   const effectiveJoinCode = joinCode ?? invitationCode;
   const effectivePlayerName = user?.name || user?.email?.split("@")[0] || "Player";
   const players = useMemo(() => Object.entries(state.scores), [state.scores]);
@@ -289,26 +331,38 @@ function BattlePageContent() {
     const topicOptions = isJam ? [{ value: "all", label: "All Physics sections" }, ...JAM_SECTIONS.map(s => ({ value: jamQuestionTopic(s.slug), label: s.title }))] : TOPICS[subject] || TOPICS.mathematics;
     const submit = () => {
       if (!effectivePlayerName.trim()) return;
-      if (mode === "create") battle.create({ playerName: effectivePlayerName.trim(), subject, topic, questionCount });
-      else if (/^\d{4}$/.test(effectiveJoinCode)) battle.join(effectiveJoinCode, effectivePlayerName.trim());
+      if (mode === 'quick') battle.matchmake({ subject, topic, questionCount });
+      else if (mode === "create") battle.create({ playerName: effectivePlayerName.trim(), subject, topic, questionCount });
+      else if (validRoomCode(effectiveJoinCode)) battle.join(effectiveJoinCode, effectivePlayerName.trim());
     };
     return <main className="battle-page"><BattleHeader title="1v1 Battle" status={connection} /><div className="battle-lobby-shell">
       <section className="battle-intro"><span className="battle-hero-icon"><Swords /></span><p className="battle-kicker">Real-time quiz duel</p>
-        <h1>Think fast.<br />Win the round.</h1><p>Create a private room or enter a four-digit invite code. Both players answer the same questions in real time.</p>
-        <div className="battle-trust-row"><span><Zap /> Instant duel</span><span><Shield /> Reconnect safe</span><span><Trophy /> Ranked results</span></div>
+        <h1>Think fast.<br />Win the round.</h1><p>Find an opponent with Quick Match, challenge a friend, or share a private room. Both players answer the same questions.</p>
+        <div className="battle-trust-row"><span><Zap /> Quick Match</span><span><Shield /> Reconnect safe</span><span><Trophy /> {capabilities?.ranked ? 'Ranked matchmaking' : 'Casual battles'}</span></div>
       </section>
       <section className="battle-setup-card" aria-labelledby="setup-title"><div className="battle-card-heading"><Users aria-hidden="true" /><h2 id="setup-title">Start a battle</h2><select className="battle-question-count" aria-label="Question count" value={questionCount} onChange={(event) => setQuestionCount(Number(event.target.value))}>{QUESTION_COUNTS.map(count => <option key={count} value={count}>{count} Qs</option>)}</select></div>
-        <div className="battle-tabs" role="tablist" aria-label="Battle mode"><button data-ui-button="state" type="button" role="tab" aria-selected={mode === "create"} className={mode === "create" ? "is-active" : ""} onClick={() => setModeOverride("create")}>Create room</button><button data-ui-button="state" type="button" role="tab" aria-selected={mode === "join"} className={mode === "join" ? "is-active" : ""} onClick={() => setModeOverride("join")}>Join room</button></div>
-        {mode === "create" ? <><div className="battle-field-grid"><label className="battle-field"><span>Subject</span><select value={subject} onChange={(event) => { setSubject(event.target.value); setTopic("all"); }}>{subjects.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label className="battle-field"><span>Topic</span><select value={topic} onChange={(event) => setTopic(event.target.value)}>{topicOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label></div>
+        <div className="battle-tabs" role="tablist" aria-label="Battle mode">{([['quick', 'Quick Match'], ['create', 'Private room'], ['join', 'Join room']] as const).map(([value, label]) => <button key={value} data-ui-button="state" type="button" role="tab" aria-selected={mode === value} className={mode === value ? 'is-active' : ''} onClick={() => setModeOverride(value)}>{label}</button>)}</div>
+        {mode !== "join" ? <><div className="battle-field-grid"><label className="battle-field"><span>Subject</span><select value={subject} onChange={(event) => { setSubject(event.target.value); setTopic("all"); }}>{subjects.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label className="battle-field"><span>Topic</span><select value={topic} onChange={(event) => setTopic(event.target.value)}>{topicOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label></div>
 </>
-          : <label className="battle-field battle-code-field"><span>Room code</span><input value={effectiveJoinCode} onChange={(event) => setJoinCode(event.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="0000" inputMode="numeric" autoComplete="one-time-code" maxLength={4}  aria-label="0000"/></label>}
-        <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
-        <button data-ui-button="primary" type="button" className="battle-primary-button" disabled={!canSend || !effectivePlayerName.trim() || (mode === "join" && effectiveJoinCode.length !== 4)} onClick={submit}>{pending ? <LoaderCircle className="battle-spinner" /> : <Swords />}{pending === "create" ? "Creating room…" : pending === "join" ? "Joining room…" : mode === "create" ? "Create battle room" : "Join battle"}</button>
-        <p className="battle-helper">The match starts automatically when both players are ready.</p>
+          : <label className="battle-field battle-code-field"><span>Room code</span><input value={effectiveJoinCode} onChange={(event) => setJoinCode(cleanRoomCode(event.target.value))} placeholder="7K4P9Q" inputMode="text" autoCapitalize="characters" autoComplete="off" spellCheck={false} maxLength={6} aria-label="Room code"/></label>}
+        <ErrorNotice message={state.error || (mode === "quick" && capabilitiesError ? "Could not load Quick Match availability. Please retry." : "")} onRetry={connection === "offline" ? battle.reconnect : undefined} />{mode === "quick" && capabilitiesError && <button data-ui-button="state" type="button" className="battle-text-button" onClick={() => void refreshCapabilities()}>Retry availability</button>}
+        <button data-ui-button="primary" type="button" className="battle-primary-button" disabled={!canSend || !effectivePlayerName.trim() || (mode === "join" && !validRoomCode(effectiveJoinCode)) || (mode === "quick" && !capabilities?.matchmaking)} onClick={submit}>{pending ? <LoaderCircle className="battle-spinner" /> : <Swords />}{pending === "matchmaking" ? "Joining matchmaking…" : pending === "create" ? "Creating room…" : pending === "join" ? "Joining room…" : mode === "quick" ? (!capabilities ? "Checking availability…" : "Find an opponent") : mode === "create" ? "Create private room" : "Join battle"}</button>
+        <p className="battle-helper">{mode === "quick" ? (!capabilities ? "Checking battle availability…" : capabilities.ranked ? "Ranked · Balanced questions · Similar ratings" : "Casual matchmaking · Ratings are paused") : "Casual battle · Ratings do not change"}</p>{capabilities?.socialChallenges && <Link href="/battle/social" className="battle-friend-link">Challenge a friend <span>Casual</span></Link>}
       </section>
-      <BattleStudents disabled={!canSend} onInvite={(targetUserId) => battle.challenge(targetUserId, { subject, topic, questionCount })} />
     </div></main>;
   }
+
+  if (state.phase === 'queueing' || (state.phase === 'waiting' && state.origin === 'matchmaking')) return <main className="battle-page battle-waiting-page">
+    <BattleHeader title="Quick Match" status={connection} onBack={state.phase === 'queueing' ? battle.cancelMatchmaking : battle.leave} />
+    <section className="battle-waiting-card">
+      <LoaderCircle className="battle-spinner" aria-hidden="true" /><p className="battle-kicker">{capabilities?.ranked ? 'Ranked matchmaking' : 'Casual matchmaking'}</p>
+      <h1>{state.phase === 'queueing' ? 'Finding an opponent' : 'Opponent found'}</h1>
+      <p role="status">{state.phase === 'queueing' ? 'Looking for a player near your rating. Your match starts when both players are ready.' : 'Connecting both players to the match…'}</p>
+      {state.matchmakingRating !== null && <p>Your rating: {state.matchmakingRating}</p>}
+      <ErrorNotice message={state.error} onRetry={connection === 'offline' ? battle.reconnect : undefined} />
+      <button data-ui-button="secondary" type="button" className="battle-secondary-button" disabled={!canSend} onClick={state.phase === 'queueing' ? battle.cancelMatchmaking : battle.leave}>{pending === 'cancel-matchmaking' || pending === 'leave' ? 'Cancelling…' : 'Cancel'}</button>
+    </section>
+  </main>;
 
   if (state.phase === "waiting") return <main className="battle-page battle-waiting-page"><BattleHeader title="Waiting room" status={connection} onBack={battle.leave} /><section className="battle-waiting-card">
     <div className="battle-pulse"><Swords /></div><p className="battle-kicker">Room ready</p><h1>Invite your opponent</h1><p>The battle will begin as soon as a second player joins.</p>
@@ -321,31 +375,30 @@ function BattlePageContent() {
   if (state.phase === "playing") {
     if (!state.question) return <main className="battle-centered"><LoaderCircle className="battle-spinner" /><p>Loading the first question…</p></main>;
     const q = state.question;
-    const opponentSelection = state.reveal && opponentEntry ? state.reveal.selections[opponentEntry[0]] : null;
-    return <main className="battle-game-shell">
-      <header className="battle-score-header">
+    return <main className="battle-game-shell ios-series-quiz" data-theme={theme} data-text-size="md" data-text-weight="medium">
+      <header className="battle-score-header" aria-label="Battle progress and scores">
         <div className="battle-score-meta">
-          <div className="battle-score-meta-left">
             <button data-ui-button="state"
               type="button"
               className="battle-exit-button"
               onClick={() => setShowExitModal(true)}
               aria-label="Exit quiz"
             >
-              <LogOut aria-hidden="true" />
-              <span>Exit Quiz</span>
+              <ArrowLeft aria-hidden="true" />
+              <span>Exit</span>
             </button>
-            <span className="battle-meta-counter">Question {q.questionIndex + 1} of {q.total}</span>
-          </div>
-          <ConnectionStatus status={connection} />
+            <div className="battle-meta-counter" aria-label={`Question ${q.questionIndex + 1} of ${q.total}`}>
+              <span>Question</span><strong>{q.questionIndex + 1} / {q.total}</strong>
+            </div>
+          <ConnectionStatus status={connection} compact />
+        </div>
+        <div className="battle-round-progress" role="progressbar" aria-label="Question progress" aria-valuemin={0} aria-valuemax={q.total} aria-valuenow={q.questionIndex + 1}>
+          <i style={{ width: `${((q.questionIndex + 1) / q.total) * 100}%` }} />
         </div>
         <div className="battle-score-grid">
           <PlayerBlock player={me} fallback={effectivePlayerName} side="me" />
           <RoundCenterBadge reveal={state.reveal} />
           <PlayerBlock player={opponent} fallback="Opponent" side="opponent" />
-        </div>
-        <div className="battle-round-progress">
-          <i style={{ width: `${((q.questionIndex + 1) / q.total) * 100}%` }} />
         </div>
       </header>
 
@@ -356,42 +409,11 @@ function BattlePageContent() {
               <span>Opponent disconnected. Their reconnect window is still open.</span>
             </div>
           )}
-          <motion.section key={q.questionIndex} className="battle-question-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-            <p className="battle-kicker">Choose one answer</p>
-            <RichContent text={q.question} className="battle-question-text" />
-          </motion.section>
+          <BattleQuestionCard key={`${state.code}-${q.questionIndex}`} question={q} answer={state.answer} reveal={state.reveal}
+            userId={user.id} disabled={state.answerStatus !== "idle" || connection !== "online"} onSubmit={battle.submitAnswer} />
 
-          <div className="battle-options">
-            {q.options.map((option, index) => {
-              const selected = state.selectedIndex === index;
-              const correct = state.reveal?.correctIndex === index;
-              const wrong = Boolean(state.reveal && selected && !correct);
-              const opponentPicked = opponentSelection === index;
-
-              return (
-                <motion.button
-                  type="button"
-                  key={`${q.questionIndex}-${index}`}
-                  whileTap={state.answerStatus === "idle" ? { scale: .985 } : undefined}
-                  className={`${selected ? "is-selected" : ""} ${correct ? "is-correct" : ""} ${wrong ? "is-wrong" : ""}`}
-                  disabled={state.answerStatus !== "idle" || Boolean(state.reveal) || connection !== "online"}
-                  onClick={() => battle.submitAnswer(index)}
-                >
-                  <span className="battle-option-label">{String.fromCharCode(65 + index)}</span>
-                  <RichContent text={option} className="battle-option-text" />
-                  {opponentPicked && <small>Opponent</small>}
-                  {correct && <Check aria-label="Correct answer" />}
-                </motion.button>
-              );
-            })}
-          </div>
-
-          <div className="battle-answer-status" aria-live="polite">
-            {state.reveal ? (
-              <strong>
-                {state.correct ? "Correct — point secured." : "Round complete."} Next question incoming…
-              </strong>
-            ) : state.answerStatus !== "idle" ? (
+          {!state.reveal && <div className="battle-answer-status" aria-live="polite">
+            {state.answerStatus !== "idle" ? (
               <>
                 <LoaderCircle className="battle-spinner" />
                 <span>Your answer is locked. Waiting for your opponent…</span>
@@ -404,9 +426,13 @@ function BattlePageContent() {
             ) : (
               <span>Choose your answer.</span>
             )}
-          </div>
+          </div>}
           <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
         </div>
+      </div>
+
+      <div className="battle-result-hud" role="status" aria-live="polite" aria-atomic="true">
+        {state.reveal && <BattleRoundResult key={`${state.code}-${q.questionIndex}`} reveal={state.reveal} userId={user.id} />}
       </div>
 
       {showExitModal && (
@@ -452,6 +478,7 @@ function BattlePageContent() {
         <span>{outcome === "win" ? <Trophy /> : outcome === "draw" ? <Swords /> : <Shield />}</span>
         <p className="battle-kicker">{result.finishReason === "forfeit" ? "Finished by forfeit" : "Final result"}</p>
         <h1>{title}</h1>
+        {result.outcomeReason === "response-time" && <p>Scores tied. Total response time decided the match.</p>}
         <p>{outcome === "win" ? (result.finishReason === "forfeit" ? "Opponent forfeited the duel — instant victory!" : "Sharp answers and steady timing.") : outcome === "loss" ? (result.finishReason === "forfeit" ? "Duel ended by forfeit." : "Review the result, then run it back.") : outcome === "draw" ? "Nothing separated you this time." : "The match could not be completed."}</p>
       </div>
       <div className="battle-final-scores">

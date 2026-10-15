@@ -16,6 +16,9 @@ vi.mock("../roomManager.js", () => ({
   resolveExpiredQuestion: (...args) => resolveExpiredQuestion(...args),
   advanceQuestion: (...args) => advanceQuestion(...args),
   getScores: (...args) => getScores(...args),
+  buildBattleReveal: room => ({ questionIndex: room.currentIndex, correctIndex: 0, selections: {}, scores: {}, revealEndsAt: null }),
+  buildPublicQuestion: room => ({ questionIndex: room.currentIndex, deadline: room.questionDeadline }),
+  getRoom: vi.fn(), claimBattleReveal: vi.fn(),
 }));
 vi.mock("../battleRealtime.js", () => ({ getBattleRealtimeServer: () => io }));
 vi.mock("../battleCompletion.js", () => ({ finishBattle: (...args) => finishBattle(...args) }));
@@ -64,9 +67,9 @@ describe("Battle recovery workers", () => {
     await runBattleQuestionDeadlineWorkerOnce();
 
     expect(advanceQuestion).toHaveBeenCalledWith("4821", 0);
-    expect(emit).toHaveBeenCalledWith("game:scores", { scores: {} });
+    expect(emit).not.toHaveBeenCalledWith("game:scores", expect.anything());
     expect(emit).toHaveBeenCalledWith("game:reveal", {
-      questionIndex: 0, correctIndex: 0, selections: {},
+      questionIndex: 0, correctIndex: 0, selections: {}, scores: {}, revealEndsAt: null,
     });
     expect(emit).toHaveBeenCalledWith("game:question", expect.objectContaining({
       questionIndex: 1,

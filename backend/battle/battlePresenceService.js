@@ -12,14 +12,3 @@ export async function getOnlineBattleUsers(userIds) {
   }
   return result;
 }
-
-export async function getConnectedBattleUserIds() {
-  const io = getBattleRealtimeServer();
-  if (!io) return [];
-  const sockets = await io.fetchSockets();
-  const ids = new Set();
-  for (const socket of sockets) for (const room of socket.rooms) {
-    if (room.startsWith('user:')) ids.add(room.slice(5));
-  }
-  return [...ids];
-}

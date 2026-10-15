@@ -107,7 +107,7 @@ export async function createQuestionsBulk(questionsData, { importId, examMode } 
           if (failure?.code === 11000 && !importId && attempt < 3) {
             const value = { ...entry.value, id: `q_${crypto.randomUUID()}` };
             delete value._id;
-            Object.assign(value, trainingQuestionMetadata(value));
+            Object.assign(value, trainingQuestionMetadata(value), battleQuestionMetadata(value));
             retry.push({ ...entry, value });
           } else if (failure) {
             results[entry.index] = { status: 'rejected', reason: { code: failure.code, message: ambiguous ? 'Write outcome unknown; retry with the same import ID' : failure.errmsg || failure.message || 'Bulk row failed' } };

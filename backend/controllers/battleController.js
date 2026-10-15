@@ -1,4 +1,3 @@
-import { getBattleStudents } from '../battle/battleStudentService.js';
 import { ObjectId } from "mongodb";
 import { getActiveBattleSeason } from "../battle/battleSeasonService.js";
 import { getOnlineBattleUsers } from "../battle/battlePresenceService.js";
@@ -357,8 +356,4 @@ export const updateIntegrityEvent = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-
-export const getStudents = async (req, res, next) => {
-  try { res.set("Cache-Control", "private, no-store"); return res.json(await getBattleStudents(req.user.id)); } catch (error) { next(error); }
 };

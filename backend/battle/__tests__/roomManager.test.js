@@ -9,9 +9,12 @@ const collection = {
 };
 
 vi.mock('../../config/mongodb.js', () => ({
+  withMongoTransaction: work => work({ session: {} }),
+  getMongoDB: () => ({ collection: () => ({ updateMany: vi.fn().mockResolvedValue({}) }) }),
   getBattleRoomsCollection: () => collection,
   getBattleSeasonsCollection: () => ({ findOne: vi.fn().mockResolvedValue(null) }),
 }));
+vi.mock('../battleLifecycle.js', () => ({ battleFailureMessage: (error, fallback) => error.message || fallback, claimBattleLease: vi.fn(), releaseBattleLeases: vi.fn(), allowBattleAction: vi.fn().mockResolvedValue(true), BattleBusyError: class extends Error {} }));
 
 const {
   createRoom,
@@ -54,7 +57,7 @@ describe('Battle Room Manager', () => {
       'socket-host', 'Host', 'mathematics', 'percentages', 2, 'user-host'
     );
 
-    expect(code).toMatch(/^\d{4}$/);
+    expect(code).toMatch(/^[A-Z2-9]{6}$/);
     expect(collection.insertOne).toHaveBeenCalledWith(expect.objectContaining({
       code,
       ownerUserId: 'user-host',
@@ -63,7 +66,7 @@ describe('Battle Room Manager', () => {
         userId: 'user-host', socketId: 'socket-host', connected: true,
       })],
       expiresAt: expect.any(Date),
-    }));
+    }), { session: {} });
   });
 
   it('atomically adds a second player and returns an array-backed room', async () => {
@@ -74,7 +77,7 @@ describe('Battle Room Manager', () => {
         score: 0, answered: false, connected: true,
       }],
     };
-    collection.findOne.mockResolvedValueOnce(null);
+    collection.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce(waitingRoom);
     collection.findOneAndUpdate.mockResolvedValueOnce(joinedRoom);
 
     const result = await joinRoom('4821', 'socket-guest', 'Guest', 'user-guest');
@@ -107,6 +110,7 @@ describe('Battle Room Manager', () => {
   });
 
   it('activates the room when questions are persisted', async () => {
+    collection.findOne.mockResolvedValueOnce(waitingRoom);
     const active = { ...waitingRoom, questions: [{ correctAnswer: 'A' }], status: 'active' };
     collection.findOneAndUpdate.mockResolvedValueOnce(active);
 
@@ -114,7 +118,7 @@ describe('Battle Room Manager', () => {
 
     expect(room.status).toBe('active');
     expect(collection.findOneAndUpdate).toHaveBeenCalledWith(
-      { code: '4821', status: 'waiting' },
+      expect.objectContaining({ code: '4821', status: 'waiting', expiresAt: { $gt: expect.any(Date) } }),
       expect.objectContaining({ $set: expect.objectContaining({ status: 'active' }) }),
       expect.any(Object)
     );
@@ -140,7 +144,8 @@ describe('Battle Room Manager', () => {
     const result = await submitAnswer({ code: '4821', userId: 'user-host', questionIndex: 0, selectedIndex: 0 });
 
     expect(result.isCorrect).toBe(true);
-    expect(result.scores['user-host'].score).toBe(10);
+    expect(result.scores['user-host'].score).toBe(0);
+    expect(result.scores['user-host'].lastCorrect).toBeUndefined();
     expect(result.scores['socket-host']).toBeUndefined();
     expect(collection.updateOne).toHaveBeenCalledWith(
       expect.objectContaining({ currentIndex: 0, questionDeadline: { $gte: expect.any(Date) } }),
@@ -286,7 +291,7 @@ describe('Battle Room Manager', () => {
     expect(resumed.previousSocketId).toBe('socket-host');
     expect(snapshot.currentQuestion).toEqual({
       question: 'Safe question', options: ['A', 'B'], questionIndex: 0, total: 1,
-      deadline: null,
+      deadline: null, type: 'mcq', partialCredit: false, questionImage: null, optionImages: [null, null],
     });
     expect(snapshot.myAnswered).toBe(true);
     expect(snapshot.mySelectedIndex).toBeNull();

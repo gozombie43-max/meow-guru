@@ -61,6 +61,8 @@
     "test:unit": "vitest run --exclude='**/*.integration.test.js'",
     "test:integration": "vitest run integration",
     "test:battle": "vitest run battle",
+    "test:battle:load": "vitest run --maxWorkers=1 battle/__tests__/battleConcurrency.integration.test.js --testNamePattern=\"real players\"",
+    "check:battle:readiness": "node scripts/check-battle-readiness.js",
     "test:watch": "vitest",
     "start:api": "node --import ./instrumentation.js index.js",
     "start:worker": "node --import ./instrumentation.js worker.js",

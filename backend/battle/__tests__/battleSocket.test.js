@@ -27,11 +27,17 @@ const mockBattleRoomsCollection = {
     return null;
   }),
   deleteOne: vi.fn(async ({ code }) => ({ deletedCount: battleRooms.delete(code) ? 1 : 0 })),
+  findOneAndUpdate: vi.fn(async ({ code, ownerUserId }, update) => {
+    const room = battleRooms.get(code);
+    if (!room || room.ownerUserId !== ownerUserId || (room.allowedOpponentUserId && room.allowedOpponentUserId !== update.$set.allowedOpponentUserId)) return null;
+    Object.assign(room, update.$set); return structuredClone(room);
+  }),
 };
 
 const mockSendPushToUser = vi.fn();
 
 vi.mock('../../config/mongodb.js', () => ({
+  withMongoTransaction: work => work({ session: {} }),
   getQuestionsCollection: vi.fn(),
   getUsersCollection: () => mockUsersCollection,
   getBattleFriendshipsCollection: () => mockFriendshipsCollection,
@@ -39,6 +45,7 @@ vi.mock('../../config/mongodb.js', () => ({
   getBattleSeasonsCollection: () => ({ findOne: vi.fn().mockResolvedValue(null) }),
   getSocketIoAdapterCollection: () => ({}),
 }));
+vi.mock('../battleLifecycle.js', () => ({ battleFailureMessage: (error, fallback) => error.message || fallback, claimBattleLease: vi.fn(), releaseBattleLeases: vi.fn(), allowBattleAction: vi.fn().mockResolvedValue(true), BattleBusyError: class extends Error {} }));
 
 vi.mock('@socket.io/mongo-adapter', () => ({
   createAdapter: () => () => ({}),
@@ -87,6 +94,8 @@ describe('Battle Socket - room:invite', () => {
       join: vi.fn(),
       leave: vi.fn(),
       use: vi.fn(),
+      once: vi.fn(),
+      authorization: { get: vi.fn(), close: vi.fn() },
       emit: vi.fn(),
       on: (evt, handler) => {
         socketHandlers[evt] = handler;
@@ -109,7 +118,7 @@ describe('Battle Socket - room:invite', () => {
     mockSendPushToUser.mockResolvedValueOnce({ successCount: 1 });
     const settings = { targetUserId: 'friend_id', subject: 'iit-jam-physics', topic: 'iit-jam-modern-physics', questionCount: 15 };
     await socketHandlers['battle:challengeUser'](settings);
-    expect(socket.emit).toHaveBeenCalledWith('battle:challengeSent', { roomCode: expect.stringMatching(/^\d{4}$/), targetUserId: 'friend_id' });
+    expect(socket.emit).toHaveBeenCalledWith('battle:challengeSent', { roomCode: expect.stringMatching(/^[A-Z2-9]{6}$/), targetUserId: 'friend_id' });
     expect(socket.emit).toHaveBeenCalledWith('room:created', expect.objectContaining({ subject: settings.subject, topic: settings.topic, questionCount: 15 }));
     await socketHandlers['battle:challengeUser'](settings);
     expect(socket.emit).toHaveBeenCalledWith('room:error', { message: 'Please wait before sending another invitation.' });
@@ -124,7 +133,7 @@ describe('Battle Socket - room:invite', () => {
       expect(socket.emit).toHaveBeenCalledWith('room:error', {
         message: 'New battles are temporarily unavailable.',
       });
-      expect(socket.join).not.toHaveBeenCalledWith(expect.stringMatching(/^\d{4}$/));
+      expect(socket.join).not.toHaveBeenCalledWith(expect.stringMatching(/^[A-Z2-9]{6}$/));
     } finally {
       if (previous === undefined) delete process.env.BATTLE_NEW_MATCHES_ENABLED;
       else process.env.BATTLE_NEW_MATCHES_ENABLED = previous;
@@ -435,6 +444,8 @@ describe('Battle Socket - battle:rematch', () => {
       user: { id: 'user_1', email: 'user1@test.com', name: 'Player One' },
       join: vi.fn(),
       use: vi.fn(),
+      once: vi.fn(),
+      authorization: { get: vi.fn(), close: vi.fn() },
       emit: vi.fn(),
       on: (evt, handler) => {
         socketHandlers[evt] = handler;
@@ -465,7 +476,7 @@ describe('Battle Socket - battle:rematch', () => {
         ok: false,
         message: 'New battles are temporarily unavailable.',
       });
-      expect(socket.join).not.toHaveBeenCalledWith(expect.stringMatching(/^\d{4}$/));
+      expect(socket.join).not.toHaveBeenCalledWith(expect.stringMatching(/^[A-Z2-9]{6}$/));
     } finally {
       if (previous === undefined) delete process.env.BATTLE_NEW_MATCHES_ENABLED;
       else process.env.BATTLE_NEW_MATCHES_ENABLED = previous;
@@ -510,16 +521,16 @@ describe('Battle Socket - battle:rematch', () => {
       playerName: 'Player One',
     });
 
-    expect(socket.join).toHaveBeenCalledWith(expect.stringMatching(/^\d{4}$/));
+    expect(socket.join).toHaveBeenCalledWith(expect.stringMatching(/^[A-Z2-9]{6}$/));
     expect(socket.emit).toHaveBeenCalledWith('room:created', expect.objectContaining({
       playerName: 'Player One',
-      code: expect.stringMatching(/^\d{4}$/),
+      code: expect.stringMatching(/^[A-Z2-9]{6}$/),
     }));
 
     expect(mockSendPushToUser).toHaveBeenCalledWith('user_2', expect.objectContaining({
       title: 'Player One wants a rematch ⚔️',
       body: 'Think you can win this time?',
-      route: expect.stringMatching(/^\/battle\?join=\d{4}$/),
+      route: expect.stringMatching(/^\/battle\?join=[A-Z2-9]{6}$/),
       data: expect.objectContaining({
         type: 'battle_rematch',
       }),

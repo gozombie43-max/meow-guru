@@ -6,12 +6,18 @@ import { getBattleTier } from "./battleTierService.js";
 import { analyzeSettledBattle } from "./battleIntegrityService.js";
 import { evaluateBattleAchievements } from "./battleAchievementService.js";
 import { processBattleMissionProgress } from "./battleProgressionService.js";
+import { isRatedBattle } from './battlePolicy.js';
+import { releaseBattleLeases } from './battleLifecycle.js';
+import { battleDecision } from './battleOutcome.js';
+import { storedBattleAnswer } from './battleAnswers.js';
 
 function getOutcome(room, a, b) {
+  const rated = isRatedBattle(room);
   if (room.finishReason === "abandoned") return { a: "abandoned", b: "abandoned", rated: false };
-  if (room.finishReason === "forfeit") return room.winnerUserId === a.userId ? { a: "win", b: "loss", rated: true } : { a: "loss", b: "win", rated: true };
-  if ((a.score || 0) === (b.score || 0)) return { a: "draw", b: "draw", rated: true };
-  return (a.score || 0) > (b.score || 0) ? { a: "win", b: "loss", rated: true } : { a: "loss", b: "win", rated: true };
+  if (room.finishReason === "forfeit") return room.winnerUserId === a.userId ? { a: "win", b: "loss", rated } : { a: "loss", b: "win", rated };
+  const decision = battleDecision(room);
+  if (!decision.winnerUserId) return { a: 'draw', b: 'draw', rated };
+  return decision.winnerUserId === a.userId ? { a: 'win', b: 'loss', rated } : { a: 'loss', b: 'win', rated };
 }
 function defaultProfile(player) { return { userId: player.userId, displayName: player.name || "Player", rating: DEFAULT_BATTLE_RATING, peakRating: DEFAULT_BATTLE_RATING, gamesPlayed: 0, wins: 0, losses: 0, draws: 0, currentWinStreak: 0, bestWinStreak: 0 }; }
 function defaultSeasonProfile(seasonKey, player) { return { ...defaultProfile(player), seasonKey, tier: "Unranked" }; }
@@ -27,6 +33,7 @@ export async function settleBattleResult(room) {
   const [a, b] = room.players;
   if (!a.userId || !b.userId || a.userId === b.userId) return null;
   const settlement = await withMongoTransaction(async ({ session, db }) => {
+    await releaseBattleLeases('room', room.code, { session });
     const matches = getBattleMatchesCollection(), profiles = getBattleProfilesCollection(), seasonProfiles = getBattleSeasonProfilesCollection();
     const existing = await matches.findOne({ roomCode: room.code }, { session });
     if (existing) return { alreadyRecorded: true, match: existing };
@@ -39,13 +46,13 @@ export async function settleBattleResult(room) {
     const tierBeforeA = seasonA ? getBattleTier({ rating: seasonA.rating, gamesPlayed: seasonA.gamesPlayed }) : null, tierBeforeB = seasonB ? getBattleTier({ rating: seasonB.rating, gamesPlayed: seasonB.gamesPlayed }) : null;
     const lifeStatsA = nextStats(lifeA, result.a, lifeElo.newRatingA), lifeStatsB = nextStats(lifeB, result.b, lifeElo.newRatingB), seasonStatsA = seasonA ? nextStats(seasonA, result.a, seasonElo.newRatingA) : null, seasonStatsB = seasonB ? nextStats(seasonB, result.b, seasonElo.newRatingB) : null;
     const tierA = seasonStatsA ? getBattleTier({ rating: seasonElo.newRatingA, gamesPlayed: seasonStatsA.gamesPlayed }) : null, tierB = seasonStatsB ? getBattleTier({ rating: seasonElo.newRatingB, gamesPlayed: seasonStatsB.gamesPlayed }) : null, now = new Date();
-    const playerRecord = (player, outcomeValue, life, lifeChange, season, seasonChange, tierBefore, tier) => ({ userId: player.userId, name: player.name, score: player.score || 0, result: outcomeValue, ratingBefore: life.rating, ratingAfter: lifeChange.newRatingA, ratingDelta: lifeChange.deltaA, seasonRatingBefore: season?.rating ?? null, seasonRatingAfter: seasonChange?.newRatingA ?? null, seasonRatingDelta: seasonChange?.deltaA ?? null, seasonTierBefore: tierBefore?.name ?? null, seasonTierAfter: tier?.name ?? null, answerLog: Array.isArray(player.answerLog) ? player.answerLog.map((entry) => ({ questionIndex: entry.questionIndex, selectedIndex: entry.selectedIndex ?? null, correct: Boolean(entry.correct), timedOut: Boolean(entry.timedOut), responseTimeMs: Number.isFinite(entry.responseTimeMs) ? entry.responseTimeMs : null })) : [] });
-    const match = { roomCode: room.code, matchmakingId: room.matchmakingId || null, seasonKey: room.seasonKey || null, subject: room.subject, topic: room.topic, questionCount: room.questionCount, finishReason: room.finishReason || "completed", rated: result.rated, players: [playerRecord(a, result.a, lifeA, lifeElo, seasonA, seasonElo, tierBeforeA, tierA), playerRecord(b, result.b, lifeB, { newRatingA: lifeElo.newRatingB, deltaA: lifeElo.deltaB }, seasonB, seasonElo && { newRatingA: seasonElo.newRatingB, deltaA: seasonElo.deltaB }, tierBeforeB, tierB)], createdAt: room.createdAt ? new Date(room.createdAt) : now, finishedAt: room.finishedAt ? new Date(room.finishedAt) : now, recordedAt: now };
+    const playerRecord = (player, outcomeValue, life, lifeChange, season, seasonChange, tierBefore, tier) => ({ userId: player.userId, name: player.name, score: player.score || 0, result: outcomeValue, ratingBefore: life.rating, ratingAfter: lifeChange.newRatingA, ratingDelta: lifeChange.deltaA, seasonRatingBefore: season?.rating ?? null, seasonRatingAfter: seasonChange?.newRatingA ?? null, seasonRatingDelta: seasonChange?.deltaA ?? null, seasonTierBefore: tierBefore?.name ?? null, seasonTierAfter: tier?.name ?? null, answerLog: Array.isArray(player.answerLog) ? player.answerLog.map((entry) => ({ questionIndex: entry.questionIndex, selectedIndex: entry.selectedIndex ?? null, answer: storedBattleAnswer(entry), points: entry.points ?? (entry.correct ? 10 : 0), correct: Boolean(entry.correct), timedOut: Boolean(entry.timedOut), responseTimeMs: Number.isFinite(entry.responseTimeMs) ? entry.responseTimeMs : null })) : [] });
+    const match = { ...battleDecision(room), roomCode: room.code, matchmakingId: room.matchmakingId || null, seasonKey: room.seasonKey || null, subject: room.subject, topic: room.topic, questionCount: room.questionCount, finishReason: room.finishReason || "completed", mode: room.mode || 'casual', origin: room.origin || 'private', selectionVersion: room.selectionVersion || null, selectedQuestionIds: room.selectedQuestionIds || [], rated: result.rated, players: [playerRecord(a, result.a, lifeA, lifeElo, seasonA, seasonElo, tierBeforeA, tierA), playerRecord(b, result.b, lifeB, { newRatingA: lifeElo.newRatingB, deltaA: lifeElo.deltaB }, seasonB, seasonElo && { newRatingA: seasonElo.newRatingB, deltaA: seasonElo.deltaB }, tierBeforeB, tierB)], createdAt: room.createdAt ? new Date(room.createdAt) : now, finishedAt: room.finishedAt ? new Date(room.finishedAt) : now, recordedAt: now };
     const inserted = await matches.insertOne(match, { session });
     await enqueueBattleAnalytics(7, { db, session, now });
-    await profiles.updateOne({ userId: a.userId }, { $set: { displayName: a.name, ...lifeStatsA, updatedAt: now }, $setOnInsert: { userId: a.userId, createdAt: now } }, { session, upsert: true });
-    await profiles.updateOne({ userId: b.userId }, { $set: { displayName: b.name, ...lifeStatsB, updatedAt: now }, $setOnInsert: { userId: b.userId, createdAt: now } }, { session, upsert: true });
-    if (room.seasonKey && result.a !== "abandoned") {
+    if (result.rated) await profiles.updateOne({ userId: a.userId }, { $set: { displayName: a.name, ...lifeStatsA, updatedAt: now }, $setOnInsert: { userId: a.userId, createdAt: now } }, { session, upsert: true });
+    if (result.rated) await profiles.updateOne({ userId: b.userId }, { $set: { displayName: b.name, ...lifeStatsB, updatedAt: now }, $setOnInsert: { userId: b.userId, createdAt: now } }, { session, upsert: true });
+    if (room.seasonKey && result.rated) {
       await seasonProfiles.updateOne({ seasonKey: room.seasonKey, userId: a.userId }, { $set: { displayName: a.name, ...seasonStatsA, tier: tierA.name, updatedAt: now }, $setOnInsert: { seasonKey: room.seasonKey, userId: a.userId, createdAt: now } }, { session, upsert: true });
       await seasonProfiles.updateOne({ seasonKey: room.seasonKey, userId: b.userId }, { $set: { displayName: b.name, ...seasonStatsB, tier: tierB.name, updatedAt: now }, $setOnInsert: { seasonKey: room.seasonKey, userId: b.userId, createdAt: now } }, { session, upsert: true });
     }
@@ -54,7 +61,7 @@ export async function settleBattleResult(room) {
   if (settlement?.match) await getBattleRoomsCollection().updateOne({ code: room.code }, { $set: { resultRecordedAt: new Date(), battleMatchId: settlement.match._id } }).catch(runtimeLog.error);
   if (settlement?.match && !settlement.alreadyRecorded) void analyzeSettledBattle(settlement.match).catch((error) => runtimeLog.error("Battle integrity analysis failed:", error));
   if (settlement?.match && !settlement.alreadyRecorded) void processBattleMissionProgress(settlement.match).catch((error) => runtimeLog.error("Battle mission progress failed:", error));
-  if (settlement?.match && !settlement.alreadyRecorded) for (const player of settlement.match.players) {
+  if (settlement?.match?.rated && !settlement.alreadyRecorded) for (const player of settlement.match.players) {
     const source = player.userId === a.userId ? a : b, profiles = settlement.achievementProfiles?.[player.userId];
     void evaluateBattleAchievements({ match: settlement.match, player: source, lifetimeProfile: profiles?.lifetime, seasonProfile: profiles?.season }).catch((error) => runtimeLog.error("Battle achievement evaluation failed:", error));
   }
