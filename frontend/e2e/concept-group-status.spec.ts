@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
 
+test.afterEach(async ({ context }) => {
+  await context.unrouteAll({ behavior: 'wait' });
+});
+
 test('pending grouping polls only status and stops when the quiz unmounts', async ({ page, context }, info) => {
   await context.addCookies([{ name: 'access_session', value: 'local-fixture', url: 'http://127.0.0.1:3110' }]);
   const login = await context.request.post('http://127.0.0.1:3111/auth/login', { data: {
