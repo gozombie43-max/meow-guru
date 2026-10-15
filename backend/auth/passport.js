@@ -58,6 +58,13 @@ export const initPassport = () => {
             return done(null, false, { message: 'Invalid email or password' });
           }
 
+          if (user.authProvider === 'local' && user.emailVerified === false) {
+            return done(null, false, {
+              message: 'Please verify your email before signing in',
+              code: 'EMAIL_NOT_VERIFIED',
+            });
+          }
+
           return done(
             null,
             cleanUser(user)

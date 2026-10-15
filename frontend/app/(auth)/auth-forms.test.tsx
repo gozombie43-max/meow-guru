@@ -23,6 +23,7 @@ beforeEach(() => {
   mocks.login.mockReset().mockResolvedValue(undefined);
   mocks.replace.mockReset();
   localStorage.clear();
+  sessionStorage.clear();
 });
 
 afterEach(() => {
@@ -75,12 +76,26 @@ describe('authentication forms', () => {
 
     await user.type(screen.getByLabelText('Full Name'), 'da');
     await user.type(screen.getByLabelText('Password'), 'er');
+    mocks.post.mockResolvedValue({ data: { verificationRequired: true } });
     await user.click(screen.getByRole('button', { name: 'Create account' }));
     await waitFor(() => expect(mocks.post).toHaveBeenCalledWith('/auth/register', {
       name: 'Ada', email: 'learner@example.com', password: 'shorter',
     }));
-    await waitFor(() => expect(mocks.login).toHaveBeenCalledWith('test-token'));
-    expect(mocks.replace).toHaveBeenCalledWith('/');
+    await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/check-email'));
+    expect(sessionStorage.getItem('pendingVerificationEmail')).toBe('learner@example.com');
+    expect(mocks.login).not.toHaveBeenCalled();
+  });
+
+  it('shows the verification-required login error without signing in', async () => {
+    mocks.post.mockRejectedValue({ response: { data: { error: 'Please verify your email before signing in', code: 'EMAIL_NOT_VERIFIED' } } });
+    const user = userEvent.setup();
+    render(<LoginPage />);
+    await user.type(screen.getByLabelText('Email'), 'learner@example.com');
+    await user.type(screen.getByLabelText('Password'), 'secret');
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(await screen.findByText('Please verify your email before signing in')).toBeInTheDocument();
+    expect(mocks.login).not.toHaveBeenCalled();
+    expect(mocks.replace).not.toHaveBeenCalled();
   });
 
   it('renders login fallback with full AuthCard structure, footer, and skeleton inputs', () => {

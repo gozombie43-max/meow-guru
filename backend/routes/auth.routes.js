@@ -22,7 +22,9 @@ import {
   loginSchema,
 } from '../schemas/apiSchemas.js';
 
-import { findUserByEmail, acquireRegistrationLock, releaseRegistrationLock, insertRegisteredUser } from '../repositories/authRegistrationRepository.js';
+import { findUserByEmail, acquireRegistrationLock, releaseRegistrationLock, insertRegisteredUser, verifyLocalUserEmailByTokenHash, replaceEmailVerificationToken } from '../repositories/authRegistrationRepository.js';
+import { createEmailVerificationToken, hashEmailVerificationToken } from '../services/email/emailVerification.js';
+import { sendVerificationEmail } from '../services/email/sendVerificationEmail.js';
 
 const router = express.Router();
 router.use('/firebase', firebaseAuthRoutes);
@@ -148,6 +150,12 @@ router.post(
           12
         );
 
+      const {
+        token: verificationToken,
+        tokenHash: verificationTokenHash,
+        expiresAt: verificationExpiresAt,
+      } = createEmailVerificationToken();
+
       const user = {
         id: `user-${uuid()}`,
 
@@ -164,6 +172,11 @@ router.post(
 
         passwordHash,
 
+        emailVerified: false,
+        emailVerificationTokenHash: verificationTokenHash,
+        emailVerificationExpiresAt: verificationExpiresAt,
+        emailVerificationLastSentAt: new Date(),
+
         progress: {},
 
         bookmarks: [],
@@ -178,30 +191,21 @@ router.post(
 
       await insertRegisteredUser(user);
 
+      try {
+        await sendVerificationEmail(user, verificationToken, frontendUrl);
+      } catch {
+        // Avoid logging provider errors that could include verification URLs.
+        runtimeLog.error('Verification email failed');
+      }
 
-      // ── Create auth tokens ─────────────────────────────
-
-      const payload = {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      };
-
-      const { token, refreshToken } = await createSession(payload);
-
-      applyRefreshToken(
-        res,
-        refreshToken
-      );
 
       return res
         .status(201)
         .json({
           message:
-            'Registered ✅',
+            'Account created. Check your email to verify your account.',
 
-          token,
+          verificationRequired: true,
 
           user: {
             id: user.id,
@@ -246,6 +250,55 @@ router.post(
 );
 
 
+// ── POST /auth/verify-email ─────────────────────────────
+
+router.post('/resend-verification', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const genericResponse = {
+    message: 'If an unverified account exists for this email, a verification link will be sent.',
+  };
+  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.json(genericResponse);
+  }
+  try {
+    const { token, tokenHash, expiresAt } = createEmailVerificationToken();
+    const user = await replaceEmailVerificationToken({ email, tokenHash, expiresAt });
+    if (user) await sendVerificationEmail(user, token, frontendUrl);
+  } catch {
+    // Neither account state nor provider/query details belong in the response or logs.
+    runtimeLog.error('Resend verification email failed');
+  }
+  return res.json(genericResponse);
+});
+
+router.post('/verify-email', async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    const token = typeof req.body?.token === 'string' ? req.body.token.trim() : '';
+    if (!token || token.length > 256) {
+      return res.status(400).json({
+        error: 'Invalid verification link',
+        code: 'INVALID_VERIFICATION_TOKEN',
+      });
+    }
+
+    const result = await verifyLocalUserEmailByTokenHash(hashEmailVerificationToken(token));
+    if (result.modifiedCount !== 1) {
+      return res.status(400).json({
+        error: 'Verification link is invalid or has expired',
+        code: 'INVALID_OR_EXPIRED_VERIFICATION_TOKEN',
+      });
+    }
+
+    return res.json({ message: 'Email verified successfully', emailVerified: true });
+  } catch {
+    // Database errors may contain the token hash; keep verification secrets out of logs.
+    runtimeLog.error('Email verification error');
+    return res.status(500).json({ error: 'Unable to verify email' });
+  }
+});
+
 // ── POST /auth/login ────────────────────────────────────
 
 router.post(
@@ -262,13 +315,19 @@ router.post(
       async (
         err,
         user,
-        _info
+        info
       ) => {
         if (err) {
           return next(err);
         }
 
         if (!user) {
+          if (info?.code === 'EMAIL_NOT_VERIFIED') {
+            return res.status(403).json({
+              error: 'Please verify your email before signing in',
+              code: 'EMAIL_NOT_VERIFIED',
+            });
+          }
           return res
             .status(401)
             .json({

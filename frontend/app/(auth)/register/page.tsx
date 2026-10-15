@@ -6,7 +6,6 @@ import { useState, Suspense } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, ArrowRight } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
 import api from '@/shared/api/client';
 import { API_BASE } from '@/lib/api-base';
 import AuthCard from '@/components/auth/AuthCard';
@@ -19,7 +18,6 @@ import styles from '@/components/auth/auth.module.css';
 type RegisterFormData = { name: string; email: string; password: string };
 
 function RegisterContent() {
-  const { login } = useAuth();
   const router = useRouter();
 
   const [error, setError] = useState('');
@@ -48,9 +46,13 @@ function RegisterContent() {
   const onSubmit = async (data: RegisterFormData) => {
     setError('');
     try {
-      const res = await api.post('/auth/register', data satisfies z.input<typeof registerSchema>);
-      await login(res.data.token);
-      router.replace('/');
+      await api.post('/auth/register', data satisfies z.input<typeof registerSchema>);
+      try {
+        sessionStorage.setItem('pendingVerificationEmail', data.email.trim().toLowerCase());
+      } catch {
+        // Account creation succeeded even when browser storage is unavailable.
+      }
+      router.replace('/check-email');
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
       setError(msg || 'Registration failed. Please check your details and try again.');
