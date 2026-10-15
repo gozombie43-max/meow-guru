@@ -56,6 +56,12 @@
 .secondary { min-height: 44px; margin-top: 12px; color: var(--muted); }
 .primary:focus-visible, .secondary:focus-visible { outline: 3px solid #0a84ff; outline-offset: 4px; }
 .spin { animation: verification-spin 1s linear infinite; }
+.form { margin-top: 24px; text-align: left; }
+.field + .field { margin-top: 16px; }
+.field label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; }
+.input { width: 100%; min-height: 48px; box-sizing: border-box; border: 1px solid var(--border); border-radius: 12px; background: transparent; padding: 10px 14px; color: var(--text); font: inherit; }
+.input:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; }
+.input:disabled { opacity: .5; }
 @keyframes verification-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
 @media (max-width: 360px) { .card { padding: 24px; } }

@@ -14,17 +14,30 @@ import {
   verifyRefreshToken,
 } from '../auth/jwt.js';
 
-import { createSession, rotateSession, revokeSession } from '../auth/sessions.js';
+import { createSession, rotateSession, revokeSession, revokeUserSessions } from '../auth/sessions.js';
 
 import { validateBody } from '../middleware/validation.js';
 import {
   registerSchema,
   loginSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  requestEmailOtpSchema,
+  verifyEmailOtpSchema,
 } from '../schemas/apiSchemas.js';
 
-import { findUserByEmail, acquireRegistrationLock, releaseRegistrationLock, insertRegisteredUser, verifyLocalUserEmailByTokenHash, replaceEmailVerificationToken } from '../repositories/authRegistrationRepository.js';
+import { findUserByEmail, acquireRegistrationLock, releaseRegistrationLock, insertRegisteredUser, verifyLocalUserEmailByTokenHash, replaceEmailVerificationToken, issuePasswordResetToken, consumePasswordResetToken } from '../repositories/authRegistrationRepository.js';
 import { createEmailVerificationToken, hashEmailVerificationToken } from '../services/email/emailVerification.js';
 import { sendVerificationEmail } from '../services/email/sendVerificationEmail.js';
+import { createPasswordResetToken, hashPasswordResetToken } from '../services/email/passwordReset.js';
+import { sendPasswordResetEmail } from '../services/email/sendPasswordResetEmail.js';
+import { createEmailLoginOtp, hashEmailLoginCode } from '../services/email/emailLoginOtp.js';
+import { sendLoginOtpEmail } from '../services/email/sendLoginOtpEmail.js';
+import { issueEmailLoginChallenge, consumeEmailLoginChallenge, invalidateEmailLoginChallenge } from '../repositories/emailLoginOtpRepository.js';
+import { resolveEmailOtpAccount } from '../services/email/emailOtpAccount.js';
+import { emailOtpRequestLimiter, emailOtpVerifyLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 router.use('/firebase', firebaseAuthRoutes);
@@ -43,6 +56,13 @@ const isProd =
 const frontendUrl =
   process.env.FRONTEND_URL ||
   'http://localhost:3000';
+
+const resendVerificationResponse = {
+  message: 'If an unverified account exists for this email, a verification link will be sent.',
+};
+const forgotPasswordResponse = {
+  message: 'If an account exists for this email, password reset instructions will be sent.',
+};
 
 const cookieOptions = {
   httpOnly: true,
@@ -252,15 +272,11 @@ router.post(
 
 // ── POST /auth/verify-email ─────────────────────────────
 
-router.post('/resend-verification', async (req, res) => {
+router.post('/resend-verification', validateBody(resendVerificationSchema, {
+  onInvalid: (_req, res) => res.set('Cache-Control', 'no-store').json(resendVerificationResponse),
+}), async (req, res) => {
   res.set('Cache-Control', 'no-store');
-  const genericResponse = {
-    message: 'If an unverified account exists for this email, a verification link will be sent.',
-  };
-  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
-  if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return res.json(genericResponse);
-  }
+  const { email } = req.body;
   try {
     const { token, tokenHash, expiresAt } = createEmailVerificationToken();
     const user = await replaceEmailVerificationToken({ email, tokenHash, expiresAt });
@@ -269,19 +285,13 @@ router.post('/resend-verification', async (req, res) => {
     // Neither account state nor provider/query details belong in the response or logs.
     runtimeLog.error('Resend verification email failed');
   }
-  return res.json(genericResponse);
+  return res.json(resendVerificationResponse);
 });
 
-router.post('/verify-email', async (req, res) => {
+router.post('/verify-email', validateBody(verifyEmailSchema), async (req, res) => {
   res.set('Cache-Control', 'no-store');
   try {
-    const token = typeof req.body?.token === 'string' ? req.body.token.trim() : '';
-    if (!token || token.length > 256) {
-      return res.status(400).json({
-        error: 'Invalid verification link',
-        code: 'INVALID_VERIFICATION_TOKEN',
-      });
-    }
+    const { token } = req.body;
 
     const result = await verifyLocalUserEmailByTokenHash(hashEmailVerificationToken(token));
     if (result.modifiedCount !== 1) {
@@ -299,7 +309,91 @@ router.post('/verify-email', async (req, res) => {
   }
 });
 
+// ── Password recovery ──────────────────────────────────
+
+router.post('/forgot-password', validateBody(forgotPasswordSchema, {
+  onInvalid: (_req, res) => res.set('Cache-Control', 'no-store').json(forgotPasswordResponse),
+}), async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const { email } = req.body;
+  try {
+    const { token, tokenHash, expiresAt } = createPasswordResetToken();
+    const user = await issuePasswordResetToken({ email, tokenHash, expiresAt });
+    if (user) await sendPasswordResetEmail(user, token, frontendUrl);
+  } catch {
+    // Provider/database errors may contain token material or account details.
+    runtimeLog.error('Forgot password error');
+  }
+  return res.json(forgotPasswordResponse);
+});
+
+router.post('/reset-password', validateBody(resetPasswordSchema), async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    const { token, password } = req.body;
+    const tokenHash = hashPasswordResetToken(token);
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await consumePasswordResetToken({ tokenHash, passwordHash });
+    if (!user) {
+      return res.status(400).json({
+        error: 'Password reset link is invalid or has expired',
+        code: 'INVALID_OR_EXPIRED_RESET_TOKEN',
+      });
+    }
+    await revokeUserSessions(user.id, 'password-reset');
+    res.clearCookie('refreshToken', cookieOptions);
+    return res.json({ message: 'Password changed successfully' });
+  } catch {
+    runtimeLog.error('Password reset error');
+    return res.status(500).json({ error: 'Unable to reset password' });
+  }
+});
+
 // ── POST /auth/login ────────────────────────────────────
+
+router.use('/email-otp', (_req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
+
+router.post('/email-otp/request', requireTrustedOrigin, emailOtpRequestLimiter, validateBody(requestEmailOtpSchema), async (req, res) => {
+  const { email } = req.body;
+  let challengeId;
+  try {
+    const challenge = createEmailLoginOtp(email);
+    challengeId = challenge.challengeId;
+    const result = await issueEmailLoginChallenge({ email, ...challenge });
+    if (!result.issued) {
+      return res.status(429).set('Retry-After', String(result.retryAfter)).json({
+        error: 'Please wait before requesting another code.', retryAfter: result.retryAfter,
+      });
+    }
+    await sendLoginOtpEmail(email, challenge.code);
+    // Identical responses for existing and new addresses; no account is created here.
+    return res.json({ message: 'Check your email for a 6-digit sign-in code.', challengeId, retryAfter: 60, expiresIn: 300 });
+  } catch {
+    if (challengeId) {
+      try { await invalidateEmailLoginChallenge(email, challengeId); } catch { /* Keep secrets out of logs. */ }
+    }
+    runtimeLog.error('Email sign-in code delivery failed');
+    return res.status(503).json({ error: 'Unable to send a code. Please try again later.' });
+  }
+});
+
+router.post('/email-otp/verify', requireTrustedOrigin, emailOtpVerifyLimiter, validateBody(verifyEmailOtpSchema), async (req, res) => {
+  try {
+    const { email, challengeId, code } = req.body;
+    const claimed = await consumeEmailLoginChallenge({ email, challengeId, codeHash: hashEmailLoginCode(email, challengeId, code) });
+    const user = claimed ? await resolveEmailOtpAccount(email) : null;
+    if (!user) return res.status(401).json({ error: 'Code is invalid or expired. Request a new code.', code: 'INVALID_OR_EXPIRED_OTP' });
+    const { token, refreshToken } = await createSession(user);
+    applyRefreshToken(res, refreshToken);
+    return res.json({
+      message: 'Logged in ✅', token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role || 'student' },
+    });
+  } catch {
+    runtimeLog.error('Email code sign-in failed');
+    return res.status(503).json({ error: 'Unable to finish signing in. Please request a new code and try again.' });
+  }
+});
 
 router.post(
   '/login',

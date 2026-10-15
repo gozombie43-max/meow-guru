@@ -96,6 +96,7 @@ try {
         await page.waitForURL(url => !url.pathname.includes('access-code'));
       }
       await page.goto('/login?redirect=%2Fdashboard');
+      await page.getByRole('button', { name: 'Log in with password', exact: true }).click();
       await page.locator('#login-email').fill(email); await page.locator('#login-password').fill(password);
       await measure('login', async () => {
         const profile = page.waitForResponse(r => /\/users\/me$/.test(new URL(r.url()).pathname) && r.ok());

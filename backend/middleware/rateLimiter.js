@@ -1,4 +1,5 @@
 import { RedisRateLimitStore } from "./redisRateLimitStore.js";
+import { MongoRateLimitStore } from './mongoRateLimitStore.js';
 import { isLocalEnvironment } from '../config/environment.js';
 // middleware/rateLimiter.js
 
@@ -203,6 +204,19 @@ export const authLimiter =
     },
   });
 
+
+// OTP limits remain durable and enforced in local development too.
+export const emailOtpRequestLimiter = rateLimit({
+  store: new MongoRateLimitStore('email-otp-request'), windowMs: 15 * 60 * 1000,
+  limit: 15, keyGenerator: requestIpKey, standardHeaders: true, legacyHeaders: false,
+  message: { error: 'Too many code requests. Please try again later.' },
+});
+
+export const emailOtpVerifyLimiter = rateLimit({
+  store: new MongoRateLimitStore('email-otp-verify'), windowMs: 15 * 60 * 1000,
+  limit: 60, keyGenerator: requestIpKey, standardHeaders: true, legacyHeaders: false,
+  message: { error: 'Too many sign-in attempts. Please try again later.' },
+});
 
 // AI
 export const aiLimiter =

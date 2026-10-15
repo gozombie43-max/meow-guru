@@ -28,6 +28,7 @@ export function proxy(request: NextRequest) {
     pathname === '/register' ||
     pathname === '/check-email' ||
     pathname === '/verify-email' ||
+    pathname === '/reset-password' ||
     pathname === '/favicon.ico' ||
     // Static file extensions
     /\.(?:png|jpg|jpeg|gif|svg|ico|webp|css|js|woff2?|ttf|eot)$/i.test(pathname);

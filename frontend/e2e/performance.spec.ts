@@ -85,6 +85,7 @@ async function authenticateFixtureUser(page: Page, deviceName: string, variant?:
     return route.fetch({ url: `http://127.0.0.1:3111${path}${url.search}` }).then(response => route.fulfill({ response }));
   });
   await page.goto('/login');
+  await page.getByRole('button', { name: 'Log in with password', exact: true }).click();
   await page.waitForSelector('#login-email', { timeout: 10000 });
   await page.fill('#login-email', email);
   await page.fill('#login-password', 'Browser-fixture-123!');

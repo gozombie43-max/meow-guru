@@ -15,6 +15,7 @@ interface AuthCardProps {
   footerText?: string;
   footerLinkText?: string;
   footerLinkHref?: string;
+  showNavigationTabs?: boolean;
 }
 
 function AuthCard({
@@ -26,6 +27,7 @@ function AuthCard({
   footerText,
   footerLinkText,
   footerLinkHref,
+  showNavigationTabs = true,
 }: AuthCardProps) {
   const isLogin = activeTab === 'login';
 
@@ -104,7 +106,7 @@ function AuthCard({
           </div>
 
           {/* iOS Segmented Switcher */}
-          <div className={styles.segmentedControl} role="tablist" aria-label="Authentication mode">
+          {showNavigationTabs && <div className={styles.segmentedControl} role="tablist" aria-label="Authentication mode">
             <Link
               href="/login"
               role="tab"
@@ -123,7 +125,7 @@ function AuthCard({
             >
               Create Account
             </Link>
-          </div>
+          </div>}
 
           {/* Error Alert */}
           {error && (

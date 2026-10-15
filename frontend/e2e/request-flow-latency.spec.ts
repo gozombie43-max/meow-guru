@@ -99,6 +99,7 @@ test('measure real local request flows through the Next rewrite', async ({ brows
       expect(registration.ok()).toBeTruthy();
       await verifyFixtureEmail(request, credentials.email);
       await page.goto('/login?redirect=%2Fdashboard');
+      await page.getByRole('button', { name: 'Log in with password', exact: true }).click();
       await page.locator('#login-email').fill(credentials.email);
       await page.locator('#login-password').fill(credentials.password);
       const loggedIn = page.waitForResponse(r => r.url().endsWith('/auth/login') && r.ok());

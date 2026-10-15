@@ -54,3 +54,29 @@ export function replaceEmailVerificationToken({ email, tokenHash, expiresAt, now
     { returnDocument: 'after', projection: { _id: 0, id: 1, name: 1, email: 1 } }
   );
 }
+
+export function issuePasswordResetToken({ email, tokenHash, expiresAt, now = new Date() }) {
+  return getUsersCollection().findOneAndUpdate(
+    {
+      emailNormalized: normalizeAccountEmail(email),
+      authProvider: 'local',
+      $or: [
+        { passwordResetLastSentAt: { $exists: false } },
+        { passwordResetLastSentAt: { $lte: new Date(now.getTime() - 60_000) } },
+      ],
+    },
+    { $set: { passwordResetTokenHash: tokenHash, passwordResetExpiresAt: expiresAt, passwordResetLastSentAt: now } },
+    { returnDocument: 'after', projection: { _id: 0, id: 1, email: 1 } }
+  );
+}
+
+export function consumePasswordResetToken({ tokenHash, passwordHash, now = new Date() }) {
+  return getUsersCollection().findOneAndUpdate(
+    { authProvider: 'local', passwordResetTokenHash: tokenHash, passwordResetExpiresAt: { $gt: now } },
+    {
+      $set: { passwordHash, passwordChangedAt: now },
+      $unset: { passwordResetTokenHash: '', passwordResetExpiresAt: '', passwordResetLastSentAt: '' },
+    },
+    { returnDocument: 'after', projection: { _id: 0, id: 1, email: 1 } }
+  );
+}

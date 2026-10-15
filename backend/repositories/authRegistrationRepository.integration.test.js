@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connectMongoDB, disconnectMongoDB, getUsersCollection } from '../config/mongodb.js';
-import { findUserByEmail, verifyLocalUserEmailByTokenHash, replaceEmailVerificationToken } from './authRegistrationRepository.js';
+import { findUserByEmail, verifyLocalUserEmailByTokenHash, replaceEmailVerificationToken, issuePasswordResetToken, consumePasswordResetToken } from './authRegistrationRepository.js';
 
 let mongo;
 const now = new Date('2026-10-15T12:00:00Z');
@@ -95,4 +95,63 @@ it.each([
 
 it('does not rotate an unknown email', async () => {
   expect(await rotate()).toBeNull();
+});
+
+const issueReset = (tokenHash = 'reset-hash', offset = 0) => issuePasswordResetToken({
+  email: ' Alice@Example.test ', tokenHash, expiresAt: new Date(now.getTime() + 900000),
+  now: new Date(now.getTime() + offset),
+});
+const consumeReset = (tokenHash = 'reset-hash', time = now) => consumePasswordResetToken({ tokenHash, passwordHash: 'new-password-hash', now: time });
+
+it('atomically enforces reset cooldown and invalidates the previous hash on reissue', async () => {
+  await insert({ email: 'alice@example.test', emailNormalized: 'alice@example.test' });
+  const results = await Promise.all(Array.from({ length: 8 }, () => issueReset()));
+  expect(results.filter(Boolean)).toEqual([{ id: 'user-test', email: 'alice@example.test' }]);
+  expect(await issueReset('blocked', 59999)).toBeNull();
+  expect(await issueReset('replacement', 60000)).not.toBeNull();
+  expect(await consumeReset()).toBeNull();
+  expect(await consumeReset('replacement', new Date(now.getTime() + 60000))).not.toBeNull();
+});
+
+it('consumes a reset token once under races and removes only reset fields', async () => {
+  await insert({ email: 'alice@example.test', emailNormalized: 'alice@example.test' });
+  await issueReset();
+  const results = await Promise.all(Array.from({ length: 8 }, () => consumeReset()));
+  expect(results.filter(Boolean)).toEqual([{ id: 'user-test', email: 'alice@example.test' }]);
+  const user = await getUsersCollection().findOne({ id: 'user-test' });
+  expect(user.passwordHash).toBe('new-password-hash');
+  expect(user.passwordChangedAt).toEqual(now);
+  expect(user.emailVerified).toBe(false);
+  expect(user.emailVerificationTokenHash).toBe('stored-hash');
+  for (const key of ['passwordResetTokenHash', 'passwordResetExpiresAt', 'passwordResetLastSentAt']) expect(user).not.toHaveProperty(key);
+  expect(await consumeReset()).toBeNull();
+});
+
+it.each(['google', 'firebase'])('does not issue a password reset for %s accounts', async authProvider => {
+  await insert({ email: 'alice@example.test', emailNormalized: 'alice@example.test', authProvider });
+  expect(await issueReset()).toBeNull();
+});
+
+it.each([
+  { passwordResetExpiresAt: now }, { passwordResetExpiresAt: new Date(now.getTime() - 1) },
+  { authProvider: 'google' }, { authProvider: 'firebase' }, { passwordResetTokenHash: 'other-hash' },
+])('does not consume an ineligible reset: %j', async overrides => {
+  await insert({ passwordHash: 'old-password-hash', passwordResetTokenHash: 'reset-hash',
+    passwordResetExpiresAt: new Date(now.getTime() + 900000), ...overrides });
+  const before = await getUsersCollection().findOne({ id: 'user-test' });
+  expect(await consumeReset()).toBeNull();
+  expect(await getUsersCollection().findOne({ id: 'user-test' })).toEqual(before);
+});
+
+it('does not issue or consume tokens for an unknown account', async () => {
+  expect(await issueReset()).toBeNull();
+  expect(await consumeReset()).toBeNull();
+});
+
+it('keeps reset credentials out of authentication projections', async () => {
+  await insert({ email: 'alice@example.test', emailNormalized: 'alice@example.test' });
+  await issueReset();
+  const user = await findUserByEmail('alice@example.test');
+  expect(user).not.toHaveProperty('passwordResetTokenHash');
+  expect(user).not.toHaveProperty('passwordResetExpiresAt');
 });

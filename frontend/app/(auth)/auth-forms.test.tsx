@@ -31,9 +31,64 @@ afterEach(() => {
 });
 
 describe('authentication forms', () => {
+  it('offers OTP first, sends a code, and signs in with its leading zero preserved', async () => {
+    const challengeId = 'a'.repeat(64);
+    mocks.post.mockResolvedValueOnce({ data: { challengeId, retryAfter: 60 } });
+    const user = userEvent.setup();
+    render(<LoginPage />);
+    expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Log in with OTP' })).toHaveAttribute('aria-pressed', 'true');
+    await user.type(screen.getByLabelText('Email'), 'Learner@Example.com');
+    await user.click(screen.getByRole('button', { name: 'Send code' }));
+    expect(mocks.post).toHaveBeenCalledWith('/auth/email-otp/request', { email: 'learner@example.com' }, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    const input = await screen.findByLabelText('6-digit code');
+    expect(input).toHaveAttribute('autocomplete', 'one-time-code');
+    expect(input).toHaveFocus();
+    expect(screen.getByRole('button', { name: /Resend in/ })).toBeDisabled();
+    await user.type(input, '012345');
+    await user.click(screen.getByRole('button', { name: 'Verify & sign in' }));
+    expect(mocks.post).toHaveBeenLastCalledWith('/auth/email-otp/verify', {
+      email: 'learner@example.com', challengeId, code: '012345',
+    }, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    await waitFor(() => expect(mocks.login).toHaveBeenCalledWith('test-token'));
+    expect(mocks.replace).toHaveBeenCalledWith('/');
+  });
+
+  it('cancels an OTP request when switching methods and keeps the entered email', async () => {
+    let finish: (value: unknown) => void = () => {};
+    mocks.post.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    const user = userEvent.setup();
+    render(<LoginPage />);
+    await user.type(screen.getByLabelText('Email'), 'learner@example.com');
+    await user.click(screen.getByRole('button', { name: 'Send code' }));
+    const signal = mocks.post.mock.calls[0][2].signal;
+    await user.click(screen.getByRole('button', { name: 'Log in with password' }));
+    expect(signal.aborted).toBe(true);
+    expect(screen.getByLabelText('Email')).toHaveValue('learner@example.com');
+    finish({ data: { challengeId: 'a'.repeat(64) } });
+    expect(mocks.login).not.toHaveBeenCalled();
+  });
+
+  it('shows an expired-code error and lets the user change the email', async () => {
+    mocks.post.mockResolvedValueOnce({ data: { challengeId: 'a'.repeat(64), retryAfter: 60 } })
+      .mockRejectedValueOnce({ response: { status: 401, data: { error: 'Code is invalid or expired. Request a new code.' } } });
+    const user = userEvent.setup();
+    render(<LoginPage />);
+    await user.type(screen.getByLabelText('Email'), 'learner@example.com');
+    await user.click(screen.getByRole('button', { name: 'Send code' }));
+    await user.type(await screen.findByLabelText('6-digit code'), '123456');
+    await user.click(screen.getByRole('button', { name: 'Verify & sign in' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Code is invalid or expired. Request a new code.');
+    expect(mocks.login).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Change email' }));
+    expect(screen.getByLabelText('Email')).toHaveValue('learner@example.com');
+    expect(screen.queryByLabelText('6-digit code')).not.toBeInTheDocument();
+  });
+
   it('validates login fields and submits the existing payload', async () => {
     const user = userEvent.setup();
     render(<LoginPage />);
+    await user.click(screen.getByRole('button', { name: 'Log in with password' }));
 
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(await screen.findByText('Email is required')).toBeInTheDocument();
@@ -87,9 +142,10 @@ describe('authentication forms', () => {
   });
 
   it('shows the verification-required login error without signing in', async () => {
-    mocks.post.mockRejectedValue({ response: { data: { error: 'Please verify your email before signing in', code: 'EMAIL_NOT_VERIFIED' } } });
+    mocks.post.mockRejectedValue({ response: { status: 403, data: { error: 'Please verify your email before signing in', code: 'EMAIL_NOT_VERIFIED' } } });
     const user = userEvent.setup();
     render(<LoginPage />);
+    await user.click(screen.getByRole('button', { name: 'Log in with password' }));
     await user.type(screen.getByLabelText('Email'), 'learner@example.com');
     await user.type(screen.getByLabelText('Password'), 'secret');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
@@ -104,5 +160,22 @@ describe('authentication forms', () => {
     expect(screen.getByRole('link', { name: 'Create one' })).toHaveAttribute('href', '/register');
     expect(screen.getByLabelText('Email')).toBeDisabled();
     expect(screen.getByLabelText('Password')).toBeDisabled();
+  });
+
+  it.each([
+    ['connection reset', { kind: 'network' }],
+    ['proxy failure', { response: { status: 500 } }],
+    ['backend unavailable', { status: 503 }],
+  ])('reports service availability rather than invalid credentials after %s', async (_label, failure) => {
+    mocks.post.mockRejectedValue(failure);
+    const user = userEvent.setup();
+    render(<LoginPage />);
+    await user.click(screen.getByRole('button', { name: 'Log in with password' }));
+    await user.type(screen.getByLabelText('Email'), 'learner@example.com');
+    await user.type(screen.getByLabelText('Password'), 'secret');
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(await screen.findByText('Unable to reach the sign-in service. Please try again shortly.')).toBeInTheDocument();
+    expect(mocks.login).not.toHaveBeenCalled();
+    expect(mocks.replace).not.toHaveBeenCalled();
   });
 });

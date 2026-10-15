@@ -3,7 +3,7 @@ import type { z } from 'zod';
 import type { loginSchema } from '@meow/contracts/auth';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuthActions } from '@/context/AuthContext';
@@ -15,6 +15,8 @@ import AuthInput from '@/components/auth/AuthInput';
 import AuthGoogleButton from '@/components/auth/AuthGoogleButton';
 import { emailPattern } from '@/components/auth/validation';
 import styles from '@/components/auth/auth.module.css';
+import EmailOtpLogin from '@/components/auth/EmailOtpLogin';
+import { signInErrorMessage } from '@/components/auth/signInError';
 
 const ForgotPasswordModal = dynamic(() => import('@/components/auth/ForgotPasswordModal'), { ssr: false });
 
@@ -36,11 +38,13 @@ function LoginContent() {
   const [error, setError] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [forgotOpen, setForgotOpen] = useState(false);
+  const [method, setMethod] = useState<'otp' | 'password'>('otp');
 
   const {
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     defaultValues: {
@@ -48,6 +52,7 @@ function LoginContent() {
       password: '',
     },
   });
+  const otpEmail = useWatch({ control, name: 'email' });
 
   // Pre-fill remembered email
   useEffect(() => {
@@ -66,6 +71,27 @@ function LoginContent() {
     window.location.assign(new URL(`${API_BASE}/auth/google`, window.location.origin).href);
   };
 
+  const completeSignIn = async (token: string, email: string) => {
+    if (rememberMe) {
+      try {
+        localStorage.setItem('meow_remember_email', email);
+      } catch {
+        // ignore
+      }
+    } else {
+      try {
+        localStorage.removeItem('meow_remember_email');
+      } catch {
+        // ignore
+      }
+    }
+
+    await login(token);
+    const searchParams = new URLSearchParams(window.location.search);
+    const redirectTarget = searchParams.get('redirect') || searchParams.get('next');
+    router.replace(redirectTarget || '/');
+  };
+
   const onSubmit = async (data: LoginFormData) => {
     setError('');
     try {
@@ -73,28 +99,9 @@ function LoginContent() {
         email: data.email,
         password: data.password,
       } satisfies z.input<typeof loginSchema>);
-
-      if (rememberMe) {
-        try {
-          localStorage.setItem('meow_remember_email', data.email);
-        } catch {
-          // ignore
-        }
-      } else {
-        try {
-          localStorage.removeItem('meow_remember_email');
-        } catch {
-          // ignore
-        }
-      }
-
-      await login(res.data.token);
-      const searchParams = new URLSearchParams(window.location.search);
-      const redirectTarget = searchParams.get('redirect') || searchParams.get('next');
-      router.replace(redirectTarget || '/');
+      await completeSignIn(res.data.token, data.email);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-      setError(msg || 'Invalid email or password. Please try again.');
+      setError(signInErrorMessage(err));
     }
   };
 
@@ -105,25 +112,26 @@ function LoginContent() {
         title="Welcome Back"
         subtitle="Sign in to your Meow account"
         activeTab="login"
+        showNavigationTabs={false}
         error={error}
         footerText="Don't have an account?"
         footerLinkText="Create one"
         footerLinkHref="/register"
       >
-        {/* Google Single Click Sign-In */}
-        <AuthGoogleButton
-          onClick={handleGoogleLogin}
-          text="Continue with Google"
-        />
-
-        {/* Apple-style Subtle Divider */}
-        <div className={styles.divider}>
-          <div className={styles.dividerLine} />
-          <span className={styles.dividerText}>or</span>
-          <div className={styles.dividerLine} />
+        <div className={styles.loginMethods} role="group" aria-label="Sign-in method">
+          {(['otp', 'password'] as const).map(value => (
+            <button type="button" key={value} aria-pressed={method === value}
+              disabled={isSubmitting}
+              className={`${styles.segmentedTab} ${method === value ? styles.segmentedTabActive : ''}`}
+              onClick={() => {
+                setMethod(value); setError('');
+              }}>
+              {value === 'otp' ? 'Log in with OTP' : 'Log in with password'}
+            </button>
+          ))}
         </div>
 
-        {/* Email & Password Form */}
+        {method === 'otp' ? <EmailOtpLogin email={otpEmail} onEmailChange={email => setValue('email', email)} onSuccess={completeSignIn} /> : (
         <form onSubmit={handleSubmit(onSubmit)} className={styles.form} noValidate>
           <AuthInput
             id="login-email"
@@ -189,6 +197,11 @@ function LoginContent() {
             )}
           </button>
         </form>
+        )}
+        <div className={styles.divider}>
+          <div className={styles.dividerLine} /><span className={styles.dividerText}>or</span><div className={styles.dividerLine} />
+        </div>
+        <AuthGoogleButton onClick={handleGoogleLogin} text="Continue with Google" />
       </AuthCard>
 
       {/* iOS Modal for Forgot Password */}

@@ -3,6 +3,35 @@ import { z } from 'zod';
 import { validateBody, validateQuery, validateParams } from '../validation.js';
 
 describe('Validation Middleware', () => {
+  it('uses an optional generic invalid-body response without calling the handler', () => {
+    const req = { body: { email: 'invalid' } };
+    const res = {};
+    const next = vi.fn();
+    const onInvalid = vi.fn();
+    validateBody(z.object({ email: z.string().email() }), { onInvalid })(req, res, next);
+    expect(onInvalid).toHaveBeenCalledExactlyOnceWith(req, res);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('normalizes and strips the body before continuing without invoking the invalid callback', () => {
+    const req = { body: { email: ' Alice@Example.com ', extra: 'discard' } };
+    const next = vi.fn();
+    const onInvalid = vi.fn();
+    validateBody(z.object({ email: z.string().trim().email().toLowerCase() }), { onInvalid })(req, {}, next);
+    expect(req.body).toEqual({ email: 'alice@example.com' });
+    expect(next).toHaveBeenCalledOnce();
+    expect(onInvalid).not.toHaveBeenCalled();
+  });
+
+  it('forwards unexpected schema errors even when an invalid-body callback exists', () => {
+    const error = new Error('Unexpected failure');
+    const schema = { parse: () => { throw error; } };
+    const next = vi.fn();
+    const onInvalid = vi.fn();
+    validateBody(schema, { onInvalid })({ body: {} }, {}, next);
+    expect(next).toHaveBeenCalledWith(error);
+    expect(onInvalid).not.toHaveBeenCalled();
+  });
   const userSchema = z.object({
     email: z.string().email(),
     age: z.number().min(18),

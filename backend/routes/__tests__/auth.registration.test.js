@@ -5,21 +5,24 @@ import { afterAll, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   insert: vi.fn(), find: vi.fn(), lock: vi.fn(), unlock: vi.fn(),
   send: vi.fn(), session: vi.fn(), log: vi.fn(), verify: vi.fn(), replace: vi.fn(), authResult: null,
+  issueReset: vi.fn(), consumeReset: vi.fn(), revokeUser: vi.fn(), hash: vi.fn(),
 }));
 vi.mock('../firebaseAuth.routes.js', () => ({ default: express.Router() }));
 vi.mock('../../auth/passport.js', () => ({ default: { authenticate: (_strategy, _options, callback) => (_req, _res, next) => callback ? callback(...mocks.authResult) : next() } }));
-vi.mock('bcryptjs', () => ({ default: { hash: vi.fn().mockResolvedValue('password-hash') } }));
+vi.mock('bcryptjs', () => ({ default: { hash: mocks.hash } }));
 vi.mock('../../auth/jwt.js', () => ({
   verifyToken: vi.fn(), verifyRefreshToken: () => ({ exp: Math.floor(Date.now() / 1000) + 3600 }),
 }));
 vi.mock('../../auth/sessions.js', () => ({
   createSession: mocks.session, rotateSession: vi.fn(), revokeSession: vi.fn(),
+  revokeUserSessions: mocks.revokeUser,
 }));
 vi.mock('../../repositories/authRegistrationRepository.js', () => ({
   insertRegisteredUser: mocks.insert, findUserByEmail: mocks.find,
   acquireRegistrationLock: mocks.lock, releaseRegistrationLock: mocks.unlock,
   verifyLocalUserEmailByTokenHash: mocks.verify,
   replaceEmailVerificationToken: mocks.replace,
+  issuePasswordResetToken: mocks.issueReset, consumePasswordResetToken: mocks.consumeReset,
 }));
 vi.mock('../../services/email/emailService.js', () => ({ sendEmail: mocks.send }));
 vi.mock('../../infrastructure/runtimeLog.js', () => ({ runtimeLog: { error: mocks.log, warn: vi.fn() } }));
@@ -43,6 +46,10 @@ beforeEach(() => {
   mocks.session.mockResolvedValue({ token: 'access-token', refreshToken: 'refresh-token' });
   mocks.verify.mockResolvedValue({ modifiedCount: 1 });
   mocks.replace.mockResolvedValue(null);
+  mocks.issueReset.mockResolvedValue(null);
+  mocks.consumeReset.mockResolvedValue(null);
+  mocks.revokeUser.mockResolvedValue(undefined);
+  mocks.hash.mockResolvedValue('password-hash');
   mocks.authResult = [null, false, { message: 'Invalid email or password' }];
 });
 
@@ -116,7 +123,7 @@ it.each([{}, { token: '' }, { token: '   ' }, { token: 123 }, { token: {} }, { t
   'rejects malformed verification input %j before querying persistence', async (body) => {
     const response = await verify(body);
     expect(response.status).toBe(400);
-    expect((await response.json()).code).toBe('INVALID_VERIFICATION_TOKEN');
+    expect(await response.json()).toEqual({ error: 'Validation failed', details: expect.arrayContaining([expect.objectContaining({ field: 'token' })]) });
     expect(mocks.verify).not.toHaveBeenCalled();
   }
 );
@@ -223,4 +230,116 @@ it.each(['database', 'provider'])('hides %s failures and does not log secrets', 
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual(genericResendMessage);
   expect(mocks.log).toHaveBeenCalledWith('Resend verification email failed');
+});
+
+const forgotResponse = { message: 'If an account exists for this email, password reset instructions will be sent.' };
+const postRecovery = (path, body) => fetch(`${baseUrl}/auth/${path}`, {
+  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+});
+
+it('issues a 15-minute hashed reset token and emails only the raw token', async () => {
+  mocks.issueReset.mockResolvedValue({ id: 'alice', email: 'alice@example.test' });
+  const before = Date.now();
+  const response = await postRecovery('forgot-password', { email: ' Alice@Example.test ' });
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual(forgotResponse);
+  expect(response.headers.get('cache-control')).toBe('no-store');
+  const email = mocks.send.mock.calls[0][0];
+  const url = new URL(email.text.slice('Reset your Meow password: '.length));
+  const token = url.searchParams.get('token');
+  expect(token).toMatch(/^[a-f0-9]{64}$/);
+  expect(url.pathname).toBe('/reset-password');
+  const issued = mocks.issueReset.mock.calls[0][0];
+  expect(issued.email).toBe('alice@example.test');
+  expect(issued.tokenHash).toBe(createHash('sha256').update(token).digest('hex'));
+  expect(JSON.stringify(issued)).not.toContain(token);
+  expect(issued.expiresAt.getTime()).toBeGreaterThanOrEqual(before + 900000);
+  expect(issued.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + 900000);
+  expect(email.subject).toBe('Reset your Meow password');
+  expect(email.html).toContain('This password reset link expires in 15 minutes.');
+  expect(email.to).toBe('alice@example.test');
+  expect(mocks.session).not.toHaveBeenCalled();
+});
+
+it('returns a generic response for unknown, OAuth, or cooldown accounts without sending', async () => {
+  const response = await postRecovery('forgot-password', { email: 'unknown@example.test' });
+  expect(response.status).toBe(200);
+  expect(response.headers.get('cache-control')).toBe('no-store');
+  expect(await response.json()).toEqual(forgotResponse);
+  expect(mocks.send).not.toHaveBeenCalled();
+});
+
+it.each([{}, { email: 123 }, { email: {} }, { email: '' }, { email: 'invalid' }, { email: 'a'.repeat(255) }])(
+  'returns generic recovery output for invalid input %j', async body => {
+    const response = await postRecovery('forgot-password', body);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(forgotResponse);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(mocks.issueReset).not.toHaveBeenCalled();
+  }
+);
+
+it.each(['database', 'provider'])('hides forgot-password %s failures and never logs secrets', async failure => {
+  if (failure === 'database') mocks.issueReset.mockRejectedValue(new Error('secret query'));
+  else {
+    mocks.issueReset.mockResolvedValue({ id: 'alice', email: 'alice@example.test' });
+    mocks.send.mockRejectedValue(new Error('secret link'));
+  }
+  const response = await postRecovery('forgot-password', { email: 'alice@example.test' });
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual(forgotResponse);
+  expect(mocks.log).toHaveBeenCalledWith('Forgot password error');
+});
+
+it('consumes the hash, revokes all user sessions, clears the cookie, and issues no session', async () => {
+  mocks.consumeReset.mockResolvedValue({ id: 'alice', email: 'alice@example.test' });
+  const response = await postRecovery('reset-password', { token: '  secret-token  ', password: 'NewPassword123!' });
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ message: 'Password changed successfully' });
+  expect(mocks.hash).toHaveBeenCalledWith('NewPassword123!', 12);
+  expect(mocks.consumeReset).toHaveBeenCalledWith({
+    tokenHash: createHash('sha256').update('secret-token').digest('hex'), passwordHash: 'password-hash',
+  });
+  expect(mocks.revokeUser).toHaveBeenCalledWith('alice', 'password-reset');
+  expect(mocks.consumeReset.mock.invocationCallOrder[0]).toBeLessThan(mocks.revokeUser.mock.invocationCallOrder[0]);
+  expect(response.headers.get('set-cookie')).toContain('refreshToken=;');
+  expect(response.headers.get('set-cookie')).toContain('HttpOnly');
+  expect(mocks.session).not.toHaveBeenCalled();
+});
+
+it.each([
+  {}, { token: {}, password: 'password' }, { token: ' ', password: 'password' },
+  { token: 'a'.repeat(257), password: 'password' }, { token: 'token', password: 123 },
+  { token: 'token', password: 'short' }, { token: 'token', password: 'a'.repeat(129) },
+  { token: 'token', password: 'a'.repeat(73) }, { token: 'token', password: '😀'.repeat(19) },
+])('rejects invalid reset input %j before hashing or querying persistence', async body => {
+  const response = await postRecovery('reset-password', body);
+  expect(response.status).toBe(400);
+  expect(await response.json()).toEqual({ error: 'Validation failed', details: expect.any(Array) });
+  expect(mocks.hash).not.toHaveBeenCalled();
+  expect(mocks.consumeReset).not.toHaveBeenCalled();
+  expect(mocks.revokeUser).not.toHaveBeenCalled();
+});
+
+it('rejects expired or reused tokens without revoking sessions', async () => {
+  const response = await postRecovery('reset-password', { token: 'invalid-token', password: 'password' });
+  expect(response.status).toBe(400);
+  expect(await response.json()).toEqual({
+    error: 'Password reset link is invalid or has expired',
+    code: 'INVALID_OR_EXPIRED_RESET_TOKEN',
+  });
+  expect(mocks.revokeUser).not.toHaveBeenCalled();
+});
+
+it.each(['hash', 'database', 'revocation'])('does not report success after a reset %s failure', async failure => {
+  if (failure === 'hash') mocks.hash.mockRejectedValue(new Error('secret password'));
+  if (failure === 'database') mocks.consumeReset.mockRejectedValue(new Error('secret hash'));
+  if (failure === 'revocation') {
+    mocks.consumeReset.mockResolvedValue({ id: 'alice' });
+    mocks.revokeUser.mockRejectedValue(new Error('secret session'));
+  }
+  const response = await postRecovery('reset-password', { token: 'secret-token', password: 'password' });
+  expect(response.status).toBe(500);
+  expect(await response.json()).toEqual({ error: 'Unable to reset password' });
+  expect(mocks.log).toHaveBeenCalledWith('Password reset error');
 });

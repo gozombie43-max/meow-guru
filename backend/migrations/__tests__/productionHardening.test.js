@@ -33,7 +33,7 @@ describe('003 production hardening migration', () => {
       expect.objectContaining({
         collection: 'registrationLocks',
         keys: { createdAt: 1 },
-        options: expect.objectContaining({ expireAfterSeconds: 900 }),
+        options: expect.objectContaining({ expireAfterSeconds: 600 }),
       }),
     ]));
   });

@@ -1,9 +1,11 @@
 'use client';
 
 import { Dialog } from "@/components/ui/Dialog";
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Mail, X, CheckCircle2 } from 'lucide-react';
 import styles from './auth.module.css';
+import api from '@/shared/api/client';
+import { emailPattern } from './validation';
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -11,19 +13,45 @@ interface ForgotPasswordModalProps {
 }
 
 export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProps) {
+  return isOpen ? <ForgotPasswordContent onClose={onClose} /> : null;
+}
+
+function ForgotPasswordContent({ onClose }: Pick<ForgotPasswordModalProps, 'onClose'>) {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
+  const requestRef = useRef<AbortController | null>(null);
 
-  if (!isOpen) return null;
+  useEffect(() => () => requestRef.current?.abort(), []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !email.includes('@')) return;
-    setSent(true);
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || normalizedEmail.length > 254 || !emailPattern.test(normalizedEmail) || sending || requestRef.current) return;
+    const controller = new AbortController();
+    requestRef.current = controller;
+    setSending(true);
+    setError('');
+    try {
+      await api.post('/auth/forgot-password', { email: normalizedEmail }, { signal: controller.signal });
+      if (!controller.signal.aborted) setSent(true);
+    } catch {
+      if (!controller.signal.aborted) setError('Unable to send reset instructions right now. Please try again.');
+    } finally {
+      if (!controller.signal.aborted) {
+        requestRef.current = null;
+        setSending(false);
+      }
+    }
   };
 
   const handleClose = () => {
+    requestRef.current?.abort();
+    requestRef.current = null;
     setSent(false);
+    setSending(false);
+    setError('');
     setEmail('');
     onClose();
   };
@@ -50,7 +78,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
               <span style={{ fontWeight: 600, fontSize: 14 }}>Check your inbox</span>
             </div>
             <p className={styles.modalDescription}>
-              If an account is associated with <strong>{email}</strong>, we've sent instructions to reset your password.
+              If an account is associated with <strong>{email.trim().toLowerCase()}</strong>, we've sent instructions to reset your password.
             </p>
             <div className={styles.modalActions}>
               <button data-ui-button="primary"
@@ -78,15 +106,18 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                 </span>
                 <input
                   id="recovery-email"
+                  aria-label="Email address"
                   type="email"
                   required
+                  disabled={sending}
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={styles.inputField}
-                 aria-label="name@example.com"/>
+                />
               </div>
             </div>
+            {error && <p role="alert" className={styles.modalDescription}>{error}</p>}
             <div className={styles.modalActions}>
               <button data-ui-button="secondary"
                 type="button"
@@ -98,8 +129,9 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
               <button data-ui-button="primary"
                 type="submit"
                 className={styles.modalSubmitBtn}
+                disabled={sending}
               >
-                Send Link
+                {sending ? 'Sending…' : 'Send Link'}
               </button>
             </div>
           </form>

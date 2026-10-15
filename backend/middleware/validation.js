@@ -3,13 +3,16 @@ import { ZodError } from 'zod';
 
 /**
  * Express middleware generator to validate request body using a Zod schema.
+ * @param {import('zod').ZodType} schema
+ * @param {{ onInvalid?: (req: import('express').Request, res: import('express').Response) => unknown }} [options]
  */
-export const validateBody = (schema) => (req, res, next) => {
+export const validateBody = (schema, { onInvalid } = {}) => (req, res, next) => {
   try {
     req.body = schema.parse(req.body);
     next();
   } catch (err) {
     if (err instanceof ZodError) {
+      if (onInvalid) return onInvalid(req, res);
       return res.status(400).json({
         error: 'Validation failed',
         details: err.issues.map((issue) => ({

@@ -5,6 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import styles from './auth.module.css';
 
 interface AuthInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  ref?: React.Ref<HTMLInputElement>;
   id: string;
   label: string;
   icon?: React.ReactNode;

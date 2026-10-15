@@ -1,3 +1,5 @@
+import { ensureRegistrationLockExpiry } from './registrationLockExpiry.js';
+
 export const id = '003-production-hardening';
 
 export async function up(db) {
@@ -30,8 +32,5 @@ export async function up(db) {
     { expiresAt: 1 },
     { expireAfterSeconds: 0, name: 'adaptive_session_expiry' },
   );
-  await db.collection('registrationLocks').createIndex(
-    { createdAt: 1 },
-    { expireAfterSeconds: 900, name: 'registration_lock_expiry' },
-  );
+  await ensureRegistrationLockExpiry(db);
 }

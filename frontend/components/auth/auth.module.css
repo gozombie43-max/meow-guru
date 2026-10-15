@@ -333,6 +333,82 @@
   box-shadow: var(--ios-segmented-shadow);
 }
 
+.loginMethods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 5px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  background: var(--ios-segmented-bg);
+}
+
+.loginMethods button {
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.loginMethods .segmentedTabActive {
+  background: var(--ios-segmented-active);
+}
+
+.loginMethods button:focus-visible,
+.otpResend:focus-visible {
+  outline: 2px solid var(--ios-blue);
+  outline-offset: 2px;
+}
+
+.otpNotice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ios-secondary);
+  overflow-wrap: anywhere;
+}
+
+.otpNotice strong {
+  color: var(--ios-text);
+  font-weight: 600;
+}
+
+.otpHelp {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ios-secondary);
+}
+
+.otpInput {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: 6px;
+}
+
+.otpResend {
+  align-self: center;
+  padding: 10px;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--ios-blue);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.otpResend:disabled {
+  color: var(--ios-secondary);
+  cursor: default;
+}
+
 /* =========================================================================
    GOOGLE SOCIAL AUTH BUTTON
    ========================================================================= */

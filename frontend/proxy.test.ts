@@ -12,13 +12,13 @@ describe('monitoring access through the proxy', () => {
     expect(response.headers.get('x-middleware-next')).toBe('1');
   });
 
-  it.each(['/check-email', '/verify-email?token=test-token'])('allows email verification pages without an access cookie: %s', path => {
+  it.each(['/check-email', '/verify-email?token=test-token', '/reset-password?token=test-token'])('allows email verification pages without an access cookie: %s', path => {
     const response = proxy(new NextRequest(`http://localhost${path}`));
     expect(response.headers.get('location')).toBeNull();
     expect(response.headers.get('x-middleware-next')).toBe('1');
   });
 
-  it.each(['/play', '/monitoring-other', '/check-email-other', '/verify-email-other'])('retains the access gate on %s', path => {
+  it.each(['/play', '/monitoring-other', '/check-email-other', '/verify-email-other', '/reset-password-other'])('retains the access gate on %s', path => {
     expect(unstable_doesMiddlewareMatch({ config, nextConfig: {}, url: path })).toBe(true);
     expect(proxy(new NextRequest(`http://localhost${path}`)).headers.get('location')).toBe('http://localhost/access-code');
   });
