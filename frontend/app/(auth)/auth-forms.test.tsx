@@ -40,16 +40,16 @@ describe('authentication forms', () => {
     expect(screen.getByRole('button', { name: 'Log in with OTP' })).toHaveAttribute('aria-pressed', 'true');
     await user.type(screen.getByLabelText('Email'), 'Learner@Example.com');
     await user.click(screen.getByRole('button', { name: 'Send code' }));
-    expect(mocks.post).toHaveBeenCalledWith('/auth/email-otp/request', { email: 'learner@example.com' }, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    await waitFor(() => expect(mocks.post).toHaveBeenCalledWith('/auth/email-otp/request', { email: 'learner@example.com' }, expect.objectContaining({ signal: expect.any(AbortSignal) })));
     const input = await screen.findByLabelText('6-digit code');
     expect(input).toHaveAttribute('autocomplete', 'one-time-code');
     expect(input).toHaveFocus();
     expect(screen.getByRole('button', { name: /Resend in/ })).toBeDisabled();
     await user.type(input, '012345');
     await user.click(screen.getByRole('button', { name: 'Verify & sign in' }));
-    expect(mocks.post).toHaveBeenLastCalledWith('/auth/email-otp/verify', {
+    await waitFor(() => expect(mocks.post).toHaveBeenLastCalledWith('/auth/email-otp/verify', {
       email: 'learner@example.com', challengeId, code: '012345',
-    }, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    }, expect.objectContaining({ signal: expect.any(AbortSignal) })));
     await waitFor(() => expect(mocks.login).toHaveBeenCalledWith('test-token'));
     expect(mocks.replace).toHaveBeenCalledWith('/');
   });
@@ -61,6 +61,7 @@ describe('authentication forms', () => {
     render(<LoginPage />);
     await user.type(screen.getByLabelText('Email'), 'learner@example.com');
     await user.click(screen.getByRole('button', { name: 'Send code' }));
+    await waitFor(() => expect(mocks.post).toHaveBeenCalledOnce());
     const signal = mocks.post.mock.calls[0][2].signal;
     await user.click(screen.getByRole('button', { name: 'Log in with password' }));
     expect(signal.aborted).toBe(true);

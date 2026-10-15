@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { requestEmailOtpSchema, verifyEmailOtpSchema } from '@meow/contracts/auth';
 import { ArrowRight, Mail, ShieldCheck } from 'lucide-react';
 import api from '@/shared/api/client';
 import AuthInput from './AuthInput';
@@ -32,14 +31,17 @@ export default function EmailOtpLogin({ email, onEmailChange, onSuccess }: Email
   useEffect(() => { if (challengeId) codeInput.current?.focus(); }, [challengeId]);
 
   const sendCode = async () => {
-    const parsed = requestEmailOtpSchema.safeParse({ email });
-    if (!parsed.success) { setError('Enter a valid email address.'); return; }
     const controller = new AbortController();
     request.current?.abort();
     request.current = controller;
     setPending(true);
     setError('');
     try {
+      // Keep shared Zod validation out of the initial sign-in bundle.
+      const { requestEmailOtpSchema } = await import('@meow/contracts/auth');
+      if (controller.signal.aborted) return;
+      const parsed = requestEmailOtpSchema.safeParse({ email });
+      if (!parsed.success) { setError('Enter a valid email address.'); return; }
       const { data } = await api.post('/auth/email-otp/request', parsed.data, { signal: controller.signal });
       if (controller.signal.aborted) return;
       onEmailChange(parsed.data.email);
@@ -58,13 +60,15 @@ export default function EmailOtpLogin({ email, onEmailChange, onSuccess }: Email
     event.preventDefault();
     if (pending) return;
     if (!challengeId) { await sendCode(); return; }
-    const parsed = verifyEmailOtpSchema.safeParse({ email, challengeId, code });
-    if (!parsed.success) { setError('Enter the 6-digit code from your email.'); return; }
     const controller = new AbortController();
     request.current = controller;
     setPending(true);
     setError('');
     try {
+      const { verifyEmailOtpSchema } = await import('@meow/contracts/auth');
+      if (controller.signal.aborted) return;
+      const parsed = verifyEmailOtpSchema.safeParse({ email, challengeId, code });
+      if (!parsed.success) { setError('Enter the 6-digit code from your email.'); return; }
       const { data } = await api.post('/auth/email-otp/verify', parsed.data, { signal: controller.signal });
       if (!controller.signal.aborted) await onSuccess(data.token, parsed.data.email);
     } catch (failure) {
