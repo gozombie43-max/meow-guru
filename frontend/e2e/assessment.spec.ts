@@ -30,7 +30,7 @@ test('authenticated assessment survives reload and submits without leaking answe
   const profile = page.waitForResponse(response => response.url().endsWith('/users/me') && response.ok());
   await page.goto('/mock-test/ssc-cgl/browser-test');
   await profile;
-  await page.getByRole('button', { name: /Start Test/ }).click();
+  await page.getByRole('button', { name: 'Start Mock Test', exact: true }).click();
   await expect(page.getByRole('radio').nth(1)).toBeVisible();
   expect(startup).toEqual({ posts: 1, attemptReads: 0 });
   await page.getByRole('radio').nth(1).check();

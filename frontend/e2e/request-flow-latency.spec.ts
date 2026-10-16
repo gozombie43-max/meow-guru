@@ -135,7 +135,7 @@ test('measure real local request flows through the Next rewrite', async ({ brows
       await measure('mock_exam', { selector: 'h3', text: 'Browser assessment' }, () => page.locator('a[href="/mock-test/ssc-cgl"]').first().click());
       await history;
       await measure('mock_instructions', { selector: 'h1', newDocument: true }, () => page.goto('/mock-test/ssc-cgl/browser-test', { waitUntil: 'domcontentloaded' }));
-      await measure('start_mock', { selector: 'input[type="radio"]' }, () => page.getByRole('button', { name: /Start Test/ }).click());
+      await measure('start_mock', { selector: 'input[type="radio"]' }, () => page.getByRole('button', { name: 'Start Mock Test', exact: true }).click());
       await expect(page.getByRole('radio').nth(1)).toBeVisible();
       await page.waitForTimeout(700); // Include coalesced persistence in request counts, outside UI timings.
       expect(api.filter(row => row.status && row.status >= 500)).toEqual([]);
