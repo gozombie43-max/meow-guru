@@ -150,7 +150,7 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
             onClick={handleStart}
             disabled={loading}
           >
-            {loading ? 'Preparing Test Paper...' : isResume ? 'Resume Test' : 'I am Ready — Start Test'}
+            {loading ? 'Preparing Mock Test…' : isResume ? 'Resume Mock Test' : 'Start Mock Test'}
           </button>
         </div>
       </div>

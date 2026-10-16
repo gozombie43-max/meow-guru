@@ -1192,6 +1192,59 @@
   .quiz-chatbot-shell .tutor-send-btn.ready { box-shadow: none; }
 
 /* Dev overlay suppression when tutor modal is active */
+.quiz-chatbot-shell .tutor-input-bar {
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.quiz-chatbot-shell .tutor-input-capsule {
+  min-height: 44px;
+  padding: 5px 6px 5px 14px;
+  border-radius: 22px;
+  align-items: flex-end;
+}
+
+.quiz-chatbot-shell .tutor-input-capsule:focus-within {
+  outline: 1px solid var(--gr);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+.quiz-chatbot-shell .tutor-textarea {
+  box-sizing: border-box;
+  min-height: 32px;
+  max-height: 120px;
+  padding: 4px 0;
+  font-size: 16px;
+  line-height: 24px;
+  overflow-y: auto;
+  caret-color: var(--ios-system-blue, #007aff);
+}
+
+.quiz-chatbot-shell .tutor-textarea::placeholder {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.quiz-chatbot-shell .tutor-plus-btn {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
+  max-width: 44px !important;
+  max-height: 44px !important;
+}
+
+.quiz-chatbot-shell .tutor-send-btn {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  margin-bottom: 0;
+}
+
 body.tutor-modal-open nextjs-portal,
 body.tutor-modal-open [data-nextjs-toast-wrapper],
 body.tutor-modal-open [data-next-badge-root] {

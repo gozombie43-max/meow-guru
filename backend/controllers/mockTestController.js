@@ -1,4 +1,5 @@
 import { runtimeLog } from '../infrastructure/runtimeLog.js';
+import { fetchSlotPage } from '../services/mock/mockSlotService.js';
 import { v4 as uuidv4 } from 'uuid';
 import { activePaper } from '../services/mockTestPresentation.js';
 import { validateAssessment } from '../services/assessmentPolicy.js';
@@ -54,6 +55,16 @@ function presentAttempt(doc) {
 export const fetchExamSlots = async (req, res) => {
   try {
     const { examSlug } = req.params;
+    if (req.query.catalog === '1') {
+      const offset = Number(req.query.offset || 0);
+      const limit = Number(req.query.limit ?? 20);
+      const kind = req.query.kind || 'mock';
+      const tier = req.query.tier || '';
+      if (!Number.isSafeInteger(offset) || offset < 0 || !Number.isInteger(limit) || limit < 0 || limit > 50 || !['mock', 'pyq'].includes(kind) || typeof tier !== 'string' || tier.length > 100) {
+        return res.status(400).json({ error: 'Invalid catalog pagination' });
+      }
+      return res.json(await fetchSlotPage(examSlug, { offset, limit, kind, tier }));
+    }
     const slots = await fetchSlotsForExam(examSlug);
     res.json({ slots });
   } catch (err) {

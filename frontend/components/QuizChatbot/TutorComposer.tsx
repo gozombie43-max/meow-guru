@@ -30,7 +30,7 @@ export function TutorComposer({ ref, initialDraft, isLoading, currentContent, is
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(Math.max(textareaRef.current.scrollHeight, 26), 120)}px`;
+      textareaRef.current.style.height = `${Math.min(Math.max(textareaRef.current.scrollHeight, 32), 120)}px`;
     }
   }, [input]);
   const handleSend = () => {
@@ -59,7 +59,7 @@ export function TutorComposer({ ref, initialDraft, isLoading, currentContent, is
           <Plus className="w-4 h-4" strokeWidth={2.2} />
         </button>
         <div className="tutor-input-capsule">
-          <textarea ref={textareaRef} className="tutor-textarea" value={input}
+          <textarea ref={textareaRef} className="tutor-textarea" data-custom-focus value={input}
             onChange={event => setInput(event.target.value)}
             onKeyDown={event => {
               if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {

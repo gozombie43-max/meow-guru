@@ -160,8 +160,8 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
 
         {/* Actions */}
         <div className={styles.actions}>
-          {data.assessmentMode !== 'confidential' && <button data-ui-button="primary" className={styles.btnPrimary} onClick={handleReview}>Review Questions & Solutions</button>}
-          {data.assessmentMode !== 'confidential' && <button data-ui-button="secondary" className={styles.btnOutline} onClick={handleRetake}>Retake Test</button>}
+          {data.assessmentMode !== 'confidential' && <button data-ui-button="primary" className={styles.btnPrimary} onClick={handleReview}>Review Answers</button>}
+          {data.assessmentMode !== 'confidential' && <button data-ui-button="secondary" className={styles.btnOutline} onClick={handleRetake}>Retake Mock</button>}
           {data.assessmentMode === 'confidential' && <p>Confidential assessment: one attempt per candidate. Answer review is disabled.</p>}
           <button data-ui-button="secondary" className={styles.btnOutline} onClick={handleBack}>All Tests</button>
         </div>

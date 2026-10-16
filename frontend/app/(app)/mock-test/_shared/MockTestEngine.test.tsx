@@ -117,7 +117,7 @@ describe('creation response handoff', () => {
   });
   it('uses one keyed POST through instructions and no attempt GET, including effect replay', async () => {
     await act(async () => { render(<TestInstructions examSlug="ssc-cgl" testId="test" />); });
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: /Start Test/ })));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: /Start Mock Test/ })));
     expect(startTest).toHaveBeenCalledExactlyOnceWith('ssc-cgl', 'test', 'test-token', expect.any(String));
     expect(push).toHaveBeenCalledWith('/mock-test/ssc-cgl/test/attempt?resume=attempt');
     cleanup();
@@ -145,8 +145,8 @@ describe('creation response handoff', () => {
     vi.spyOn(window, 'alert').mockImplementation(() => {});
     vi.mocked(startTest).mockRejectedValueOnce(new Error('Response lost'));
     await act(async () => { render(<TestInstructions examSlug="ssc-cgl" testId="test" />); });
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: /Start Test/ })));
-    await act(async () => fireEvent.click(screen.getByRole('button', { name: /Start Test/ })));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: /Start Mock Test/ })));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: /Start Mock Test/ })));
     const keys = vi.mocked(startTest).mock.calls.map(call => call[3]);
     expect(keys[0]).toBe(keys[1]);
     expect(getMockStartKey('student', 'ssc-cgl', 'test')).toBe(keys[0]);

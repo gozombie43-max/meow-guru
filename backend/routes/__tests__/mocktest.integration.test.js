@@ -23,6 +23,35 @@ async function start() {
   expect(response.status).toBe(201);
   return response.json();
 }
+
+describe('paged mock catalog', () => {
+  it('returns saved-count metadata separately and pages over 100 papers without leaking questions', async () => {
+    await db.collection('mockSlots').insertMany(Array.from({ length: 125 }, (_, i) => ({
+      id: `paged-${String(i).padStart(3, '0')}`, examSlug: 'paged-exam', order: Math.floor(i / 2),
+      tier: i < 105 ? 'Tier I' : 'Tier II', type: i < 105 ? 'mock' : 'pyq',
+      fixedQuestions: [{ correctAnswer: 'secret' }],
+    })));
+    const metadata = await (await request('/paged-exam/slots?catalog=1&limit=0')).json();
+    expect(metadata.slots).toEqual([]);
+    expect(metadata.metadata).toEqual({ mockCount: 105, pyqCount: 20, tiers: ['Tier I', 'Tier II'] });
+    const ids = [];
+    let offset = 0;
+    do {
+      const page = await (await request(`/paged-exam/slots?catalog=1&kind=mock&tier=Tier%20I&offset=${offset}&limit=20`)).json();
+      expect(page.slots.length).toBeLessThanOrEqual(20);
+      expect(JSON.stringify(page)).not.toContain('secret');
+      expect(page.slots[0].questionCount).toBe(1);
+      ids.push(...page.slots.map(slot => slot.id));
+      offset = page.nextOffset;
+    } while (offset !== null);
+    expect(ids).toHaveLength(105);
+    expect(new Set(ids).size).toBe(105);
+    const pyqs = await (await request('/paged-exam/slots?catalog=1&kind=pyq&tier=Tier%20II')).json();
+    expect(pyqs.slots).toHaveLength(20);
+    expect(pyqs.nextOffset).toBeNull();
+    expect((await request('/paged-exam/slots?catalog=1&limit=1000')).status).toBe(400);
+  });
+});
 beforeAll(async () => {
   mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
   process.env.MONGODB_URI = mongo.getUri();

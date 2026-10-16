@@ -8,6 +8,7 @@ import { Layers } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import styles from './page.module.css';
+import { examLogos } from './_shared/exam-logos';
 
 type ExamType = 'ssc' | 'rrb' | 'banking' | 'upsc' | 'defence' | 'other';
 
@@ -24,77 +25,6 @@ type ExamCard = {
   logoBackground?: string;
   logoTextColor?: string;
   logoTextSize?: string;
-};
-
-const svgToDataUri = (svg: string) => `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-
-const makeTextLogo = (label: string, background: string, accent: string) => svgToDataUri(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="${label} logo">
-    <defs>
-      <linearGradient id="${label.toLowerCase()}Bg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="${background}" />
-        <stop offset="100%" stop-color="${accent}" />
-      </linearGradient>
-    </defs>
-    <rect width="160" height="160" rx="28" fill="url(#${label.toLowerCase()}Bg)" />
-    <circle cx="80" cy="62" r="34" fill="#ffffff" opacity="0.12" />
-    <path d="M40 112h80" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity="0.9" />
-    <text x="80" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="800" fill="#ffffff" letter-spacing="1.5">${label}</text>
-  </svg>
-`);
-
-const logos: Record<string, string> = {
-  ssc: '/images/ssc-logo.webp',
-  rrb: '/images/rrb-logo.webp',
-  sbi: '/images/sbi-logo.webp',
-  ibps: '/images/ibps-logo.webp',
-  cat: '/images/cat-logo.webp',
-  banking: '/images/sbi-logo.webp',
-  upsc: svgToDataUri(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="UPSC logo">
-      <defs>
-        <linearGradient id="upscBg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#9a3412" />
-          <stop offset="100%" stop-color="#c2410c" />
-        </linearGradient>
-      </defs>
-      <rect width="160" height="160" rx="28" fill="url(#upscBg)" />
-      <circle cx="80" cy="58" r="24" fill="#fde68a" opacity="0.9" />
-      <path d="M80 34l7 20h21l-17 12 7 20-18-12-18 12 7-20-17-12h21z" fill="#fff7ed" opacity="0.95" />
-      <text x="80" y="118" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="800" fill="#fff7ed" letter-spacing="1.5">UPSC</text>
-    </svg>
-  `),
-  uppsc: svgToDataUri(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="UPPSC logo">
-      <defs>
-        <linearGradient id="uppscBg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#047857" />
-          <stop offset="100%" stop-color="#064e3b" />
-        </linearGradient>
-      </defs>
-      <rect width="160" height="160" rx="28" fill="url(#uppscBg)" />
-      <circle cx="80" cy="58" r="30" fill="#34d399" opacity="0.2" />
-      <path d="M52 58h56M80 36v44" stroke="#a7f3d0" stroke-width="7" stroke-linecap="round" />
-      <circle cx="80" cy="58" r="8" fill="#fef3c7" />
-      <text x="80" y="124" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="800" fill="#ffffff" letter-spacing="1.5">UPPSC</text>
-    </svg>
-  `),
-  wbcs: svgToDataUri(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="WBCS logo">
-      <defs>
-        <linearGradient id="wbcsBg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#0284c7" />
-          <stop offset="100%" stop-color="#0f172a" />
-        </linearGradient>
-      </defs>
-      <rect width="160" height="160" rx="28" fill="url(#wbcsBg)" />
-      <circle cx="80" cy="56" r="28" fill="#38bdf8" opacity="0.2" />
-      <path d="M54 44l26 24 26-24M54 68l26 24 26-24" stroke="#e0f2fe" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
-      <text x="80" y="132" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="800" fill="#ffffff" letter-spacing="1.5">WBCS</text>
-    </svg>
-  `),
-  defence: makeTextLogo('DEFENCE', '#4b5563', '#1f2937'),
-  other: makeTextLogo('CAT', '#7c3aed', '#4338ca'),
 };
 
 const categories = [
@@ -115,7 +45,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Combined Graduate Level',
     type: 'ssc',
     count: '142 Tests',
-    logoUrl: logos.ssc,
+    logoUrl: examLogos['ssc-cgl'],
     logoText: 'SSC',
   },
   {
@@ -124,7 +54,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Higher Secondary (10+2)',
     type: 'ssc',
     count: '84 Tests',
-    logoUrl: logos.ssc,
+    logoUrl: examLogos['ssc-chsl'],
     logoText: 'SSC',
   },
   {
@@ -133,7 +63,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Multi Tasking Staff',
     type: 'ssc',
     count: '48 Tests',
-    logoUrl: logos.ssc,
+    logoUrl: examLogos['ssc-mts'],
     logoText: 'SSC',
   },
   {
@@ -142,7 +72,7 @@ const examCards: ExamCard[] = [
     subtitle: 'General Duty Constable',
     type: 'ssc',
     count: '52 Tests',
-    logoUrl: logos.ssc,
+    logoUrl: examLogos['ssc-gd'],
     logoText: 'SSC',
   },
 
@@ -153,7 +83,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Non-Technical Categories',
     type: 'rrb',
     count: '70 Tests',
-    logoUrl: logos.rrb,
+    logoUrl: examLogos['rrb-ntpc'],
     logoText: 'RRB',
   },
   {
@@ -162,7 +92,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Level 1 Posts Exam',
     type: 'rrb',
     count: '58 Tests',
-    logoUrl: logos.rrb,
+    logoUrl: examLogos['rrb-group-d'],
     logoText: 'RRB',
   },
   {
@@ -171,7 +101,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Junior Engineer Stage 1 & 2',
     type: 'rrb',
     count: '45 Tests',
-    logoUrl: logos.rrb,
+    logoUrl: examLogos['rrb-je'],
     logoText: 'RRB',
   },
 
@@ -182,7 +112,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Probationary Officer',
     type: 'banking',
     count: '96 Tests',
-    logoUrl: logos.ibps,
+    logoUrl: examLogos['ibps-po'],
     logoText: 'IBPS',
   },
   {
@@ -191,7 +121,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Clerical Cadre Exam',
     type: 'banking',
     count: '80 Tests',
-    logoUrl: logos.ibps,
+    logoUrl: examLogos['ibps-clerk'],
     logoText: 'IBPS',
   },
   {
@@ -200,7 +130,7 @@ const examCards: ExamCard[] = [
     subtitle: 'State Bank Probationary Officer',
     type: 'banking',
     count: '110 Tests',
-    logoUrl: logos.sbi,
+    logoUrl: examLogos['sbi-po'],
     logoText: 'SBI',
   },
   {
@@ -209,7 +139,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Junior Associate (Clerk)',
     type: 'banking',
     count: '80 Tests',
-    logoUrl: logos.sbi,
+    logoUrl: examLogos['sbi-clerk'],
     logoText: 'SBI',
   },
 
@@ -220,7 +150,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Civil Services (IAS / IPS)',
     type: 'upsc',
     count: '95 Tests',
-    logoUrl: logos.upsc,
+    logoUrl: examLogos['upsc'],
     logoText: 'UPSC',
   },
   {
@@ -229,7 +159,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Combined State / Subordinate',
     type: 'upsc',
     count: '65 Tests',
-    logoUrl: logos.uppsc,
+    logoUrl: examLogos['uppsc'],
     logoText: 'UPPSC',
   },
   {
@@ -238,7 +168,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Executive & Allied Services',
     type: 'upsc',
     count: '55 Tests',
-    logoUrl: logos.wbcs,
+    logoUrl: examLogos['wbcs'],
     logoText: 'WBCS',
   },
 
@@ -249,7 +179,7 @@ const examCards: ExamCard[] = [
     subtitle: 'National Defence Academy',
     type: 'defence',
     count: '65 Tests',
-    logoUrl: logos.defence,
+    logoUrl: examLogos['nda'],
     logoText: 'NDA',
   },
   {
@@ -258,7 +188,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Combined Defence Services',
     type: 'defence',
     count: '40 Tests',
-    logoUrl: logos.defence,
+    logoUrl: examLogos['cds'],
     logoText: 'CDS',
   },
   {
@@ -267,7 +197,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Common University Entrance',
     type: 'defence',
     count: '50 Tests',
-    logoUrl: logos.other,
+    logoUrl: examLogos['cuet'],
     logoText: 'CUET',
   },
 
@@ -278,7 +208,7 @@ const examCards: ExamCard[] = [
     subtitle: 'Common Admission Test (IIMs)',
     type: 'other',
     count: '120 Tests',
-    logoUrl: logos.cat,
+    logoUrl: examLogos['cat'],
     logoText: 'CAT',
   },
 ];

@@ -168,7 +168,8 @@
   margin-top: 8px;
 }
 
-.actions {
+.actions,
+.footer {
   padding: 24px;
   background: var(--bg);
   display: flex;
@@ -180,12 +181,13 @@
   color: #fff;
   border: none;
   padding: 14px 32px;
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s;
   width: 100%;
+  min-height: 50px;
 }
 
 .startBtn:hover {
@@ -197,11 +199,6 @@
   cursor: not-allowed;
 }
 
-@media (min-width: 600px) {
-  .startBtn {
-    width: auto;
-  }
-}
 
 /* Shared borderless OLED appearance. */
 :global(html.theme-dark) .container {

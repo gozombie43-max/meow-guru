@@ -191,6 +191,16 @@
   flex-direction: column;
 }
 
+.examLogo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+  border-radius: inherit;
+  padding: 2px;
+}
+
 .headerTitleRow {
   display: flex;
   align-items: center;
@@ -288,7 +298,7 @@
   padding: 10px 4px 8px;
   font-size: 12.5px;
   font-weight: 550;
-  color: #9A9CA4;
+  color: var(--text-muted);
   cursor: pointer;
   transition: color 0.15s ease;
   white-space: nowrap;
@@ -298,11 +308,11 @@
 }
 
 .mobileTabBtn:hover {
-  color: #EEEEF1;
+  color: var(--text-dark);
 }
 
 .activeMobileTabBtn {
-  color: #FFFFFF !important;
+  color: var(--text-dark) !important;
   font-weight: 650 !important;
   background: transparent !important;
 }
@@ -313,7 +323,7 @@
   bottom: 0;
   left: 12%;
   right: 12%;
-  height: 2.5px;
+  height: 2px;
   background: var(--ios-system-blue);
   border-radius: 2px;
 }
@@ -328,6 +338,44 @@
 }
 
 /* Test List Cards */
+@media (max-width: 767px) {
+  .testLineCard {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding: 14px !important;
+  }
+
+  .completedStatus {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .scoreWrap { align-self: flex-start; }
+
+  .testLineAction :is(.statusNotStarted, .statusPaused, .analysisBtn)[data-ui-button] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 16px !important;
+    border-radius: 12px !important;
+    border: 0;
+    background: var(--primary) !important;
+    color: #fff !important;
+    font-size: 14px !important;
+    font-weight: 600;
+  }
+}
+
+.loadMore {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
 .testList {
   display: flex;
   flex-direction: column;
@@ -1080,3 +1128,75 @@
 :global(html.theme-dark) .page :is(.tierDropdown) { background: var(--oled-surface); border: 0; border-radius: 999px !important; box-shadow: none; }
 :global(html.theme-dark) .page .testLineCard:hover { background: var(--oled-hover); box-shadow: none; transform: none; }
 :global(html.theme-dark) .page .testLineCard::before { display: none; }
+
+/* Contextual catalog: neutral surfaces, one blue action accent. */
+.page {
+  --catalog-control: #f0f1f3;
+  --catalog-locked: #e9eaed;
+  --catalog-tertiary: #64646c;
+}
+
+.testLineHeader { flex-wrap: nowrap; align-items: baseline; justify-content: space-between; }
+.testLineTitle { flex: 1; font-size: 14px; line-height: 1.4; }
+.freeBadge {
+  flex-shrink: 0;
+  background: transparent;
+  color: var(--catalog-tertiary);
+  padding: 0;
+  font-size: 10px;
+  font-weight: 500;
+}
+.testLineInfo { gap: 5px; }
+.testLineMeta { gap: 0; font-size: 12px; line-height: 1.5; }
+.testLineMeta span + span::before { content: '·'; padding: 0 7px; }
+.lockedCard { opacity: 1; }
+.page .tierDropdown {
+  background: var(--catalog-control);
+  border: 0;
+  color: var(--text-dark);
+  border-radius: 8px;
+  min-height: 32px;
+}
+.page .dropdownChevron { color: var(--text-muted); }
+.page .tierDropdown:hover { background: var(--catalog-locked); }
+.page .scoreWrap, .page .scoreWrap strong { background: transparent; color: var(--text-muted); }
+.page .statusLocked[data-ui-button] {
+  justify-content: center;
+  min-height: 44px;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: var(--catalog-locked) !important;
+  color: var(--text-muted) !important;
+  font-size: 14px;
+  font-weight: 600;
+}
+@media (max-width: 767px) {
+  .page .statusLocked[data-ui-button] { width: 100%; }
+  .page .testLineCard { box-shadow: none; }
+}
+:global(html.theme-dark) .page,
+:global(body.theme-dark) .page {
+  --bg: #000000;
+  --card: #151517;
+  --text-dark: #f5f5f7;
+  --text-muted: #8e8e93;
+  --primary: #0a84ff;
+  --catalog-control: #1c1c1e;
+  --catalog-locked: #222224;
+  --catalog-tertiary: #8e8e93;
+}
+:global(html.theme-dark) .page .testLineCard,
+:global(body.theme-dark) .page .testLineCard { background: #151517; border-color: transparent; }
+:global(html.theme-dark) .page .testLineCard:hover,
+:global(body.theme-dark) .page .testLineCard:hover { background: #1c1c1e; }
+:global(html.theme-dark) .page .mobileTabsNav,
+:global(body.theme-dark) .page .mobileTabsNav { border-color: #242426; }
+:global(html.theme-dark) .page .statusLocked[data-ui-button],
+:global(body.theme-dark) .page .statusLocked[data-ui-button] { color: #d1d1d6 !important; }
+
+:global(html.theme-dark) .page .tierDropdown,
+:global(body.theme-dark) .page .tierDropdown {
+  background: #1c1c1e;
+  color: #f5f5f7;
+  border-radius: 8px !important;
+}

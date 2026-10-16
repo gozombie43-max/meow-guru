@@ -26,6 +26,34 @@ export async function fetchSlotsForExam(examSlug) {
   }
 }
 
+// Paginate in Mongo before computing paper metadata or transferring documents.
+export async function fetchSlotPage(examSlug, { kind = 'mock', tier = '', offset = 0, limit = 20 } = {}) {
+  const pyq = { $or: [{ $eq: ['$isPyq', true] }, { $eq: ['$type', 'pyq'] }] };
+  const filter = { _kind: kind, ...(tier ? { $or: [{ tier }, { tier: { $in: [null, ''] } }] } : {}) };
+  const [result] = await getMockSlotsCollection().aggregate([
+    { $match: { examSlug } },
+    { $set: { _kind: { $cond: [pyq, 'pyq', 'mock'] } } },
+    { $facet: {
+      metadata: [{ $group: { _id: { kind: '$_kind', tier: '$tier' }, count: { $sum: 1 } } }],
+      total: [{ $match: filter }, { $count: 'count' }],
+      slots: limit === 0 ? [{ $match: { $expr: false } }] : [
+        { $match: filter }, { $sort: { order: 1, id: 1 } }, { $skip: offset }, { $limit: limit },
+        { $set: { _fixedCount: { $size: { $cond: [{ $isArray: '$fixedQuestions' }, '$fixedQuestions', []] } } } },
+        { $set: { hasFixedPaper: { $gt: ['$_fixedCount', 0] }, questionCount: { $cond: [{ $gt: ['$_fixedCount', 0] }, '$_fixedCount', { $ifNull: ['$questionCount', 0] }] } } },
+        { $project: { fixedQuestions: 0, _fixedCount: 0, _kind: 0, _id: 0, _cosmosRid: 0 } },
+      ],
+    } },
+  ]).toArray();
+  const metadata = { mockCount: 0, pyqCount: 0, tiers: [] };
+  for (const row of result.metadata) {
+    metadata[row._id.kind === 'pyq' ? 'pyqCount' : 'mockCount'] += row.count;
+    if (row._id.tier && !metadata.tiers.includes(row._id.tier)) metadata.tiers.push(row._id.tier);
+  }
+  metadata.tiers.sort();
+  const total = result.total[0]?.count || 0;
+  return { slots: result.slots.map(summarizeSlot), metadata, total, nextOffset: limit > 0 && offset + limit < total ? offset + limit : null };
+}
+
 export async function fetchAllAdminSlots(
   examFilter = null,
   examMode = undefined
