@@ -29,6 +29,7 @@ import { readStartResponse, clearStartResponse } from '@/lib/start-response-cach
 import { getMockStartKey, mockStartStorageKey } from './startKey';
 import type { MockAttempt } from './api';
 import styles from './MockTestEngine.module.css';
+import { useMockTranslation } from './useMockTranslation';
 // import { getExamConfig, getSlotById } from './exam-config';
 
 function normalizeOption(option: string | MockOption, index: number): MockOption {
@@ -57,6 +58,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const [answers, setAnswers] = useState<Record<string, MockAnswer>>({});
   const [currentSection, setCurrentSection] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const translationSection = paper?.sections[currentSection];
+  const translated = useMockTranslation(translationSection?.questions[currentQuestion], translationSection?.label ?? translationSection?.title ?? '', searchParams?.get('lang') ?? null);
   const [questionStatuses, setQuestionStatuses] = useState<Record<string, QuestionStatus>>({});
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -423,7 +426,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
           <div className={styles.questionContent}>
             <div className={styles.qNumber}>Question {currentQuestion + 1}</div>
-            <div className={styles.qText}>{renderMath(currentQ.text ?? currentQ.question ?? '')}</div>
+            {translated.pending && <p role="status">Translating…</p>}
+            <div className={styles.qText}>{renderMath(translated.texts[0])}</div>
             {(currentQ.image || currentQ.questionImage) && (
               <QuestionImage
                 src={(currentQ.image || currentQ.questionImage)!}
@@ -452,9 +456,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
                       name={`q-${currentQ.id}`}
                       checked={isSelected}
                       onChange={() => handleSelectOption(currentQ.id, currentQ.questionType === 'MSQ' ? isSelected ? selected.filter(value => value !== opt.id) : [...selected, opt.id] : opt.id)}
-                      aria-label={`Answer ${opt.text}`}
+                      aria-label={`Answer ${translated.texts[optionIndex + 1] ?? opt.text}`}
                     />
-                    <span>{renderMath(opt.text)}</span>
+                    <span>{renderMath(translated.texts[optionIndex + 1] ?? opt.text)}</span>
                   </label>
                 );
               })}

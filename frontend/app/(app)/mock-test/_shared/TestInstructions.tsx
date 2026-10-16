@@ -3,6 +3,8 @@
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect,useRef,useState } from 'react';
+import BackButton from '@/components/BackButton';
+import { ChevronDown } from 'lucide-react';
 import { seedStartResponse, startResponseEpoch } from '@/lib/start-response-cache';
 import { getMockStartKey } from './startKey';
 import { getSlotDetails,startTest } from './api';
@@ -20,6 +22,7 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
   const { token, user } = useAuth();
   const starting = useRef(false);
   const [loading, setLoading] = useState(false);
+  const [language, setLanguage] = useState('en');
   const [loadedSlot, setLoadedSlot] = useState<{ key: string; slot: MockTestSlot } | null>(null);
   const slotKey = `${examSlug}:${testId}`;
   const slot = getSlotById(testId) ?? (loadedSlot?.key === slotKey ? loadedSlot.slot : null);
@@ -66,11 +69,11 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
     const epoch = startResponseEpoch();
     try {
       if (isResume && resumeAttemptId) {
-        router.push(`/mock-test/${examSlug}/${testId}/attempt?resume=${resumeAttemptId}`);
+        router.push(`/mock-test/${examSlug}/${testId}/attempt?resume=${resumeAttemptId}&lang=${language}`);
       } else {
         const res = await startTest(examSlug, testId, token, getMockStartKey(user?.id, examSlug, testId));
         seedStartResponse(`mock:${examSlug}:${testId}`, user?.id, res.attemptId, res, epoch);
-        router.push(`/mock-test/${examSlug}/${testId}/attempt?resume=${res.attemptId}`);
+        router.push(`/mock-test/${examSlug}/${testId}/attempt?resume=${res.attemptId}&lang=${language}`);
       }
     } catch (error) {
       console.error(error);
@@ -83,6 +86,18 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
   return (
     <div className={styles.container}>
       <div className={styles.card}>
+        <div className={styles.topbar} data-ui-chrome="header">
+          <BackButton href={`/mock-test/${examSlug}`} label="Back to mock tests" />
+          <span>Test details</span>
+          <div className={styles.languagePicker}>
+            <select aria-label="Test language" value={language} onChange={event => setLanguage(event.target.value)} disabled={loading}>
+              <option value="en">English</option>
+              <option value="hi">हिन्दी</option>
+              <option value="bn">বাংলা</option>
+            </select>
+            <ChevronDown size={14} aria-hidden="true" />
+          </div>
+        </div>
         <div className={styles.header}>
           <h1 className={styles.title}>{config.name}</h1>
           <h2 className={styles.subtitle}>{slot.title}</h2>
@@ -97,60 +112,50 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
               <span className={styles.metaValue}>{totalQuestions}</span>
             </div>
             <div className={styles.metaItem}>
-              <span className={styles.metaLabel}>Timer Type</span>
-              <span className={styles.metaValue}>{config.compositeTimer ? 'Full Test Timer' : 'Per-Section Timers'}</span>
+              <span className={styles.metaLabel}>Timer</span>
+              <span className={styles.metaValue}>{config.compositeTimer ? 'Full test' : 'Per section'}</span>
             </div>
           </div>
         </div>
 
         <div className={styles.section}>
-          <h3 className={styles.sectionHeading}>Section Breakdown & Marking Scheme</h3>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Section</th>
-                <th>Questions</th>
-                <th>Correct Mark</th>
-                <th>Negative Mark</th>
-                <th>Time Limit</th>
-              </tr>
-            </thead>
-            <tbody>
+          <h3 className={styles.sectionHeading}>Sections <span>{config.sections.length}</span></h3>
+          <ul className={styles.sectionList}>
               {config.sections.map((sec, idx) => (
-                <tr key={idx}>
-                  <td><strong>{sec.label}</strong></td>
-                  <td>{sec.questionCount}</td>
-                  <td className={styles.markCorrect}>+{sec.marking.correct}</td>
-                  <td className={styles.markIncorrect}>-{sec.marking.incorrect}</td>
-                  <td>{sec.timeLimitMin > 0 ? `${sec.timeLimitMin}m` : 'Shared'}</td>
-                </tr>
+                <li className={styles.sectionRow} key={idx}>
+                  <div className={styles.sectionInfo}>
+                    <strong>{sec.label}</strong>
+                    <span>{sec.questionCount} questions{sec.timeLimitMin > 0 ? ` · ${sec.timeLimitMin} min` : ''}</span>
+                  </div>
+                  <div className={styles.marks}>
+                    <span>+{sec.marking.correct} <small>correct</small></span>
+                    <span>−{sec.marking.incorrect} <small>wrong</small></span>
+                  </div>
+                </li>
               ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className={styles.section}>
-          <h3 className={styles.sectionHeading}>General Instructions</h3>
-          <ul className={styles.rulesList}>
-            <li>The clock will be set at the server. The countdown timer at the top right of screen will display the remaining time available for you to complete the examination.</li>
-            {config.compositeTimer ? (
-              <li>You can navigate freely between sections at any time during the {config.totalDurationMin} minutes.</li>
-            ) : (
-              <li><strong>Sectional Timing:</strong> Each section has a dedicated time limit. Once a section timer reaches 0:00, that section will be locked automatically.</li>
-            )}
-            <li>Your answers are automatically saved to the cloud every 20 seconds and whenever you switch sections.</li>
-            <li>You can mark questions for review and return to them before final submission.</li>
-            <li>Do not close or refresh the browser tab during the test.</li>
           </ul>
         </div>
 
-        <div className={styles.footer}>
+        <div className={styles.section}>
+          <h3 className={styles.sectionHeading}>Before you start</h3>
+          <ul className={styles.rulesList}>
+            {config.compositeTimer ? (
+              <li>One timer. Switch sections anytime.</li>
+            ) : (
+              <li>Each section locks when its timer ends.</li>
+            )}
+            <li>Answers save automatically. Flag questions to review.</li>
+            <li>Keep this tab open. Avoid refreshing.</li>
+          </ul>
+        </div>
+
+        <div className={styles.footer} data-ui-chrome="footer">
           <button data-ui-button="primary"
             className={styles.startBtn} 
             onClick={handleStart}
             disabled={loading}
           >
-            {loading ? 'Preparing Mock Test…' : isResume ? 'Resume Mock Test' : 'Start Mock Test'}
+            {loading ? 'Preparing…' : isResume ? 'Resume Mock Test' : 'Start Mock Test'}
           </button>
         </div>
       </div>

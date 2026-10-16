@@ -117,9 +117,10 @@ describe('creation response handoff', () => {
   });
   it('uses one keyed POST through instructions and no attempt GET, including effect replay', async () => {
     await act(async () => { render(<TestInstructions examSlug="ssc-cgl" testId="test" />); });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Test language' }), { target: { value: 'hi' } });
     await act(async () => fireEvent.click(screen.getByRole('button', { name: /Start Mock Test/ })));
     expect(startTest).toHaveBeenCalledExactlyOnceWith('ssc-cgl', 'test', 'test-token', expect.any(String));
-    expect(push).toHaveBeenCalledWith('/mock-test/ssc-cgl/test/attempt?resume=attempt');
+    expect(push).toHaveBeenCalledWith('/mock-test/ssc-cgl/test/attempt?resume=attempt&lang=hi');
     cleanup();
     search.resume = 'attempt';
     vi.advanceTimersByTime(5000);

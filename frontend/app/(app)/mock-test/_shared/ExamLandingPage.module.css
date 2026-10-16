@@ -1055,63 +1055,21 @@
   }
 }
 
-/* --- macOS Scrollbar Styling --- */
+/* Keep catalog scrolling available without visible side scrollbars. */
 .contentBody,
 .macosContent,
 .macosSidebar,
 .homeContainer {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
-}
-
-:global(body.theme-dark) .contentBody,
-:global(body.theme-dark) .macosContent,
-:global(body.theme-dark) .macosSidebar,
-:global(body.theme-dark) .homeContainer {
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-width: none;
 }
 
 .contentBody::-webkit-scrollbar,
 .macosContent::-webkit-scrollbar,
 .macosSidebar::-webkit-scrollbar,
 .homeContainer::-webkit-scrollbar {
-  width: 8px;
-}
-
-.contentBody::-webkit-scrollbar-track,
-.macosContent::-webkit-scrollbar-track,
-.macosSidebar::-webkit-scrollbar-track,
-.homeContainer::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.contentBody::-webkit-scrollbar-thumb,
-.macosContent::-webkit-scrollbar-thumb,
-.macosSidebar::-webkit-scrollbar-thumb,
-.homeContainer::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.15);
-  border-radius: 10px;
-}
-
-:global(body.theme-dark) .contentBody::-webkit-scrollbar-thumb,
-:global(body.theme-dark) .macosContent::-webkit-scrollbar-thumb,
-:global(body.theme-dark) .macosSidebar::-webkit-scrollbar-thumb,
-:global(body.theme-dark) .homeContainer::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.contentBody::-webkit-scrollbar-thumb:hover,
-.macosContent::-webkit-scrollbar-thumb:hover,
-.macosSidebar::-webkit-scrollbar-thumb:hover,
-.homeContainer::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.3);
-}
-
-:global(body.theme-dark) .contentBody::-webkit-scrollbar-thumb:hover,
-:global(body.theme-dark) .macosContent::-webkit-scrollbar-thumb:hover,
-:global(body.theme-dark) .macosSidebar::-webkit-scrollbar-thumb:hover,
-:global(body.theme-dark) .homeContainer::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.35);
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* Shared borderless OLED appearance. */
