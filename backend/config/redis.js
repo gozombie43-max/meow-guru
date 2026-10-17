@@ -12,9 +12,30 @@ import { writeWithLease } from '../infrastructure/cacheLease.js';
 const circuit = createRedisCircuit();
 export function redisCircuitHealth() { return circuit.state(); }
 function updateCircuitMetric() { redisCircuitState.set({ closed: 0, open: 1, 'half-open': 2 }[circuit.state()]); }
+const quotaExceeded = error => /max requests limit exceeded/i.test(error?.message || '');
 function commandFailed(error) {
-  circuit.failure(); updateCircuitMetric();
+  if (quotaExceeded(error)) circuit.unavailable(5 * 60 * 1000);
+  else if (error?.code === 'REDIS_COMMAND_TIMEOUT') circuit.unavailable();
+  else circuit.failure();
+  updateCircuitMetric();
   if (/timeout/i.test(`${error?.name} ${error?.message}`)) redisCommandTimeouts.inc();
+}
+
+// The SDK's timeout only covers its outgoing queue, not a reply after a write.
+// Bound the whole operation and destroy a stalled socket to release its waiters.
+async function redisDeadline(work, connection) {
+  let timer;
+  try {
+    return await Promise.race([
+      Promise.resolve().then(work),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          reject(Object.assign(new Error('Redis command timeout'), { name: 'TimeoutError', code: 'REDIS_COMMAND_TIMEOUT' }));
+          try { connection.destroy(); } catch { /* The socket may already be closed. */ }
+        }, 1000);
+      }),
+    ]);
+  } finally { clearTimeout(timer); }
 }
 
 // Instrument the installed Redis client directly; never export keys or values.
@@ -28,7 +49,7 @@ function observeRedis(target) {
       const started = performance.now();
       try {
         if (circuit.state() !== 'closed') throw Object.assign(new Error('Optional Redis circuit is open'), { code: 'REDIS_CIRCUIT_OPEN' });
-        return await value.apply(client, args);
+        return await redisDeadline(() => value.apply(client, args), client);
       }
       catch (error) { if (error.code !== 'REDIS_CIRCUIT_OPEN') commandFailed(error); dependencyErrors.inc({ dependency: 'redis' }); throw error; }
       finally { dependencyLatency.observe({ dependency: 'redis', operation: name }, (performance.now() - started) / 1000); }
@@ -53,7 +74,7 @@ export async function getRedisClient() {
   const admission = circuit.admit(); updateCircuitMetric();
   if (admission === 'skip') { redisFallbacks.inc(); return null; }
   if (admission === 'probe' && client?.isReady) {
-    try { await client.ping(); circuit.recovered(); updateCircuitMetric(); return client; }
+    try { await redisDeadline(() => client.ping(), client); circuit.recovered(); updateCircuitMetric(); return client; }
     catch (error) { commandFailed(error); reportRedisFailure(); redisFallbacks.inc(); return null; }
   }
   if (client?.isReady) return client;
@@ -76,14 +97,15 @@ export async function getRedisClient() {
     return null;
   }
   candidate.on('error', () => {});
-  connecting = candidate.connect().then(() => {
+  connecting = redisDeadline(() => candidate.connect(), candidate).then(() => {
     circuit.recovered(); updateCircuitMetric();
     client = observeRedis(candidate);
     return client;
   }).catch(async error => {
     commandFailed(error);
     // A failed connection is enough to bypass all subsequent connection attempts.
-    circuit.unavailable(); updateCircuitMetric();
+    if (!quotaExceeded(error)) circuit.unavailable();
+    updateCircuitMetric();
     reportRedisFailure();
     await candidate.destroy();
     return null;

@@ -18,7 +18,7 @@ export function createRedisCircuit({ threshold = 5, intervalMs = 10000, cooldown
       probing = false;
     },
     recovered() { failures = []; openUntil = 0; probing = false; },
-    unavailable() { openUntil = now() + cooldownMs; probing = false; },
+    unavailable(delayMs = cooldownMs) { openUntil = now() + delayMs; probing = false; },
     reset() { failures = []; openUntil = 0; probing = false; },
   };
 }
