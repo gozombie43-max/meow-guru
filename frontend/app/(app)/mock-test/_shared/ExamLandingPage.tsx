@@ -179,7 +179,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
           <ExamModeSwitch />
 
           <div className={styles.sidebarExamCard}>
-            <div className={styles.sidebarExamIcon}>{examLogo ? <Image src={examLogo} alt={`${meta.name} logo`} width={28} height={28} className={styles.examLogo} /> : meta.icon}</div>
+            <div className={styles.sidebarExamIcon}>{examLogo ? <Image src={examLogo} alt={`${meta.name} logo`} width={28} height={28} loading="eager" className={styles.examLogo} /> : meta.icon}</div>
             <div className={styles.sidebarExamDetails}>
               <span className={styles.sidebarExamName}>{meta.name}</span>
               <span className={styles.sidebarExamCategory}>{meta.category}</span>
@@ -241,7 +241,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                     <button data-ui-button="icon" onClick={() => router.replace('/mock-test')} className={styles.mobileBackBtn} aria-label="Back to all exams">
                       <ChevronLeft size={16} />
                     </button>
-                    <div className={styles.headerIconBox}>{examLogo ? <Image src={examLogo} alt={`${meta.name} logo`} width={28} height={28} className={styles.examLogo} /> : meta.icon}</div>
+                    <div className={styles.headerIconBox}>{examLogo ? <Image src={examLogo} alt={`${meta.name} logo`} width={28} height={28} loading="eager" className={styles.examLogo} /> : meta.icon}</div>
                     <div className={styles.headerTextGroup}>
                       <div className={styles.headerTitleRow}>
                         <h1 className={styles.greeting}>{meta.name}</h1>
@@ -321,12 +321,12 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                           <div className={styles.testLineInfo}>
                             <div className={styles.testLineHeader}>
                               <h3 className={styles.testLineTitle}>{contextualTitle(slot.title, meta.name, effectiveTier)}</h3>
-                              {slot.isFree && <span className={styles.freeBadge}>FREE</span>}
                             </div>
                             <div className={styles.testLineMeta}>
                               <span>{totalQ} Q</span>
                               <span>{maxM} Marks</span>
                               <span>{duration} min</span>
+                              {!actionsLoading && state.status === 'completed' && <span>Score: {state.score}/{state.maxScore}</span>}
                             </div>
                           </div>
 
@@ -334,10 +334,6 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                             {actionsLoading && <span role="status">Loading progress…</span>}
                             {!actionsLoading && state.status === 'completed' && (
                               <div className={styles.completedStatus}>
-                                <div className={styles.scoreWrap}>
-                                  <Award size={14} />
-                                  <span>Score: <strong>{state.score}</strong>/{state.maxScore}</span>
-                                </div>
                                 <button data-ui-button="state"
                                   className={styles.analysisBtn}
                                   onClick={() => handleViewResult(slot.id, state.attemptId!)}
@@ -442,12 +438,12 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                             <div className={styles.testLineInfo}>
                               <div className={styles.testLineHeader}>
                                 <h3 className={styles.testLineTitle}>{contextualTitle(slot.title, meta.name, effectiveTier)}</h3>
-                              {slot.isFree && <span className={styles.freeBadge}>FREE</span>}
                               </div>
                               <div className={styles.testLineMeta}>
                                 <span>{totalQ} Q</span>
                                 <span>{maxM} Marks</span>
                                 <span>{duration} min</span>
+                                {!actionsLoading && state.status === 'completed' && <span>Score: {state.score}/{state.maxScore}</span>}
                               </div>
                             </div>
 
@@ -455,10 +451,6 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                             {actionsLoading && <span role="status">Loading progress…</span>}
                               {!actionsLoading && state.status === 'completed' && (
                                 <div className={styles.completedStatus}>
-                                  <div className={styles.scoreWrap}>
-                                    <Award size={14} />
-                                    <span>Score: <strong>{state.score}</strong>/{state.maxScore}</span>
-                                  </div>
                                   <button data-ui-button="state"
                                     className={styles.analysisBtn}
                                     onClick={() => handleViewResult(slot.id, state.attemptId!)}

@@ -362,9 +362,6 @@
     min-height: 44px;
     padding: 10px 16px !important;
     border-radius: 12px !important;
-    border: 0;
-    background: var(--primary) !important;
-    color: #fff !important;
     font-size: 14px !important;
     font-weight: 600;
   }
@@ -510,16 +507,16 @@
 }
 
 .analysisBtn:hover {
-  background: var(--primary-bg);
+  background: transparent;
 }
 
 .statusPaused {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: #fffbeb;
-  color: #d97706;
-  border: 1px solid #fde68a;
+  background: transparent;
+  color: var(--ios-system-blue);
+  border: 1px solid var(--ios-system-blue);
   padding: 5px 10px;
   border-radius: 6px;
   font-size: 11.5px;
@@ -531,9 +528,6 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--ui-muted-surface) !important;
-  color: var(--ui-text) !important;
-  border-color: transparent !important;
   padding: 7px 12px !important;
   border-radius: 10px !important;
   font-size: 12px !important;
@@ -542,7 +536,7 @@
 }
 
 .statusNotStarted[data-ui-button]:hover {
-  background-color: var(--ui-border) !important;
+  background-color: transparent;
 }
 
 .statusLocked {
@@ -1105,8 +1099,9 @@
   font-weight: 500;
 }
 .testLineInfo { gap: 5px; }
-.testLineMeta { gap: 0; font-size: 12px; line-height: 1.5; }
-.testLineMeta span + span::before { content: '·'; padding: 0 7px; }
+.testLineMeta { gap: 0; flex-wrap: nowrap; font-size: clamp(10px, 3vw, 12px); line-height: 1.5; }
+.testLineMeta > span { white-space: nowrap; }
+.testLineMeta > span + span::before { content: '·'; padding: 0 5px; }
 .lockedCard { opacity: 1; }
 .page .tierDropdown {
   background: var(--catalog-control);
@@ -1121,12 +1116,20 @@
 .page .statusLocked[data-ui-button] {
   justify-content: center;
   min-height: 44px;
-  border: 0 !important;
   border-radius: 12px !important;
-  background: var(--catalog-locked) !important;
-  color: var(--text-muted) !important;
   font-size: 14px;
   font-weight: 600;
+}
+
+.page .testLineAction :is(.statusNotStarted, .statusPaused, .analysisBtn, .statusLocked)[data-ui-button] {
+  background: transparent !important;
+  color: var(--ios-system-blue) !important;
+  border: 1px solid var(--ios-system-blue) !important;
+}
+
+.page .testLineAction :is(.statusNotStarted, .statusPaused, .analysisBtn, .statusLocked)[data-ui-button]:focus-visible {
+  outline: 2px solid var(--ios-system-blue);
+  outline-offset: 3px;
 }
 @media (max-width: 767px) {
   .page .statusLocked[data-ui-button] { width: 100%; }
@@ -1149,8 +1152,6 @@
 :global(body.theme-dark) .page .testLineCard:hover { background: #1c1c1e; }
 :global(html.theme-dark) .page .mobileTabsNav,
 :global(body.theme-dark) .page .mobileTabsNav { border-color: #242426; }
-:global(html.theme-dark) .page .statusLocked[data-ui-button],
-:global(body.theme-dark) .page .statusLocked[data-ui-button] { color: #d1d1d6 !important; }
 
 :global(html.theme-dark) .page .tierDropdown,
 :global(body.theme-dark) .page .tierDropdown {

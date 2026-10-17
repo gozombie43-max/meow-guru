@@ -2,7 +2,7 @@
 
 import { mockAnswerCorrect, mockAnswerIndex, isUnanswered } from '@meow/contracts/mock-answer';
 import { useAuth } from '@/context/AuthContext';
-import { ArrowLeft,CheckCircle2,ChevronLeft,ChevronRight,XCircle } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Grid2X2, X } from 'lucide-react';
 import QuestionImage from '@/components/QuestionImage';
 import { useRouter } from 'next/navigation';
 import { useEffect,useRef,useMemo,useState } from 'react';
@@ -16,6 +16,7 @@ type MockSection,
 } from './api';
 import styles from './ReviewEngine.module.css';
 import type { QuizLanguage } from '@meow/contracts/exam-paper';
+import ReviewQuestionNavigator, { type ReviewFilter } from './ReviewQuestionNavigator';
 
 interface ReviewEngineProps {
   examSlug: string;
@@ -23,7 +24,7 @@ interface ReviewEngineProps {
   attemptId: string;
 }
 
-type FilterType = 'all' | 'correct' | 'incorrect' | 'skipped';
+type FilterType = ReviewFilter;
 type ReviewStatus = Exclude<FilterType, 'all'>;
 
 interface QuestionAnalysis {
@@ -57,6 +58,12 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [filter, setFilter] = useState<FilterType>('all');
   const [language, setLanguage] = useState<QuizLanguage>('en');
+  const paletteRef = useRef<HTMLDialogElement>(null);
+  const questionPanelRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (questionPanelRef.current) questionPanelRef.current.scrollTop = 0;
+  }, [currentQuestionIndex, currentSectionIndex, filter]);
 
   useEffect(() => {
     if (!ready) return;
@@ -142,7 +149,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
     );
   }
 
-  const currentItem = filteredAnalysis[currentQuestionIndex] || questionAnalysis[0];
+  const currentItem = filteredAnalysis[currentQuestionIndex];
   const currentQ = currentItem?.question;
 
   const handlePrev = () => {
@@ -159,108 +166,57 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
 
   return (
     <div className={styles.page}>
-      {/* Top Navigation */}
       <header data-ui-chrome="header" className={styles.header}>
-        <div className={styles.headerLeft}>
-          <button data-ui-button="icon"
-            className={styles.backBtn}
-            onClick={() => router.replace(`/mock-test/${examSlug}/${testId}/result/${attemptId}`)}
-          >
-            <ArrowLeft size={18} />
-            <span>Results</span>
-          </button>
-          <div className={styles.examTitleWrap}>
-            <h1 className={styles.examTitle}>{attempt?.paper?.examName || 'Mock Test Review'}</h1>
-            <span className={styles.examSub}>Solution & Analysis Mode</span>
-          </div>
-        </div>
-
-        {/* Section Tabs in Header */}
-        {attempt.paper?.schemaDriven && <div role="group" aria-label="Review language">
-          <button data-ui-button="state" aria-pressed={language === 'en'} onClick={() => setLanguage('en')}>ENG</button>
-          <span aria-hidden="true"> | </span>
-          <button data-ui-button="state" aria-pressed={language === 'bn'} onClick={() => setLanguage('bn')}>বাংলা</button>
-        </div>}
-        <div className={styles.sectionTabs}>
-          {sections.map((sec: MockSection, idx: number) => (
-            <button data-ui-button="state"
-              key={sec.key || idx}
-              className={`${styles.sectionTab} ${currentSectionIndex === idx ? styles.activeSectionTab : ''}`}
-              onClick={() => selectSection(idx)}
-            >
-              {sec.label || sec.key}
+        <div className={styles.headerTop}>
+          <div className={styles.headerLeft}>
+            <button data-ui-button="icon" className={styles.backBtn} aria-label="Back to results"
+              onClick={() => router.replace(`/mock-test/${examSlug}/${testId}/result/${attemptId}`)}>
+              <ArrowLeft size={20} />
             </button>
-          ))}
+            <div className={styles.examTitleWrap}>
+              <h1 className={styles.examTitle}>{attempt.paper?.examName || 'Mock test'}</h1>
+              <span className={styles.examSub}>Answer review</span>
+            </div>
+          </div>
+          {attempt.paper?.schemaDriven && <div className={styles.languageSwitch} data-language={language} role="group" aria-label="Review language">
+            <button aria-pressed={language === 'en'} onClick={() => setLanguage('en')}>ENG</button>
+            <button aria-pressed={language === 'bn'} onClick={() => setLanguage('bn')}>বাংলা</button>
+          </div>}
+        </div>
+        <div className={styles.reviewControls}>
+          <label>Section
+            <select value={currentSectionIndex} onChange={event => selectSection(Number(event.target.value))}>
+              {sections.map((section, index) => <option key={section.key || index} value={index}>{section.label || section.key || `Section ${index + 1}`}</option>)}
+            </select>
+          </label>
+          <label>Show
+            <select value={filter} onChange={event => selectFilter(event.target.value as FilterType)}>
+              <option value="all">All ({questionAnalysis.length})</option>
+              <option value="correct">Correct ({questionAnalysis.filter(item => item.status === 'correct').length})</option>
+              <option value="incorrect">Wrong ({questionAnalysis.filter(item => item.status === 'incorrect').length})</option>
+              <option value="skipped">Skipped ({questionAnalysis.filter(item => item.status === 'skipped').length})</option>
+            </select>
+          </label>
         </div>
       </header>
 
-      {/* Main Layout */}
       <div className={styles.layout}>
-        {/* Left Side: Filter Chips & Palette on Desktop */}
-        <aside className={styles.sidebar}>
-          <div className={styles.filterSection}>
-            <span className={styles.sidebarHeading}>Filter by Status</span>
-            <div className={styles.filterList}>
-              <button data-ui-button="state"
-                className={`${styles.filterBtn} ${filter === 'all' ? styles.activeFilter : ''}`}
-                onClick={() => selectFilter('all')}
-              >
-                All Questions ({questionAnalysis.length})
-              </button>
-              <button data-ui-button="state"
-                className={`${styles.filterBtn} ${styles.filterCorrect} ${filter === 'correct' ? styles.activeFilter : ''}`}
-                onClick={() => selectFilter('correct')}
-              >
-                <CheckCircle2 size={16} /> Correct ({questionAnalysis.filter((question) => question.status === 'correct').length})
-              </button>
-              <button data-ui-button="state"
-                className={`${styles.filterBtn} ${styles.filterIncorrect} ${filter === 'incorrect' ? styles.activeFilter : ''}`}
-                onClick={() => selectFilter('incorrect')}
-              >
-                <XCircle size={16} /> Incorrect ({questionAnalysis.filter((question) => question.status === 'incorrect').length})
-              </button>
-              <button data-ui-button="state"
-                className={`${styles.filterBtn} ${styles.filterSkipped} ${filter === 'skipped' ? styles.activeFilter : ''}`}
-                onClick={() => selectFilter('skipped')}
-              >
-                Skipped ({questionAnalysis.filter((question) => question.status === 'skipped').length})
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.paletteSection}>
-            <span className={styles.sidebarHeading}>Question Palette</span>
-            <div className={styles.paletteGrid}>
-              {filteredAnalysis.map((item: QuestionAnalysis, idx: number) => {
-                let statusClass = styles.itemSkipped;
-                if (item.status === 'correct') statusClass = styles.itemCorrect;
-                if (item.status === 'incorrect') statusClass = styles.itemIncorrect;
-                const isSelected = idx === currentQuestionIndex;
-
-                return (
-                  <button data-ui-button="state"
-                    key={item.question.id || idx}
-                    className={`${styles.paletteBtn} ${statusClass} ${isSelected ? styles.selectedPaletteBtn : ''}`}
-                    onClick={() => setCurrentQuestionIndex(idx)}
-                  >
-                    {item.index + 1}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+        <aside className={styles.sidebar} aria-label="Review question navigator">
+          <h2 className={styles.sidebarHeading}>Questions</h2>
+          <ReviewQuestionNavigator questions={questionAnalysis} filteredQuestions={filteredAnalysis}
+            filter={filter} selectedIndex={currentQuestionIndex} onFilter={selectFilter} onSelect={setCurrentQuestionIndex} />
         </aside>
 
         {/* Center: Question Details & Solution */}
-        <main className={styles.questionPanel}>
+        <main className={styles.questionPanel} ref={questionPanelRef} aria-label="Question and solution">
           {currentQ ? (
             <div className={styles.questionCard}>
               <div className={styles.questionMeta}>
-                <span className={styles.qNumBadge}>Question {currentItem.index + 1} of {questions.length}</span>
+                <span className={styles.qNumBadge} aria-live="polite">Question {currentItem.index + 1} of {questions.length}</span>
                 <span className={`${styles.statusBadge} ${styles['status_' + currentItem.status]}`}>
                   {currentItem.status === 'correct' && `Correct (+${currentSection?.marking?.correct ?? 2} marks)`}
                   {currentItem.status === 'incorrect' && `Incorrect (-${currentSection?.marking?.incorrect ?? 0.5} marks)`}
-                  {currentItem.status === 'skipped' && '⚪ Skipped (0 marks)'}
+                  {currentItem.status === 'skipped' && 'Skipped · 0 marks'}
                 </span>
               </div>
 
@@ -297,18 +253,18 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                     <div key={oIdx} className={`${styles.optionItem} ${optClass}`}>
                       <span className={styles.optionLetter}>{letter}</span>
                       <span className={styles.optionText}>{opt}</span>
-                      {isCorrect && <span className={styles.correctLabel}>Correct Answer</span>}
-                      {isUserPick && !isCorrect && <span className={styles.userWrongLabel}>Your Answer</span>}
+                      {isCorrect && <span className={styles.correctLabel}>Correct answer</span>}
+                      {isUserPick && !isCorrect && <span className={styles.userWrongLabel}>Your answer</span>}
                     </div>
                   );
                 })}
               </div>
 
               {/* Solution / Explanation */}
-              {(currentQ.solution || currentQ.solutionImage) && (
+              {(currentQ.solution || currentQ.translations?.solution?.[language] || currentQ.solutionImage) && (
                 <div className={styles.solutionBox}>
-                  <h3 className={styles.solutionHeading}>💡 Solution & Explanation</h3>
-                  {currentQ.solution && <p className={styles.solutionText}>{currentQ.translations?.solution?.[language] ?? currentQ.solution}</p>}
+                  <h3 className={styles.solutionHeading}>Explanation</h3>
+                  {(currentQ.solution || currentQ.translations?.solution?.[language]) && <p className={styles.solutionText}>{currentQ.translations?.solution?.[language] ?? currentQ.solution}</p>}
                   {currentQ.solutionImage && (
                     <div className={styles.solImageWrap}>
                       <QuestionImage
@@ -322,31 +278,41 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                 </div>
               )}
 
-              {/* Bottom Navigation */}
-              <div className={styles.bottomNav}>
-                <button data-ui-button="state"
-                  className={styles.navBtn}
-                  onClick={handlePrev}
-                  disabled={currentQuestionIndex === 0}
-                >
-                  <ChevronLeft size={18} /> Previous
-                </button>
-                <button data-ui-button="state"
-                  className={styles.navBtn}
-                  onClick={handleNext}
-                  disabled={currentQuestionIndex >= filteredAnalysis.length - 1}
-                >
-                  Next <ChevronRight size={18} />
-                </button>
-              </div>
             </div>
           ) : (
             <div className={styles.emptyQuestions}>
-              No questions found for the selected filter &quot;{filter}&quot;.
+              <h2>No {filter === 'all' ? '' : filter} questions</h2>
+              <p>{filter === 'all' ? 'This section has no questions to review.' : 'Try another status or review all questions in this section.'}</p>
+              {filter !== 'all' && <button className={styles.navBtn} onClick={() => selectFilter('all')}>Show all questions</button>}
             </div>
           )}
         </main>
       </div>
+
+      <footer className={styles.bottomNav} aria-label="Question navigation">
+        <button className={styles.navBtn} onClick={handlePrev} disabled={!currentItem || currentQuestionIndex === 0}>
+          <ChevronLeft size={18} />Previous
+        </button>
+        <button className={styles.questionJump} aria-haspopup="dialog" onClick={() => paletteRef.current?.showModal()}>
+          <Grid2X2 size={17} />
+          <span>Questions<small>{currentItem ? `${currentQuestionIndex + 1} / ${filteredAnalysis.length}` : '0 questions'}</small></span>
+        </button>
+        <button className={styles.navBtn} onClick={handleNext} disabled={!currentItem || currentQuestionIndex >= filteredAnalysis.length - 1}>
+          Next<ChevronRight size={18} />
+        </button>
+      </footer>
+
+      <dialog className={styles.paletteDialog} ref={paletteRef} aria-labelledby="review-palette-title" closedby="any">
+        <div className={styles.sheetHeader}>
+          <div><h2 id="review-palette-title">Jump to question</h2><p>{currentSection?.label || currentSection?.key}</p></div>
+          <button className={styles.closeSheet} aria-label="Close question navigator" onClick={() => paletteRef.current?.close()}><X size={20} /></button>
+        </div>
+        <div className={styles.sheetContent}>
+          <ReviewQuestionNavigator questions={questionAnalysis} filteredQuestions={filteredAnalysis}
+            filter={filter} selectedIndex={currentQuestionIndex} onFilter={selectFilter}
+            onSelect={index => { setCurrentQuestionIndex(index); paletteRef.current?.close(); }} />
+        </div>
+      </dialog>
     </div>
   );
 }
