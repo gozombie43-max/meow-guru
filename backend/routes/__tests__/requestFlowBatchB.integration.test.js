@@ -267,17 +267,20 @@ describe('metadata and catalog database work', () => {
     read.mockClear(); write.mockClear(); await enqueueConceptGrouping('pending', {});
     expect(read.mock.calls).toHaveLength(0); expect(write.mock.calls).toHaveLength(0);
   });
-  it('returns accurate fixed/dynamic/empty counts from a Mongo catalog that excludes papers', async () => {
+  it('returns accurate fixed/native/dynamic/empty counts from a Mongo catalog that excludes papers', async () => {
     await db.collection('mockSlots').insertMany([
       { id: 'fixed', examSlug: 'ssc-cgl', order: 1, fixedQuestions: Array.from({ length: 4 }, () => ({ solution: 'private content' })) },
       { id: 'empty', examSlug: 'ssc-cgl', order: 2, fixedQuestions: [], questionCount: 100 },
       { id: 'dynamic', examSlug: 'ssc-cgl', order: 3, questionCount: 75 },
+      { id: 'native', examSlug: 'ssc-cgl', order: 4, hasFixedPaper: true, questionCount: 3,
+        sourcePaper: { sections: { math: { questions: Array.from({ length: 3 }, () => ({ answer: 'B', solution: 'native private content' })) } } } },
       { id: 'other', examSlug: 'other', fixedQuestions: [{}] },
     ]);
     const spy = vi.spyOn(Collection.prototype, 'aggregate');
     const rows = await fetchSlotsForExam('ssc-cgl');
-    expect(rows.map(row => [row.id, row.hasFixedPaper, row.questionCount])).toEqual([['fixed', true, 4], ['empty', false, 100], ['dynamic', false, 75]]);
-    expect(JSON.stringify(rows)).not.toContain('private content'); expect(rows.every(row => !('fixedQuestions' in row))).toBe(true);
-    expect(spy.mock.calls[0][0].at(-1)).toEqual({ $project: { fixedQuestions: 0, _fixedCount: 0, _id: 0, _cosmosRid: 0 } });
+    expect(rows.map(row => [row.id, row.hasFixedPaper, row.questionCount])).toEqual([['fixed', true, 4], ['empty', false, 100], ['dynamic', false, 75], ['native', true, 3]]);
+    expect(JSON.stringify(rows)).not.toContain('private content');
+    expect(rows.every(row => !('fixedQuestions' in row) && !('sourcePaper' in row))).toBe(true);
+    expect(spy.mock.calls[0][0].at(-1)).toEqual({ $project: { fixedQuestions: 0, sourcePaper: 0, _fixedCount: 0, _id: 0, _cosmosRid: 0 } });
   });
 });
