@@ -6,6 +6,23 @@ import MathRendererContent from '../MathRendererContent';
 import TutorMarkdown from '../QuizChatbot/TutorMarkdown';
 
 describe('MathRenderer Component', () => {
+  it('preserves matrix rows and aligned equations, including double-escaped stored math', () => {
+    const formula = String.raw`\[\begin{pmatrix}1&2\\3&4\end{pmatrix}\]`;
+    const aligned = String.raw`\[\begin{aligned}
+x^2 &= 4 \\
+x &= \pm 2
+\end{aligned}\]`;
+    const { container } = render(<>
+      <MathRendererContent text={formula} />
+      <MathRendererContent text={formula.replace(/\\/g, '\\\\')} />
+      <MathRendererContent text={aligned} />
+    </>);
+    expect(container.querySelectorAll('.katex')).toHaveLength(3);
+    const tables = container.querySelectorAll('.katex-mathml mtable');
+    expect(tables).toHaveLength(3);
+    tables.forEach(table => expect(table.querySelectorAll('mtr')).toHaveLength(2));
+    expect(container.querySelector('.katex-error')).toBeNull();
+  });
   it('keeps fractions, matrices and untrusted commands consistent across both math paths', () => {
     const formula = String.raw`\frac{1}{2}+\sqrt{x}+\begin{pmatrix}1&2\\3&4\end{pmatrix}`;
     const { container } = render(<><MathRendererContent text={`$${formula}$`} /><TutorMarkdown content={`$${formula}$`} /></>);

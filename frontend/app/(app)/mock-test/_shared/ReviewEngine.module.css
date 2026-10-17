@@ -81,7 +81,7 @@
 .optionsList { display: flex; flex-direction: column; gap: 10px; }
 .optionItem { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; column-gap: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--border); min-height: 48px; }
 .optionLetter { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: var(--bg); font-size: 11px; font-weight: 600; }
-.optionText { font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; white-space: pre-wrap; }
+.optionText { min-width: 0; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; white-space: pre-wrap; }
 .optionNormal { background: transparent; }
 .optionCorrect { background: var(--correct-bg); border-color: var(--correct); }
 .optionCorrect .optionLetter { color: var(--correct); }
@@ -93,6 +93,7 @@
 .solutionBox { border-top: 1px solid var(--border); margin-top: 20px; padding-top: 18px; }
 .solutionHeading { font-size: 13px; color: var(--primary); font-weight: 650; margin: 0 0 8px; }
 .solutionText { font-size: 14px; line-height: 1.7; margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.questionText :global(.katex-display), .optionText :global(.katex-display), .solutionText :global(.katex-display) { max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 4px 0; margin: 8px 0; }
 .solImageWrap { margin-top: 12px; }
 .bottomNav { display: flex; align-items: center; justify-content: center; gap: 12px; flex-shrink: 0; border-top: 1px solid var(--border); padding: 10px 16px max(10px, env(safe-area-inset-bottom)); background: var(--bg); }
 .navBtn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 44px; min-width: 100px; padding: 8px 12px; border: 1px solid var(--primary); border-radius: 12px; color: var(--primary); background: transparent; font-size: 12px; font-weight: 600; cursor: pointer; }

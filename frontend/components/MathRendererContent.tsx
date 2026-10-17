@@ -28,9 +28,8 @@ function parseParts(input: string): Part[] {
   }
 
   const parts: Part[] = [];
-  // Normalize repeated backslashes so delimiters like \( ... \) are detected reliably
-  const normalizedBackslashes = input.replace(/\\{2,}/g, "\\");
-  const safeInput = normalizedBackslashes.replace(/\\\$/g, "__DOLLAR__");
+  // Match stored delimiters without collapsing genuine LaTeX row separators.
+  const safeInput = input.replace(/\\\$/g, "__DOLLAR__");
   const regex = /\\+\[([\s\S]*?)\\+\]|\\+\(([\s\S]*?)\\+\)|\$\$([\s\S]*?)\$\$|\$([^\n$]+?)\$/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -39,14 +38,18 @@ function parseParts(input: string): Part[] {
     if (match.index > lastIndex) {
       parts.push({ type: "text", content: safeInput.slice(lastIndex, match.index) });
     }
+    // A double-escaped delimiter means its contents were escaped too. Decode
+    // pairs once, preserving encoded row separators (four slashes become two).
+    const encoded = (match[0].match(/^\\+/)?.[0].length ?? 0) > 1;
+    const mathContent = (value: string) => (encoded ? value.replace(/\\\\/g, "\\") : value).trim();
     if (match[1] !== undefined) {
-      parts.push({ type: "display", content: match[1].trim() });
+      parts.push({ type: "display", content: mathContent(match[1]) });
     } else if (match[2] !== undefined) {
-      parts.push({ type: "inline", content: match[2].trim() });
+      parts.push({ type: "inline", content: mathContent(match[2]) });
     } else if (match[3] !== undefined) {
-      parts.push({ type: "display", content: match[3].trim() });
+      parts.push({ type: "display", content: mathContent(match[3]) });
     } else if (match[4] !== undefined) {
-      parts.push({ type: "inline", content: match[4].trim() });
+      parts.push({ type: "inline", content: mathContent(match[4]) });
     }
     lastIndex = regex.lastIndex;
   }
@@ -57,15 +60,16 @@ function parseParts(input: string): Part[] {
 
   const expanded = parts.flatMap((part): Part[] => {
     if (part.type !== "text") return [part];
+    const content = part.content.replace(/\\{2,}/g, "\\");
     const pieces: Part[] = [];
     let cursor = 0;
-    for (const match of part.content.matchAll(new RegExp(BARE_MATH, "g"))) {
+    for (const match of content.matchAll(new RegExp(BARE_MATH, "g"))) {
       const index = match.index!;
-      if (index > cursor) pieces.push({ type: "text", content: part.content.slice(cursor, index) });
+      if (index > cursor) pieces.push({ type: "text", content: content.slice(cursor, index) });
       pieces.push({ type: "inline", content: match[0] });
       cursor = index + match[0].length;
     }
-    if (cursor < part.content.length) pieces.push({ type: "text", content: part.content.slice(cursor) });
+    if (cursor < content.length) pieces.push({ type: "text", content: content.slice(cursor) });
     return pieces;
   });
   const hasProse = expanded.some(part => part.type === "text" && /\p{L}/u.test(part.content));

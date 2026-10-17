@@ -4,6 +4,7 @@ import { mockAnswerCorrect, mockAnswerIndex, isUnanswered } from '@meow/contract
 import { useAuth } from '@/context/AuthContext';
 import { ArrowLeft, ChevronLeft, ChevronRight, Grid2X2, X } from 'lucide-react';
 import QuestionImage from '@/components/QuestionImage';
+import MathRenderer from '@/components/MathRenderer';
 import { useRouter } from 'next/navigation';
 import { useEffect,useRef,useMemo,useState } from 'react';
 import {
@@ -222,7 +223,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
 
               {/* Question Text */}
               <div className={styles.questionBody}>
-                <p className={styles.questionText}>{currentQ.translations?.question[language] ?? currentQ.question ?? currentQ.text}</p>
+                <div className={styles.questionText}><MathRenderer text={currentQ.translations?.question[language] ?? currentQ.question ?? currentQ.text ?? ''} /></div>
                 {currentQ.questionImage && (
                   <div className={styles.qImageWrap}>
                     <QuestionImage
@@ -252,7 +253,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                   return (
                     <div key={oIdx} className={`${styles.optionItem} ${optClass}`}>
                       <span className={styles.optionLetter}>{letter}</span>
-                      <span className={styles.optionText}>{opt}</span>
+                      <div className={styles.optionText}><MathRenderer text={opt} /></div>
                       {isCorrect && <span className={styles.correctLabel}>Correct answer</span>}
                       {isUserPick && !isCorrect && <span className={styles.userWrongLabel}>Your answer</span>}
                     </div>
@@ -264,7 +265,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
               {(currentQ.solution || currentQ.translations?.solution?.[language] || currentQ.solutionImage) && (
                 <div className={styles.solutionBox}>
                   <h3 className={styles.solutionHeading}>Explanation</h3>
-                  {(currentQ.solution || currentQ.translations?.solution?.[language]) && <p className={styles.solutionText}>{currentQ.translations?.solution?.[language] ?? currentQ.solution}</p>}
+                  {(currentQ.solution || currentQ.translations?.solution?.[language]) && <div className={styles.solutionText}><MathRenderer text={currentQ.translations?.solution?.[language] ?? currentQ.solution ?? ''} /></div>}
                   {currentQ.solutionImage && (
                     <div className={styles.solImageWrap}>
                       <QuestionImage

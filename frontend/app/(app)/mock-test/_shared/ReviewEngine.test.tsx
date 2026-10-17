@@ -61,3 +61,32 @@ it('keeps confidential answers unavailable', async () => {
   await waitFor(() => expect(screen.getByText('Answer review is disabled for this confidential assessment.')).toBeInTheDocument());
   expect(screen.queryByText('First question')).not.toBeInTheDocument();
 });
+
+it('typesets inline, display and multiline math in questions, options and translated explanations', async () => {
+  const explanation = String.raw`\[
+\begin{aligned}
+x^2 &= 4 \\
+x &= \pm 2
+\end{aligned}
+\]`;
+  vi.mocked(getAttempt).mockResolvedValue({
+    ...attempt,
+    paper: { ...attempt.paper!, sections: [{ key: 'math', label: 'Math', questions: [{
+      id: 'math-q',
+      question: String.raw`Evaluate \(\frac{1}{2}+\sqrt{9}\).`,
+      options: [String.raw`$\begin{pmatrix}1&2\\3&4\end{pmatrix}$`, String.raw`\(a=3, b=-\frac{3}{2}\)`],
+      solution: explanation,
+      translations: { question: { en: String.raw`Evaluate \(\frac{1}{2}+\sqrt{9}\).`, bn: String.raw`মান \(\frac{1}{2}\)` }, options: { en: [String.raw`$\begin{pmatrix}1&2\\3&4\end{pmatrix}$`, String.raw`\(a=3, b=-\frac{3}{2}\)`], bn: [String.raw`\(\frac{3}{2}\)`, String.raw`\(\sqrt{2}\)`] }, solution: { en: explanation, bn: String.raw`সমাধান \[\sum_{n=1}^{3} n = 6\]` } },
+    }] }] },
+  });
+  const { container } = render(<ReviewEngine examSlug="ssc-chsl" testId="test" attemptId="attempt" />);
+  await waitFor(() => expect(container.querySelectorAll('.katex')).toHaveLength(4));
+  expect(container.querySelector('.katex-error')).toBeNull();
+  expect(container.querySelectorAll('.katex-mathml mtable')).toHaveLength(2);
+  container.querySelectorAll('.katex-mathml mtable').forEach(table => expect(table.querySelectorAll('mtr')).toHaveLength(2));
+  expect(container.querySelectorAll('.katex-display')).toHaveLength(1);
+  fireEvent.click(screen.getByRole('button', { name: 'বাংলা' }));
+  await waitFor(() => expect(container.textContent).toContain('সমাধান'));
+  await waitFor(() => expect(container.querySelectorAll('.katex')).toHaveLength(4));
+  expect(container.querySelector('.katex-error')).toBeNull();
+});
