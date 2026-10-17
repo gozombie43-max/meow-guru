@@ -9,7 +9,7 @@ import MockCountdown from './MockCountdown';
 import { createCoalescedSave } from '@/lib/coalesced-save';
 import { abortError } from '@/shared/api/policy';
 import BackButton from "@/components/BackButton";
-import { useQuizLeaveGuard } from "@/hooks/useAppNavigation";
+import { useBackLayer, useQuizLeaveGuard } from "@/hooks/useAppNavigation";
 import { useRouter,useSearchParams } from 'next/navigation';
 import { useCallback,useEffect,useEffectEvent,useRef,useState } from 'react';
 import {
@@ -29,6 +29,7 @@ import { readStartResponse, clearStartResponse } from '@/lib/start-response-cach
 import { getMockStartKey, mockStartStorageKey } from './startKey';
 import type { MockAttempt } from './api';
 import styles from './MockTestEngine.module.css';
+import MockTestLoading from './MockTestLoading';
 import { useMockTranslation } from './useMockTranslation';
 import type { QuizLanguage } from '@meow/contracts/exam-paper';
 // import { getExamConfig, getSlotById } from './exam-config';
@@ -74,6 +75,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
+  useBackLayer(showPalette, () => setShowPalette(false));
+  useBackLayer(showSubmitModal, () => setShowSubmitModal(false));
 
   const [deadline, setDeadline] = useState(0);
 
@@ -425,12 +428,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
   if (loadError) return <div className={styles.container}><p role="alert">{loadError}</p><button data-ui-button="state" onClick={() => void loadData(loadController.current?.signal)}>Retry loading test</button></div>;
 
-  if (!paper || loadedScope !== scope || !ready) return (
-    <div className={styles.container} style={{justifyContent: 'center', alignItems: 'center', padding: 20, textAlign: 'center'}}>
-      <h1 style={{ fontSize: '24px', color: '#64748b', margin: '0 0 12px 0' }}>Setting up your mock test environment...</h1>
-      <p style={{ fontSize: '16px', color: '#94a3b8', margin: 0, maxWidth: 400 }}>Please wait while we initialize the secure testing engine, load your questions, and start the timer.</p>
-    </div>
-  );
+  if (!paper || loadedScope !== scope || !ready) return <MockTestLoading />;
 
   const currentSec = paper.sections[currentSection];
   const currentQ = currentSec.questions[currentQuestion];

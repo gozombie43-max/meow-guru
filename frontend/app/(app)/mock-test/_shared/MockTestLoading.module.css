@@ -1,0 +1,29 @@
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  height: 100dvh;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 24px;
+  background: var(--light-canvas, #f5f7fa);
+  color: var(--light-text-secondary, #526176);
+}
+:global(html.theme-dark) .screen {
+  background: var(--dark-canvas, #000);
+  color: var(--oled-secondary, #a2a9b4);
+}
+.status { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.status p { margin: 0; font: 500 15px/1.4 system-ui, sans-serif; }
+.spinner { width: 28px; height: 28px; }
+.spinner line {
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  animation: loadingFade 1s linear infinite;
+}
+@keyframes loadingFade { from { opacity: 1; } to { opacity: 0.15; } }
+@media (prefers-reduced-motion: reduce) {
+  .spinner line { animation: none; opacity: 0.5; }
+}

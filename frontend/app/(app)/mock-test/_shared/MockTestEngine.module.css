@@ -9,7 +9,8 @@
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  width: 100vw;
+  width: 100%;
+  box-sizing: border-box;
   background-color: var(--bg, #f8fafc);
   color: var(--text-dark, #0f172a);
   font-family: system-ui, -apple-system, sans-serif;
@@ -54,6 +55,8 @@
 }
 
 .mainLayout {
+  min-height: 0;
+  min-width: 0;
   display: flex;
   flex: 1;
   overflow: hidden;
@@ -165,6 +168,8 @@
 }
 
 .questionContent {
+  box-sizing: border-box;
+  min-width: 0;
   padding: 2rem;
   flex: 1;
   width: 100%;
@@ -221,7 +226,7 @@
 
 .optionLabel.selected {
   border-color: var(--ios-system-blue, #007aff);
-  background-color: color-mix(in srgb, var(--ios-system-blue, #007aff) 10%, var(--card, #ffffff));
+  background-color: var(--light-accent-soft);
 }
 
 .optionLabel input {
@@ -270,7 +275,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 1rem;
+  padding: calc(4px + var(--safe-top, 0px)) calc(16px + var(--safe-right, 0px)) 4px calc(16px + var(--safe-left, 0px));
   flex-shrink: 0;
   background: var(--card, #ffffff);
   border-bottom: 1px solid var(--border, #e2e8f0);
@@ -413,7 +418,7 @@
 .container :is(button, .mobileTab, .tab) { min-height: 44px; }
 .container button:focus-visible,
 .optionLabel:has(input:focus-visible) {
-  outline: 3px solid var(--light-accent);
+  outline: 3px solid var(--ios-system-blue);
   outline-offset: 3px;
 }
 .timer { font-variant-numeric: tabular-nums; }
@@ -435,11 +440,11 @@
   --border: transparent; --primary: var(--oled-selected);
   color-scheme: dark;
 }
-:global(html.theme-dark) .container :is(.topBar, .mobileHeader) { background: #000000 !important; border-bottom: none !important; }
+:global(html.theme-dark) .container :is(.topBar, .mobileHeader) { background: var(--dark-canvas) !important; border-bottom: none !important; }
 :global(html.theme-dark) .container :is(.modal, .bottomSheet) { border: 0; box-shadow: none; border-radius: 14px; }
 :global(html.theme-dark) .container .optionLabel { border: 1px solid transparent; border-radius: 14px; background: var(--oled-surface); }
 :global(html.theme-dark) .container .optionLabel:hover { background: var(--oled-hover); }
-:global(html.theme-dark) .container .optionLabel.selected { border-color: var(--ios-system-blue, #0a84ff); background: color-mix(in srgb, var(--ios-system-blue, #0a84ff) 12%, var(--oled-surface, #1c1c1e)); }
+:global(html.theme-dark) .container .optionLabel.selected { border-color: var(--ios-system-blue, #0a84ff); background: var(--dark-accent-soft); }
 :global(html.theme-dark) .container :is(.mobilePill, .btnOutline) { border: 0; border-radius: 999px !important; background: var(--oled-inset); }
 :global(html.theme-dark) .container :is(.tab, .mobileTab) { border: 1px solid #3b4048; border-radius: 8px; background: transparent; }
 :global(html.theme-dark) .container :is(.tab.active, .mobileTab.active) { border-color: var(--ios-system-blue, #007aff); color: #edf4fc; }
@@ -448,7 +453,7 @@
 
 /* Keep navigation geometry and colors consistent with the shared button cascade. */
 .container :is(.actionsBar, .mobileBottomBar) {
-  background: #f1f2f4 !important;
+  background: var(--light-surface-muted) !important;
   border-top: 0 !important;
   --ui-control-height: 44px;
   --ui-control-radius: 8px;
@@ -471,7 +476,7 @@
   gap: 8px;
 }
 :global(html.theme-dark) .container :is(.actionsBar, .mobileBottomBar) {
-  background: #1c1c1e !important;
+  background: var(--dark-surface) !important;
   --ui-border: #ffffff;
   --ui-text: #ffffff;
 }
@@ -484,8 +489,8 @@
 }
 
 .container .mobileSectionControl .mobileTab {
-  height: 36px;
-  min-height: 36px;
+  height: auto;
+  min-height: 44px;
 }
 
 /* Keep exam metadata quiet so the question leads the reading order. */
@@ -503,6 +508,25 @@
   font-size: 12px;
   font-weight: 500;
 }
-.container .mobileMain {
-  padding-top: 8px;
+/* Fullscreen interactive shell: one scrolling body and one content inset. */
+@media (max-width: 1023px) {
+  .container .mobileMain {
+    padding: 16px calc(16px + var(--safe-right, 0px)) calc(88px + var(--safe-bottom, 0px)) calc(16px + var(--safe-left, 0px));
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .container .questionContent {
+    flex: 0 0 auto;
+    padding: 0;
+  }
+  .container .mobileBottomBar {
+    padding: 12px calc(16px + var(--safe-right, 0px)) calc(16px + var(--safe-bottom, 0px)) calc(16px + var(--safe-left, 0px));
+  }
+  .container .bottomSheet {
+    box-sizing: border-box;
+    max-height: calc(100dvh - var(--safe-top, 0px) - 16px);
+    padding-inline: max(16px, var(--safe-left, 0px)) max(16px, var(--safe-right, 0px));
+    overflow: hidden;
+  }
+  .bottomSheet .questionGrid { min-height: 0; }
 }

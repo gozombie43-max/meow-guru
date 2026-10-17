@@ -1,0 +1,142 @@
+<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,select{font:inherit}:root{--ios-system-blue:#007aff}html.theme-dark{--ios-system-blue:#0a84ff}._container_a0181f {
+  --result-bg: var(--light-canvas, #f5f5f7);
+  --result-card: var(--light-surface, #ffffff);
+  --result-text: var(--light-text, #1c1c1e);
+  --result-muted: var(--light-text-secondary, #63636b);
+  --result-border: var(--light-border, #e5e5ea);
+  --result-blue: var(--ios-system-blue, #007aff);
+  --result-green: #168258;
+  --result-red: #d63741;
+  box-sizing: border-box;
+  min-height: 100dvh;
+  padding: max(12px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
+  background: var(--result-bg);
+  color: var(--result-text);
+  display: grid;
+  align-items: center;
+  font-variant-numeric: tabular-nums;
+}
+
+html.theme-dark ._container_a0181f,
+body.theme-dark ._container_a0181f {
+  --result-bg: #000000;
+  --result-card: #18181b;
+  --result-text: #f5f5f7;
+  --result-muted: #a1a1aa;
+  --result-border: #2c2c30;
+  --result-green: #32d19a;
+  --result-red: #ff696e;
+}
+
+._contentWrap_a0181f {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.5dvh, 14px);
+  min-width: 0;
+}
+
+._header_a0181f { display: flex; align-items: center; gap: 10px; min-width: 0; }
+._header_a0181f > div { flex: 1; min-width: 0; }
+._header_a0181f h1 { margin: 0; font-size: 20px; font-weight: 750; letter-spacing: -0.6px; line-height: 1.25; }
+._header_a0181f p { margin: 3px 0 0; color: var(--result-muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+._backButton_a0181f { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; background: var(--result-card); border: 1px solid var(--result-border); border-radius: 14px; color: var(--result-text); cursor: pointer; }
+._completeBadge_a0181f { display: inline-flex; align-items: center; gap: 4px; color: var(--result-green); font-size: 10px; font-weight: 600; }
+
+._scoreCard_a0181f { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--result-card); border: 1px solid var(--result-border); border-radius: 20px; padding: clamp(14px, 2.4dvh, 22px); }
+._scoreSummary_a0181f { min-width: 0; }
+._eyebrow_a0181f { font-size: 10px; color: var(--result-muted); font-weight: 650; letter-spacing: 1.5px; }
+._scoreNumber_a0181f { font-size: clamp(34px, 5dvh, 46px); font-weight: 750; letter-spacing: -1.5px; line-height: 1.15; margin: 6px 0; }
+._scoreNumber_a0181f > span { font-size: 16px; font-weight: 500; letter-spacing: -0.3px; color: var(--result-muted); }
+._scoreSummary_a0181f p { font-size: 11px; color: var(--result-muted); margin: 0; line-height: 1.5; }
+._percentile_a0181f { display: inline-block; font-size: 10px; color: var(--result-blue); margin-top: 6px; }
+._scoreRing_a0181f { width: clamp(80px, 12dvh, 100px); aspect-ratio: 1; border-radius: 50%; flex-shrink: 0; padding: 6px; box-sizing: border-box; background: conic-gradient(var(--result-blue) var(--score-progress), var(--result-border) 0); }
+._scoreRing_a0181f > div { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; border-radius: 50%; background: var(--result-card); }
+._scoreRing_a0181f strong { font-size: 23px; font-weight: 700; letter-spacing: -1px; }
+._scoreRing_a0181f small { font-size: 12px; margin-left: 1px; }
+._scoreRing_a0181f span { font-size: 10px; color: var(--result-muted); margin-top: 2px; }
+
+._stats_a0181f { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 10px 0; background: var(--result-card); border: 1px solid var(--result-border); border-radius: 16px; }
+._stats_a0181f > div { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+._stats_a0181f > div + div { border-left: 1px solid var(--result-border); }
+._stats_a0181f span { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 550; }
+._stats_a0181f strong { font-size: 22px; font-weight: 700; line-height: 1.1; }
+._correct_a0181f { color: var(--result-green); }
+._incorrect_a0181f { color: var(--result-red); }
+._skipped_a0181f { color: var(--result-muted); }
+
+._sectionBreakdown_a0181f { background: var(--result-card); border: 1px solid var(--result-border); border-radius: 18px; padding: 14px 16px 4px; }
+._sectionHeading_a0181f { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 28px; }
+._sectionHeading_a0181f h2 { font-size: 14px; font-weight: 700; letter-spacing: -0.2px; margin: 0; }
+._sectionHeading_a0181f > span { font-size: 10px; color: var(--result-muted); }
+._sectionLegend_a0181f { display: flex; gap: 12px; font-size: 9px; margin: 4px 0 0; }
+._sectionLegend_a0181f span { display: inline-flex; align-items: center; gap: 4px; }
+._sectionLegend_a0181f span::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+._sectionRows_a0181f { min-height: 0; }
+._sectionRow_a0181f { padding: 11px 0; }
+._sectionRow_a0181f + ._sectionRow_a0181f { border-top: 1px solid var(--result-border); }
+._rowHeading_a0181f { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+._sectionName_a0181f { font-size: 12px; font-weight: 650; line-height: 1.4; }
+._sectionScore_a0181f { flex-shrink: 0; font-size: 12px; }
+._sectionScore_a0181f > span { color: var(--result-muted); font-size: 10px; }
+._rowDetails_a0181f { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--result-muted); font-size: 9px; margin-top: 4px; }
+._sectionCounts_a0181f { display: flex; gap: 12px; }
+._sectionCounts_a0181f > span { display: inline-flex; align-items: center; gap: 3px; min-width: 26px; font-size: 10px; font-weight: 550; }
+._barTrack_a0181f { height: 3px; border-radius: 4px; overflow: hidden; background: var(--result-border); display: flex; margin-top: 7px; }
+._barTrack_a0181f > span { height: 100%; }
+._barCorrect_a0181f { background: var(--result-green); }
+._barIncorrect_a0181f { background: var(--result-red); }
+._barSkipped_a0181f { background: var(--result-muted); opacity: 0.3; }
+._pagination_a0181f { display: flex; align-items: center; gap: 2px; }
+._pagination_a0181f span { font-size: 10px; color: var(--result-muted); min-width: 34px; text-align: center; }
+._pagination_a0181f button { display: grid; place-items: center; width: 32px; height: 32px; border: 0; background: transparent; color: var(--result-blue); border-radius: 8px; cursor: pointer; }
+._pagination_a0181f button:disabled { opacity: 0.3; cursor: default; }
+._emptyState_a0181f { font-size: 12px; line-height: 1.5; color: var(--result-muted); }
+
+._focusTopics_a0181f { display: flex; align-items: center; gap: 8px; min-height: 36px; font-size: 11px; }
+._focusTopics_a0181f label { color: var(--result-muted); flex-shrink: 0; }
+._focusTopics_a0181f select { min-width: 0; flex: 1; max-width: 100%; background: var(--result-card); border: 1px solid var(--result-border); color: var(--result-text); border-radius: 8px; padding: 7px; font: inherit; text-transform: capitalize; }
+._focusTopics_a0181f a { color: var(--result-blue); display: inline-flex; align-items: center; gap: 4px; text-decoration: none; min-height: 36px; }
+._confidentialNote_a0181f { font-size: 11px; line-height: 1.5; color: var(--result-muted); margin: 0; }
+._actions_a0181f { display: flex; gap: 8px; }
+._container_a0181f :is(._btnPrimary_a0181f, ._btnOutline_a0181f)[data-ui-button],
+._loadingContainer_a0181f :is(._btnPrimary_a0181f, ._btnOutline_a0181f)[data-ui-button] {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  flex: 1; min-height: 44px; min-width: 0; padding: 10px 8px !important;
+  border: 1px solid var(--result-blue, var(--ios-system-blue, #007aff)) !important;
+  color: var(--result-blue, var(--ios-system-blue, #007aff)) !important;
+  background: transparent !important; box-shadow: none !important; border-radius: 12px !important;
+  font-size: 11px !important; font-weight: 600; cursor: pointer;
+}
+._actions_a0181f ._btnPrimary_a0181f[data-ui-button] { flex: 1.5; }
+._container_a0181f button:focus-visible, ._container_a0181f a:focus-visible, ._container_a0181f select:focus-visible { outline: 2px solid var(--result-blue); outline-offset: 3px; }
+._loadingContainer_a0181f { min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 16px; color: var(--text-secondary); }
+._loadingContainer_a0181f ._btnPrimary_a0181f[data-ui-button] { flex: none; }
+._spinner_a0181f { width: 28px; height: 28px; border: 2px solid var(--ui-border, #d1d1d6); border-top-color: var(--ios-system-blue, #007aff); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { ._spinner_a0181f { animation: none; } }
+
+@media (max-height: 700px) {
+  ._container_a0181f { padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  ._contentWrap_a0181f { gap: 6px; }
+  ._scoreCard_a0181f { padding: 10px 14px; }
+  ._scoreNumber_a0181f { font-size: 30px; margin: 2px 0; }
+  ._scoreRing_a0181f { width: 68px; padding: 5px; }
+  ._stats_a0181f { padding: 8px 0; }
+  ._stats_a0181f > div { flex-direction: row; gap: 6px; }
+  ._stats_a0181f strong { font-size: 18px; }
+  ._sectionBreakdown_a0181f { padding: 8px 14px 2px; }
+  ._sectionRow_a0181f { padding: 6px 0; }
+  ._rowDetails_a0181f { margin-top: 2px; line-height: 12px; }
+  ._barTrack_a0181f { display: none; }
+  ._percentile_a0181f { margin-top: 2px; }
+}
+@media (max-width: 360px) {
+  ._container_a0181f { padding-left: 12px; padding-right: 12px; }
+  ._completeBadge_a0181f { font-size: 9px; }
+  ._actions_a0181f { gap: 6px; }
+  ._actions_a0181f svg { display: none; }
+}
+</style></head><body><main class="_container_a0181f"><div class="_contentWrap_a0181f"><header class="_header_a0181f"><button class="_backButton_a0181f" aria-label="Back to tests"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg></button><div><h1>Test result</h1><p>SSC CHSL Tier I · Completed</p></div><span class="_completeBadge_a0181f"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Submitted</span></header><section class="_scoreCard_a0181f" aria-label="Score summary"><div class="_scoreSummary_a0181f"><span class="_eyebrow_a0181f">TOTAL SCORE</span><div class="_scoreNumber_a0181f">134.5<span> / 200</span></div><p>80 of 100 questions attempted</p></div><div class="_scoreRing_a0181f" style="--score-progress:67.25%"><div><strong>67.3<small>%</small></strong><span>Score</span></div></div></section><div class="_stats_a0181f" aria-label="Answer summary"><div><span class="_correct_a0181f"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Correct</span><strong>68</strong></div><div><span class="_incorrect_a0181f"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>Wrong</span><strong>12</strong></div><div><span class="_skipped_a0181f"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minus" aria-hidden="true"><path d="M5 12h14"></path></svg>Skipped</span><strong>20</strong></div></div><section class="_sectionBreakdown_a0181f" aria-labelledby="section-results-title"><div class="_sectionHeading_a0181f"><h2 id="section-results-title">Section results</h2><span>4 sections</span></div><div class="_sectionLegend_a0181f" aria-hidden="true"><span class="_correct_a0181f">Correct</span><span class="_incorrect_a0181f">Wrong</span><span class="_skipped_a0181f">Skipped</span></div><div class="_sectionRows_a0181f"><div class="_sectionRow_a0181f"><div class="_rowHeading_a0181f"><span class="_sectionName_a0181f">Math</span><span class="_sectionScore_a0181f"><strong>32.5</strong><span> / 50</span></span></div><div class="_rowDetails_a0181f"><div class="_sectionCounts_a0181f"><span class="_correct_a0181f" aria-label="17 correct"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>17</span><span class="_incorrect_a0181f" aria-label="3 wrong"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>3</span><span class="_skipped_a0181f" aria-label="5 skipped"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minus" aria-hidden="true"><path d="M5 12h14"></path></svg>5</span></div><span>85% accuracy</span></div><div class="_barTrack_a0181f" aria-hidden="true"><span class="_barCorrect_a0181f" style="width:68%"></span><span class="_barIncorrect_a0181f" style="width:12%"></span><span class="_barSkipped_a0181f" style="width:20%"></span></div></div><div class="_sectionRow_a0181f"><div class="_rowHeading_a0181f"><span class="_sectionName_a0181f">English</span><span class="_sectionScore_a0181f"><strong>32.5</strong><span> / 50</span></span></div><div class="_rowDetails_a0181f"><div class="_sectionCounts_a0181f"><span class="_correct_a0181f" aria-label="17 correct"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>17</span><span class="_incorrect_a0181f" aria-label="3 wrong"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>3</span><span class="_skipped_a0181f" aria-label="5 skipped"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minus" aria-hidden="true"><path d="M5 12h14"></path></svg>5</span></div><span>85% accuracy</span></div><div class="_barTrack_a0181f" aria-hidden="true"><span class="_barCorrect_a0181f" style="width:68%"></span><span class="_barIncorrect_a0181f" style="width:12%"></span><span class="_barSkipped_a0181f" style="width:20%"></span></div></div><div class="_sectionRow_a0181f"><div class="_rowHeading_a0181f"><span class="_sectionName_a0181f">Reasoning</span><span class="_sectionScore_a0181f"><strong>32.5</strong><span> / 50</span></span></div><div class="_rowDetails_a0181f"><div class="_sectionCounts_a0181f"><span class="_correct_a0181f" aria-label="17 correct"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>17</span><span class="_incorrect_a0181f" aria-label="3 wrong"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>3</span><span class="_skipped_a0181f" aria-label="5 skipped"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minus" aria-hidden="true"><path d="M5 12h14"></path></svg>5</span></div><span>85% accuracy</span></div><div class="_barTrack_a0181f" aria-hidden="true"><span class="_barCorrect_a0181f" style="width:68%"></span><span class="_barIncorrect_a0181f" style="width:12%"></span><span class="_barSkipped_a0181f" style="width:20%"></span></div></div><div class="_sectionRow_a0181f"><div class="_rowHeading_a0181f"><span class="_sectionName_a0181f">GK</span><span class="_sectionScore_a0181f"><strong>32.5</strong><span> / 50</span></span></div><div class="_rowDetails_a0181f"><div class="_sectionCounts_a0181f"><span class="_correct_a0181f" aria-label="17 correct"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>17</span><span class="_incorrect_a0181f" aria-label="3 wrong"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>3</span><span class="_skipped_a0181f" aria-label="5 skipped"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minus" aria-hidden="true"><path d="M5 12h14"></path></svg>5</span></div><span>85% accuracy</span></div><div class="_barTrack_a0181f" aria-hidden="true"><span class="_barCorrect_a0181f" style="width:68%"></span><span class="_barIncorrect_a0181f" style="width:12%"></span><span class="_barSkipped_a0181f" style="width:20%"></span></div></div></div></section><div class="_focusTopics_a0181f"><label for="result-focus-topic">Focus on</label><select id="result-focus-topic"><option value="synonyms-antonyms" selected="">synonyms antonyms</option><option value="idioms-phrases">idioms phrases</option></select><a href="/english/synonyms-antonyms">Practice<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a></div><p class="_confidentialNote_a0181f">Confidential assessment · One attempt. Answer review unavailable.</p><footer class="_actions_a0181f"><button data-ui-button="secondary" class="_btnOutline_a0181f">All tests</button></footer></div></main></body></html>
