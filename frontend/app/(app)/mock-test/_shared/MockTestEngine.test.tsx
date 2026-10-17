@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import MockTestEngine from './MockTestEngine';
 import { StrictMode } from 'react';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { seedStartResponse } from '@/lib/start-response-cache';
 import { getMockStartKey } from './startKey';
 import TestInstructions from './TestInstructions';
@@ -13,7 +14,7 @@ const { replace, push, renderQuestion, search, authState } = vi.hoisted(() => ({
 const router = { replace, push };
 vi.mock('next/navigation', () => ({ useRouter: () => router, useSearchParams: () => ({ get: () => search.resume }) }));
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => authState }));
-vi.mock('@/hooks/useMediaQuery', () => ({ useMediaQuery: () => true }));
+vi.mock('@/hooks/useMediaQuery', () => ({ useMediaQuery: vi.fn(() => true) }));
 vi.mock('@/components/MathRenderer', () => ({ default: ({ text }: { text: string }) => {
   renderQuestion(text);
   return <span>{text}</span>;
@@ -25,6 +26,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date('2026-09-09T00:00:00Z'));
   vi.clearAllMocks();
+  vi.mocked(useMediaQuery).mockReturnValue(true);
   sessionStorage.clear();
   localStorage.clear();
   search.resume = null;
@@ -297,21 +299,35 @@ describe('native bilingual paper attempts', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Computer' }));
     expect(screen.getByText('English c1')).toBeVisible();
   });
-  it('preserves answers, review flags, visits, navigation and elapsed time across language changes', async () => {
+  it('preserves answers, review flags, visits and elapsed time without the language and save strips', async () => {
     vi.mocked(startTest).mockResolvedValue(nativeAttempt());
     await mount();
     fireEvent.click(screen.getByRole('radio', { name: 'Answer Option 2' }));
     fireEvent.click(screen.getByRole('button', { name: 'Mark for Review' }));
     expect(screen.getByText('English e2')).toBeVisible();
     await act(async () => { vi.advanceTimersByTime(10000); });
-    fireEvent.click(screen.getByRole('button', { name: 'বাংলা' }));
-    expect(screen.getByText('বাংলা e2')).toBeVisible();
+    expect(screen.queryByRole('group', { name: 'Question language' })).not.toBeInTheDocument();
     expect(screen.getByText('00:50')).toBeVisible();
     fireEvent.click(screen.getByRole('button', { name: 'Previous' }));
-    expect(screen.getByRole('radio', { name: 'Answer দুই' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Answer Option 2' })).toBeChecked();
     await act(async () => { vi.advanceTimersByTime(700); });
-    expect(autosaveAttempt).toHaveBeenLastCalledWith('native', expect.objectContaining({ language: 'bn', answers: { e1: 'B' }, questionStatuses: { e1: 'answered_marked', e2: 'not_answered' } }), 'test-token');
+    expect(autosaveAttempt).toHaveBeenLastCalledWith('native', expect.objectContaining({ language: 'en', answers: { e1: 'B' }, questionStatuses: { e1: 'answered_marked', e2: 'not_answered' } }), 'test-token');
+    expect(screen.queryByText('Progress saved')).not.toBeInTheDocument();
     expect(startTest).toHaveBeenCalledOnce();
+  });
+  it('switches sections inside the mobile palette and closes it only when choosing a question', async () => {
+    vi.mocked(useMediaQuery).mockReturnValue(false);
+    const data = nativeAttempt();
+    vi.mocked(startTest).mockResolvedValue({ ...data, paper: { ...data.paper!, compositeTimer: true } });
+    await mount();
+    expect(screen.queryByRole('button', { name: 'Computer' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /^Q 1\// }));
+    fireEvent.click(screen.getByRole('button', { name: 'Computer' }));
+    expect(screen.getByText('Questions Palette')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Computer' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: '1', exact: true }));
+    expect(screen.queryByText('Questions Palette')).not.toBeInTheDocument();
+    expect(screen.getByText('English c1')).toBeVisible();
   });
   it('saves expiring sections, moves to the next timer and blocks returning to a locked section', async () => {
     vi.mocked(startTest).mockResolvedValue(nativeAttempt());
@@ -330,15 +346,14 @@ describe('native bilingual paper attempts', () => {
     expect(submitAttempt).not.toHaveBeenCalled();
   });
   it('recovers an unsent draft and language after refresh without restarting the server timer', async () => {
-    vi.mocked(startTest).mockResolvedValue(nativeAttempt());
+    vi.mocked(startTest).mockResolvedValue({ ...nativeAttempt(), language: 'bn' });
     await mount();
-    fireEvent.click(screen.getByRole('radio', { name: 'Answer Option 2' }));
-    fireEvent.click(screen.getByRole('button', { name: 'বাংলা' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Answer দুই' }));
     cleanup();
     const resumed = { ...nativeAttempt(), sectionRemainingTimes: { english: 45, computer: 120 } };
     vi.mocked(startTest).mockResolvedValue(resumed);
     await mount();
-    expect(screen.getByRole('button', { name: 'বাংলা' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('বাংলা e1')).toBeVisible();
     expect(screen.getByRole('radio', { name: 'Answer দুই' })).toBeChecked();
     expect(screen.getByText('00:45')).toBeVisible();
     await act(async () => { vi.advanceTimersByTime(700); });

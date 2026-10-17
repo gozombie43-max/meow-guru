@@ -84,7 +84,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const conflictRef = useRef(false);
   const autoSubmitAttemptedRef = useRef(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState('');
+  const [saveError, setSaveError] = useState('');
   const [hasConflict, setHasConflict] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confidential, setConfidential] = useState(false);
@@ -94,7 +94,6 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     if (resourceRef.current !== expectedScope) throw abortError();
     if (conflictRef.current) throw new Error('Reload this attempt to resolve the save conflict.');
     const baseRevision = saveRevisionRef.current;
-    setSaveStatus('Saving…');
     try {
       const result = await autosaveAttempt(attemptIdRef.current, { ...progress, baseRevision, revision: baseRevision + 1 }, tokenRef.current!);
       if (resourceRef.current !== expectedScope) return;
@@ -118,11 +117,11 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
           if (draft) localStorage.setItem(key, JSON.stringify({ ...draft, revision: saveRevisionRef.current }));
         } catch { /* Server persistence remains available when browser storage is disabled. */ }
       }
-      setSaveStatus('Progress saved');
+      setSaveError('');
     } catch (error) {
       if (resourceRef.current !== expectedScope) throw error;
       if (error instanceof Error && 'conflict' in error && error.conflict) { conflictRef.current = true; setHasConflict(true); }
-      setSaveStatus(error instanceof Error ? error.message : 'Progress could not be saved.');
+      setSaveError(error instanceof Error ? error.message : 'Progress could not be saved.');
       throw error;
     }
   }, []);
@@ -396,7 +395,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     }
   };
 
-  const jumpToQuestion = (secIdx: number, qIdx: number) => {
+  const jumpToQuestion = (secIdx: number, qIdx: number, keepPaletteOpen = false) => {
     if (sectionSaving || sectionError) return;
     if (paper?.schemaDriven && !paper.compositeTimer && secIdx !== currentSection) return;
     // mark current as not_answered if not answered
@@ -406,7 +405,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     }
     setCurrentSection(secIdx);
     setCurrentQuestion(qIdx);
-    setShowPalette(false);
+    if (!keepPaletteOpen) setShowPalette(false);
   };
 
   const renderMath = (text: string) => {
@@ -450,12 +449,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   return (
     <div className={styles.container}>
       {confidential && <div role="note" style={{ padding: '8px 16px', fontSize: 12 }}>Confidential assessment · One attempt · {paper.compositeTimer ? 'Total exam time' : 'Section timing'} applies · No answer review</div>}
-      {paper.schemaDriven && <div className={styles.languageBar} role="group" aria-label="Question language">
-        <button data-ui-button="state" aria-pressed={language === 'en'} onClick={() => setLanguage('en')}>ENG</button>
-        <span aria-hidden="true">|</span>
-        <button data-ui-button="state" aria-pressed={language === 'bn'} onClick={() => setLanguage('bn')}>বাংলা</button>
-      </div>}
-      {saveStatus && <div role="status">{saveStatus}{hasConflict && <button data-ui-button="state" onClick={() => window.location.reload()}>Reload saved attempt</button>}</div>}
+      {saveError && <div role="status">{saveError}{hasConflict && <button data-ui-button="state" onClick={() => window.location.reload()}>Reload saved attempt</button>}</div>}
       {sectionSaving && <div role="status">Saving section…</div>}
       {sectionError && <div role="alert">{sectionError}<button data-ui-button="state" disabled={hasConflict || sectionSaving} onClick={() => finishSection()}>Retry saving section</button></div>}
       {submitError && <div role="alert">{submitError}<button data-ui-button="state" disabled={isSubmitting} onClick={() => void handleFinalSubmit()}>Retry submission</button></div>}
@@ -519,15 +513,6 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         {/* Right / Main Panel */}
         <div className={`${styles.rightPanel} ${!isDesktop ? styles.mobileMain : ''}`}>
 
-          {!isDesktop && (
-            <div className={styles.mobileSectionControl}>
-              {paper.sections.map((sec: MockSection, idx: number) => (
-                <div key={sec.id ?? sec.key ?? idx} className={`${styles.mobileTab} ${currentSection === idx ? styles.active : ''}`} onClick={() => jumpToQuestion(idx, 0)} aria-disabled={paper.schemaDriven && !paper.compositeTimer && idx !== currentSection} aria-label={`${sec.title ?? sec.label}${lockedSections.includes(sec.key ?? "") ? " (locked)" : ""}`} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
-                  {sec.title ?? sec.label}
-                </div>
-              ))}
-            </div>
-          )}
 
           <div className={styles.questionContent}>
             <div className={styles.qNumber}>Question {currentQuestion + 1}</div>
@@ -601,6 +586,13 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
             <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1rem'}}>
               <h3 style={{margin: 0}}>Questions Palette</h3>
               <button data-ui-button="state" data-ui-shape="icon" aria-label="Close" onClick={() => setShowPalette(false)} style={{background:'transparent', border:'none', fontSize:'1.25rem'}}><X aria-hidden="true" /></button>
+            </div>
+            <div className={styles.mobileSectionControl}>
+              {paper.sections.map((sec: MockSection, idx: number) => (
+                <div key={sec.id ?? sec.key ?? idx} className={`${styles.mobileTab} ${currentSection === idx ? styles.active : ''}`} onClick={() => jumpToQuestion(idx, idx === currentSection ? currentQuestion : 0, true)} aria-disabled={paper.schemaDriven && !paper.compositeTimer && idx !== currentSection} aria-label={`${sec.title ?? sec.label}${lockedSections.includes(sec.key ?? "") ? " (locked)" : ""}`} role="button" aria-pressed={currentSection === idx} tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
+                  {sec.title ?? sec.label}
+                </div>
+              ))}
             </div>
             <div className={styles.questionGrid}>
               {paper.sections[currentSection].questions.map((q: MockQuestion, idx: number) => {

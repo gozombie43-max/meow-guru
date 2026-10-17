@@ -69,26 +69,39 @@
 }
 
 .tabs {
-  display: flex;
-  overflow-x: auto;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  background: transparent;
+  gap: 0.5rem;
+  padding: 0.5rem;
   border-bottom: 1px solid var(--border, #e2e8f0);
 }
 
 .tab {
-  padding: 0.75rem;
-  font-size: 0.875rem;
+  padding: 0.25rem;
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
-  white-space: nowrap;
-  border-bottom: 2px solid transparent;
-  flex: 1;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: transparent;
+  min-width: 0;
+  height: 44px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   color: var(--text-muted, #64748b);
 }
 
 .tab.active {
-  border-bottom-color: var(--primary, var(--ios-system-blue));
-  color: var(--primary, var(--ios-system-blue));
+  border-color: var(--ios-system-blue, #007aff);
+  color: var(--text-dark, #172033);
 }
 
 .questionGrid {
@@ -160,15 +173,19 @@
 }
 
 .qNumber {
-  font-weight: 600;
-  font-size: 1.125rem;
-  margin-bottom: 1rem;
+  color: var(--text-muted, #64748b);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  margin-bottom: 12px;
 }
 
 .qText {
+  color: var(--text-dark, #0f172a);
   font-size: 1.125rem;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
+  font-weight: 500;
+  line-height: 1.65;
+  margin-bottom: 24px;
 }
 
 .qImage {
@@ -180,14 +197,17 @@
 .options {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 12px;
 }
 
 .optionLabel {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 14px;
+  padding: 14px 16px;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.5;
   border: 1px solid var(--border, #e2e8f0);
   border-radius: 0.5rem;
   cursor: pointer;
@@ -200,15 +220,16 @@
 }
 
 .optionLabel.selected {
-  border-color: var(--primary, var(--ios-system-blue));
-  background-color: var(--light-accent-soft);
+  border-color: var(--ios-system-blue, #007aff);
+  background-color: color-mix(in srgb, var(--ios-system-blue, #007aff) 10%, var(--card, #ffffff));
 }
 
 .optionLabel input {
+  flex-shrink: 0;
   margin: 0;
   width: 1.25rem;
   height: 1.25rem;
-  accent-color: var(--primary, var(--ios-system-blue));
+  accent-color: var(--ios-system-blue, #007aff);
 }
 
 .actionsBar {
@@ -249,7 +270,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
+  padding: 4px 1rem;
+  flex-shrink: 0;
   background: var(--card, #ffffff);
   border-bottom: 1px solid var(--border, #e2e8f0);
   position: sticky;
@@ -267,25 +289,36 @@
 }
 
 .mobileSectionControl {
-  display: flex;
-  overflow-x: auto;
-  background: var(--card, #ffffff);
-  border-bottom: 1px solid var(--border, #e2e8f0);
-  padding: 0.5rem 1rem;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  background: transparent;
+  padding: 4px 0;
+  flex-shrink: 0;
   gap: 0.5rem;
 }
 
 .mobileTab {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  background: var(--bg, #f1f5f9);
-  white-space: nowrap;
+  min-width: 0;
+  height: 44px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 
 .mobileTab.active {
-  background: var(--primary, var(--ios-system-blue));
-  color: white;
+  border-color: var(--ios-system-blue, #007aff);
+  color: var(--text-dark, #172033);
 }
 
 .mobileMain {
@@ -403,38 +436,73 @@
   color-scheme: dark;
 }
 :global(html.theme-dark) .container :is(.topBar, .mobileHeader) { background: #000000 !important; border-bottom: none !important; }
-:global(html.theme-dark) .container :is(.optionLabel, .modal, .bottomSheet) { border: 0; box-shadow: none; border-radius: 14px; }
-:global(html.theme-dark) .container .optionLabel { background: var(--oled-surface); }
+:global(html.theme-dark) .container :is(.modal, .bottomSheet) { border: 0; box-shadow: none; border-radius: 14px; }
+:global(html.theme-dark) .container .optionLabel { border: 1px solid transparent; border-radius: 14px; background: var(--oled-surface); }
 :global(html.theme-dark) .container .optionLabel:hover { background: var(--oled-hover); }
-:global(html.theme-dark) .container .optionLabel.selected { background: var(--oled-selected-soft); }
-:global(html.theme-dark) .container :is(.tab, .mobileTab, .mobilePill, .btnOutline) { border: 0; border-radius: 999px !important; background: var(--oled-inset); }
-:global(html.theme-dark) .container :is(.tab.active, .mobileTab.active) { background: var(--oled-selected); color: #edf4fc; }
+:global(html.theme-dark) .container .optionLabel.selected { border-color: var(--ios-system-blue, #0a84ff); background: color-mix(in srgb, var(--ios-system-blue, #0a84ff) 12%, var(--oled-surface, #1c1c1e)); }
+:global(html.theme-dark) .container :is(.mobilePill, .btnOutline) { border: 0; border-radius: 999px !important; background: var(--oled-inset); }
+:global(html.theme-dark) .container :is(.tab, .mobileTab) { border: 1px solid #3b4048; border-radius: 8px; background: transparent; }
+:global(html.theme-dark) .container :is(.tab.active, .mobileTab.active) { border-color: var(--ios-system-blue, #007aff); color: #edf4fc; }
 :global(html.theme-dark) .container .qBubble.notVisited { background: var(--oled-inset); color: var(--oled-text); }
 :global(html.theme-dark) .container .qBubble.current { box-shadow: none; outline: 2px solid var(--ios-system-blue); outline-offset: 2px; }
-.languageBar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+
+/* Keep navigation geometry and colors consistent with the shared button cascade. */
+.container :is(.actionsBar, .mobileBottomBar) {
+  background: #f1f2f4 !important;
+  border-top: 0 !important;
+  --ui-control-height: 44px;
+  --ui-control-radius: 8px;
+  --ui-surface: transparent;
+  --ui-border: #64748b;
+  --ui-text: #334155;
+  --ui-action: var(--ios-system-blue, #007aff);
+}
+.container :is(.actionsBar, .mobileBottomBar) :is(.btnOutline, .btnPrimary) {
+  height: 44px;
+  min-width: 0;
+  border-radius: 8px !important;
+  padding: 0 8px !important;
+  font-size: 13px !important;
+  white-space: nowrap;
+}
+.container .mobileBottomBar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  padding: 4px 16px;
-  background: var(--bg-surface, #fff);
-  color: var(--text-primary, #172033);
+}
+:global(html.theme-dark) .container :is(.actionsBar, .mobileBottomBar) {
+  background: #1c1c1e !important;
+  --ui-border: #ffffff;
+  --ui-text: #ffffff;
+}
+:global(html.theme-dark) .container :is(.actionsBar, .mobileBottomBar) :is(.btnOutline, .btnPrimary) {
+  border-radius: 8px !important;
+}
+.container :is(.actionsBar, .mobileBottomBar) :is(.btnOutline, .btnPrimary):disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-.languageBar button {
-  min-height: 44px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font: inherit;
+.container .mobileSectionControl .mobileTab {
+  height: 36px;
+  min-height: 36px;
 }
 
-.languageBar button[aria-pressed='true'] {
+/* Keep exam metadata quiet so the question leads the reading order. */
+.container .mobileHeader .examName {
+  font-size: 13px !important;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+.container .mobileHeader .timer {
+  font-size: 14px !important;
+  font-weight: 600;
   color: var(--ios-system-blue, #007aff);
-  font-weight: 700;
 }
-
-[data-theme='dark'] .languageBar,
-:global(html.theme-dark) .languageBar {
-  background: #141619;
-  color: #f1f5f9;
+.container .mobileHeader .mobilePill {
+  font-size: 12px;
+  font-weight: 500;
+}
+.container .mobileMain {
+  padding-top: 8px;
 }
