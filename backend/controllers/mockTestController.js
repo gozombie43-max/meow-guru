@@ -30,6 +30,7 @@ import {
   summarizeSlot,
 } from '../services/mockTestEngine.js';
 import { notifyNewMockPublished } from '../services/mockPublicationNotificationService.js';
+import { sectionTiming } from '../services/mock/sectionTiming.js';
 
 const cleanAttempt = (doc) => {
   if (!doc) return doc;
@@ -38,7 +39,8 @@ const cleanAttempt = (doc) => {
 };
 
 function presentAttempt(doc) {
-  const clean = cleanAttempt(doc);
+  const timing = sectionTiming(doc);
+  const clean = { ...cleanAttempt(doc), ...(timing || {}), ...(timing && timing.timerSection !== doc.currentSection ? { currentQuestion: 0 } : {}) };
   const timeLeft = Math.max(0, Math.floor((new Date(doc.deadlineAt).getTime() - Date.now()) / 1000));
   if (doc.status === 'completed' && doc.assessmentMode !== 'confidential') {
     const answerKey = { ...clean.answerKey };
@@ -49,7 +51,7 @@ function presentAttempt(doc) {
     return { ...clean, answerKey, attemptId: doc.id, timeLeft };
   }
   const { answerKey: _key, ...safe } = clean;
-  return { ...safe, attemptId: doc.id, paper: activePaper(safe.paper), timeLeft };
+  return { ...safe, attemptId: doc.id, paper: activePaper(safe.paper), timeLeft: doc.deadlineAt ? timeLeft : undefined };
 }
 
 export const fetchExamSlots = async (req, res) => {
@@ -142,10 +144,12 @@ export const adminFetchAllSlots = async (req, res) => {
 
 export const adminUploadPaper = async (req, res) => {
   try {
-    const { slot, questions } = req.body;
+    const { questions } = req.body;
+    const paper = req.body.sections || req.body.exam === 'SSC_CGL' || req.body.exam === 'SSC_CHSL' ? req.body : req.body.paper;
+    const slot = req.body.slot || (paper ? { id: uuidv4(), title: `${paper.exam || 'SSC'} Tier ${paper.tier || ''} ${paper.type || 'paper'}` } : null);
     if (!slot) return res.status(400).json({ error: 'slot metadata is required' });
-    if (!Array.isArray(questions) || questions.length === 0) return res.status(400).json({ error: 'questions array is required and must not be empty' });
-    const result = await uploadFullPaper({ slotData: slot, questions, examMode: req.query.examMode });
+    if (!paper && (!Array.isArray(questions) || questions.length === 0)) return res.status(400).json({ error: 'questions array is required and must not be empty' });
+    const result = await uploadFullPaper({ slotData: slot, questions, paper, examMode: req.query.examMode });
     if (result.isNewSlot && result.type === "mock") {
       void notifyNewMockPublished({ id: result.slotId, examSlug: result.examSlug, title: result.title, tier: result.tier, type: result.type }).catch(runtimeLog.error);
     }
@@ -188,11 +192,11 @@ export const startMockTest = async (req, res) => {
 
     const { clientPaper, answerKey } = await buildPaper({ examSlug, testId, slot });
     validateAssessment(slot, clientPaper, answerKey);
-    if (slot.assessmentMode === 'confidential') clientPaper.compositeTimer = true;
+    if (slot.assessmentMode === 'confidential' && !clientPaper.schemaDriven) clientPaper.compositeTimer = true;
     clientPaper.sections = clientPaper.sections.filter(section => section.questions.length > 0);
     const startedAt = new Date();
     const durationSeconds = Math.max(60, Math.round((Number(clientPaper.totalDurationMin) || 60) * 60));
-    const deadlineAt = new Date(startedAt.getTime() + durationSeconds * 1000);
+    const deadlineAt = clientPaper.schemaDriven ? null : new Date(startedAt.getTime() + durationSeconds * 1000);
     const doc = {
       id: uuidv4(),
       userId: String(req.user.id),
@@ -216,6 +220,8 @@ export const startMockTest = async (req, res) => {
       result: null,
       weakAreas: null,
     };
+
+    Object.assign(doc, sectionTiming(doc, startedAt.getTime()) || {});
 
     try { await insertAttempt(doc); }
     catch (error) {
@@ -256,9 +262,37 @@ export const autosaveAttempt = async (req, res) => {
         .filter(([key]) => questionIds.has(String(key)))
     );
     const sectionCount = doc.paper?.sections?.length || 1;
-    const currentSection = Math.max(0, Math.min(sectionCount - 1, Math.floor(Number(req.body.currentSection)) || 0));
+    const timing = sectionTiming(doc, Date.now(), req.body.advanceSection === true && Number(req.body.currentSection) === (doc.timerSection ?? 0));
+    const currentSection = timing?.timerSection ?? Math.max(0, Math.min(sectionCount - 1, Math.floor(Number(req.body.currentSection)) || 0));
     const questionCount = doc.paper?.sections?.[currentSection]?.questions?.length || 1;
-    const currentQuestion = Math.max(0, Math.min(questionCount - 1, Math.floor(Number(req.body.currentQuestion)) || 0));
+    const currentQuestion = timing && currentSection !== Number(req.body.currentSection) ? 0 : Math.max(0, Math.min(questionCount - 1, Math.floor(Number(req.body.currentQuestion)) || 0));
+
+    let answers = sanitizeMap(req.body.answers);
+    let statuses = sanitizeMap(req.body.questionStatuses);
+    if (doc.paper?.schemaDriven) {
+      if (Object.values(answers).some(answer => !['A', 'B', 'C', 'D'].includes(answer))) return res.status(400).json({ error: 'Answers must be A, B, C or D' });
+      const validStatuses = new Set(['not_visited', 'not_answered', 'answered', 'marked', 'answered_marked']);
+      statuses = Object.fromEntries(Object.entries(statuses).filter(([, status]) => validStatuses.has(status)));
+      if (timing) {
+        // Merge only the section the client was working in. Older locked sections
+        // cannot be overwritten, even by a stale or deliberately modified client.
+        const requestedSection = Number(req.body.currentSection);
+        const priorIndex = doc.timerSection ?? 0;
+        const priorSection = doc.paper.sections[priorIndex];
+        const priorRemaining = doc.sectionRemainingTimes?.[priorSection.key];
+        const priorDeadline = priorRemaining == null ? Infinity : new Date(doc.sectionStartedAt).getTime() + priorRemaining * 1000;
+        // Allow one final expiry flush within the clock tick / network margin.
+        // A late client cannot reopen an expired section after returning to the tab.
+        const closingFlush = req.body.advanceSection === true && requestedSection === priorIndex && Date.now() <= priorDeadline + 2000;
+        const writable = requestedSection === timing.timerSection && !timing.sectionsExhausted ? timing.timerSection
+          : closingFlush ? priorIndex : -1;
+        const ids = new Set(doc.sectionsExhausted ? [] : doc.paper.sections[writable]?.questions.map(question => question.id));
+        const merge = (saved, incoming) => ({ ...Object.fromEntries(Object.entries(saved || {}).filter(([id]) => !ids.has(id))),
+          ...Object.fromEntries(Object.entries(incoming).filter(([id]) => ids.has(id))) });
+        answers = merge(doc.answers, answers);
+        statuses = merge(doc.questionStatuses, statuses);
+      }
+    }
 
     const filter = {
       _id: doc._id,
@@ -270,8 +304,11 @@ export const autosaveAttempt = async (req, res) => {
     
     const update = {
       $set: {
-        answers: sanitizeMap(req.body.answers),
-        questionStatuses: sanitizeMap(req.body.questionStatuses),
+        answers,
+        questionStatuses: statuses,
+        ...(timing || {}),
+        ...(req.body.language === 'en' || req.body.language === 'bn' ? { language: req.body.language } : {}),
+        ...(doc.paper?.sections?.[currentSection]?.questions?.[currentQuestion] ? { currentQuestionId: doc.paper.sections[currentSection].questions[currentQuestion].id } : {}),
         sectionTimers: req.body.sectionTimers && typeof req.body.sectionTimers === 'object' ? req.body.sectionTimers : {},
         currentSection,
         currentQuestion,
@@ -285,7 +322,7 @@ export const autosaveAttempt = async (req, res) => {
       const latest = await getOwnedAttempt(attemptId, req.user.id);
       return res.status(409).json({ error: 'Progress changed in another tab. Reload this attempt before continuing.', code: 'REVISION_CONFLICT', revision: latest?.revision });
     }
-    return res.json({ ok: true, revision: Math.max(Number(doc.revision) || 0, result.modifiedCount ? revision : 0) });
+    return res.json({ ok: true, revision: Math.max(Number(doc.revision) || 0, result.modifiedCount ? revision : 0), ...(timing || {}), currentQuestion });
   } catch (err) {
     runtimeLog.error('Autosave error:', err);
     return res.status(500).json({ error: 'Failed to autosave' });
@@ -325,17 +362,6 @@ export const getAttemptDetails = async (req, res) => {
   try {
     const doc = await getOwnedAttempt(req.params.attemptId, req.user.id);
     if (!doc) return res.status(404).json({ error: 'Attempt not found' });
-
-    const clean = cleanAttempt(doc);
-    if (clean.status !== 'completed' || clean.assessmentMode === 'confidential') {
-      const { answerKey, ...safe } = clean;
-      const deadline = safe.deadlineAt ? new Date(safe.deadlineAt).getTime() : Date.now();
-      return res.json({
-        ...safe,
-        paper: activePaper(safe.paper),
-        timeLeft: Math.max(0, Math.floor((deadline - Date.now()) / 1000)),
-      });
-    }
 
     return res.json(presentAttempt(doc));
   } catch (err) {

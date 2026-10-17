@@ -27,7 +27,7 @@ router.use('/admin', (req, res, next) => {
   try {
     const mode = parseQuestionExamMode(req.query.examMode);
     if (mode && req.method !== 'GET' && req.path !== '/slots/seed') {
-      const slug = req.body?.slot?.examSlug || req.body?.examSlug || req.query.examSlug;
+      const slug = req.body?.slot?.examSlug || req.body?.examSlug || (req.body?.paper?.exam || req.body?.exam)?.toLowerCase().replace('_', '-') || req.query.examSlug;
       if (!slug || String(slug).startsWith('iit-jam') !== (mode === 'iit-jam')) return res.status(400).json({ error: 'Choose a mock paper from the current exam mode' });
     }
     next();

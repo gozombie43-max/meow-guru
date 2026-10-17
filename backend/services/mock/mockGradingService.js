@@ -4,7 +4,7 @@ import { getExamConfig } from '../../config/exam-config.js';
 import { getMockAttemptsCollection } from '../../config/mongodb.js';
 
 export function gradeAttempt({ attemptDoc }) {
-  const config = getExamConfig(attemptDoc.configKey);
+  const config = attemptDoc.paper?.schemaDriven ? attemptDoc.paper : getExamConfig(attemptDoc.configKey);
   if (!config) throw new Error(`Config not found: ${attemptDoc.configKey}`);
 
   const sectionResults = [];

@@ -18,7 +18,8 @@
     "./quiz-grading": "./quiz-grading.js",
     "./tutor": "./tutor.js",
     "./jam": "./jam.js",
-    "./mock-answer": "./mock-answer.js"
+    "./mock-answer": "./mock-answer.js",
+    "./exam-paper": "./exam-paper.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node scripts/publish-declarations.js",

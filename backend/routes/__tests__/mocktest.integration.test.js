@@ -9,7 +9,7 @@ import router from '../mocktest.js';
 import { up as readinessIndexes } from '../../migrations/004-readiness.js';
 import { uploadFullPaper } from '../../services/mockTestEngine.js';
 
-vi.mock('../../services/mockPublicationNotificationService.js', () => ({ notifyNewMockPublished: vi.fn() }));
+vi.mock('../../services/mockPublicationNotificationService.js', () => ({ notifyNewMockPublished: vi.fn().mockResolvedValue(undefined) }));
 let mongo, db, server, base;
 let token;
 async function request(path, method = 'GET', body, auth = token) {
@@ -23,6 +23,107 @@ async function start() {
   expect(response.status).toBe(201);
   return response.json();
 }
+
+const bilingualPaper = () => ({ exam: 'SSC_CHSL', tier: 2, type: 'MOCK', marksPerQuestion: 3, negativeMarks: 1,
+  sections: Object.fromEntries(['english', 'computer', 'future_section'].map((key, i) => [key, { duration: i + 1, questions: [{
+    id: `native-${i}`, question: { en: `Question ${i}`, bn: `প্রশ্ন ${i}` },
+    options: { en: ['one', 'two', 'three', 'four'], bn: ['এক', 'দুই', 'তিন', 'চার'] },
+    answer: 'B', solution: { en: 'Native secret solution', bn: 'গোপন সমাধান' },
+  }] }])) });
+
+describe('native schema paper HTTP lifecycle', () => {
+  async function publish(paper = bilingualPaper()) {
+    await db.collection('users').updateOne({ id: 'paper-admin' }, { $set: { id: 'paper-admin', role: 'admin', status: 'active' } }, { upsert: true });
+    const adminToken = (await createSession({ id: 'paper-admin' })).token;
+    return request('/admin/upload-paper?examMode=ssc', 'POST', { slot: { id: 'native-paper', title: 'Native bilingual paper' }, paper }, adminToken);
+  }
+  it('accepts a raw schema with no slot, date or shift', async () => {
+    await db.collection('users').updateOne({ id: 'raw-admin' }, { $set: { id: 'raw-admin', role: 'admin', status: 'active' } }, { upsert: true });
+    const adminToken = (await createSession({ id: 'raw-admin' })).token;
+    const response = await request('/admin/upload-paper?examMode=ssc', 'POST', bilingualPaper(), adminToken);
+    expect(response.status).toBe(201);
+    const result = await response.json();
+    expect(result).toMatchObject({ examSlug: 'ssc-chsl', totalQuestions: 3, type: 'mock' });
+    expect(result.slotId).toMatch(/^[a-f0-9-]{36}$/);
+    expect((await request(`/ssc-chsl/${result.slotId}/start`, 'POST')).status).toBe(201);
+  });
+  it('starts a schema-only 100-question CHSL paper without falling back to the practice bank', async () => {
+    const paper = { ...bilingualPaper(), tier: 1, type: 'PYQ', examDate: '2025-11-13', shift: 1 };
+    const template = paper.sections.english.questions[0];
+    paper.sections = Object.fromEntries(['math', 'english', 'reasoning', 'gk'].map((key, i) => [key,
+      { duration: 15, questions: Array.from({ length: 25 }, (_, q) => ({ ...template, id: `${['m', 'e', 'r', 'g'][i]}${String(q + 1).padStart(3, '0')}` })) }]));
+    await uploadFullPaper({ slotData: { id: 'chsl-pyq-2025-shift1', title: 'SSC CHSL 2025 Tier I 13 NOV (SHIFT 1) Official Paper' }, paper, examMode: 'ssc' });
+    const stored = await db.collection('mockSlots').findOne({ id: 'chsl-pyq-2025-shift1' });
+    expect(stored.fixedQuestions).toBeUndefined();
+    expect(stored.sourcePaper).toBeDefined();
+    const response = await request('/ssc-chsl/chsl-pyq-2025-shift1/start', 'POST');
+    expect(response.status).toBe(201);
+    const attempt = await response.json();
+    expect(attempt.paper.sections.map(section => section.key)).toEqual(['math', 'english', 'reasoning', 'gk']);
+    expect(attempt.paper.sections.flatMap(section => section.questions)).toHaveLength(100);
+    expect(attempt.paper.compositeTimer).toBe(false);
+    expect(attempt.sectionRemainingTimes.english).toBe(900);
+    expect(attempt.sectionRemainingTimes.math).toBeGreaterThan(898);
+    expect(JSON.stringify(attempt)).not.toMatch(/solution|answerKey/);
+  });
+  it('validates before saving, isolates practice questions and hides solutions in catalog and active attempts', async () => {
+    const bad = bilingualPaper(); bad.sections.computer.questions[0].id = 'native-0';
+    expect((await publish(bad)).status).toBe(422);
+    expect(await db.collection('mockSlots').findOne({ id: 'native-paper' })).toBeNull();
+    const result = await publish();
+    expect(result.status).toBe(201);
+    expect((await result.json()).insertedToBank).toBe(0);
+    expect(await db.collection('questions').findOne({ id: 'native-0' })).toBeNull();
+    const catalog = await (await request('/ssc-chsl/slots?catalog=1&kind=mock&tier=Tier%20II')).json();
+    expect(catalog.slots[0]).toMatchObject({ hasFixedPaper: true, questionCount: 3, paperMetadata: { totalDurationMin: 6 } });
+    expect(JSON.stringify(catalog)).not.toMatch(/sourcePaper|Native secret|গোপন/);
+    const single = await (await request('/slots/native-paper?examSlug=ssc-chsl')).json();
+    expect(JSON.stringify(single)).not.toMatch(/sourcePaper|Native secret|গোপন/);
+    const response = await request('/ssc-chsl/native-paper/start', 'POST');
+    expect(response.status).toBe(201);
+    const attempt = await response.json();
+    expect(attempt.paper.sections.map(section => section.key)).toEqual(['english', 'computer', 'future_section']);
+    expect(attempt.sectionRemainingTimes.english).toBeGreaterThan(58);
+    expect(attempt.sectionRemainingTimes.computer).toBe(120);
+    expect(JSON.stringify(attempt)).not.toMatch(/solution|answerKey|Native secret|গোপন/);
+  });
+  it('resumes server timers, saves before advancing, locks previous answers and releases bilingual review only after submission', async () => {
+    expect((await publish()).status).toBe(201);
+    const attempt = await (await request('/ssc-chsl/native-paper/start', 'POST')).json();
+    const save = (revision, body) => request(`/attempt/${attempt.id}/autosave`, 'PATCH', { baseRevision: revision - 1, revision, ...body });
+    expect((await save(1, { currentSection: 0, currentQuestion: 0, language: 'bn', answers: { 'native-0': 'B' }, questionStatuses: { 'native-0': 'answered_marked' } })).status).toBe(200);
+    await db.collection('mockAttempts').updateOne({ id: attempt.id }, { $set: { sectionStartedAt: new Date(Date.now() - 65000).toISOString() } });
+    const resumed = await (await request(`/attempt/${attempt.id}`)).json();
+    expect(resumed).toMatchObject({ currentSection: 1, language: 'bn', lockedSections: ['english'], answers: { 'native-0': 'B' } });
+    expect(resumed.sectionRemainingTimes.english).toBe(0);
+    expect(resumed.sectionRemainingTimes.computer).toBeLessThanOrEqual(115);
+    // The first save persists the server's automatic move to the next section.
+    await save(2, { currentSection: 1, currentQuestion: 0, answers: { 'native-0': 'A', 'native-1': 'A' }, questionStatuses: { 'native-1': 'answered' } });
+    // Tampering with a locked answer must never change it.
+    await save(3, { currentSection: 0, answers: { 'native-0': 'D' }, questionStatuses: {} });
+    const locked = await (await request(`/attempt/${attempt.id}`)).json();
+    expect(locked.answers).toEqual({ 'native-0': 'B', 'native-1': 'A' });
+    expect((await save(4, { currentSection: 1, advanceSection: true, answers: locked.answers, questionStatuses: {} })).status).toBe(200);
+    const advanced = await (await request(`/attempt/${attempt.id}`)).json();
+    expect(advanced).toMatchObject({ currentSection: 2, lockedSections: ['english', 'computer'] });
+    const submission = await (await request(`/attempt/${attempt.id}/submit`, 'POST')).json();
+    expect(submission.result).toMatchObject({ totalScore: 2, maxScore: 9 });
+    const review = await (await request(`/attempt/${attempt.id}`)).json();
+    expect(review.answerKey['native-0']).toBe('B');
+    expect(review.paper.sections[0].questions[0].translations.solution.bn).toBe('গোপন সমাধান');
+  });
+  it('refuses late edits to an expired section before any other client has saved the transition', async () => {
+    expect((await publish()).status).toBe(201);
+    const attempt = await (await request('/ssc-chsl/native-paper/start', 'POST')).json();
+    await request(`/attempt/${attempt.id}/autosave`, 'PATCH', { revision: 1, currentSection: 0, answers: { 'native-0': 'B' } });
+    await db.collection('mockAttempts').updateOne({ id: attempt.id }, { $set: { sectionStartedAt: new Date(Date.now() - 65000).toISOString() } });
+    const save = await request(`/attempt/${attempt.id}/autosave`, 'PATCH', { baseRevision: 1, revision: 2, currentSection: 0, advanceSection: true, answers: { 'native-0': 'D' } });
+    expect(save.status).toBe(200);
+    const resumed = await (await request(`/attempt/${attempt.id}`)).json();
+    expect(resumed.currentSection).toBe(1);
+    expect(resumed.answers['native-0']).toBe('B');
+  });
+});
 
 describe('paged mock catalog', () => {
   it('returns saved-count metadata separately and pages over 100 papers without leaking questions', async () => {

@@ -11,9 +11,9 @@ const readSlotCatalog = (slots, examSlug) => slots.aggregate([
   { $match: { examSlug } },
   { $sort: { order: 1 } },
   { $set: { _fixedCount: { $size: { $cond: [{ $isArray: '$fixedQuestions' }, '$fixedQuestions', []] } } } },
-  { $set: { hasFixedPaper: { $gt: ['$_fixedCount', 0] },
+  { $set: { hasFixedPaper: { $or: [{ $gt: ['$_fixedCount', 0] }, { $eq: ['$hasFixedPaper', true] }] },
     questionCount: { $cond: [{ $gt: ['$_fixedCount', 0] }, '$_fixedCount', { $ifNull: ['$questionCount', 0] }] } } },
-  { $project: { fixedQuestions: 0, _fixedCount: 0, _id: 0, _cosmosRid: 0 } },
+  { $project: { fixedQuestions: 0, sourcePaper: 0, _fixedCount: 0, _id: 0, _cosmosRid: 0 } },
 ]).toArray();
 
 export async function fetchSlotsForExam(examSlug) {
@@ -39,8 +39,8 @@ export async function fetchSlotPage(examSlug, { kind = 'mock', tier = '', offset
       slots: limit === 0 ? [{ $match: { $expr: false } }] : [
         { $match: filter }, { $sort: { order: 1, id: 1 } }, { $skip: offset }, { $limit: limit },
         { $set: { _fixedCount: { $size: { $cond: [{ $isArray: '$fixedQuestions' }, '$fixedQuestions', []] } } } },
-        { $set: { hasFixedPaper: { $gt: ['$_fixedCount', 0] }, questionCount: { $cond: [{ $gt: ['$_fixedCount', 0] }, '$_fixedCount', { $ifNull: ['$questionCount', 0] }] } } },
-        { $project: { fixedQuestions: 0, _fixedCount: 0, _kind: 0, _id: 0, _cosmosRid: 0 } },
+        { $set: { hasFixedPaper: { $or: [{ $gt: ['$_fixedCount', 0] }, { $eq: ['$hasFixedPaper', true] }] }, questionCount: { $cond: [{ $gt: ['$_fixedCount', 0] }, '$_fixedCount', { $ifNull: ['$questionCount', 0] }] } } },
+        { $project: { fixedQuestions: 0, sourcePaper: 0, _fixedCount: 0, _kind: 0, _id: 0, _cosmosRid: 0 } },
       ],
     } },
   ]).toArray();
@@ -337,7 +337,7 @@ export async function updateMockSlot(
   slotId,
   updates
 ) {
-  if (updates?.assessmentMode !== undefined || updates?.fixedQuestions !== undefined || updates?.questions !== undefined) {
+  if (updates?.assessmentMode !== undefined || updates?.fixedQuestions !== undefined || updates?.questions !== undefined || updates?.sourcePaper !== undefined || updates?.paperMetadata !== undefined) {
     throw invalidPaper('Use paper upload to change assessment mode or questions');
   }
   const existing =

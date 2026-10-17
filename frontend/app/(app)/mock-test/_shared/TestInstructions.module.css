@@ -46,6 +46,9 @@
 .footer { padding: 12px 0 16px; background: var(--bg); }
 .startBtn { width: 100%; min-height: 52px; padding: 14px 20px; font-size: 16px; font-weight: 600; }
 .startBtn:disabled { opacity: 0.6; cursor: wait; }
+.startError { margin-bottom: 12px; padding: 12px; border-radius: 12px; background: var(--card); color: var(--text-dark); font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.startError p { margin: 0; }
+.startError button { min-height: 44px; margin-top: 8px; }
 @media (max-width: 767px) {
   .container { padding-top: calc(8px + var(--safe-top)); padding-bottom: calc(var(--action-bar-height) + var(--safe-bottom) + 16px); }
   .topbar { margin-bottom: 12px; }

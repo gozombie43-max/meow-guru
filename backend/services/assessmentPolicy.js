@@ -29,6 +29,7 @@ export function validateAssessment(slot, paper, answerKey) {
   const questions = paper.sections.flatMap(section => section.questions.map(question => ({ ...question, correctAnswer: answerKey[question.id] })));
   if (!questions.length) throw invalidPaper('This paper has no questions');
   validateQuestions(questions);
+  if (paper.schemaDriven) return;
   if (slot.assessmentMode !== 'confidential' && !getExamConfig(slot.configKey)?.requireFixedPaper) return;
   if (!slot.fixedQuestions?.length) throw invalidPaper('Confidential assessments require a fixed paper isolated from the practice bank');
   const config = getExamConfig(slot.configKey);

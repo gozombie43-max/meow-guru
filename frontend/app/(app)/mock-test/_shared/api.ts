@@ -1,6 +1,8 @@
 import { requestResponse as fetch } from "@/shared/api/request";
 import { API_BASE } from '@/lib/api-base';
 import type { MockTestSlot } from './exam-config';
+import type { LanguageText, QuizLanguage } from '@meow/contracts/exam-paper';
+import { ApiError } from '@/shared/api/error';
 
 const BASE = API_BASE;
 
@@ -19,6 +21,7 @@ export interface MockOption {
 }
 
 export interface MockQuestion {
+  translations?: { question: LanguageText; options: { en: string[]; bn: string[] }; solution?: LanguageText };
   questionType?: "MCQ" | "MSQ" | "NAT";
   id: string;
   text?: string;
@@ -35,6 +38,9 @@ export interface MockQuestion {
 }
 
 export interface MockSection {
+  timeLimitMin?: number;
+  questionCount?: number;
+  marking?: { correct: number; incorrect: number };
   id?: string;
   key?: string;
   title?: string;
@@ -43,12 +49,21 @@ export interface MockSection {
 }
 
 export interface MockPaper {
+  schemaDriven?: boolean;
+  compositeTimer?: boolean;
+  marksPerQuestion?: number;
+  negativeMarks?: number;
+  skillTest?: { type: 'DEST' | 'TYPING'; duration: number };
   examName?: string;
   totalDurationMin?: number;
   sections: MockSection[];
 }
 
 export interface MockAttempt {
+  language?: QuizLanguage;
+  sectionRemainingTimes?: Record<string, number | null>;
+  lockedSections?: string[];
+  sectionsExhausted?: boolean;
   assessmentMode?: 'practice' | 'confidential';
   id?: string;
   attemptId?: string;
@@ -96,6 +111,8 @@ export interface MockAttemptHistory {
 }
 
 export interface AttemptProgress {
+  language?: QuizLanguage;
+  advanceSection?: boolean;
   answers: Record<string, MockAnswer>;
   questionStatuses: Record<string, QuestionStatus>;
   currentSection: number;
@@ -198,8 +215,12 @@ export async function startTest(examSlug: string, testId: string, token: string,
     method: 'POST',
     headers: { ...getHeaders(token), ...(startKey ? { 'Idempotency-Key': startKey } : {}) },
   });
-  if (!res.ok) throw new Error(await readError(res, 'Failed to start test'));
-  return readJson<MockAttempt & { attemptId: string }>(res);
+  if (!res.ok) throw new ApiError(await readError(res, 'Could not start this test. Please try again.'), 'http', res.status, res.headers.get('x-request-id') ?? undefined);
+  const attempt = await readJson<MockAttempt & { attemptId: string }>(res);
+  if (typeof attempt.attemptId !== 'string' || !attempt.attemptId || !attempt.paper?.sections?.length) {
+    throw new ApiError('The server could not prepare this paper. Please try again.', 'parse', res.status);
+  }
+  return attempt;
 }
 
 export async function autosaveAttempt(attemptId: string, data: AttemptProgress, token: string) {

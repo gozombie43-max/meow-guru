@@ -411,3 +411,30 @@
 :global(html.theme-dark) .container :is(.tab.active, .mobileTab.active) { background: var(--oled-selected); color: #edf4fc; }
 :global(html.theme-dark) .container .qBubble.notVisited { background: var(--oled-inset); color: var(--oled-text); }
 :global(html.theme-dark) .container .qBubble.current { box-shadow: none; outline: 2px solid var(--ios-system-blue); outline-offset: 2px; }
+.languageBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 4px 16px;
+  background: var(--bg-surface, #fff);
+  color: var(--text-primary, #172033);
+}
+
+.languageBar button {
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.languageBar button[aria-pressed='true'] {
+  color: var(--ios-system-blue, #007aff);
+  font-weight: 700;
+}
+
+[data-theme='dark'] .languageBar,
+:global(html.theme-dark) .languageBar {
+  background: #141619;
+  color: #f1f5f9;
+}

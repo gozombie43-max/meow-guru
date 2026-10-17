@@ -12,8 +12,10 @@ import { normalizedQuestionKeys } from "../questions/questionNormalizer.js";
 import { validateQuestions, validateConfidentialUpload, invalidPaper } from '../assessmentPolicy.js';
 import { getExamConfig } from '../../config/exam-config.js';
 import { getQuestionsCollection, getMockSlotsCollection } from '../../config/mongodb.js';
+import { buildSchemaPaper, uploadSchemaPaper } from './schemaPaperService.js';
 
-export async function uploadFullPaper({ slotData, questions, examMode }) {
+export async function uploadFullPaper({ slotData, questions, paper, examMode }) {
+  if (paper) return uploadSchemaPaper({ slotData, paper, examMode });
   if (!slotData || !slotData.id || !slotData.examSlug || !slotData.configKey || !slotData.title) {
     throw new Error('Missing slot metadata (id, examSlug, configKey, title)');
   }
@@ -133,6 +135,7 @@ export async function uploadFullPaper({ slotData, questions, examMode }) {
     },
     {
       $set: slotDoc,
+      $unset: { sourcePaper: '', paperMetadata: '' },
     },
     {
       upsert: true,
@@ -178,6 +181,10 @@ export async function uploadFullPaper({ slotData, questions, examMode }) {
 export async function buildPaper({ examSlug, testId, slot: loadedSlot }) {
   const slot = loadedSlot ?? await fetchSlotById(examSlug, testId);
   if (!slot) throw new Error(`Slot not found: ${testId}`);
+  if (slot.sourcePaper) return buildSchemaPaper(slot.sourcePaper);
+  if ((slot.isPyq || String(slot.type).toLowerCase() === 'pyq') && !slot.fixedQuestions?.length) {
+    throw invalidPaper('This previous-year paper has no published questions. Ask an admin to upload the complete paper.');
+  }
 
   const config = getExamConfig(slot.configKey);
   if (!config) throw new Error(`Config not found: ${slot.configKey}`);

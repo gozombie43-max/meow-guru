@@ -21,6 +21,7 @@ export type ExamConfig = {
 };
 
 export type MockTestSlot = {
+  paperMetadata?: { schemaDriven: boolean; examName: string; compositeTimer: boolean; totalDurationMin?: number; sections: Omit<SectionConfig, 'topics'>[]; skillTest?: { type: string; duration: number } };
   id: string;                 // unique, used in URLs: 'cgl-t1-mock-1'
   examSlug: string;           // routing: 'ssc-cgl'
   configKey: string;          // looks up ExamConfig: 'ssc-cgl-tier1'

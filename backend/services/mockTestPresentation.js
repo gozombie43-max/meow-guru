@@ -5,6 +5,7 @@ const QUESTION_FIELDS = [
   'image', 'questionImage', 'optionImages', 'optionAImage', 'optionBImage',
   'questionImageWidth', 'questionImageHeight',
   'optionCImage', 'optionDImage', 'passage', 'sectionKey', 'subject', 'topic',
+  'translations',
 ];
 
 export function activePaper(paper) {
@@ -21,6 +22,7 @@ export function activePaper(paper) {
             ? Object.fromEntries(['id', 'text', 'image'].filter(key => Object.hasOwn(option, key)).map(key => [key, option[key]]))
             : option);
         }
+        if (safe.translations) safe.translations = { question: safe.translations.question, options: safe.translations.options };
         return safe;
       }),
     })),

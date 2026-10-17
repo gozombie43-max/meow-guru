@@ -1,5 +1,6 @@
 "use client";
 import { JAM_MOCK_CONFIGS } from '@meow/contracts/jam';
+import { examPaperSchema } from '@meow/contracts/exam-paper';
 import { useExamMode } from '@/context/ExamModeContext';
 import { adminScopedUrl } from '@/lib/admin-exam-mode';
 import { requestResponse } from "@/shared/api/request";
@@ -38,11 +39,13 @@ function parse(text: string): Question[] {
   const value = text.trim(); 
   if (!value) return []; 
   try { 
-    const data: unknown = value.startsWith("[") 
-      ? JSON.parse(value) 
-      : value.startsWith("{") && !value.includes("\n") 
-        ? ((JSON.parse(value) as { questions?: Question[] }).questions || [JSON.parse(value)]) 
-        : value.split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line)); 
+    let data: unknown;
+    try {
+      const parsed = JSON.parse(value);
+      data = Array.isArray(parsed) ? parsed : parsed.questions || [parsed];
+    } catch {
+      data = value.split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line));
+    }
     return Array.isArray(data) ? data.filter((x): x is Question => !!x && typeof x === "object") : []; 
   } catch { 
     return []; 
@@ -74,7 +77,17 @@ export default function MockTestManager({}: { backLink?: ReactNode }) {
   const source = requiresFixedPaper ? 'upload' : selectedSource;
   const exam = EXAMS[examSlug]; 
   const tier = exam.tiers[tierIndex] || exam.tiers[0]; 
-  const questions = useMemo(() => parse(questionsText), [questionsText]);
+  const schemaUpload = useMemo(() => {
+    try {
+      const input = JSON.parse(questionsText);
+      if (input && typeof input === 'object' && ('sections' in input || input.exam === 'SSC_CGL' || input.exam === 'SSC_CHSL')) return examPaperSchema.safeParse(input);
+    } catch { /* Legacy NDJSON is parsed below. */ }
+    return null;
+  }, [questionsText]);
+  const nativePaper = schemaUpload?.success ? schemaUpload.data : null;
+  const questions: Question[] = useMemo(() => nativePaper
+    ? Object.entries(nativePaper.sections).flatMap(([sectionKey, section]) => section.questions.map(question => ({ ...question, question: question.question.en, sectionKey })))
+    : schemaUpload ? [] : parse(questionsText), [nativePaper, schemaUpload, questionsText]);
 
   const sectionCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -108,11 +121,13 @@ export default function MockTestManager({}: { backLink?: ReactNode }) {
   }
 
   async function deploy() { 
+    if (schemaUpload && !schemaUpload.success) return setStatus(schemaUpload.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('; '));
+    if (nativePaper && isJam) return setStatus('Switch to SSC mode to upload an SSC paper.');
     if (!adminToken() || !id || !title || (source === "upload" && !questions.length)) return setStatus("Your admin session is required, generated paper ID/title, and valid questions."); 
     setBusy(true); 
-    const slot = { id, examSlug, configKey: tier.configKey, title, tier: tier.tier, type, year: type === "pyq" && year ? Number(year) : null, shift: type === "pyq" ? shift || null : null, isFree, order, assessmentMode: confidential ? 'confidential' : 'practice', timingPolicy: 'composite' };
+    const slot = { id, examSlug: nativePaper ? nativePaper.exam.toLowerCase().replace('_', '-') : examSlug, configKey: tier.configKey, title, tier: tier.tier, type, year: type === "pyq" && year ? Number(year) : null, shift: type === "pyq" ? shift || null : null, isFree, order, assessmentMode: confidential ? 'confidential' : 'practice', timingPolicy: 'composite' };
     try { 
-      const response = await requestResponse(adminScopedUrl(source === "upload" ? `${apiUrl}/admin/upload-paper` : `${apiUrl}/admin/slots`, mode), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken()}` }, body: JSON.stringify(source === "upload" ? { slot, questions } : slot) });
+      const response = await requestResponse(adminScopedUrl(source === "upload" ? `${apiUrl}/admin/upload-paper` : `${apiUrl}/admin/slots`, mode), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken()}` }, body: JSON.stringify(source === "upload" ? nativePaper ? { slot, paper: nativePaper } : { slot, questions } : slot) });
       const data = await response.json().catch(() => ({})); 
       if (!response.ok) throw new Error(data.error || "Deployment failed");
 setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? questions.length} questions to MongoDB.` : `Dynamic slot "${id}" created successfully.`); 
@@ -245,7 +260,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
       {/* Paper Upload & Inspection */}
       {source === 'upload' && <label className={styles.fieldLabel} style={{ minHeight: 44 }}>
         <span><input type="checkbox" checked={confidential} onChange={event => setConfidential(event.target.checked)} aria-label="Confidential assessment" /> Confidential assessment</span>
-        <small>Uses one total exam deadline. Requires all sections and valid answer keys. Questions stay private and answer review is disabled.</small>
+        <small>Uploaded section timers apply to bilingual papers. Legacy papers use a total deadline. Questions stay private and answer review is disabled.</small>
       </label>}
       {source === "upload" && (
         <section className={styles.macGroup}>
@@ -267,6 +282,8 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
             className={styles.macTextarea} 
             style={{ marginTop: 10, minHeight: 110, fontFamily: "SF Mono, Menlo, monospace", fontSize: 12 }} 
            aria-label="Or paste NDJSON lines or JSON array here…"/>
+          {schemaUpload && !schemaUpload.success && <p role="alert">{schemaUpload.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('; ')}</p>}
+          {nativePaper && <p role="status">{nativePaper.exam.replace('_', ' ')} · Tier {nativePaper.tier} · {nativePaper.type} · English / বাংলা. Exam, marks, sections and timers come from this paper.</p>}
 
           {questions.length > 0 && (
             <div style={{ marginTop: 14 }}>

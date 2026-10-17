@@ -220,6 +220,7 @@ describe('uploadFullPaper', () => {
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
         }),
+        $unset: { sourcePaper: '', paperMetadata: '' },
       },
       { upsert: true }
     );
@@ -248,6 +249,7 @@ describe('uploadFullPaper', () => {
         $set: expect.objectContaining({
           createdAt: originalCreatedAt,
         }),
+        $unset: { sourcePaper: '', paperMetadata: '' },
       },
       { upsert: true }
     );
@@ -270,5 +272,9 @@ describe('paper builder slot reuse', () => {
     mockSlotFindOne.mockResolvedValueOnce(slot);
     await buildPaper({ examSlug: 'ssc-cgl', testId: 'loaded' });
     expect(mockSlotFindOne).toHaveBeenCalledOnce();
+  });
+  it('refuses to substitute random practice questions for an unpublished PYQ', async () => {
+    await expect(buildPaper({ examSlug: 'ssc-chsl', testId: 'missing', slot: { id: 'missing', type: 'pyq', configKey: 'ssc-chsl-tier1' } }))
+      .rejects.toMatchObject({ statusCode: 422, message: 'This previous-year paper has no published questions. Ask an admin to upload the complete paper.' });
   });
 });

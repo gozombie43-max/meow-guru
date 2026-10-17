@@ -39,12 +39,13 @@ export function summarizeSlot(slot) {
   const clean = cleanMongoDoc(slot);
   const {
     fixedQuestions,
+    sourcePaper,
     ...summary
   } = clean;
 
   return {
     ...summary,
-    hasFixedPaper: Array.isArray(fixedQuestions) ? fixedQuestions.length > 0 : clean.hasFixedPaper === true,
+    hasFixedPaper: !!sourcePaper || (Array.isArray(fixedQuestions) ? fixedQuestions.length > 0 : clean.hasFixedPaper === true),
     questionCount:
       fixedQuestions?.length ||
       clean.questionCount ||

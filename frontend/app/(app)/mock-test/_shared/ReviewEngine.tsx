@@ -15,6 +15,7 @@ type MockQuestion,
 type MockSection,
 } from './api';
 import styles from './ReviewEngine.module.css';
+import type { QuizLanguage } from '@meow/contracts/exam-paper';
 
 interface ReviewEngineProps {
   examSlug: string;
@@ -55,6 +56,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [filter, setFilter] = useState<FilterType>('all');
+  const [language, setLanguage] = useState<QuizLanguage>('en');
 
   useEffect(() => {
     if (!ready) return;
@@ -65,6 +67,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
         if (res.assessmentMode === 'confidential') { setError('Answer review is disabled for this confidential assessment.'); setLoadedScope(scope); setLoading(false); return; }
         setError(null);
         setAttempt(res);
+        setLanguage(res.language ?? 'en');
         setLoadedScope(scope);
         setLoading(false);
       })
@@ -173,6 +176,11 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
         </div>
 
         {/* Section Tabs in Header */}
+        {attempt.paper?.schemaDriven && <div role="group" aria-label="Review language">
+          <button data-ui-button="state" aria-pressed={language === 'en'} onClick={() => setLanguage('en')}>ENG</button>
+          <span aria-hidden="true"> | </span>
+          <button data-ui-button="state" aria-pressed={language === 'bn'} onClick={() => setLanguage('bn')}>বাংলা</button>
+        </div>}
         <div className={styles.sectionTabs}>
           {sections.map((sec: MockSection, idx: number) => (
             <button data-ui-button="state"
@@ -250,15 +258,15 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
               <div className={styles.questionMeta}>
                 <span className={styles.qNumBadge}>Question {currentItem.index + 1} of {questions.length}</span>
                 <span className={`${styles.statusBadge} ${styles['status_' + currentItem.status]}`}>
-                  {currentItem.status === 'correct' && '✅ Correct (+2 marks)'}
-                  {currentItem.status === 'incorrect' && '❌ Incorrect (-0.5 marks)'}
+                  {currentItem.status === 'correct' && `Correct (+${currentSection?.marking?.correct ?? 2} marks)`}
+                  {currentItem.status === 'incorrect' && `Incorrect (-${currentSection?.marking?.incorrect ?? 0.5} marks)`}
                   {currentItem.status === 'skipped' && '⚪ Skipped (0 marks)'}
                 </span>
               </div>
 
               {/* Question Text */}
               <div className={styles.questionBody}>
-                <p className={styles.questionText}>{currentQ.question ?? currentQ.text}</p>
+                <p className={styles.questionText}>{currentQ.translations?.question[language] ?? currentQ.question ?? currentQ.text}</p>
                 {currentQ.questionImage && (
                   <div className={styles.qImageWrap}>
                     <QuestionImage
@@ -276,7 +284,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
               {/* Options */}
               <div className={styles.optionsList}>
                 {currentQ.options?.map((option, oIdx: number) => {
-                  const opt = typeof option === 'string' ? option : option.text;
+                  const opt = currentQ.translations?.options[language][oIdx] ?? (typeof option === 'string' ? option : option.text);
                   const letter = String.fromCharCode(65 + oIdx); // 'A', 'B', 'C', 'D'
                   const isUserPick = [currentItem.userAns].flat().some(value => mockAnswerIndex(value, currentQ.options, true) === oIdx);
                   const isCorrect = [currentItem.correctAns].flat().some(value => mockAnswerIndex(value, currentQ.options) === oIdx);
@@ -300,7 +308,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
               {(currentQ.solution || currentQ.solutionImage) && (
                 <div className={styles.solutionBox}>
                   <h3 className={styles.solutionHeading}>💡 Solution & Explanation</h3>
-                  {currentQ.solution && <p className={styles.solutionText}>{currentQ.solution}</p>}
+                  {currentQ.solution && <p className={styles.solutionText}>{currentQ.translations?.solution?.[language] ?? currentQ.solution}</p>}
                   {currentQ.solutionImage && (
                     <div className={styles.solImageWrap}>
                       <QuestionImage
