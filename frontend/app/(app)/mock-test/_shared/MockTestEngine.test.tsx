@@ -325,7 +325,7 @@ describe('native bilingual paper attempts', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Computer' }));
     expect(screen.getByText('Questions Palette')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Computer' })).toHaveAttribute('aria-pressed', 'true');
-    fireEvent.click(screen.getByRole('button', { name: '1', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: /^1$/ }));
     expect(screen.queryByText('Questions Palette')).not.toBeInTheDocument();
     expect(screen.getByText('English c1')).toBeVisible();
   });
