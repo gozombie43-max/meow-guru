@@ -7,7 +7,7 @@ import { connectMongoDB, disconnectMongoDB } from '../../config/mongodb.js';
 import { createSession } from '../../auth/sessions.js';
 import router from '../mocktest.js';
 import { up as readinessIndexes } from '../../migrations/004-readiness.js';
-import { uploadFullPaper } from '../../services/mockTestEngine.js';
+import { uploadFullPaper, fetchAllAdminSlots } from '../../services/mockTestEngine.js';
 
 vi.mock('../../services/mockPublicationNotificationService.js', () => ({ notifyNewMockPublished: vi.fn().mockResolvedValue(undefined) }));
 let mongo, db, server, base;
@@ -37,6 +37,11 @@ describe('native schema paper HTTP lifecycle', () => {
     const adminToken = (await createSession({ id: 'paper-admin' })).token;
     return request('/admin/upload-paper?examMode=ssc', 'POST', { slot: { id: 'native-paper', title: 'Native bilingual paper' }, paper }, adminToken);
   }
+  it('includes the saved exam date and numeric shift in the admin catalog', async () => {
+    expect((await publish({ ...bilingualPaper(), type: 'PYQ', examDate: '2025-11-12', shift: 3 })).status).toBe(201);
+    const slots = await fetchAllAdminSlots('all', 'ssc');
+    expect(slots.find(slot => slot.id === 'native-paper')).toMatchObject({ examDate: '2025-11-12', year: 2025, shift: 3 });
+  });
   it('accepts a raw schema with no slot, date or shift', async () => {
     await db.collection('users').updateOne({ id: 'raw-admin' }, { $set: { id: 'raw-admin', role: 'admin', status: 'active' } }, { upsert: true });
     const adminToken = (await createSession({ id: 'raw-admin' })).token;
@@ -234,6 +239,49 @@ afterAll(async () => {
 });
 
 describe('mock test HTTP and MongoDB contract', () => {
+  it('restarts only the current user and paper, retaining results and rejecting old progress saves', async () => {
+    const old = await start();
+    await request(`/attempt/${old.id}/autosave`, 'PATCH', { revision: 1, answers: { quant: '1' } });
+    const completed = await start();
+    await request(`/attempt/${completed.id}/submit`, 'POST');
+    const untouched = [
+      { id: 'another-user', userId: 'other-user', examSlug: 'ssc-cgl', testId: 'audit-test' },
+      { id: 'another-paper', userId: 'student', examSlug: 'ssc-cgl', testId: 'other-paper' },
+      { id: 'another-exam', userId: 'student', examSlug: 'ssc-chsl', testId: 'audit-test' },
+    ];
+    await db.collection('mockAttempts').insertMany(untouched.map(doc => ({ ...doc, status: 'in_progress' })));
+    const restart = () => fetch(`${base}/ssc-cgl/audit-test/start`, {
+      method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Idempotency-Key': 'restart-this-paper' }, body: JSON.stringify({ restart: true }),
+    });
+    const response = await restart();
+    expect(response.status).toBe(201);
+    const fresh = await response.json();
+    expect(fresh.id).not.toBe(old.id);
+    expect(fresh).toMatchObject({ answers: {}, questionStatuses: {}, revision: 0, currentQuestion: 0, currentSection: 0, status: 'in_progress' });
+    expect(new Date(fresh.deadlineAt).getTime()).toBeGreaterThan(Date.now() + 59 * 60 * 1000);
+    expect((await db.collection('mockAttempts').findOne({ id: old.id })).status).toBe('abandoned');
+    expect((await db.collection('mockAttempts').findOne({ id: completed.id })).status).toBe('completed');
+    for (const doc of untouched) expect((await db.collection('mockAttempts').findOne({ id: doc.id })).status).toBe('in_progress');
+    expect((await request(`/attempt/${old.id}/autosave`, 'PATCH', { revision: 2, answers: {} })).status).toBe(409);
+    expect((await request(`/attempt/${old.id}/submit`, 'POST')).status).toBe(409);
+    expect((await (await restart()).json()).id).toBe(fresh.id);
+    expect(await db.collection('mockAttempts').countDocuments({ userId: 'student', examSlug: 'ssc-cgl', testId: 'audit-test', status: 'in_progress' })).toBe(1);
+  });
+
+  it('refuses a restart for a one-attempt assessment and keeps its progress', async () => {
+    const fixedQuestions = ['ga', 'reasoning', 'quant', 'english'].flatMap(sectionKey => Array.from({ length: 25 }, (_, i) => ({
+      id: `${sectionKey}-${i}`, sectionKey, question: 'Question', options: ['one', 'two'], correctAnswer: 1,
+    })));
+    await db.collection('mockSlots').updateOne({ id: 'audit-test' }, { $set: { assessmentMode: 'confidential', fixedQuestions } });
+    const old = await start();
+    const response = await fetch(`${base}/ssc-cgl/audit-test/start`, {
+      method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Idempotency-Key': 'restart-not-allowed' }, body: JSON.stringify({ restart: true }),
+    });
+    expect(response.status).toBe(403);
+    expect((await db.collection('mockAttempts').findOne({ id: old.id })).status).toBe('in_progress');
+    expect(await db.collection('mockAttempts').countDocuments({ userId: 'student', testId: 'audit-test' })).toBe(1);
+  });
+
   it('reads the fixed slot once when starting an attempt', async () => {
     const original = Collection.prototype.findOne;
     const reads = [];

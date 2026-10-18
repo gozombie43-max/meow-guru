@@ -106,7 +106,7 @@ export interface MockAttemptResult {
 export interface MockAttemptHistory {
   id: string;
   testId: string;
-  status: 'in_progress' | 'submitting' | 'completed';
+  status: 'in_progress' | 'submitting' | 'completed' | 'abandoned';
   result?: MockAttemptResult;
 }
 
@@ -210,10 +210,11 @@ export async function adminSeedSlots(adminToken: string) {
 
 // ─── Test Attempt Endpoints ───────────────────────────────
 
-export async function startTest(examSlug: string, testId: string, token: string, startKey?: string): Promise<MockAttempt & { attemptId: string }> {
+export async function startTest(examSlug: string, testId: string, token: string, startKey?: string, restart = false): Promise<MockAttempt & { attemptId: string }> {
   const res = await fetch(`${BASE}/api/mocktest/${examSlug}/${testId}/start`, {
     method: 'POST',
     headers: { ...getHeaders(token), ...(startKey ? { 'Idempotency-Key': startKey } : {}) },
+    ...(restart ? { body: JSON.stringify({ restart: true }) } : {}),
   });
   if (!res.ok) throw new ApiError(await readError(res, 'Could not start this test. Please try again.'), 'http', res.status, res.headers.get('x-request-id') ?? undefined);
   const attempt = await readJson<MockAttempt & { attemptId: string }>(res);

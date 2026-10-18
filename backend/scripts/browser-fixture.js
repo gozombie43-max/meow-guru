@@ -24,7 +24,11 @@ process.env.GOOGLE_CLIENT_ID = 'fixture'; process.env.GOOGLE_CLIENT_SECRET = 'fi
 process.env.GOOGLE_CALLBACK_URL = 'http://127.0.0.1:3111/auth/google/callback';
 process.env.FIREBASE_PROJECT_ID = 'browser-fixture'; process.env.FIREBASE_CLIENT_EMAIL = 'fixture@example.test';
 process.env.FIREBASE_PRIVATE_KEY = generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey.export({ type: 'pkcs8', format: 'pem' });
-const mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+// This small disposable dataset does not need Mongo's host-sized default cache.
+const mongo = await MongoMemoryReplSet.create({
+  replSet: { count: 1 },
+  instanceOpts: [{ args: ['--wiredTigerCacheSizeGB', '0.25'] }],
+});
 process.env.MONGODB_URI = mongo.getUri(); process.env.MONGODB_DB = 'browser_fixture';
 const { connectMongoDB, disconnectMongoDB } = await import('../config/mongodb.js');
 const db = await connectMongoDB();

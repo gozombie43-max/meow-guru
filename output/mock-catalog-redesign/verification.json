@@ -1,0 +1,134 @@
+[
+  {
+    "theme": "dark",
+    "width": 320,
+    "overflow": false,
+    "clipped": false,
+    "actions": "44px minimum",
+    "filters": "passed",
+    "tabs": "passed",
+    "scroll": "passed",
+    "errors": []
+  },
+  {
+    "theme": "dark",
+    "width": 360,
+    "overflow": false,
+    "clipped": false,
+    "actions": "44px minimum",
+    "filters": "passed",
+    "tabs": "passed",
+    "scroll": "passed",
+    "errors": []
+  },
+  {
+    "theme": "dark",
+    "width": 390,
+    "overflow": false,
+    "clipped": false,
+    "actions": "44px minimum",
+    "filters": "passed",
+    "tabs": "passed",
+    "scroll": "passed",
+    "errors": []
+  },
+  {
+    "theme": "dark",
+    "width": 430,
+    "overflow": false,
+    "clipped": false,
+    "actions": "44px minimum",
+    "filters": "passed",
+    "tabs": "passed",
+    "scroll": "passed",
+    "errors": []
+  },
+  {
+    "theme": "dark",
+    "width": 768,
+    "overflow": false,
+    "clipped": false,
+    "actions": "44px minimum",
+    "filters": "passed",
+    "tabs": "passed",
+    "scroll": "passed",
+    "errors": []
+  },
+  {
+    "theme": "dark",
+    "width": 1366,
+    "overflow": false,
+    "clipped": false,
+    "actions": "44px minimum",
+    "filters": "passed",
+    "tabs": "passed",
+    "scroll": "passed",
+    "errors": []
+  },
+  {
+    "theme": "light",
+    "width": 320,
+    "overflow": false,
+    "clipped": false,
+    "actions": "44px minimum",
+    "filters": "passed",
+    "tabs": "passed",
+    "scroll": "passed",
+    "errors": []
+  },
+  {
+    "theme": "light",
+    "width": 360,
+    "overflow": false,
+    "clipped": false,
+    "actions": "44px minimum",
+    "filters": "passed",
+    "tabs": "passed",
+    "scroll": "passed",
+    "errors": []
+  },
+  {
+    "theme": "light",
+    "width": 390,
+    "overflow": false,
+    "clipped": false,
+    "actions": "44px minimum",
+    "filters": "passed",
+    "tabs": "passed",
+    "scroll": "passed",
+    "errors": []
+  },
+  {
+    "theme": "light",
+    "width": 430,
+    "overflow": false,
+    "clipped": false,
+    "actions": "44px minimum",
+    "filters": "passed",
+    "tabs": "passed",
+    "scroll": "passed",
+    "errors": []
+  },
+  {
+    "theme": "light",
+    "width": 768,
+    "overflow": false,
+    "clipped": false,
+    "actions": "44px minimum",
+    "filters": "passed",
+    "tabs": "passed",
+    "scroll": "passed",
+    "errors": []
+  },
+  {
+    "theme": "light",
+    "width": 1366,
+    "overflow": false,
+    "clipped": false,
+    "actions": "44px minimum",
+    "filters": "passed",
+    "tabs": "passed",
+    "scroll": "passed",
+    "errors": []
+  }
+]

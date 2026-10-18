@@ -1,6 +1,7 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
+import { subscribeMockCatalog } from '@/lib/mock-catalog-revision';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import { fetchCatalog, readCatalog } from './catalog-cache';
@@ -26,6 +27,15 @@ export function useExamCatalog(exam: string, tab: string, tier: string, loadingO
     if (!hydrated || loadingOnly || !metadata || tab === 'overview' || (previous && previous.nextOffset === null)) return null;
     return index === 0 ? firstKey : firstKey.replace(/offset=0$/, `offset=${previous.nextOffset}`);
   }, fetchCatalog, { ...options, revalidateFirstPage: true, persistSize: false });
+  const refreshMetadata = metadataRequest.mutate;
+  const refreshPages = pages.mutate;
+  useEffect(() => {
+    if (loadingOnly) return;
+    return subscribeMockCatalog(exam, () => {
+      void refreshMetadata();
+      void refreshPages();
+    });
+  }, [exam, loadingOnly, refreshMetadata, refreshPages]);
   const data = pages.data || (hydrated && metadata && readCatalog(firstKey) ? [readCatalog(firstKey)!.data] : undefined);
   const slots = Array.from(new Map((data || []).flatMap(page => page.slots).map(slot => [slot.id, slot])).values());
   const error = metadataRequest.error || pages.error;

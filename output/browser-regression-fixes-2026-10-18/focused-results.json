@@ -1,0 +1,853 @@
+{
+  "config": {
+    "argv": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "C:\\Users\\91906\\Ai ssc\\node_modules\\frontend\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "e2e/quiz-first-submit.spec.ts",
+      "e2e/request-flow-latency.spec.ts",
+      "--reporter=list,json",
+      "--output=../output/browser-regression-fixes-2026-10-18/focused-results"
+    ],
+    "configFile": "C:\\Users\\91906\\Ai ssc\\frontend\\playwright.config.ts",
+    "rootDir": "C:/Users/91906/Ai ssc/frontend/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/91906/Ai ssc/output/browser-regression-fixes-2026-10-18/focused-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "C:/Users/91906/Ai ssc/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      },
+      {
+        "outputDir": "C:/Users/91906/Ai ssc/output/browser-regression-fixes-2026-10-18/focused-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "C:/Users/91906/Ai ssc/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\91906\\Ai ssc\\output\\browser-regression-fixes-2026-10-18\\focused-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "C:\\Users\\91906\\Ai ssc\\frontend\\e2e",
+        "snapshotDir": "C:\\Users\\91906\\Ai ssc\\frontend\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 45000,
+        "use": {
+          "baseURL": "http://127.0.0.1:3110",
+          "headless": true,
+          "trace": "retain-on-failure",
+          "viewport": {
+            "width": 1366,
+            "height": 900
+          }
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\91906\\Ai ssc\\output\\browser-regression-fixes-2026-10-18\\focused-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile",
+        "testDir": "C:\\Users\\91906\\Ai ssc\\frontend\\e2e",
+        "snapshotDir": "C:\\Users\\91906\\Ai ssc\\frontend\\e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 45000,
+        "use": {
+          "baseURL": "http://127.0.0.1:3110",
+          "headless": true,
+          "trace": "retain-on-failure",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "isMobile": true,
+          "hasTouch": true
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "quiz-first-submit.spec.ts",
+      "file": "quiz-first-submit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "first submission keeps the quiz visible while optional panels load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2588,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T12:41:03.047Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d41acb1dc544bf708a24-b5ec8201c7b6c8484a7b",
+          "file": "quiz-first-submit.spec.ts",
+          "line": 6,
+          "column": 5
+        },
+        {
+          "title": "first submission keeps the quiz visible while optional panels load",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2873,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T12:41:56.287Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d41acb1dc544bf708a24-fead487661d17fddd435",
+          "file": "quiz-first-submit.spec.ts",
+          "line": 6,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "request-flow-latency.spec.ts",
+      "file": "request-flow-latency.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "measure real local request flows through the Next rewrite",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 49003,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "desktop run 1: login\n"
+                    },
+                    {
+                      "text": "desktop run 1: dashboard_reload\n"
+                    },
+                    {
+                      "text": "desktop run 1: mathematics_document\n"
+                    },
+                    {
+                      "text": "desktop run 1: topic_document\n"
+                    },
+                    {
+                      "text": "desktop run 1: quiz_setup\n"
+                    },
+                    {
+                      "text": "desktop run 1: start_quiz\n"
+                    },
+                    {
+                      "text": "desktop run 1: submit_answer_ui\n"
+                    },
+                    {
+                      "text": "desktop run 1: open_solution\n"
+                    },
+                    {
+                      "text": "desktop run 1: open_ai_tutor\n"
+                    },
+                    {
+                      "text": "desktop run 1: next_question\n"
+                    },
+                    {
+                      "text": "desktop run 1: training_hub\n"
+                    },
+                    {
+                      "text": "desktop run 1: training_setup\n"
+                    },
+                    {
+                      "text": "desktop run 1: start_training\n"
+                    },
+                    {
+                      "text": "desktop run 1: finish_training\n"
+                    },
+                    {
+                      "text": "desktop run 1: mock_catalog\n"
+                    },
+                    {
+                      "text": "desktop run 1: mock_exam\n"
+                    },
+                    {
+                      "text": "desktop run 1: mock_instructions\n"
+                    },
+                    {
+                      "text": "desktop run 1: start_mock\n"
+                    },
+                    {
+                      "text": "desktop run 2: login\n"
+                    },
+                    {
+                      "text": "desktop run 2: dashboard_reload\n"
+                    },
+                    {
+                      "text": "desktop run 2: mathematics_document\n"
+                    },
+                    {
+                      "text": "desktop run 2: topic_document\n"
+                    },
+                    {
+                      "text": "desktop run 2: quiz_setup\n"
+                    },
+                    {
+                      "text": "desktop run 2: start_quiz\n"
+                    },
+                    {
+                      "text": "desktop run 2: submit_answer_ui\n"
+                    },
+                    {
+                      "text": "desktop run 2: open_solution\n"
+                    },
+                    {
+                      "text": "desktop run 2: open_ai_tutor\n"
+                    },
+                    {
+                      "text": "desktop run 2: next_question\n"
+                    },
+                    {
+                      "text": "desktop run 2: training_hub\n"
+                    },
+                    {
+                      "text": "desktop run 2: training_setup\n"
+                    },
+                    {
+                      "text": "desktop run 2: start_training\n"
+                    },
+                    {
+                      "text": "desktop run 2: finish_training\n"
+                    },
+                    {
+                      "text": "desktop run 2: mock_catalog\n"
+                    },
+                    {
+                      "text": "desktop run 2: mock_exam\n"
+                    },
+                    {
+                      "text": "desktop run 2: mock_instructions\n"
+                    },
+                    {
+                      "text": "desktop run 2: start_mock\n"
+                    },
+                    {
+                      "text": "desktop run 3: login\n"
+                    },
+                    {
+                      "text": "desktop run 3: dashboard_reload\n"
+                    },
+                    {
+                      "text": "desktop run 3: mathematics_document\n"
+                    },
+                    {
+                      "text": "desktop run 3: topic_document\n"
+                    },
+                    {
+                      "text": "desktop run 3: quiz_setup\n"
+                    },
+                    {
+                      "text": "desktop run 3: start_quiz\n"
+                    },
+                    {
+                      "text": "desktop run 3: submit_answer_ui\n"
+                    },
+                    {
+                      "text": "desktop run 3: open_solution\n"
+                    },
+                    {
+                      "text": "desktop run 3: open_ai_tutor\n"
+                    },
+                    {
+                      "text": "desktop run 3: next_question\n"
+                    },
+                    {
+                      "text": "desktop run 3: training_hub\n"
+                    },
+                    {
+                      "text": "desktop run 3: training_setup\n"
+                    },
+                    {
+                      "text": "desktop run 3: start_training\n"
+                    },
+                    {
+                      "text": "desktop run 3: finish_training\n"
+                    },
+                    {
+                      "text": "desktop run 3: mock_catalog\n"
+                    },
+                    {
+                      "text": "desktop run 3: mock_exam\n"
+                    },
+                    {
+                      "text": "desktop run 3: mock_instructions\n"
+                    },
+                    {
+                      "text": "desktop run 3: start_mock\n"
+                    },
+                    {
+                      "text": "desktop run 4: login\n"
+                    },
+                    {
+                      "text": "desktop run 4: dashboard_reload\n"
+                    },
+                    {
+                      "text": "desktop run 4: mathematics_document\n"
+                    },
+                    {
+                      "text": "desktop run 4: topic_document\n"
+                    },
+                    {
+                      "text": "desktop run 4: quiz_setup\n"
+                    },
+                    {
+                      "text": "desktop run 4: start_quiz\n"
+                    },
+                    {
+                      "text": "desktop run 4: submit_answer_ui\n"
+                    },
+                    {
+                      "text": "desktop run 4: open_solution\n"
+                    },
+                    {
+                      "text": "desktop run 4: open_ai_tutor\n"
+                    },
+                    {
+                      "text": "desktop run 4: next_question\n"
+                    },
+                    {
+                      "text": "desktop run 4: training_hub\n"
+                    },
+                    {
+                      "text": "desktop run 4: training_setup\n"
+                    },
+                    {
+                      "text": "desktop run 4: start_training\n"
+                    },
+                    {
+                      "text": "desktop run 4: finish_training\n"
+                    },
+                    {
+                      "text": "desktop run 4: mock_catalog\n"
+                    },
+                    {
+                      "text": "desktop run 4: mock_exam\n"
+                    },
+                    {
+                      "text": "desktop run 4: mock_instructions\n"
+                    },
+                    {
+                      "text": "desktop run 4: start_mock\n"
+                    },
+                    {
+                      "text": "desktop run 5: login\n"
+                    },
+                    {
+                      "text": "desktop run 5: dashboard_reload\n"
+                    },
+                    {
+                      "text": "desktop run 5: mathematics_document\n"
+                    },
+                    {
+                      "text": "desktop run 5: topic_document\n"
+                    },
+                    {
+                      "text": "desktop run 5: quiz_setup\n"
+                    },
+                    {
+                      "text": "desktop run 5: start_quiz\n"
+                    },
+                    {
+                      "text": "desktop run 5: submit_answer_ui\n"
+                    },
+                    {
+                      "text": "desktop run 5: open_solution\n"
+                    },
+                    {
+                      "text": "desktop run 5: open_ai_tutor\n"
+                    },
+                    {
+                      "text": "desktop run 5: next_question\n"
+                    },
+                    {
+                      "text": "desktop run 5: training_hub\n"
+                    },
+                    {
+                      "text": "desktop run 5: training_setup\n"
+                    },
+                    {
+                      "text": "desktop run 5: start_training\n"
+                    },
+                    {
+                      "text": "desktop run 5: finish_training\n"
+                    },
+                    {
+                      "text": "desktop run 5: mock_catalog\n"
+                    },
+                    {
+                      "text": "desktop run 5: mock_exam\n"
+                    },
+                    {
+                      "text": "desktop run 5: mock_instructions\n"
+                    },
+                    {
+                      "text": "desktop run 5: start_mock\n"
+                    },
+                    {
+                      "text": "Request-flow latency samples: C:\\Users\\91906\\Ai ssc\\REQUEST_FLOW_LATENCY_desktop.json\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T12:41:05.909Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a67f64d2b4b7cc1ce935-7551fae76c7d5ae83bf5",
+          "file": "request-flow-latency.spec.ts",
+          "line": 19,
+          "column": 5
+        },
+        {
+          "title": "measure real local request flows through the Next rewrite",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 48288,
+                  "errors": [],
+                  "stdout": [
+                    {
+                      "text": "mobile run 1: login\n"
+                    },
+                    {
+                      "text": "mobile run 1: dashboard_reload\n"
+                    },
+                    {
+                      "text": "mobile run 1: mathematics_document\n"
+                    },
+                    {
+                      "text": "mobile run 1: topic_document\n"
+                    },
+                    {
+                      "text": "mobile run 1: quiz_setup\n"
+                    },
+                    {
+                      "text": "mobile run 1: start_quiz\n"
+                    },
+                    {
+                      "text": "mobile run 1: submit_answer_ui\n"
+                    },
+                    {
+                      "text": "mobile run 1: open_solution\n"
+                    },
+                    {
+                      "text": "mobile run 1: open_ai_tutor\n"
+                    },
+                    {
+                      "text": "mobile run 1: next_question\n"
+                    },
+                    {
+                      "text": "mobile run 1: training_hub\n"
+                    },
+                    {
+                      "text": "mobile run 1: training_setup\n"
+                    },
+                    {
+                      "text": "mobile run 1: start_training\n"
+                    },
+                    {
+                      "text": "mobile run 1: finish_training\n"
+                    },
+                    {
+                      "text": "mobile run 1: mock_catalog\n"
+                    },
+                    {
+                      "text": "mobile run 1: mock_exam\n"
+                    },
+                    {
+                      "text": "mobile run 1: mock_instructions\n"
+                    },
+                    {
+                      "text": "mobile run 1: start_mock\n"
+                    },
+                    {
+                      "text": "mobile run 2: login\n"
+                    },
+                    {
+                      "text": "mobile run 2: dashboard_reload\n"
+                    },
+                    {
+                      "text": "mobile run 2: mathematics_document\n"
+                    },
+                    {
+                      "text": "mobile run 2: topic_document\n"
+                    },
+                    {
+                      "text": "mobile run 2: quiz_setup\n"
+                    },
+                    {
+                      "text": "mobile run 2: start_quiz\n"
+                    },
+                    {
+                      "text": "mobile run 2: submit_answer_ui\n"
+                    },
+                    {
+                      "text": "mobile run 2: open_solution\n"
+                    },
+                    {
+                      "text": "mobile run 2: open_ai_tutor\n"
+                    },
+                    {
+                      "text": "mobile run 2: next_question\n"
+                    },
+                    {
+                      "text": "mobile run 2: training_hub\n"
+                    },
+                    {
+                      "text": "mobile run 2: training_setup\n"
+                    },
+                    {
+                      "text": "mobile run 2: start_training\n"
+                    },
+                    {
+                      "text": "mobile run 2: finish_training\n"
+                    },
+                    {
+                      "text": "mobile run 2: mock_catalog\n"
+                    },
+                    {
+                      "text": "mobile run 2: mock_exam\n"
+                    },
+                    {
+                      "text": "mobile run 2: mock_instructions\n"
+                    },
+                    {
+                      "text": "mobile run 2: start_mock\n"
+                    },
+                    {
+                      "text": "mobile run 3: login\n"
+                    },
+                    {
+                      "text": "mobile run 3: dashboard_reload\n"
+                    },
+                    {
+                      "text": "mobile run 3: mathematics_document\n"
+                    },
+                    {
+                      "text": "mobile run 3: topic_document\n"
+                    },
+                    {
+                      "text": "mobile run 3: quiz_setup\n"
+                    },
+                    {
+                      "text": "mobile run 3: start_quiz\n"
+                    },
+                    {
+                      "text": "mobile run 3: submit_answer_ui\n"
+                    },
+                    {
+                      "text": "mobile run 3: open_solution\n"
+                    },
+                    {
+                      "text": "mobile run 3: open_ai_tutor\n"
+                    },
+                    {
+                      "text": "mobile run 3: next_question\n"
+                    },
+                    {
+                      "text": "mobile run 3: training_hub\n"
+                    },
+                    {
+                      "text": "mobile run 3: training_setup\n"
+                    },
+                    {
+                      "text": "mobile run 3: start_training\n"
+                    },
+                    {
+                      "text": "mobile run 3: finish_training\n"
+                    },
+                    {
+                      "text": "mobile run 3: mock_catalog\n"
+                    },
+                    {
+                      "text": "mobile run 3: mock_exam\n"
+                    },
+                    {
+                      "text": "mobile run 3: mock_instructions\n"
+                    },
+                    {
+                      "text": "mobile run 3: start_mock\n"
+                    },
+                    {
+                      "text": "mobile run 4: login\n"
+                    },
+                    {
+                      "text": "mobile run 4: dashboard_reload\n"
+                    },
+                    {
+                      "text": "mobile run 4: mathematics_document\n"
+                    },
+                    {
+                      "text": "mobile run 4: topic_document\n"
+                    },
+                    {
+                      "text": "mobile run 4: quiz_setup\n"
+                    },
+                    {
+                      "text": "mobile run 4: start_quiz\n"
+                    },
+                    {
+                      "text": "mobile run 4: submit_answer_ui\n"
+                    },
+                    {
+                      "text": "mobile run 4: open_solution\n"
+                    },
+                    {
+                      "text": "mobile run 4: open_ai_tutor\n"
+                    },
+                    {
+                      "text": "mobile run 4: next_question\n"
+                    },
+                    {
+                      "text": "mobile run 4: training_hub\n"
+                    },
+                    {
+                      "text": "mobile run 4: training_setup\n"
+                    },
+                    {
+                      "text": "mobile run 4: start_training\n"
+                    },
+                    {
+                      "text": "mobile run 4: finish_training\n"
+                    },
+                    {
+                      "text": "mobile run 4: mock_catalog\n"
+                    },
+                    {
+                      "text": "mobile run 4: mock_exam\n"
+                    },
+                    {
+                      "text": "mobile run 4: mock_instructions\n"
+                    },
+                    {
+                      "text": "mobile run 4: start_mock\n"
+                    },
+                    {
+                      "text": "mobile run 5: login\n"
+                    },
+                    {
+                      "text": "mobile run 5: dashboard_reload\n"
+                    },
+                    {
+                      "text": "mobile run 5: mathematics_document\n"
+                    },
+                    {
+                      "text": "mobile run 5: topic_document\n"
+                    },
+                    {
+                      "text": "mobile run 5: quiz_setup\n"
+                    },
+                    {
+                      "text": "mobile run 5: start_quiz\n"
+                    },
+                    {
+                      "text": "mobile run 5: submit_answer_ui\n"
+                    },
+                    {
+                      "text": "mobile run 5: open_solution\n"
+                    },
+                    {
+                      "text": "mobile run 5: open_ai_tutor\n"
+                    },
+                    {
+                      "text": "mobile run 5: next_question\n"
+                    },
+                    {
+                      "text": "mobile run 5: training_hub\n"
+                    },
+                    {
+                      "text": "mobile run 5: training_setup\n"
+                    },
+                    {
+                      "text": "mobile run 5: start_training\n"
+                    },
+                    {
+                      "text": "mobile run 5: finish_training\n"
+                    },
+                    {
+                      "text": "mobile run 5: mock_catalog\n"
+                    },
+                    {
+                      "text": "mobile run 5: mock_exam\n"
+                    },
+                    {
+                      "text": "mobile run 5: mock_instructions\n"
+                    },
+                    {
+                      "text": "mobile run 5: start_mock\n"
+                    },
+                    {
+                      "text": "Request-flow latency samples: C:\\Users\\91906\\Ai ssc\\REQUEST_FLOW_LATENCY_mobile.json\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T12:41:59.498Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a67f64d2b4b7cc1ce935-dd56ef2f537c5afafe76",
+          "file": "request-flow-latency.spec.ts",
+          "line": 19,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-18T12:40:50.847Z",
+    "duration": 117921.166,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

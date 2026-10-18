@@ -17,6 +17,18 @@ export const insertAttempt = async (doc) => {
   return getMockAttemptsCollection().insertOne(doc);
 };
 
+export const restartAttempt = async (doc) => {
+  return withMongoTransaction(async ({ db, session }) => {
+    const collection = db.collection('mockAttempts');
+    await collection.updateMany(
+      { userId: doc.userId, examSlug: doc.examSlug, testId: doc.testId, status: 'in_progress', assessmentMode: { $ne: 'confidential' } },
+      { $set: { status: 'abandoned', abandonedAt: doc.startedAt } },
+      { session }
+    );
+    return collection.insertOne(doc, { session });
+  });
+};
+
 export const updateAttemptProgress = async (filter, update) => {
   return getMockAttemptsCollection().updateOne(filter, update);
 };

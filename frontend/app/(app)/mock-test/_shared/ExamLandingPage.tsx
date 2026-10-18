@@ -2,19 +2,27 @@
 
 import { JAM_SECTIONS, JAM_SUBJECT } from '@/lib/exam-mode';
 import ExamModeSwitch from '@/components/ExamModeSwitch';
+import BackButton from '@/components/BackButton';
 import { useAuth } from '@/context/AuthContext';
 import {
 Award,
 CheckCircle,
 ChevronDown,
 ChevronLeft,
+Clock3,
+Eye,
+FileText,
+Info,
 Layers,
-Lock
+Lock,
+Play,
+RotateCcw
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { examLogos } from './exam-logos';
 import { contextualTitle } from './contextual-title';
+import { paperDate } from './paper-date';
 import { useEffect,useRef,useMemo,useState } from 'react';
 import { getExamHistory,type MockAttemptHistory } from './api';
 import {
@@ -27,6 +35,7 @@ type MockTestSlot,
 import styles from './ExamLandingPage.module.css';
 import ExamLandingLoader from './ExamLandingLoader';
 import { useExamCatalog } from './useExamCatalog';
+import PaperInfoDialog from './PaperInfoDialog';
 
 interface ExamLandingPageProps {
   examSlug: string;
@@ -78,6 +87,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
   const history = historyState && historyState.owner === owner && historyState.exam === examSlug && ready ? historyState.attempts : [];
   const [selectedTier, setSelectedTier] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<string | undefined>(undefined);
+  const [infoPaper, setInfoPaper] = useState<MockTestSlot | null>(null);
   const catalog = useExamCatalog(examSlug, activeTab, selectedTier, loadingOnly, selectedYear);
   const { metadata, effectiveTier, effectiveYear } = catalog;
   const tiers = metadata?.tiers || [];
@@ -161,8 +171,65 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
   const isLoading = loadingOnly || catalog.loading;
   const actionsLoading = authLoading || loadingHistory;
 
+  const renderPaperCard = (slot: MockTestSlot) => {
+    const state = getSlotState(slot);
+    const config = getExamConfig(slot.configKey);
+    const date = paperDate(slot);
+    const completed = state.status === 'completed';
+    const inProgress = state.status === 'in_progress';
+    const locked = state.status === 'locked';
+    const StatusIcon = completed ? CheckCircle : inProgress ? Play : locked ? Lock : Clock3;
+    const ActionIcon = completed ? Eye : inProgress ? RotateCcw : locked ? Lock : Play;
+    const actionLabel = completed ? 'View Result' : inProgress ? 'Resume Mock' : locked ? 'Unlock Pro' : 'Start Mock';
+    const actionText = completed ? 'Result' : inProgress ? 'Resume' : locked ? 'Unlock' : 'Start';
+    const metadata = slot.paperMetadata;
+    const totalQ = metadata?.sections.reduce((sum, section) => sum + section.questionCount, 0) ?? getTotalQuestions(slot.configKey);
+    const maxMarks = metadata?.sections.reduce((sum, section) => sum + section.questionCount * section.marking.correct, 0) ?? getMaxMarks(slot.configKey);
+
+    return (
+      <article key={slot.id} className={styles.testLineCard}>
+        <div className={styles.paperHeading}>
+          {date ? (
+            <time className={styles.dateTile} dateTime={date.iso} aria-label={`${date.day} ${date.month} ${date.year}`} title={`${date.day} ${date.month} ${date.year}`}>
+              <span>{date.month}</span><strong>{date.day}</strong>
+            </time>
+          ) : (
+            <div className={styles.paperTile} aria-hidden="true"><FileText size={24} /></div>
+          )}
+          <div className={styles.testLineInfo}>
+            <h3 className={styles.testLineTitle}>{contextualTitle(slot.title, meta.name, effectiveTier)}</h3>
+            <div className={styles.testLineMeta}>
+              <span>{totalQ} Q</span><span>{maxMarks} Marks</span><span>{metadata?.totalDurationMin ?? config?.totalDurationMin ?? 60} min</span>
+              {!actionsLoading && completed && <span>Score: {state.score}/{state.maxScore}</span>}
+            </div>
+          </div>
+        </div>
+        <div className={styles.paperFooter} aria-busy={actionsLoading}>
+          {actionsLoading ? <span className={styles.progressLoading} role="status">Loading progress…</span> : (
+            <>
+              <div className={styles.paperStatus}>
+              <span className={`${styles.statusBadge} ${completed ? styles.badgeCompleted : inProgress ? styles.badgeProgress : locked ? styles.badgeLocked : styles.badgeNew}`}>
+                <StatusIcon size={15} aria-hidden="true" />
+                {completed ? 'Completed' : inProgress ? 'In progress' : locked ? 'Pro' : 'Not attempted'}
+              </span>
+              <button type="button" data-ui-button="state" data-ui-shape="icon" className={styles.paperInfo} aria-label={`Paper info: ${slot.title}`} onClick={() => setInfoPaper(slot)}><Info size={16} aria-hidden="true" /></button>
+              </div>
+              <div className={styles.testLineAction}>
+                <button data-ui-button="state" aria-label={actionLabel} className={`${styles.paperAction} ${completed || locked ? styles.actionOutline : styles.actionFilled}`}
+                  onClick={() => completed ? handleViewResult(slot.id, state.attemptId!) : inProgress ? handleResume(slot.id, state.attemptId!) : locked ? handleUnlock() : handleStart(slot.id)}>
+                  <span className={styles.actionFace}><ActionIcon size={14} aria-hidden="true" /><span>{actionText}</span></span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </article>
+    );
+  };
+
   return (
     <main className={`${styles.page} ${styles.loadedPage}`}>
+      {infoPaper && <PaperInfoDialog key={`${examSlug}:${infoPaper.id}`} slot={infoPaper} canRestart={['in_progress', 'completed'].includes(getSlotState(infoPaper).status)} onClose={() => setInfoPaper(null)} />}
       <div className={styles.macosWindow}>
         {/* Desktop macOS Sidebar */}
         <aside className={styles.macosSidebar}>
@@ -239,9 +306,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
               <header className={styles.headerCard}>
                 <div className={styles.headerTopRow}>
                   <div className={styles.headerTitleGroup}>
-                    <button data-ui-button="icon" onClick={() => router.replace('/mock-test')} className={styles.mobileBackBtn} aria-label="Back to all exams">
-                      <ChevronLeft size={16} />
-                    </button>
+                    <BackButton href="/mock-test" className={styles.mobileBackBtn} label="Back to all exams" />
                     <div className={styles.headerIconBox}>{examLogo ? <Image src={examLogo} alt={`${meta.name} logo`} width={28} height={28} loading="eager" className={styles.examLogo} /> : meta.icon}</div>
                     <div className={styles.headerTextGroup}>
                       <div className={styles.headerTitleRow}>
@@ -296,18 +361,21 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                 <div className={styles.mobileTabsNav}>
                   <button data-ui-button="state"
                     className={`${styles.mobileTabBtn} ${activeTab === 'mock' ? styles.activeMobileTabBtn : ''}`}
+                    aria-pressed={activeTab === 'mock'}
                     onClick={() => setActiveTab('mock')}
                   >
                     Mocks{metadata && ` ${metadata.mockCount}`}
                   </button>
                   <button data-ui-button="state"
                     className={`${styles.mobileTabBtn} ${activeTab === 'overview' ? styles.activeMobileTabBtn : ''}`}
+                    aria-pressed={activeTab === 'overview'}
                     onClick={() => setActiveTab('overview')}
                   >
                     Overview
                   </button>
                   <button data-ui-button="state"
                     className={`${styles.mobileTabBtn} ${activeTab === 'prev' ? styles.activeMobileTabBtn : ''}`}
+                    aria-pressed={activeTab === 'prev'}
                     onClick={() => setActiveTab('prev')}
                   >
                     PYQs{metadata && ` ${metadata.pyqCount}`}
@@ -322,70 +390,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                 {activeTab === 'mock' && (
                   isLoading ? <ExamLandingLoader /> : <div className={styles.testList}>
                     {!catalog.error && catalog.slots.length === 0 && <div className={styles.placeholderTab}><h3>No tests published yet</h3><p>Published papers will appear here when available.</p></div>}
-                    {catalog.slots.map((slot) => {
-                      const state = getSlotState(slot);
-                      const config = getExamConfig(slot.configKey);
-                      const totalQ = getTotalQuestions(slot.configKey);
-                      const maxM = getMaxMarks(slot.configKey);
-                      const duration = config?.totalDurationMin || 60;
-
-                      return (
-                        <div
-                          key={slot.id}
-                          className={`${styles.testLineCard} ${state.status === 'locked' ? styles.lockedCard : ''}`}
-                        >
-                          <div className={styles.testLineInfo}>
-                            <div className={styles.testLineHeader}>
-                              <h3 className={styles.testLineTitle}>{contextualTitle(slot.title, meta.name, effectiveTier)}</h3>
-                            </div>
-                            <div className={styles.testLineMeta}>
-                              <span>{totalQ} Q</span>
-                              <span>{maxM} Marks</span>
-                              <span>{duration} min</span>
-                              {!actionsLoading && state.status === 'completed' && <span>Score: {state.score}/{state.maxScore}</span>}
-                            </div>
-                          </div>
-
-                          <div className={styles.testLineAction} aria-busy={actionsLoading}>
-                            {actionsLoading && <span role="status">Loading progress…</span>}
-                            {!actionsLoading && state.status === 'completed' && (
-                              <div className={styles.completedStatus}>
-                                <button data-ui-button="state"
-                                  className={styles.analysisBtn}
-                                  onClick={() => handleViewResult(slot.id, state.attemptId!)}
-                                >
-                                  View Result
-                                </button>
-                              </div>
-                            )}
-
-                            {!actionsLoading && state.status === 'in_progress' && (
-                              <button data-ui-button="state"
-                                className={styles.statusPaused}
-                                onClick={() => handleResume(slot.id, state.attemptId!)}
-                              >
-                                Resume Mock
-                              </button>
-                            )}
-
-                            {!actionsLoading && state.status === 'not_started' && (
-                              <button data-ui-button="secondary"
-                                className={styles.statusNotStarted}
-                                onClick={() => handleStart(slot.id)}
-                              >
-                                Start Mock
-                              </button>
-                            )}
-
-                            {!actionsLoading && state.status === 'locked' && (
-                              <button data-ui-button="state" className={styles.statusLocked} onClick={handleUnlock}>
-                                <Lock size={14} /> Unlock Pro
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {catalog.slots.map(renderPaperCard)}
                   </div>
                 )}
 
@@ -439,70 +444,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                         <p>No papers match the selected filters.</p>
                       </div>
                     ) : (
-                      catalog.slots.map((slot) => {
-                        const state = getSlotState(slot);
-                        const config = getExamConfig(slot.configKey);
-                        const totalQ = getTotalQuestions(slot.configKey);
-                        const maxM = getMaxMarks(slot.configKey);
-                        const duration = config?.totalDurationMin || 60;
-
-                        return (
-                          <div
-                            key={slot.id}
-                            className={`${styles.testLineCard} ${state.status === 'locked' ? styles.lockedCard : ''}`}
-                          >
-                            <div className={styles.testLineInfo}>
-                              <div className={styles.testLineHeader}>
-                                <h3 className={styles.testLineTitle}>{contextualTitle(slot.title, meta.name, effectiveTier)}</h3>
-                              </div>
-                              <div className={styles.testLineMeta}>
-                                <span>{totalQ} Q</span>
-                                <span>{maxM} Marks</span>
-                                <span>{duration} min</span>
-                                {!actionsLoading && state.status === 'completed' && <span>Score: {state.score}/{state.maxScore}</span>}
-                              </div>
-                            </div>
-
-                            <div className={styles.testLineAction} aria-busy={actionsLoading}>
-                            {actionsLoading && <span role="status">Loading progress…</span>}
-                              {!actionsLoading && state.status === 'completed' && (
-                                <div className={styles.completedStatus}>
-                                  <button data-ui-button="state"
-                                    className={styles.analysisBtn}
-                                    onClick={() => handleViewResult(slot.id, state.attemptId!)}
-                                  >
-                                    View Result
-                                  </button>
-                                </div>
-                              )}
-
-                              {!actionsLoading && state.status === 'in_progress' && (
-                                <button data-ui-button="state"
-                                  className={styles.statusPaused}
-                                  onClick={() => handleResume(slot.id, state.attemptId!)}
-                                >
-                                  Resume Mock
-                                </button>
-                              )}
-
-                              {!actionsLoading && state.status === 'not_started' && (
-                                <button data-ui-button="secondary"
-                                  className={styles.statusNotStarted}
-                                  onClick={() => handleStart(slot.id)}
-                                >
-                                  Start Mock
-                                </button>
-                              )}
-
-                              {!actionsLoading && state.status === 'locked' && (
-                                <button data-ui-button="state" className={styles.statusLocked} onClick={handleUnlock}>
-                                  <Lock size={14} /> Unlock Pro
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })
+                      catalog.slots.map(renderPaperCard)
                     )}
                   </div>
                 )}

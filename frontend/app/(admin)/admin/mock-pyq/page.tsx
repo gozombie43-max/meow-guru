@@ -5,14 +5,16 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useExamMode } from "@/context/ExamModeContext";
 import { API_BASE } from "@/lib/api-base";
 import { adminScopedUrl } from "@/lib/admin-exam-mode";
+import { invalidateMockCatalog } from "@/lib/mock-catalog-revision";
 import { requestResponse } from "@/shared/api/request";
 import styles from "./papers.module.css";
 import PaperQuestionsEditor from "./PaperQuestionsEditor";
+import { comparePaperDateAndShift, paperDateLabel } from "./paper-order";
 
 type Paper = {
   id: string; examSlug: string; title: string; tier?: string; type?: string;
-  year?: number | null; shift?: string | null; order?: number; isFree?: boolean;
-  questionCount?: number;
+  year?: number | null; shift?: string | number | null; order?: number; isFree?: boolean;
+  questionCount?: number; examDate?: string | null;
 };
 const kind = (paper: Paper) => paper.type || (paper.id.includes("pyq") ? "pyq" : "mock");
 const examName = (slug: string) => slug.replaceAll("-", " ").toUpperCase();
@@ -61,7 +63,7 @@ function PaperManager({ mode }: { mode: "ssc" | "iit-jam" }) {
     (!exam || paper.examSlug === exam) && (!type || kind(paper) === type) &&
     (!year || String(paper.year) === year) && (!access || Boolean(paper.isFree) === (access === "free")) &&
     `${paper.title} ${paper.id} ${paper.examSlug} ${paper.tier || ""} ${paper.shift || ""}`.toLowerCase().includes(search.trim().toLowerCase())
-  );
+  ).sort(comparePaperDateAndShift);
   const pages = Math.max(1, Math.ceil(filtered.length / 25));
   const currentPage = Math.min(page, pages);
   const visible = filtered.slice((currentPage - 1) * 25, currentPage * 25);
@@ -75,11 +77,13 @@ function PaperManager({ mode }: { mode: "ssc" | "iit-jam" }) {
     setSaving(true); setError(""); setMessage("");
     try {
       const updates = { examSlug: editing.examSlug, title: editing.title.trim(), type: kind(editing), isPyq: kind(editing) === "pyq",
-        tier: editing.tier || null, year: editing.year || null, shift: editing.shift?.trim() || null,
+        tier: editing.tier || null, year: editing.year || null,
+        shift: typeof editing.shift === "string" ? editing.shift.trim() || null : editing.shift ?? null,
         order: editing.order ?? 1, isFree: Boolean(editing.isFree) };
       await readResponse(await requestResponse(adminScopedUrl(`${API_BASE}/api/mocktest/admin/slots/${encodeURIComponent(editing.id)}`, mode), {
         method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updates),
       }));
+      invalidateMockCatalog(editing.examSlug);
       setPapers(previous => previous.map(paper => paper.id === editing.id && paper.examSlug === editing.examSlug ? { ...paper, ...updates, tier: updates.tier || undefined } : paper));
       setEditing(null); setMessage("Paper details saved.");
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not save paper."); }
@@ -115,7 +119,7 @@ function PaperManager({ mode }: { mode: "ssc" | "iit-jam" }) {
           <label>Type<select value={kind(editing)} onChange={e => setEditing({ ...editing, type: e.target.value })}><option value="mock">Mock test</option><option value="pyq">PYQ</option></select></label>
           <label>Stage / tier<input aria-label="Stage / tier" value={editing.tier || ""} onChange={e => setEditing({ ...editing, tier: e.target.value })} /></label>
           <label>Exam year<input aria-label="Exam year" type="number" min="1900" max="2100" value={editing.year ?? ""} onChange={e => setEditing({ ...editing, year: e.target.value ? Number(e.target.value) : null })} /></label>
-          <label>Shift<input aria-label="Shift" value={editing.shift || ""} onChange={e => setEditing({ ...editing, shift: e.target.value })} /></label>
+          <label>Shift<input aria-label="Shift" value={editing.shift ?? ""} onChange={e => setEditing({ ...editing, shift: e.target.value })} /></label>
           <label>Display order<input aria-label="Display order" type="number" required min="1" value={editing.order ?? 1} onChange={e => setEditing({ ...editing, order: e.target.valueAsNumber })} /></label>
         </div>
         <label className={styles.checkbox}><input aria-label="Free access" type="checkbox" checked={Boolean(editing.isFree)} onChange={e => setEditing({ ...editing, isFree: e.target.checked })} />Free access</label>
@@ -125,11 +129,11 @@ function PaperManager({ mode }: { mode: "ssc" | "iit-jam" }) {
     </form>}
     <div className={styles.tableWrap} aria-busy={loading}>
       {loading ? <p className={styles.empty} role="status">Loading papers…</p> : !visible.length ? <p className={styles.empty}>{papers.length ? "No papers match these filters." : "No papers available. Upload a paper to get started."}</p> :
-        <table><thead><tr>{["Paper", "Exam / tier", "Type", "Year / shift", "Questions", "Access", "Actions"].map(label => <th key={label} scope="col">{label}</th>)}</tr></thead>
+        <table><thead><tr>{["Paper", "Exam / tier", "Type", "Date / shift", "Questions", "Access", "Actions"].map(label => <th key={label} scope="col">{label}</th>)}</tr></thead>
           <tbody>{visible.map(paper => <tr key={`${paper.examSlug}:${paper.id}`}>
             <td><strong>{paper.title}</strong><small>{paper.id}</small></td>
             <td>{examName(paper.examSlug)}<small>{paper.tier || "—"}</small></td>
-            <td>{kind(paper) === "pyq" ? "PYQ" : "Mock"}</td><td>{paper.year || "—"}<small>{paper.shift}</small></td>
+            <td>{kind(paper) === "pyq" ? "PYQ" : "Mock"}</td><td>{paperDateLabel(paper)}<small>{paper.shift == null ? '—' : /^\d+$/.test(String(paper.shift)) ? `Shift ${paper.shift}` : paper.shift}</small></td>
             <td>{paper.questionCount || "—"}</td><td><span className={styles.badge}>{paper.isFree ? "Free" : "Pro"}</span></td>
             <td><div className={styles.actions}><button data-ui-button="secondary" disabled={saving} aria-label={`Edit ${paper.title}`} onClick={() => { setEditing({ ...paper }); setMessage(""); setError(""); }}>Edit</button>
               <button data-ui-button="secondary" disabled={saving} aria-label={`Edit questions in ${paper.title}`} onClick={() => { setEditing(null); setQuestionPaper(paper); }}>Edit questions</button></div></td>

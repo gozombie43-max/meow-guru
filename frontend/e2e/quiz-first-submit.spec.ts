@@ -30,15 +30,24 @@ test('first submission keeps the quiz visible while optional panels load', async
   });
   try {
     await page.getByRole('button', { name: 'Submit', exact: true }).click();
+    // Submission must stay independent of optional solution-panel downloads.
+    await page.waitForTimeout(700);
+    await expect(page.locator('.ios-series-quiz')).toBeVisible();
+    await expect(page.getByLabel('Correct option')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Next', exact: true })).toBeEnabled();
+    expect(delayedChunks).toBe(0);
+
+    // Opening the sheet is the actual cold-load trigger. Keep its chunk pending
+    // long enough to catch a route-level Suspense fallback hiding the quiz.
+    await page.getByRole('button', { name: 'View solution', exact: true }).click();
     await expect.poll(() => delayedChunks).toBeGreaterThan(0);
-    // Allow React's delayed Suspense fallback to appear on a cold chunk load.
     await page.waitForTimeout(700);
     await expect(page.locator('.ios-series-quiz')).toBeVisible();
     await expect(page.getByLabel('Correct option')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Next', exact: true })).toBeEnabled();
   } finally {
     release();
+    await page.unrouteAll({ behavior: 'wait' });
   }
-  await page.getByRole('button', { name: 'View solution', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Question solution' })).toBeVisible();
 });

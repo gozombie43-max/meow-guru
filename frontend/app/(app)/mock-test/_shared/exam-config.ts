@@ -21,17 +21,19 @@ export type ExamConfig = {
 };
 
 export type MockTestSlot = {
-  paperMetadata?: { schemaDriven: boolean; examName: string; compositeTimer: boolean; totalDurationMin?: number; sections: Omit<SectionConfig, 'topics'>[]; skillTest?: { type: string; duration: number } };
+  paperMetadata?: { schemaDriven: boolean; examName: string; examDate?: string; compositeTimer: boolean; totalDurationMin?: number; sections: Omit<SectionConfig, 'topics'>[]; skillTest?: { type: string; duration: number } };
   id: string;                 // unique, used in URLs: 'cgl-t1-mock-1'
   examSlug: string;           // routing: 'ssc-cgl'
   configKey: string;          // looks up ExamConfig: 'ssc-cgl-tier1'
   title: string;
   tier?: string;              // display label: 'Tier I' | 'Tier II' | 'CBT 1' | 'Prelims' etc.
   isFree: boolean;
+  assessmentMode?: 'practice' | 'confidential';
   order: number;
   isPyq?: boolean;
   year?: number;
-  shift?: string;
+  examDate?: string;
+  shift?: string | number;
   type?: string;
 };
 

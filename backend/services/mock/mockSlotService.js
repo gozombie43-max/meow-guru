@@ -102,6 +102,7 @@ export async function fetchAllAdminSlots(
                   : 'mock'
               ),
             year: s.year || null,
+            examDate: s.examDate || s.paperMetadata?.examDate || null,
             shift: s.shift || null,
             isFree: Boolean(s.isFree),
             order: s.order || 1,

@@ -10,6 +10,7 @@ import {
   getAttemptByStartKey,
   getConfidentialAttempt,
   insertAttempt,
+  restartAttempt,
   updateAttemptProgress,
   submitAttemptUpdate,
   getTestHistory,
@@ -177,11 +178,14 @@ export const adminSeedSlots = async (req, res) => {
 export const startMockTest = async (req, res) => {
   try {
     const { examSlug, testId } = req.params;
+    const restart = req.body?.restart === true;
     const startKey = req.get('Idempotency-Key');
+    if (restart && !startKey) return res.status(400).json({ error: 'A restart requires an Idempotency-Key' });
     if (startKey && !/^[a-zA-Z0-9_-]{8,100}$/.test(startKey)) return res.status(400).json({ error: 'Invalid Idempotency-Key' });
     if (startKey) {
       const previous = await getAttemptByStartKey(req.user.id, startKey);
       if (previous) {
+        if (restart && previous.assessmentMode === 'confidential') return res.status(403).json({ error: 'This assessment cannot be restarted' });
         if (previous.examSlug !== examSlug || previous.testId !== testId) return res.status(409).json({ error: 'Idempotency key belongs to another test' });
         return res.json(presentAttempt(previous));
       }
@@ -190,6 +194,7 @@ export const startMockTest = async (req, res) => {
     if (!slot) return res.status(404).json({ error: 'Test not found' });
     if (slot.examSlug !== examSlug) return res.status(400).json({ error: 'Exam slug mismatch' });
     if (slot.assessmentMode === 'confidential') {
+      if (restart) return res.status(403).json({ error: 'This assessment cannot be restarted' });
       const previous = await getConfidentialAttempt(req.user.id, examSlug, testId);
       if (previous) return res.json(presentAttempt(previous));
     }
@@ -227,7 +232,7 @@ export const startMockTest = async (req, res) => {
 
     Object.assign(doc, sectionTiming(doc, startedAt.getTime()) || {});
 
-    try { await insertAttempt(doc); }
+    try { await (restart ? restartAttempt(doc) : insertAttempt(doc)); }
     catch (error) {
       if (error.code !== 11000) throw error;
       const previous = slot.assessmentMode === 'confidential'

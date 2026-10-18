@@ -3,6 +3,7 @@ import { SWRConfig } from 'swr';
 import type { ReactNode } from 'react';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { useExamCatalog } from './useExamCatalog';
+import { invalidateMockCatalog } from '@/lib/mock-catalog-revision';
 
 const mocks = vi.hoisted(() => ({ fetch: vi.fn(), read: vi.fn() }));
 vi.mock('./catalog-cache', () => ({ fetchCatalog: mocks.fetch, readCatalog: mocks.read }));
@@ -11,6 +12,7 @@ function wrapper({ children }: { children: ReactNode }) {
   return <SWRConfig value={{ provider: () => new Map() }}>{children}</SWRConfig>;
 }
 beforeEach(() => {
+  localStorage.clear();
   mocks.read.mockReset();
   mocks.fetch.mockReset().mockImplementation(async (key: string) => {
     const query = new URL(key, 'http://localhost').searchParams;
@@ -19,6 +21,27 @@ beforeEach(() => {
       slots: query.get('limit') === '0' ? [] : Array.from({ length: 20 }, (_, i) => ({ id: `${query.get('kind')}-${query.get('tier')}-${offset + i}` })),
     };
   });
+});
+
+it('refreshes an open catalog after a successful rename and ignores edits to other exams', async () => {
+  const { result } = renderHook(() => useExamCatalog('ssc-chsl', 'prev', 'Tier I', false), { wrapper });
+  await waitFor(() => expect(result.current.slots).toHaveLength(20));
+  const before = mocks.fetch.mock.calls.length;
+  act(() => invalidateMockCatalog('ssc-cgl'));
+  expect(mocks.fetch).toHaveBeenCalledTimes(before);
+  mocks.fetch.mockImplementation(async () => ({ metadata, total: 1, nextOffset: null, slots: [{ id: 'renamed', title: 'New paper title' }] }));
+  act(() => invalidateMockCatalog('ssc-chsl'));
+  await waitFor(() => expect(result.current.slots[0]?.title).toBe('New paper title'));
+});
+
+it('refreshes an open catalog when another tab changes the exam revision', async () => {
+  const { result } = renderHook(() => useExamCatalog('ssc-chsl', 'prev', 'Tier I', false), { wrapper });
+  await waitFor(() => expect(result.current.slots).toHaveLength(20));
+  mocks.fetch.mockImplementation(async () => ({ metadata, total: 1, nextOffset: null, slots: [{ id: 'renamed', title: 'Title from another tab' }] }));
+  act(() => {
+    window.dispatchEvent(new StorageEvent('storage', { key: 'mock-catalog-revision:ssc-chsl', oldValue: null, newValue: 'updated' }));
+  });
+  await waitFor(() => expect(result.current.slots[0]?.title).toBe('Title from another tab'));
 });
 
 it('loads one batch, appends on demand, and isolates tabs and tiers', async () => {

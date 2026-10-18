@@ -26,3 +26,12 @@ it('starts a valid native paper using a stable idempotency key', async () => {
   await expect(startTest('ssc-chsl', 'paper', 'token', 'stable-start-key')).resolves.toEqual(data);
   expect(requestResponse).toHaveBeenCalledWith(expect.stringContaining('/ssc-chsl/paper/start'), expect.objectContaining({ method: 'POST', headers: expect.objectContaining({ 'Idempotency-Key': 'stable-start-key' }) }));
 });
+
+it('requests a fresh attempt with an explicit restart and a stable retry key', async () => {
+  const data = { attemptId: 'fresh-attempt', paper: { sections: [{ questions: [{ id: 'q' }] }] } };
+  vi.mocked(requestResponse).mockResolvedValue(Response.json(data, { status: 201 }));
+  await expect(startTest('ssc-chsl', 'paper', 'token', 'restart-key', true)).resolves.toEqual(data);
+  expect(requestResponse).toHaveBeenCalledWith(expect.stringContaining('/ssc-chsl/paper/start'), expect.objectContaining({
+    method: 'POST', headers: expect.objectContaining({ 'Idempotency-Key': 'restart-key' }), body: JSON.stringify({ restart: true }),
+  }));
+});

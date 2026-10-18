@@ -103,9 +103,9 @@ test('measure real local request flows through the Next rewrite', async ({ brows
       await page.locator('#login-email').fill(credentials.email);
       await page.locator('#login-password').fill(credentials.password);
       const loggedIn = page.waitForResponse(r => r.url().endsWith('/auth/login') && r.ok());
-      await measure('login', { selector: 'div', text: 'Hello, Latency' }, () => page.locator('button[type="submit"]').click());
+      await measure('login', { selector: 'main h1', text: 'Latency' }, () => page.locator('button[type="submit"]').click());
       const { token } = await (await loggedIn).json();
-      await measure('dashboard_reload', { selector: 'div', text: 'Hello, Latency', newDocument: true }, () => page.reload({ waitUntil: 'domcontentloaded' }));
+      await measure('dashboard_reload', { selector: 'main h1', text: 'Latency', newDocument: true }, () => page.reload({ waitUntil: 'domcontentloaded' }));
       const progress = page.waitForResponse(r => r.url().includes('/api/progress/topics/private') && r.ok());
       await measure('mathematics_document', { selector: '[data-subject="mathematics"]', newDocument: true }, () => page.goto('/mathematics', { waitUntil: 'domcontentloaded' }));
       await progress;
