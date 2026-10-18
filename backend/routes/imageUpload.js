@@ -5,6 +5,7 @@ import {
   bulkUpload,
   uploadImageQuestion,
   uploadSolutionImage,
+  uploadQuestionImage,
   serveImage,
 } from "../controllers/imageQuestionController.js";
 
@@ -27,6 +28,13 @@ router.post(
   auth,
   upload.array("images", 20),
   bulkUpload
+);
+
+router.post(
+  "/question-image",
+  auth,
+  upload.single("image"),
+  uploadQuestionImage
 );
 
 router.post(

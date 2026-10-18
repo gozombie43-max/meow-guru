@@ -3,7 +3,7 @@ import { z } from 'zod';
 /** @typedef {'en' | 'bn'} QuizLanguage */
 /** @typedef {'A' | 'B' | 'C' | 'D'} AnswerLetter */
 /** @typedef {{ en: string, bn: string }} LanguageText */
-/** @typedef {{ id: string, question: LanguageText, options: { en: string[], bn: string[] }, answer: AnswerLetter, solution: LanguageText }} QuizQuestion */
+/** @typedef {{ id: string, question: LanguageText, options: { en: string[], bn: string[] }, answer: AnswerLetter, solution: LanguageText, questionImage?: string | null, questionImageWidth?: number, questionImageHeight?: number }} QuizQuestion */
 /** @typedef {{ duration?: number, questions: QuizQuestion[] }} QuizSection */
 /** @typedef {{ exam: 'SSC_CGL' | 'SSC_CHSL', tier: 1 | 2, type: 'MOCK' | 'PYQ', paper?: number, examDate?: string, shift?: number, marksPerQuestion: number, negativeMarks: number, sections: Record<string, QuizSection>, skillTest?: { type: 'DEST' | 'TYPING', duration: number } }} ExamPaper */
 
@@ -24,6 +24,8 @@ export const examPaperSchema = z.object({
     questions: z.array(z.object({
       id: z.string().trim().min(1), question: text, options,
       answer: z.enum(['A', 'B', 'C', 'D']), solution: text,
+      questionImage: z.string().refine(value => /^https?:\/\//i.test(value) || /^\/(?!\/)/.test(value), 'Use an HTTP image URL or an absolute image path').nullable().optional(),
+      questionImageWidth: z.number().positive().optional(), questionImageHeight: z.number().positive().optional(),
     })),
   })),
   skillTest: z.object({ type: z.enum(['DEST', 'TYPING']), duration: z.number().positive() }).optional(),
@@ -72,6 +74,7 @@ export function paperPresentation(paper) {
         id: question.id, questionType: /** @type {'MCQ'} */ ('MCQ'), question: question.question.en,
         options: question.options.en.map((value, index) => ({ id: 'ABCD'[index], text: value })),
         solution: question.solution.en,
+        ...(question.questionImage ? { questionImage: question.questionImage, questionImageWidth: question.questionImageWidth, questionImageHeight: question.questionImageHeight } : {}),
         translations: { question: question.question, options: question.options, solution: question.solution },
       })),
     })),

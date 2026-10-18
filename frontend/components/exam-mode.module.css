@@ -177,6 +177,29 @@
 .switch[aria-checked=true] .track>span {
   transform:translateX(17px);
 }
+.compactSwitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.compactSwitch .track { width: 44px; height: 26px; padding: 2px; background: #e9e9eb; transition: background 180ms ease; }
+.compactSwitch .track > span { width: 22px; height: 22px; box-shadow: 0 1px 3px rgb(0 0 0 / .18); transition: transform 180ms ease; }
+.compactSwitch[aria-checked=true] .track { background: #34c759; }
+.compactSwitch[aria-checked=true] .track > span { transform: translateX(18px); }
+:global(.theme-dark) .compactSwitch .track, :global(.dark) .compactSwitch .track { background: #39393d; }
+:global(.theme-dark) .compactSwitch[aria-checked=true] .track, :global(.dark) .compactSwitch[aria-checked=true] .track { background: #30d158; }
+@media (prefers-reduced-motion: reduce) { .compactSwitch .track, .compactSwitch .track > span { transition: none; } }
 .catalog {
   padding-top:24px;
   padding-bottom:12px;

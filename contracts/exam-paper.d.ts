@@ -14,6 +14,9 @@ export type QuizQuestion = {
     };
     answer: AnswerLetter;
     solution: LanguageText;
+    questionImage?: string | null;
+    questionImageWidth?: number;
+    questionImageHeight?: number;
 };
 export type QuizSection = {
     duration?: number;
@@ -74,6 +77,9 @@ export declare function paperPresentation(paper: ExamPaper): {
                 text: string;
             }[];
             solution: string;
+            questionImage?: string | undefined;
+            questionImageWidth?: number | undefined;
+            questionImageHeight?: number | undefined;
             translations: {
                 question: LanguageText;
                 options: {

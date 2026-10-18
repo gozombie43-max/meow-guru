@@ -4,6 +4,7 @@ import {
   BellRing,
   ChevronLeft,
   Database,
+  Files,
   LayoutDashboard,
   ShieldCheck,
   Upload,
@@ -20,32 +21,18 @@ import styles from "./AdminShell.module.css";
 const destinations = [
   { href: "/admincontrol", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin", label: "Questions", icon: Database, exact: true },
+  { href: "/admin/mock-pyq", label: "Mock & Pyq", icon: Files },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/notifications", label: "Notifications", icon: BellRing },
   { href: "/admin/battle-integrity", label: "Integrity", icon: ShieldCheck },
   { href: "/admin/upload", label: "Upload", icon: Upload },
 ] satisfies { href: string; label: string; icon: typeof Upload; exact?: boolean }[];
 
-function getPageTitle(pathname: string) {
-  if (pathname === "/admincontrol") return "Admin Control";
-  if (pathname === "/admin") return "Question Bank";
-  if (pathname.startsWith("/admin/users")) return "Users";
-  if (pathname.startsWith("/admin/notifications")) return "Notifications";
-  if (pathname.startsWith("/admin/battle-integrity")) return "Battle Integrity";
-  if (pathname.startsWith("/admin/upload-image")) return "Image Mapper";
-  if (pathname.startsWith("/admin/upload/question")) return "Single MCQ";
-  if (pathname.startsWith("/admin/upload/bulk")) return "Bulk Questions";
-  if (pathname.startsWith("/admin/upload/mock-tests")) return "Mock Tests & PYQs";
-  if (pathname.startsWith("/admin/upload/assets")) return "ZIP Assets";
-  if (pathname.startsWith("/admin/upload")) return "Upload Studio";
-  return "Admin";
-}
-
 export default function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAuth();
-  const { mode, isJam } = useExamMode();
+  const { mode } = useExamMode();
   const isAdmin = user?.role === "admin" || user?.role === "superadmin";
 
   useEffect(() => {
@@ -56,12 +43,10 @@ export default function AdminShell({ children }: { children: ReactNode }) {
 
   if (loading || !isAdmin) return null;
 
-  const title = getPageTitle(pathname);
-
   return (
     <div className={styles.shell}>
       <header data-ui-chrome="header" className={styles.header}>
-        <div data-ui-chrome="header" className={styles.titlebar}>
+        <div className={styles.headerLayout}>
           <Link replace
             href={pathname === "/admincontrol" ? "/" : "/admincontrol"}
             className={styles.back}
@@ -70,12 +55,6 @@ export default function AdminShell({ children }: { children: ReactNode }) {
             <ChevronLeft size={22} strokeWidth={2.25} aria-hidden="true" />
             <span>{pathname === "/admincontrol" ? "App" : "Admin"}</span>
           </Link>
-          <h1><small className={styles.examLabel}>{isJam ? 'IIT JAM' : 'SSC'} Admin</small>{title}</h1>
-          <span className={styles.status} aria-label="Secure admin workspace">
-            <ShieldCheck size={17} aria-hidden="true" />
-          </span>
-        </div>
-
         <nav className={styles.nav} aria-label="Admin sections">
           {destinations.map(({ href, label, icon: Icon, exact }) => {
             const active = exact ? pathname === href : pathname.startsWith(href);
@@ -92,7 +71,8 @@ export default function AdminShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        <div className={styles.modeBar}><ExamModeSwitch /><span>{isJam ? 'IIT JAM Physics question bank' : 'SSC question bank'}</span></div>
+          <div className={styles.modeControl}><ExamModeSwitch compact /></div>
+        </div>
       </header>
 
       <div className={styles.scroller} id="admin-scroll-region">

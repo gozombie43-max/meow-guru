@@ -2,6 +2,7 @@ import express from 'express';
 import { idempotency } from '../middleware/idempotency.js';
 import { protect } from '../middleware/protect.js';
 import adminAuth from '../middleware/auth.js';
+import { adminGetPaperQuestions, adminSavePaperQuestions } from '../controllers/adminPaperEditorController.js';
 import { parseQuestionExamMode } from '../services/questions/questionExamMode.js';
 
 import {
@@ -49,6 +50,8 @@ router.post('/admin/slots', adminAuth, adminCreateSlot);
 
 // PATCH /admin/slots/:slotId — Update an existing mock test slot
 router.patch('/admin/slots/:slotId', adminAuth, adminUpdateSlot);
+router.get('/admin/slots/:slotId/questions', adminAuth, adminGetPaperQuestions);
+router.patch('/admin/slots/:slotId/questions', adminAuth, adminSavePaperQuestions);
 
 // DELETE /admin/slots/:slotId — Delete a mock test slot
 router.delete('/admin/slots/:slotId', adminAuth, adminDeleteSlot);

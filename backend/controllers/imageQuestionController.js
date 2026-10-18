@@ -255,15 +255,15 @@ export const bulkUpload = async (req, res) => {
   }
 };
 
-// POST /api/upload/solution-image
-export const uploadSolutionImage = async (req, res) => {
+// Shared storage pipeline for standalone question and solution images.
+async function uploadStandaloneImage(req, res, prefix, kind) {
   try {
     const file = req.file;
     if (!file) {
-      return res.status(400).json({ error: "Solution image required" });
+      return res.status(400).json({ error: `${kind === 'question' ? 'Question' : 'Solution'} image required` });
     }
 
-    const id = `solution_${Date.now()}_${Math.random()
+    const id = `${kind}_${Date.now()}_${Math.random()
       .toString(36)
       .slice(2, 8)}`;
 
@@ -272,7 +272,7 @@ export const uploadSolutionImage = async (req, res) => {
       .webp({ quality: 90 })
       .toBuffer();
 
-    const key = `${SOLUTION_PREFIX}/${id}/solution.webp`;
+    const key = `${prefix}/${id}/${kind}.webp`;
 
     await uploadToB2({
       key,
@@ -283,7 +283,10 @@ export const uploadSolutionImage = async (req, res) => {
     const url = buildImageUrl(key);
     return res.json({ url, key });
   } catch (err) {
-    runtimeLog.error("uploadSolutionImage:", err);
+    runtimeLog.error(`upload ${kind} image:`, err);
     return res.status(err.statusCode || 500).json({ error: err.message });
   }
-};
+}
+
+export const uploadSolutionImage = (req, res) => uploadStandaloneImage(req, res, SOLUTION_PREFIX, 'solution');
+export const uploadQuestionImage = (req, res) => uploadStandaloneImage(req, res, QUESTION_PREFIX, 'question');
