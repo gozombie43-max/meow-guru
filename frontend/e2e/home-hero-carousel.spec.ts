@@ -8,7 +8,7 @@ for (const width of [320, 390]) for (const theme of ['light', 'dark']) {
     const login = await request.post('http://127.0.0.1:3111/auth/login', { data: { email: 'browser-mobile@example.test', password: 'Browser-fixture-123!' } });
     expect(login.ok()).toBeTruthy();
     const { token } = await login.json();
-    await context.addCookies([{ name: 'access_session', value: 'hero-carousel-fixture', url: 'http://127.0.0.1:3110' }]);
+    await context.addCookies([{ name: 'access_session', value: 'hero-carousel-fixture', url: info.project.use.baseURL! }]);
     await context.addInitScript(selectedTheme => localStorage.setItem('ui-theme', selectedTheme), theme);
     await context.route('**/backend-api/**', async route => {
       const url = new URL(route.request().url());
@@ -38,7 +38,21 @@ for (const width of [320, 390]) for (const theme of ['light', 'dark']) {
     await page.screenshot({ path: info.outputPath('hero-original.png') });
     await expect(dot(2)).toHaveAttribute('aria-current', 'true', { timeout: 8000 });
     await dot(2).focus();
-    await expect(dot(2)).toHaveCSS('outline-offset', '-4px');
+    // Carousel controls inherit the app's neutral inset keyboard-focus style.
+    await expect(dot(2)).toBeFocused();
+    await expect(dot(2)).toHaveCSS('outline-style', 'solid');
+    await expect(dot(2)).toHaveCSS('outline-width', '1px');
+    await expect(dot(2)).toHaveCSS('outline-offset', '-1px');
+    const neutralFocusColor = await dot(2).evaluate(button => {
+      const reference = document.createElement('span');
+      reference.style.color = 'var(--ui-secondary)';
+      button.append(reference);
+      const color = getComputedStyle(reference).color;
+      reference.remove();
+      return color;
+    });
+    await expect(dot(2)).toHaveCSS('outline-color', neutralFocusColor);
+    await expect(dot(2)).toHaveCSS('box-shadow', 'none');
     await expect(carousel.getByRole('heading', { name: 'Stay Consistent' })).toBeInViewport();
     await expect.poll(async () => Math.abs((await carousel.getByRole('group', { name: '2 of 3' }).boundingBox())!.x - (await carousel.boundingBox())!.x)).toBeLessThan(2);
     await page.screenshot({ path: info.outputPath('hero-consistency.png') });
