@@ -38,6 +38,11 @@ Use `--light-canvas` for page backgrounds, `--light-surface` for white cards,
 and `--light-text`, `--light-text-secondary`, and `--light-text-muted` for text.
 Primary actions use `--light-accent`; selected controls use `--light-accent-soft`.
 Blue accents use iOS blue: `#007aff` in light mode and `#0a84ff` in dark mode.
+Focus uses a quiet neutral indicator rather than a blue outline. Selection
+controls use underlined keyboard focus without an outer ring. The root-mounted
+`SelectionPopover` enhances single native selects with a compact anchored list;
+keep native values, labels, disabled states, and change handlers on the select.
+Multiple-selection and expanded native lists retain their native interaction.
 Use `--ios-system-blue` for route accents and `rgb(var(--ios-system-blue-rgb) / alpha)`
 for translucent blue fills. Keep the same accent on mobile and desktop; use the
 shared hover and soft tokens for interaction states instead of pale blue overrides.
@@ -55,7 +60,7 @@ theme before device color preferences on result and review pages.
 
 `app/dark-theme.css` owns the matching `--dark-*` palette. Use charcoal canvas,
 raised surfaces, muted controls, and shared border/text tokens in dark selectors.
-Use `--dark-accent` for links and focus indicators; use `--dark-action` for
+Use `--dark-accent` for links and neutral secondary text for focus indicators; use `--dark-action` for
 filled controls with white labels. `--theme-action` provides that filled-control
 color on dark pages and resets inside explicitly light exam surfaces.
 Respect the shared theme selection on admin routes as well as student routes.

@@ -77,8 +77,9 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
   const [historyState, setHistory] = useState<{ owner: string | undefined; exam: string; attempts: MockAttemptHistory[] } | null>(null);
   const history = historyState && historyState.owner === owner && historyState.exam === examSlug && ready ? historyState.attempts : [];
   const [selectedTier, setSelectedTier] = useState<string>('');
-  const catalog = useExamCatalog(examSlug, activeTab, selectedTier, loadingOnly);
-  const { metadata, effectiveTier } = catalog;
+  const [selectedYear, setSelectedYear] = useState<string | undefined>(undefined);
+  const catalog = useExamCatalog(examSlug, activeTab, selectedTier, loadingOnly, selectedYear);
+  const { metadata, effectiveTier, effectiveYear } = catalog;
   const tiers = metadata?.tiers || [];
   const tierInfo = useMemo(() => getTierLabel(examSlug), [examSlug]);
   const loadingHistory = ready && !(historyState?.owner === owner && historyState?.exam === examSlug);
@@ -86,7 +87,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
   const sentinelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     contentRef.current?.scrollTo({ top: 0 });
-  }, [examSlug, activeTab, effectiveTier]);
+  }, [examSlug, activeTab, effectiveTier, effectiveYear]);
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel || !catalog.hasMore || catalog.loadingMore || catalog.error) return;
@@ -251,8 +252,22 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                   </div>
 
                   <div className={styles.headerControls}>
+                    {activeTab === 'prev' && (
+                      <div className={styles.tierDropdownWrap}>
+                        <select
+                          className={styles.tierDropdown}
+                          value={effectiveYear}
+                          onChange={(e) => setSelectedYear(e.target.value)}
+                          aria-label="Select year"
+                        >
+                          <option value="">Year</option>
+                          {(metadata?.years || []).map(year => <option key={year} value={year}>{year}</option>)}
+                        </select>
+                        <ChevronDown size={12} className={styles.dropdownChevron} />
+                      </div>
+                    )}
                     {/* Stage / Tier Dropdown */}
-                    {tiers.length > 1 && (
+                    {activeTab !== 'overview' && (
                       <div className={styles.tierDropdownWrap}>
                         <select
                           className={styles.tierDropdown}
@@ -260,6 +275,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                           onChange={(e) => setSelectedTier(e.target.value)}
                           aria-label={`Select ${tierInfo.singular || 'Stage'}`}
                         >
+                          {tiers.length === 0 && <option value="">Tier</option>}
                           {tiers.map((t) => (
                             <option key={t} value={t}>
                               {t}
@@ -420,7 +436,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                       <div className={styles.placeholderTab}>
                         <div className={styles.placeholderIcon}>📚</div>
                         <h3>No Papers Found</h3>
-                        <p>No previous year papers available for the selected stage.</p>
+                        <p>No papers match the selected filters.</p>
                       </div>
                     ) : (
                       catalog.slots.map((slot) => {

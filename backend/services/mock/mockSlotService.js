@@ -1,6 +1,7 @@
 import { parseQuestionExamMode } from '../questions/questionExamMode.js';
 import { cleanMongoDoc, summarizeSlot } from './mockModel.js';
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
+import { pyqCatalogSort, pyqSortProjection } from './pyqCatalogSort.js';
 
 import { invalidPaper } from '../assessmentPolicy.js';
 import { getExamConfig, getSlotById as getStaticSlotById, getSlotsForExam as getStaticSlotsForExam, MOCK_TEST_SLOTS } from '../../config/exam-config.js';
@@ -27,28 +28,29 @@ export async function fetchSlotsForExam(examSlug) {
 }
 
 // Paginate in Mongo before computing paper metadata or transferring documents.
-export async function fetchSlotPage(examSlug, { kind = 'mock', tier = '', offset = 0, limit = 20 } = {}) {
+export async function fetchSlotPage(examSlug, { kind = 'mock', tier = '', year = '', offset = 0, limit = 20 } = {}) {
   const pyq = { $or: [{ $eq: ['$isPyq', true] }, { $eq: ['$type', 'pyq'] }] };
-  const filter = { _kind: kind, ...(tier ? { $or: [{ tier }, { tier: { $in: [null, ''] } }] } : {}) };
+  const filter = { _kind: kind, ...(year ? { _year: Number(year) } : {}), ...(tier ? { $or: [{ tier }, { tier: { $in: [null, ''] } }] } : {}) };
   const [result] = await getMockSlotsCollection().aggregate([
     { $match: { examSlug } },
-    { $set: { _kind: { $cond: [pyq, 'pyq', 'mock'] } } },
+    { $set: { _kind: { $cond: [pyq, 'pyq', 'mock'] }, _year: { $convert: { input: '$year', to: 'int', onError: null, onNull: null } } } },
     { $facet: {
-      metadata: [{ $group: { _id: { kind: '$_kind', tier: '$tier' }, count: { $sum: 1 } } }],
+      metadata: [{ $group: { _id: { kind: '$_kind', tier: '$tier', year: '$_year' }, count: { $sum: 1 } } }],
       total: [{ $match: filter }, { $count: 'count' }],
       slots: limit === 0 ? [{ $match: { $expr: false } }] : [
-        { $match: filter }, { $sort: { order: 1, id: 1 } }, { $skip: offset }, { $limit: limit },
+        { $match: filter }, ...(kind === 'pyq' ? pyqCatalogSort : [{ $sort: { order: 1, id: 1 } }]), { $skip: offset }, { $limit: limit },
         { $set: { _fixedCount: { $size: { $cond: [{ $isArray: '$fixedQuestions' }, '$fixedQuestions', []] } } } },
         { $set: { hasFixedPaper: { $or: [{ $gt: ['$_fixedCount', 0] }, { $eq: ['$hasFixedPaper', true] }] }, questionCount: { $cond: [{ $gt: ['$_fixedCount', 0] }, '$_fixedCount', { $ifNull: ['$questionCount', 0] }] } } },
-        { $project: { fixedQuestions: 0, sourcePaper: 0, _fixedCount: 0, _kind: 0, _id: 0, _cosmosRid: 0 } },
+        { $project: { fixedQuestions: 0, sourcePaper: 0, _fixedCount: 0, _kind: 0, _year: 0, _id: 0, _cosmosRid: 0, ...pyqSortProjection } },
       ],
     } },
   ]).toArray();
-  const metadata = { mockCount: 0, pyqCount: 0, tiers: [] };
+  const metadata = { mockCount: 0, pyqCount: 0, tiers: [], years: [] };
   for (const row of result.metadata) {
     metadata[row._id.kind === 'pyq' ? 'pyqCount' : 'mockCount'] += row.count;
     if (row._id.tier && !metadata.tiers.includes(row._id.tier)) metadata.tiers.push(row._id.tier);
   }
+  metadata.years = [...new Set(result.metadata.filter(row => row._id.kind === 'pyq' && row._id.year >= 1000 && row._id.year <= 2999).map(row => row._id.year))].sort((a, b) => b - a);
   metadata.tiers.sort();
   const total = result.total[0]?.count || 0;
   return { slots: result.slots.map(summarizeSlot), metadata, total, nextOffset: limit > 0 && offset + limit < total ? offset + limit : null };

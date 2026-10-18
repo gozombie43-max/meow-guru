@@ -4,6 +4,23 @@ input[type="search"] {
   caret-color: var(--ios-system-blue, #007aff);
 }
 
+/* Quiet focus feedback throughout the app. Selection is shown inside its menu. */
+html body :is(button, a, input, select, textarea, summary, [tabindex]):focus-visible:not([data-custom-focus], .tfp-search-input, .selection-popover-list) {
+  outline: 1px solid var(--ui-secondary, #68686e) !important;
+  outline-offset: -1px !important;
+  box-shadow: none !important;
+}
+html body :is(select, [aria-haspopup="listbox"], [role="combobox"]):is(:focus, :focus-visible, [aria-expanded="true"]) {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: var(--ui-border, #d8d8dc) !important;
+}
+html body :is(select, [aria-haspopup="listbox"], [role="combobox"]):focus-visible {
+  text-decoration: underline;
+  text-decoration-color: var(--ui-secondary, #68686e);
+  text-underline-offset: 3px;
+}
+
 :root {
   --ui-space-1: 4px;
   --ui-space-2: 8px;

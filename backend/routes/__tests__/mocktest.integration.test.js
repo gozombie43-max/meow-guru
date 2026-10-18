@@ -126,6 +126,53 @@ describe('native schema paper HTTP lifecycle', () => {
 });
 
 describe('paged mock catalog', () => {
+  it('sorts PYQs by date and numeric shift before paging, including older title-based papers', async () => {
+    const papers = [
+      { id: 'nov-19', title: '2025 Tier I 19 NOV (SHIFT 2) Official Paper' },
+      { id: 'nov-12-10', title: '2025 Tier I 12 NOV (SHIFT 10) Official Paper' },
+      { id: 'nov-13', examDate: '2025-11-13', shift: 1 },
+      { id: 'nov-12-3', title: '2025 Tier I 12 NOV (SHIFT 3) Official Paper' },
+      { id: 'nov-12-2', examDate: '2025-11-12', shift: 'Shift 2' },
+      { id: 'oct-31', title: '2025 Tier I 31 OCTOBER (SHIFT 1) Official Paper' },
+      { id: 'unknown', title: '2025 Official Paper' },
+      { id: 'previous', year: 2024, examDate: '2024-12-31', shift: 1 },
+    ];
+    await db.collection('mockSlots').insertMany(papers.map((paper, order) => ({
+      examSlug: 'sort-exam', type: 'pyq', tier: 'Tier I', year: 2025, order, ...paper,
+    })));
+    const ids = [];
+    let offset = 0;
+    do {
+      const page = await (await request(`/sort-exam/slots?catalog=1&kind=pyq&limit=2&offset=${offset}`)).json();
+      ids.push(...page.slots.map(slot => slot.id));
+      expect(JSON.stringify(page.slots)).not.toMatch(/_sort|_titleDate|_shiftMatch|_examDate/);
+      offset = page.nextOffset;
+    } while (offset !== null);
+    expect(ids).toEqual(['oct-31', 'nov-12-2', 'nov-12-3', 'nov-12-10', 'nov-13', 'nov-19', 'unknown', 'previous']);
+  });
+
+  it('filters years before pagination and combines them with tier selection', async () => {
+    await db.collection('mockSlots').insertMany(Array.from({ length: 65 }, (_, i) => ({
+      id: `year-${i}`, examSlug: 'year-exam', order: i, type: 'pyq',
+      tier: i < 60 ? 'Tier I' : 'Tier II', year: i < 30 ? 2024 : '2025',
+    })));
+    const metadata = await (await request('/year-exam/slots?catalog=1&limit=0')).json();
+    expect(metadata.metadata.years).toEqual([2025, 2024]);
+    const path = '/year-exam/slots?catalog=1&kind=pyq&tier=Tier%20I&year=2025&limit=20';
+    const first = await (await request(path)).json();
+    expect(first.total).toBe(30);
+    expect(first.slots).toHaveLength(20);
+    expect(first.slots.every(slot => String(slot.year) === '2025' && slot.tier === 'Tier I')).toBe(true);
+    const second = await (await request(`${path}&offset=${first.nextOffset}`)).json();
+    expect(second.slots).toHaveLength(10);
+    expect(second.nextOffset).toBeNull();
+    expect(new Set([...first.slots, ...second.slots].map(slot => slot.id)).size).toBe(30);
+    const empty = await (await request(path.replace('2025', '2023'))).json();
+    expect(empty.slots).toEqual([]);
+    expect(empty.metadata.years).toEqual([2025, 2024]);
+    expect((await request(path.replace('2025', 'bad'))).status).toBe(400);
+  });
+
   it('returns saved-count metadata separately and pages over 100 papers without leaking questions', async () => {
     await db.collection('mockSlots').insertMany(Array.from({ length: 125 }, (_, i) => ({
       id: `paged-${String(i).padStart(3, '0')}`, examSlug: 'paged-exam', order: Math.floor(i / 2),
@@ -134,7 +181,7 @@ describe('paged mock catalog', () => {
     })));
     const metadata = await (await request('/paged-exam/slots?catalog=1&limit=0')).json();
     expect(metadata.slots).toEqual([]);
-    expect(metadata.metadata).toEqual({ mockCount: 105, pyqCount: 20, tiers: ['Tier I', 'Tier II'] });
+    expect(metadata.metadata).toEqual({ mockCount: 105, pyqCount: 20, tiers: ['Tier I', 'Tier II'], years: [] });
     const ids = [];
     let offset = 0;
     do {

@@ -62,10 +62,14 @@ export const fetchExamSlots = async (req, res) => {
       const limit = Number(req.query.limit ?? 20);
       const kind = req.query.kind || 'mock';
       const tier = req.query.tier || '';
+      const year = req.query.year || '';
+      if (typeof year !== 'string' || (year && !/^[12]\d{3}$/.test(year))) {
+        return res.status(400).json({ error: 'Invalid catalog year' });
+      }
       if (!Number.isSafeInteger(offset) || offset < 0 || !Number.isInteger(limit) || limit < 0 || limit > 50 || !['mock', 'pyq'].includes(kind) || typeof tier !== 'string' || tier.length > 100) {
         return res.status(400).json({ error: 'Invalid catalog pagination' });
       }
-      return res.json(await fetchSlotPage(examSlug, { offset, limit, kind, tier }));
+      return res.json(await fetchSlotPage(examSlug, { offset, limit, kind, tier, year }));
     }
     const slots = await fetchSlotsForExam(examSlug);
     res.json({ slots });

@@ -4,7 +4,7 @@ import type { MockTestSlot } from './exam-config';
 
 export interface CatalogPage {
   slots: MockTestSlot[];
-  metadata: { mockCount: number; pyqCount: number; tiers: string[] };
+  metadata: { mockCount: number; pyqCount: number; tiers: string[]; years?: number[] };
   total: number;
   nextOffset: number | null;
 }
@@ -12,7 +12,7 @@ const TTL = 10 * 60 * 1000;
 type Entry = { savedAt: number; data: CatalogPage };
 const memory = new Map<string, Entry>();
 const pending = new Map<string, Promise<CatalogPage>>();
-const storageKey = (key: string) => `mock-catalog-v1:${key}`;
+const storageKey = (key: string) => `mock-catalog-v3:${key}`;
 
 export function readCatalog(key: string): Entry | undefined {
   if (memory.has(key)) return memory.get(key);

@@ -25,7 +25,7 @@ it('deduplicates requests and restores counts across reloads without fetching ag
 });
 
 it('refreshes expired data and retains saved metadata when refresh fails', async () => {
-  sessionStorage.setItem('mock-catalog-v1:/expired', JSON.stringify({ savedAt: Date.now() - 11 * 60 * 1000, data: payload }));
+  sessionStorage.setItem('mock-catalog-v3:/expired', JSON.stringify({ savedAt: Date.now() - 11 * 60 * 1000, data: payload }));
   const cache = await import('./catalog-cache');
   request.mockResolvedValueOnce({ ok: false });
   await expect(cache.fetchCatalog('/expired')).rejects.toThrow('Could not load');
