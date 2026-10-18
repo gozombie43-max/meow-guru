@@ -26,8 +26,8 @@ export function planQuestionTranslation(
     // Quotes are question data in language/letter puzzles. Always retain math,
     // inline code, uppercase identifiers and numeric expressions exactly.
     const pattern = literalAnswers
-      ? /\$\$[\s\S]*?\$\$|\$[^$\n]+\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|`[^`]+`|'[^'\n]+'|"[^"\n]+"|‘[^’\n]+’|“[^”\n]+”|\b[A-Z]{2,}\b|\b\d+(?:[.,:/+−×÷=*-]\d+)*\b/g
-      : /\$\$[\s\S]*?\$\$|\$[^$\n]+\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|`[^`]+`|\b[A-Z]{2,}\b|\b\d+(?:[.,:/+−×÷=*-]\d+)*\b/g;
+      ? /!\[[\s\S]*?\]\([^)]+\)|(?:https?:\/\/|\/(?:backend-api\/)?api\/upload\/image\/|\/(?:pyq-assets|images)\/)[^\s<>"')]+|\$\$[\s\S]*?\$\$|\$[^$\n]+\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|`[^`]+`|'[^'\n]+'|"[^"\n]+"|‘[^’\n]+’|“[^”\n]+”|\b[A-Z]{2,}\b|\b\d+(?:[.,:/+−×÷=*-]\d+)*\b/g
+      : /!\[[\s\S]*?\]\([^)]+\)|(?:https?:\/\/|\/(?:backend-api\/)?api\/upload\/image\/|\/(?:pyq-assets|images)\/)[^\s<>"')]+|\$\$[\s\S]*?\$\$|\$[^$\n]+\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]|`[^`]+`|\b[A-Z]{2,}\b|\b\d+(?:[.,:/+−×÷=*-]\d+)*\b/g;
     const masked = text.replace(pattern, protect);
     return texts.push(masked) - 1;
   });

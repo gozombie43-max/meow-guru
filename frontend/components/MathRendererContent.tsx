@@ -1,5 +1,6 @@
 "use client";
 
+import { splitContentUrls } from './content-urls';
 import React from "react";
 import katex from "katex";
 import "katex/dist/katex.min.css";
@@ -60,17 +61,20 @@ function parseParts(input: string): Part[] {
 
   const expanded = parts.flatMap((part): Part[] => {
     if (part.type !== "text") return [part];
-    const content = part.content.replace(/\\{2,}/g, "\\");
-    const pieces: Part[] = [];
-    let cursor = 0;
-    for (const match of content.matchAll(new RegExp(BARE_MATH, "g"))) {
-      const index = match.index!;
-      if (index > cursor) pieces.push({ type: "text", content: content.slice(cursor, index) });
-      pieces.push({ type: "inline", content: match[0] });
-      cursor = index + match[0].length;
-    }
-    if (cursor < content.length) pieces.push({ type: "text", content: content.slice(cursor) });
-    return pieces;
+    return splitContentUrls(part.content).flatMap((segment): Part[] => {
+      if (segment.isUrl) return [{ type: 'text', content: segment.text }];
+      const content = segment.text.replace(/\\{2,}/g, "\\");
+      const pieces: Part[] = [];
+      let cursor = 0;
+      for (const match of content.matchAll(new RegExp(BARE_MATH, "g"))) {
+        const index = match.index;
+        if (index > cursor) pieces.push({ type: "text", content: content.slice(cursor, index) });
+        pieces.push({ type: "inline", content: match[0] });
+        cursor = index + match[0].length;
+      }
+      if (cursor < content.length) pieces.push({ type: "text", content: content.slice(cursor) });
+      return pieces;
+    });
   });
   const hasProse = expanded.some(part => part.type === "text" && /\p{L}/u.test(part.content));
   const result: Part[] = expanded.map((part) => {
@@ -140,27 +144,43 @@ const MathRenderer = React.memo(function MathRenderer({
       if (!part.content.includes('/')) {
         return <span key={i}>{part.content}</span>;
       }
+      // Protect URLs and image paths so path slashes are never turned into fractions
+      const textSegments = splitContentUrls(part.content);
+
       const fracRegex = /\(?[^\s\/=()]+\)?\s*\/\s*\(?[^\s\/=()]+\)?/g;
       const nodes: React.ReactNode[] = [];
-      let lastIndex = 0;
-      let match: RegExpExecArray | null;
-      while ((match = fracRegex.exec(part.content)) !== null) {
-        const idx = match.index;
-        if (idx > lastIndex) nodes.push(<span key={`${i}-t-${lastIndex}`}>{part.content.slice(lastIndex, idx)}</span>);
-        const frac = match[0];
-        const partsFrac = frac.split('/');
-        const rawNum = partsFrac[0].trim().replace(/^\(|\)$/g, '');
-        let rawDen = partsFrac.slice(1).join('/').trim().replace(/^\(|\)$/g, '');
-        const hasPercent = rawDen.endsWith('%');
-        if (hasPercent) rawDen = rawDen.slice(0, -1).trim();
-        const html = renderKatexSafe(`\\tfrac{${rawNum}}{${rawDen}}`, false);
-        nodes.push(
-          <span key={`${i}-f-${idx}`} dangerouslySetInnerHTML={{ __html: html }} />
-        );
-        if (hasPercent) nodes.push(<span key={`${i}-f-pct-${idx}`}>%</span>);
-        lastIndex = fracRegex.lastIndex;
-      }
-      if (lastIndex < part.content.length) nodes.push(<span key={`${i}-t-last`}>{part.content.slice(lastIndex)}</span>);
+
+      textSegments.forEach((segment, segIdx) => {
+        if (segment.isUrl) {
+          nodes.push(<span key={`${i}-url-${segIdx}`}>{segment.text}</span>);
+          return;
+        }
+        if (!segment.text.includes('/')) {
+          nodes.push(<span key={`${i}-seg-${segIdx}`}>{segment.text}</span>);
+          return;
+        }
+        let lastIndex = 0;
+        let match: RegExpExecArray | null;
+        fracRegex.lastIndex = 0;
+        while ((match = fracRegex.exec(segment.text)) !== null) {
+          const idx = match.index;
+          if (idx > lastIndex) nodes.push(<span key={`${i}-${segIdx}-t-${lastIndex}`}>{segment.text.slice(lastIndex, idx)}</span>);
+          const frac = match[0];
+          const partsFrac = frac.split('/');
+          const rawNum = partsFrac[0].trim().replace(/^\(|\)$/g, '');
+          let rawDen = partsFrac.slice(1).join('/').trim().replace(/^\(|\)$/g, '');
+          const hasPercent = rawDen.endsWith('%');
+          if (hasPercent) rawDen = rawDen.slice(0, -1).trim();
+          const html = renderKatexSafe(`\\tfrac{${rawNum}}{${rawDen}}`, false);
+          nodes.push(
+            <span key={`${i}-${segIdx}-f-${idx}`} dangerouslySetInnerHTML={{ __html: html }} />
+          );
+          if (hasPercent) nodes.push(<span key={`${i}-${segIdx}-f-pct-${idx}`}>%</span>);
+          lastIndex = fracRegex.lastIndex;
+        }
+        if (lastIndex < segment.text.length) nodes.push(<span key={`${i}-${segIdx}-t-last`}>{segment.text.slice(lastIndex)}</span>);
+      });
+
       return <span key={i}>{nodes}</span>;
     }
 

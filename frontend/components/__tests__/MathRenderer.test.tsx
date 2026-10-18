@@ -6,6 +6,13 @@ import MathRendererContent from '../MathRendererContent';
 import TutorMarkdown from '../QuizChatbot/TutorMarkdown';
 
 describe('MathRenderer Component', () => {
+  it('preserves URLs with math-like filenames alongside real equations', () => {
+    const url = 'https://example.com/x_1/a.png';
+    const { container } = render(<MathRendererContent text={`Read ${url} then solve $x^2=4$ and 1/2`} />);
+    expect(container.textContent).toContain(url);
+    expect(container.querySelectorAll('.katex')).toHaveLength(2);
+    expect(container.querySelector('.katex-error')).toBeNull();
+  });
   it('preserves matrix rows and aligned equations, including double-escaped stored math', () => {
     const formula = String.raw`\[\begin{pmatrix}1&2\\3&4\end{pmatrix}\]`;
     const aligned = String.raw`\[\begin{aligned}

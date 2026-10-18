@@ -4,6 +4,18 @@ import { render, screen, waitFor } from '@testing-library/react';
 import MathText from '../MathText';
 
 describe('MathText Component', () => {
+  it('preserves URL slashes alongside a real fraction', () => {
+    const { container } = render(<MathText text="Use https://example.com/a/b.png and /api/upload/image/key with 1/2" />);
+    expect(container.textContent).toContain('https://example.com/a/b.png');
+    expect(container.textContent).toContain('/api/upload/image/key');
+    expect(container.querySelectorAll('[role="math"]')).toHaveLength(1);
+  });
+  it('keeps URL filenames with underscores out of the math parser', () => {
+    const text = 'https://example.com/x_1/figure.png';
+    const { container } = render(<MathText text={text} />);
+    expect(container.textContent).toBe(text);
+    expect(container.querySelector('[role="math"], .katex')).toBeNull();
+  });
   it.each(['12^{-23}', '3^{24}', '12^{-11}', '4^{24}'])('renders bare option power %s', async (text) => {
     const { container } = render(<MathText text={text} />);
     await waitFor(() => expect(container.querySelector('.katex')).not.toBeNull());

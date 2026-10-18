@@ -2,6 +2,13 @@ import { describe, expect, it } from "vitest";
 import { planQuestionTranslation } from "./question-translation";
 
 describe("question translation protection", () => {
+  it('protects markdown images, web URLs and extensionless local upload paths', () => {
+    const images = ['![Figure](https://example.com/a.png)', 'https://example.com/a.png?version=2', '/api/upload/image/key', '/backend-api/api/upload/image/key', '/pyq-assets/paper/figure.png'];
+    const question = `Choose the figure ${images.join(' ')}`;
+    const plan = planQuestionTranslation({ question });
+    for (const image of images) expect(plan.texts[0]).not.toContain(image);
+    expect(plan.restore(plan.texts)[0]).toBe(question);
+  });
   const question = "In a certain code language, 'spin fast slow' is written as 'mm nn oo' and 'fast skid slip' is coded as 'nn rr tt' and 'slip slow jump' is coded as 'rr mm zz'. How is 'jump' coded in the given language?";
   const options = ["IT", "ZZ", "mm", "nn"];
 

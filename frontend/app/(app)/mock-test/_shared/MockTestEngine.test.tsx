@@ -263,6 +263,32 @@ function nativeAttempt(): MockAttempt & { attemptId: string } {
 }
 
 describe('native bilingual paper attempts', () => {
+  it('saves sections silently without autosaves replacing a queued transition', async () => {
+    vi.mocked(startTest).mockResolvedValue(nativeAttempt());
+    let finishAutosave!: (value: { revision: number }) => void;
+    vi.mocked(autosaveAttempt).mockImplementationOnce(() => new Promise(resolve => { finishAutosave = resolve; }));
+    await mount();
+    fireEvent.click(screen.getByRole('radio', { name: 'Answer Option 2' }));
+    await act(async () => { vi.advanceTimersByTime(700); });
+    expect(autosaveAttempt).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'Save & Next' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save & Next' }));
+    expect(screen.queryByText('Saving section…')).not.toBeInTheDocument();
+    expect(screen.getByText('English e2')).toBeVisible();
+    // Both the debounce and visibility/interval saves must leave advanceSection queued.
+    await act(async () => {
+      vi.advanceTimersByTime(20000);
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    expect(autosaveAttempt).toHaveBeenCalledOnce();
+    vi.mocked(autosaveAttempt).mockResolvedValue({ revision: 2, currentSection: 1, currentQuestion: 0,
+      lockedSections: ['english'], sectionRemainingTimes: { english: 0, computer: 120 } });
+    await act(async () => { finishAutosave({ revision: 1 }); });
+    expect(autosaveAttempt).toHaveBeenLastCalledWith('native', expect.objectContaining({ advanceSection: true, answers: { e1: 'B' } }), 'test-token');
+    expect(screen.getByText('English c1')).toBeVisible();
+    expect(screen.queryByText('Saving section…')).not.toBeInTheDocument();
+    expect(submitAttempt).not.toHaveBeenCalled();
+  });
   it('submits once after the last section expires', async () => {
     const data = nativeAttempt();
     vi.mocked(startTest).mockResolvedValue({ ...data, currentSection: 1, lockedSections: ['english'], sectionRemainingTimes: { english: 0, computer: 1 } });

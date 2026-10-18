@@ -1,5 +1,6 @@
 "use client";
 
+import { hasSlashOutsideUrls } from './content-urls';
 import React, { lazy, Suspense } from "react";
 import { containsMathSyntax } from "./math-syntax";
 
@@ -22,7 +23,7 @@ const MathRenderer = React.memo(function MathRenderer(props: MathRendererProps) 
     </span>
   );
   // Text-only questions should never download or execute the math typesetter.
-  if (!containsMathSyntax(text) && !text.includes("/")) return plainText;
+  if (!containsMathSyntax(text) && !hasSlashOutsideUrls(text)) return plainText;
   return <Suspense fallback={plainText}><MathRendererContent {...props} /></Suspense>;
 });
 

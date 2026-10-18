@@ -220,6 +220,11 @@
   transition: border-color 0.2s, background-color 0.2s;
 }
 
+.optionText {
+  min-width: 0;
+  flex: 1;
+}
+
 .optionLabel:hover {
   background-color: var(--bg, #f1f5f9);
 }

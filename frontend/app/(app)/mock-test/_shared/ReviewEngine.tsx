@@ -4,7 +4,7 @@ import { mockAnswerCorrect, mockAnswerIndex, isUnanswered } from '@meow/contract
 import { useAuth } from '@/context/AuthContext';
 import { ArrowLeft, ChevronLeft, ChevronRight, Grid2X2, X } from 'lucide-react';
 import QuestionImage from '@/components/QuestionImage';
-import MathRenderer from '@/components/MathRenderer';
+import RichContent from '@/components/RichContent';
 import { useRouter } from 'next/navigation';
 import { useEffect,useRef,useMemo,useState } from 'react';
 import {
@@ -152,6 +152,9 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
 
   const currentItem = filteredAnalysis[currentQuestionIndex];
   const currentQ = currentItem?.question;
+  const questionText = currentQ?.translations?.question[language] ?? currentQ?.question ?? currentQ?.text ?? '';
+  const questionImage = currentQ?.questionImage || currentQ?.image;
+  const solutionText = currentQ?.translations?.solution?.[language] ?? currentQ?.solution ?? '';
 
   const handlePrev = () => {
     if (currentQuestionIndex > 0) {
@@ -223,11 +226,17 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
 
               {/* Question Text */}
               <div className={styles.questionBody}>
-                <div className={styles.questionText}><MathRenderer text={currentQ.translations?.question[language] ?? currentQ.question ?? currentQ.text ?? ''} /></div>
-                {currentQ.questionImage && (
+                <div className={styles.questionText}>
+                  <RichContent
+                    text={questionText}
+                    criticalImages
+                    imageDimensions={{ width: currentQ.questionImageWidth, height: currentQ.questionImageHeight }}
+                  />
+                </div>
+                {questionImage && !questionText.includes(questionImage) && (
                   <div className={styles.qImageWrap}>
                     <QuestionImage
-                      src={currentQ.questionImage}
+                      src={questionImage}
                       alt="Question diagram"
                       width={currentQ.questionImageWidth}
                       height={currentQ.questionImageHeight}
@@ -245,6 +254,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                   const letter = String.fromCharCode(65 + oIdx); // 'A', 'B', 'C', 'D'
                   const isUserPick = [currentItem.userAns].flat().some(value => mockAnswerIndex(value, currentQ.options, true) === oIdx);
                   const isCorrect = [currentItem.correctAns].flat().some(value => mockAnswerIndex(value, currentQ.options) === oIdx);
+                  const optImage = (typeof option === 'object' && option?.image) || currentQ.optionImages?.[oIdx];
 
                   let optClass = styles.optionNormal;
                   if (isCorrect) optClass = styles.optionCorrect;
@@ -253,7 +263,14 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                   return (
                     <div key={oIdx} className={`${styles.optionItem} ${optClass}`}>
                       <span className={styles.optionLetter}>{letter}</span>
-                      <div className={styles.optionText}><MathRenderer text={opt} /></div>
+                      <div className={styles.optionText}>
+                        <RichContent text={opt} as="span" />
+                        {optImage && !opt.includes(optImage) && (
+                          <div style={{ marginTop: '0.5rem', maxWidth: '240px' }}>
+                            <QuestionImage src={optImage} alt={`Option ${letter} diagram`} enableZoom={false} isOption />
+                          </div>
+                        )}
+                      </div>
                       {isCorrect && <span className={styles.correctLabel}>Correct answer</span>}
                       {isUserPick && !isCorrect && <span className={styles.userWrongLabel}>Your answer</span>}
                     </div>
@@ -262,11 +279,15 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
               </div>
 
               {/* Solution / Explanation */}
-              {(currentQ.solution || currentQ.translations?.solution?.[language] || currentQ.solutionImage) && (
+              {(solutionText || currentQ.solutionImage) && (
                 <div className={styles.solutionBox}>
                   <h3 className={styles.solutionHeading}>Explanation</h3>
-                  {(currentQ.solution || currentQ.translations?.solution?.[language]) && <div className={styles.solutionText}><MathRenderer text={currentQ.translations?.solution?.[language] ?? currentQ.solution ?? ''} /></div>}
-                  {currentQ.solutionImage && (
+                  {(solutionText) && (
+                    <div className={styles.solutionText}>
+                      <RichContent text={solutionText} />
+                    </div>
+                  )}
+                  {currentQ.solutionImage && !solutionText.includes(currentQ.solutionImage) && (
                     <div className={styles.solImageWrap}>
                       <QuestionImage
                         src={currentQ.solutionImage}

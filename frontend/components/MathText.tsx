@@ -1,5 +1,7 @@
+import { hasSlashOutsideUrls, splitContentUrls } from './content-urls';
 import React from "react";
-import MathRenderer, { containsMathSyntax } from "@/components/MathRenderer";
+import MathRenderer from "@/components/MathRenderer";
+import { containsMathSyntax } from "@/components/math-syntax";
 
 type Props = { text: string; className?: string };
 
@@ -15,24 +17,32 @@ const MathText = React.memo(function MathText({ text, className = "" }: Props) {
   }
 
   // Fast path: no fractions or math syntax — render as plain text
-  if (!text.includes('/') && !containsMathSyntax(text)) {
+  if (!hasSlashOutsideUrls(text)) {
     return <span className={className}>{text}</span>;
   }
+  const segments = splitContentUrls(text);
 
   const parts: Array<
     | { type: "text"; value: string }
     | { type: "frac"; num: string; den: string }
   > = [];
 
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-  while ((match = fracRegex.exec(text)) !== null) {
-    const idx = match.index;
-    if (idx > lastIndex) parts.push({ type: "text", value: text.slice(lastIndex, idx) });
-    parts.push({ type: "frac", num: match[1], den: match[2] });
-    lastIndex = fracRegex.lastIndex;
-  }
-  if (lastIndex < text.length) parts.push({ type: "text", value: text.slice(lastIndex) });
+  segments.forEach(segment => {
+    if (segment.isUrl) {
+      parts.push({ type: "text", value: segment.text });
+      return;
+    }
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    fracRegex.lastIndex = 0;
+    while ((match = fracRegex.exec(segment.text)) !== null) {
+      const idx = match.index;
+      if (idx > lastIndex) parts.push({ type: "text", value: segment.text.slice(lastIndex, idx) });
+      parts.push({ type: "frac", num: match[1], den: match[2] });
+      lastIndex = fracRegex.lastIndex;
+    }
+    if (lastIndex < segment.text.length) parts.push({ type: "text", value: segment.text.slice(lastIndex) });
+  });
 
   return (
     <span className={className}>

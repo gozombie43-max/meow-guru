@@ -1,6 +1,6 @@
 'use client';
 import { X } from "lucide-react";
-import MathRenderer from '@/components/MathRenderer';
+import RichContent from '@/components/RichContent';
 import { isUnanswered } from '@meow/contracts/mock-answer';
 import { useAuth } from '@/context/AuthContext';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -224,7 +224,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   }, [loadData]);
 
   const saveLatestProgress = useEffectEvent(() => {
-    if (!attemptId || !token || isSubmitting || loadedScope !== scope) return;
+    if (!attemptId || !token || isSubmitting || loadedScope !== scope || sectionTransitionRef.current) return;
     void saveProgress({ answers, questionStatuses, currentSection, currentQuestion, ...(paper?.schemaDriven ? { language } : {}) }).catch(console.error);
   });
 
@@ -245,9 +245,12 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     try {
       localStorage.setItem(`mock-attempt:${scope}:${attemptId}`, JSON.stringify({ ...progress, paperId: testId, revision: saveRevisionRef.current }));
     } catch { /* Continue with server autosave if storage is unavailable. */ }
-    const timer = setTimeout(() => { void saveProgress(progress).catch(console.error); }, 700);
+    if (sectionSaving) return;
+    const timer = setTimeout(() => {
+      if (!sectionTransitionRef.current) void saveProgress(progress).catch(console.error);
+    }, 700);
     return () => clearTimeout(timer);
-  }, [answers, questionStatuses, currentSection, currentQuestion, language, paper, ready, loadedScope, scope, attemptId, isSubmitting, saveProgress, testId]);
+  }, [answers, questionStatuses, currentSection, currentQuestion, language, paper, ready, loadedScope, scope, attemptId, isSubmitting, sectionSaving, saveProgress, testId]);
 
   useEffect(() => {
     if (!paper?.schemaDriven || loadedScope !== scope) return;
@@ -273,7 +276,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     "Leave this mock test? Saved progress is retained, but the exam timer will continue.");
 
   const handleFinalSubmit = useCallback(async () => {
-    if (isSubmitting || !attemptId || !token) return;
+    if (isSubmitting || !attemptId || !token || sectionTransitionRef.current) return;
     setIsSubmitting(true);
     setSubmitError(null);
     try {
@@ -312,10 +315,10 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   ]);
 
   useEffect(() => {
-    if (!sectionsExhausted || isSubmitting || autoSubmitAttemptedRef.current) return;
+    if (!sectionsExhausted || sectionSaving || isSubmitting || autoSubmitAttemptedRef.current) return;
     autoSubmitAttemptedRef.current = true;
     void handleFinalSubmit();
-  }, [sectionsExhausted, isSubmitting, handleFinalSubmit]);
+  }, [sectionsExhausted, sectionSaving, isSubmitting, handleFinalSubmit]);
 
   const finishSection = (statuses = questionStatuses) => {
     if (sectionTransitionRef.current) return;
@@ -393,6 +396,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   };
 
   const goToPreviousQuestion = () => {
+    if (sectionSaving || sectionError) return;
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1);
     }
@@ -411,11 +415,6 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     if (!keepPaletteOpen) setShowPalette(false);
   };
 
-  const renderMath = (text: string) => {
-    if (!text) return null;
-    return <MathRenderer text={text} inline />;
-  };
-
   const getStatusClass = (status?: QuestionStatus) => {
     switch (status) {
       case 'answered': return styles.answered;
@@ -432,6 +431,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
   const currentSec = paper.sections[currentSection];
   const currentQ = currentSec.questions[currentQuestion];
+  const questionText = translated.texts[0] ?? '';
+  const questionImage = currentQ.image || currentQ.questionImage;
 
   const totalQuestions = paper.sections.reduce((acc: number, sec: MockSection) => acc + sec.questions.length, 0);
   const currentQGlobalIndex = paper.sections.slice(0, currentSection).reduce((acc: number, sec: MockSection) => acc + sec.questions.length, 0) + currentQuestion + 1;
@@ -448,7 +449,6 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     <div className={styles.container}>
       {confidential && <div role="note" style={{ padding: '8px 16px', fontSize: 12 }}>Confidential assessment · One attempt · {paper.compositeTimer ? 'Total exam time' : 'Section timing'} applies · No answer review</div>}
       {saveError && <div role="status">{saveError}{hasConflict && <button data-ui-button="state" onClick={() => window.location.reload()}>Reload saved attempt</button>}</div>}
-      {sectionSaving && <div role="status">Saving section…</div>}
       {sectionError && <div role="alert">{sectionError}<button data-ui-button="state" disabled={hasConflict || sectionSaving} onClick={() => finishSection()}>Retry saving section</button></div>}
       {submitError && <div role="alert">{submitError}<button data-ui-button="state" disabled={isSubmitting} onClick={() => void handleFinalSubmit()}>Retry submission</button></div>}
       {/* Top Bar */}
@@ -515,10 +515,16 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
           <div className={styles.questionContent}>
             <div className={styles.qNumber}>Question {currentQuestion + 1}</div>
             {translated.pending && <p role="status">Translating…</p>}
-            <div className={styles.qText}>{renderMath(translated.texts[0])}</div>
-            {(currentQ.image || currentQ.questionImage) && (
+            <div className={styles.qText}>
+              <RichContent
+                text={questionText}
+                criticalImages
+                imageDimensions={{ width: currentQ.questionImageWidth, height: currentQ.questionImageHeight }}
+              />
+            </div>
+            {questionImage && !questionText.includes(questionImage) && (
               <QuestionImage
-                src={(currentQ.image || currentQ.questionImage)!}
+                src={questionImage}
                 alt="Question figure"
                 className={styles.qImage}
                 width={currentQ.questionImageWidth}
@@ -537,6 +543,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
                 const answer = answers[currentQ.id];
                 const selected = Array.isArray(answer) ? answer : [];
                 const isSelected = currentQ.questionType === 'MSQ' ? selected.includes(opt.id) : answer === opt.id;
+                const optText = translated.texts[optionIndex + 1] ?? opt.text;
+                const optImage = (typeof rawOption === 'object' && rawOption?.image) || currentQ.optionImages?.[optionIndex];
                 return (
                   <label key={opt.id} className={`${styles.optionLabel} ${isSelected ? styles.selected : ''}`}>
                     <input
@@ -544,9 +552,16 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
                       name={`q-${currentQ.id}`}
                       checked={isSelected}
                       onChange={() => handleSelectOption(currentQ.id, currentQ.questionType === 'MSQ' ? isSelected ? selected.filter(value => value !== opt.id) : [...selected, opt.id] : opt.id)}
-                      aria-label={`Answer ${translated.texts[optionIndex + 1] ?? opt.text}`}
+                      aria-label={`Answer ${optText}`}
                     />
-                    <span>{renderMath(translated.texts[optionIndex + 1] ?? opt.text)}</span>
+                    <span className={styles.optionText}>
+                      <RichContent text={optText} as="span" />
+                      {optImage && !optText.includes(optImage) && (
+                        <span style={{ display: 'block', marginTop: '0.5rem', maxWidth: '240px' }}>
+                          <QuestionImage src={optImage} alt={`Option ${String.fromCharCode(65 + optionIndex)}`} enableZoom={false} isOption />
+                        </span>
+                      )}
+                    </span>
                   </label>
                 );
               })}

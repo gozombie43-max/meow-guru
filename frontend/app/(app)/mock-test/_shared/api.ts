@@ -18,6 +18,7 @@ export type QuestionStatus =
 export interface MockOption {
   id: string;
   text: string;
+  image?: string;
 }
 
 export interface MockQuestion {
@@ -27,6 +28,7 @@ export interface MockQuestion {
   text?: string;
   question?: string;
   options?: Array<string | MockOption>;
+  optionImages?: string[];
   image?: string;
   questionImage?: string;
   questionImageWidth?: number;
