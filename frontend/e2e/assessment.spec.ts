@@ -46,9 +46,13 @@ test('authenticated assessment survives reload and submits without leaking answe
   if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: /^Q / }).click();
   await page.getByRole('button', { name: 'Submit Test', exact: true }).first().click();
   await page.getByRole('button', { name: 'Submit Test', exact: true }).last().click();
-  await expect(page.getByText('Your Result Summary')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Review Questions & Solutions' })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Retake Test' })).toHaveCount(0);
+  await expect(page).toHaveURL(/\/mock-test\/ssc-cgl\/browser-test\/result\/[^/]+$/);
+  await expect(page.getByRole('heading', { name: 'Test result', exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Score summary' })).toBeVisible();
+  await expect(page.getByText('Confidential · Review and retakes unavailable.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Review answers', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Retake', exact: true })).toHaveCount(0);
+  await expect(page.getByText('Private worked solution')).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
 });

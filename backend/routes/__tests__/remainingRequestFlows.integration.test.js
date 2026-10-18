@@ -61,17 +61,24 @@ it('rejects malformed fingerprints before Mongo and does not initialize missing 
   expect((await fetch(`${base}/api/questions/concept-groups/${fingerprint}`)).status).toBe(404);
   expect(write).not.toHaveBeenCalled();
 });
-it('keeps empty slot catalogs read-only and initializes defaults without overwriting published papers', async () => {
-  const slot = MOCK_TEST_SLOTS[0], write = vi.spyOn(Collection.prototype, 'updateOne');
-  expect((await fetchSlotsForExam(slot.examSlug)).length).toBeGreaterThan(0);
+it('keeps empty slot catalogs read-only and preserves published papers without regenerating demo defaults', async () => {
+  const slot = { id: 'published-custom-paper', examSlug: 'ssc-cgl', configKey: 'ssc-cgl-tier1',
+    title: 'Published custom paper', fixedQuestions: [{ id: 'published-q1', question: 'Keep me' }] };
+  const write = vi.spyOn(Collection.prototype, 'updateOne'), bulkWrite = vi.spyOn(Collection.prototype, 'bulkWrite');
+  expect(MOCK_TEST_SLOTS).toEqual([]);
+  expect(await fetchSlotsForExam(slot.examSlug)).toEqual([]);
   expect(write).not.toHaveBeenCalled(); expect(await db.collection('mockSlots').countDocuments({})).toBe(0);
-  await db.collection('mockSlots').insertOne({ ...slot, title: 'Published custom paper', fixedQuestions: [{ question: 'Keep me' }] });
+  await db.collection('mockSlots').insertOne({ ...slot });
+  const published = await db.collection('mockSlots').findOne({ id: slot.id });
+  expect(await fetchSlotsForExam(slot.examSlug)).toMatchObject([{ id: slot.id, title: slot.title, hasFixedPaper: true, questionCount: 1 }]);
   await initializeSlots(db); await initializeSlots(db);
-  expect(await db.collection('mockSlots').countDocuments({})).toBe(MOCK_TEST_SLOTS.length);
-  expect((await db.collection('mockSlots').findOne({ id: slot.id })).title).toBe('Published custom paper');
+  expect(await db.collection('mockSlots').countDocuments({})).toBe(1);
+  expect(await db.collection('mockSlots').findOne({ id: slot.id })).toEqual(published);
   await db.collection('schemaMigrations').insertOne({ _id: migrationId, completedAt: new Date() });
   await db.collection('mockSlots').deleteOne({ id: slot.id }); await initializeSlots(db);
   expect(await db.collection('mockSlots').findOne({ id: slot.id })).toBeNull();
+  expect(await fetchSlotsForExam(slot.examSlug)).toEqual([]);
+  expect(write).not.toHaveBeenCalled(); expect(bulkWrite).not.toHaveBeenCalled();
 });
 it('persists all public subjects before readiness and repairs missing durable records despite warm cache hits', async () => {
   expect(await initializePublicCatalogs()).toHaveLength(4);
