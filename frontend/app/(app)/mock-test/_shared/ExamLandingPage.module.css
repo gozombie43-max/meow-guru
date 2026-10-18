@@ -379,23 +379,34 @@
 .testLineMeta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 0; margin-top: 9px; color: var(--text-muted); font-size: 11px; line-height: 1.5; font-variant-numeric: tabular-nums; }
 .testLineMeta > span { white-space: nowrap; }
 .testLineMeta > span + span::before { content: ''; display: inline-block; height: 12px; margin: 0 10px; vertical-align: -2px; border-left: 1px solid var(--border); }
-.paperFooter { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-width: 0; }
+.paperFooter { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 8px; min-width: 0; }
 .paperStatus { display: flex; align-items: center; min-width: 0; }
-.page .paperInfo[data-ui-button] { --ui-icon-size: 16px; color: var(--text-muted); background: transparent; border: 0; cursor: pointer; }
-.page .paperInfo:hover { color: var(--ios-system-blue); }
 .statusBadge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 500; line-height: 1.35; white-space: nowrap; }
 .statusBadge svg { flex-shrink: 0; }
 .badgeProgress { color: var(--ios-system-blue); background: rgb(var(--ios-system-blue-rgb) / .12); }
 .badgeCompleted { color: var(--catalog-success); background: color-mix(in srgb, var(--catalog-success) 12%, transparent); }
 .badgeNew { color: var(--catalog-warning); background: color-mix(in srgb, var(--catalog-warning) 12%, transparent); }
 .badgeLocked { color: var(--text-muted); background: var(--catalog-control); }
-.testLineAction { flex-shrink: 0; }
+.testLineAction { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
 /* The compact visible face sits inside the shared 44px touch target. */
-.page .paperAction[data-ui-button] { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 6px 0; border: 0; background: transparent; border-radius: 999px !important; font-size: 12px; line-height: 1.35; cursor: pointer; }
+.page .paperAction[data-ui-button] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  /* Only the inner face is painted; preserve the larger accessible hit area. */
+  padding: 6px 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  line-height: 1.35;
+  cursor: pointer;
+}
 .actionFace { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 32px; padding: 5px 12px; border: 1px solid var(--ios-system-blue); border-radius: 999px; }
 .actionFace svg { width: 14px; height: 14px; flex-shrink: 0; }
 .actionFilled .actionFace { color: #fff; background: var(--ios-system-blue); }
-.actionOutline .actionFace { color: var(--ios-system-blue); background: transparent; }
+.actionOutline .actionFace { color: var(--text-muted); background: transparent; border-color: color-mix(in srgb, var(--text-muted) 40%, transparent); }
 .paperAction:hover { opacity: .85; }
 .progressLoading { color: var(--text-muted); font-size: 12px; min-height: 44px; display: flex; align-items: center; }
 @media (max-width: 767px) {
@@ -927,7 +938,7 @@
 :global(html.theme-dark) .page :is(.testLineCard, .statBox, .cardSection, .placeholderTab) { background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 14px; }
 :global(html.theme-dark) .page .headerCard { background: #000000 !important; border: 0 !important; box-shadow: none !important; }
 :global(html.theme-dark) .page :is(.tierDropdown) { background: var(--oled-surface); border: 0; border-radius: 999px !important; box-shadow: none; }
-:global(html.theme-dark) .page .testLineCard:hover { background: var(--oled-hover); box-shadow: none; transform: none; }
+:global(html.theme-dark) .page .testLineCard:hover { background: var(--catalog-control); box-shadow: none; transform: none; }
 :global(html.theme-dark) .page .testLineCard::before { display: none; }
 
 /* Neutral paper surfaces with semantic progress and one action accent. */
@@ -959,8 +970,14 @@
 .page .dropdownChevron { color: var(--ios-system-blue); right: 9px; }
 :global(html.theme-dark) .page .tierDropdown,
 :global(body.theme-dark) .page .tierDropdown { background: var(--catalog-control); color: var(--text-dark); border-radius: 10px !important; }
+.page .testLineCard,
 :global(html.theme-dark) .page .testLineCard,
-:global(body.theme-dark) .page .testLineCard { background: var(--card); border: 1px solid var(--border); border-radius: 16px; }
+:global(body.theme-dark) .page .testLineCard {
+  background: var(--catalog-control);
+  border: 0;
+  border-radius: 16px;
+  box-shadow: none;
+}
 
 @media (max-width: 767px) {
   .page { display: block; width: 100%; min-height: 100dvh; }

@@ -12,7 +12,6 @@ ChevronLeft,
 Clock3,
 Eye,
 FileText,
-Info,
 Layers,
 Lock,
 Play,
@@ -212,10 +211,14 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                 <StatusIcon size={15} aria-hidden="true" />
                 {completed ? 'Completed' : inProgress ? 'In progress' : locked ? 'Pro' : 'Not attempted'}
               </span>
-              <button type="button" data-ui-button="state" data-ui-shape="icon" className={styles.paperInfo} aria-label={`Paper info: ${slot.title}`} onClick={() => setInfoPaper(slot)}><Info size={16} aria-hidden="true" /></button>
               </div>
               <div className={styles.testLineAction}>
-                <button data-ui-button="state" aria-label={actionLabel} className={`${styles.paperAction} ${completed || locked ? styles.actionOutline : styles.actionFilled}`}
+                {completed && slot.assessmentMode !== 'confidential' && (
+                  <button type="button" data-ui-button="secondary" aria-label="Retake" className={`${styles.paperAction} ${styles.actionOutline}`} onClick={() => setInfoPaper(slot)}>
+                    <span className={styles.actionFace}><RotateCcw size={14} aria-hidden="true" /><span>Retake</span></span>
+                  </button>
+                )}
+                <button data-ui-button={locked ? 'secondary' : 'primary'} aria-label={actionLabel} className={`${styles.paperAction} ${locked ? styles.actionOutline : styles.actionFilled}`}
                   onClick={() => completed ? handleViewResult(slot.id, state.attemptId!) : inProgress ? handleResume(slot.id, state.attemptId!) : locked ? handleUnlock() : handleStart(slot.id)}>
                   <span className={styles.actionFace}><ActionIcon size={14} aria-hidden="true" /><span>{actionText}</span></span>
                 </button>
