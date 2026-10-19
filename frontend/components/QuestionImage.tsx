@@ -62,7 +62,10 @@ function QuestionImageContent({
 }: QuestionImageProps) {
   const resolved = src;
   const intrinsic = Boolean(width && height && Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0);
-  const optimizable = resolved.startsWith('/') || /^https:\/\/quizguru12345\.blob\.core\.windows\.net\//i.test(resolved);
+  // Upload URLs redirect to signed B2 downloads. Next's internal image fetcher
+  // rejects these 302 responses; let the browser follow them directly.
+  const isUploadRedirect = /^\/(?:backend-api\/)?api\/upload\/image\//.test(resolved);
+  const optimizable = !isUploadRedirect && (resolved.startsWith('/') || /^https:\/\/quizguru12345\.blob\.core\.windows\.net\//i.test(resolved));
   const canZoom = enableZoom ?? !isOption;
 
   const [isLoaded, setIsLoaded] = useState(false);
