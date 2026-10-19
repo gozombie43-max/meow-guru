@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ArrowLeft, ChevronLeft, ChevronRight, Grid2X2, X } from 'lucide-react';
 import QuestionImage from '@/components/QuestionImage';
 import RichContent from '@/components/RichContent';
-import { useRouter } from 'next/navigation';
+import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { useEffect,useRef,useMemo,useState } from 'react';
 import {
 getAttempt,
@@ -16,6 +16,8 @@ type MockQuestion,
 type MockSection,
 } from './api';
 import styles from './ReviewEngine.module.css';
+import MockTestLoading from './MockTestLoading';
+import { useNativeDialog } from '@/components/ui/Dialog';
 import type { QuizLanguage } from '@meow/contracts/exam-paper';
 import ReviewQuestionNavigator, { type ReviewFilter } from './ReviewQuestionNavigator';
 
@@ -41,7 +43,7 @@ const EMPTY_QUESTIONS: MockQuestion[] = [];
 const EMPTY_ANSWERS: Record<string, MockAnswer> = {};
 
 export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngineProps) {
-  const router = useRouter();
+  const router = useAppNavigation();
   const { token, user, loading: authLoading } = useAuth();
   const owner = user?.id;
   const ready = !authLoading && !!token && !!owner;
@@ -60,6 +62,8 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
   const [filter, setFilter] = useState<FilterType>('all');
   const [language, setLanguage] = useState<QuizLanguage>('en');
   const paletteRef = useRef<HTMLDialogElement>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  useNativeDialog(paletteRef, paletteOpen, () => setPaletteOpen(false));
   const questionPanelRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -130,20 +134,23 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
     setCurrentQuestionIndex(0);
   };
 
+  if (!authLoading && !ready) return (
+    <div className={styles.loadingContainer}>
+      <p role="alert">Sign in to view your answer review.</p>
+      <button data-ui-button="primary" onClick={() => router.replace('/login')}>Sign in</button>
+      <button data-ui-button="secondary" onClick={() => router.back(`/mock-test/${examSlug}`)}>Back to Tests</button>
+    </div>
+  );
+
   if (loading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.spinner} />
-        <p>Loading solutions and review...</p>
-      </div>
-    );
+    return <MockTestLoading label="Loading answer review…" />;
   }
 
   if (error || !attempt) {
     return (
       <div className={styles.loadingContainer}>
         <p>{error || 'Attempt not found.'}</p>
-        <button data-ui-button="primary" className={styles.btnPrimary} onClick={() => router.replace(`/mock-test/${examSlug}`)}>
+        <button data-ui-button="primary" className={styles.btnPrimary} onClick={() => router.back(`/mock-test/${examSlug}`)}>
           Back to Tests
         </button>
       </div>
@@ -174,7 +181,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
         <div className={styles.headerTop}>
           <div className={styles.headerLeft}>
             <button data-ui-button="icon" className={styles.backBtn} aria-label="Back to results"
-              onClick={() => router.replace(`/mock-test/${examSlug}/${testId}/result/${attemptId}`)}>
+              onClick={() => router.back(`/mock-test/${examSlug}/${testId}/result/${attemptId}`)}>
               <ArrowLeft size={20} />
             </button>
             <div className={styles.examTitleWrap}>
@@ -315,7 +322,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
         <button className={styles.navBtn} onClick={handlePrev} disabled={!currentItem || currentQuestionIndex === 0}>
           <ChevronLeft size={18} />Previous
         </button>
-        <button className={styles.questionJump} aria-haspopup="dialog" onClick={() => paletteRef.current?.showModal()}>
+        <button className={styles.questionJump} aria-haspopup="dialog" onClick={() => setPaletteOpen(true)}>
           <Grid2X2 size={17} />
           <span>Questions<small>{currentItem ? `${currentQuestionIndex + 1} / ${filteredAnalysis.length}` : '0 questions'}</small></span>
         </button>
@@ -324,15 +331,15 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
         </button>
       </footer>
 
-      <dialog className={styles.paletteDialog} ref={paletteRef} aria-labelledby="review-palette-title" closedby="any">
+      <dialog className={styles.paletteDialog} ref={paletteRef} aria-labelledby="review-palette-title" closedby="any" onClose={() => setPaletteOpen(false)}>
         <div className={styles.sheetHeader}>
           <div><h2 id="review-palette-title">Jump to question</h2><p>{currentSection?.label || currentSection?.key}</p></div>
-          <button className={styles.closeSheet} aria-label="Close question navigator" onClick={() => paletteRef.current?.close()}><X size={20} /></button>
+          <button className={styles.closeSheet} aria-label="Close question navigator" onClick={() => setPaletteOpen(false)}><X size={20} /></button>
         </div>
         <div className={styles.sheetContent}>
           <ReviewQuestionNavigator questions={questionAnalysis} filteredQuestions={filteredAnalysis}
             filter={filter} selectedIndex={currentQuestionIndex} onFilter={selectFilter}
-            onSelect={index => { setCurrentQuestionIndex(index); paletteRef.current?.close(); }} />
+            onSelect={index => { setCurrentQuestionIndex(index); setPaletteOpen(false); }} />
         </div>
       </dialog>
     </div>

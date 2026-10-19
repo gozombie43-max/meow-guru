@@ -1,6 +1,6 @@
 import styles from './MockTestLoading.module.css';
 
-export default function MockTestLoading() {
+export default function MockTestLoading({ label = 'Loading test…' }: { label?: string }) {
   return (
     <div className={styles.screen}>
       <div className={styles.status} role="status" aria-live="polite">
@@ -11,7 +11,7 @@ export default function MockTestLoading() {
               style={{ animationDelay: `${index / 12 - 1}s` }} />
           ))}
         </svg>
-        <p>Loading Mock Test</p>
+        <p>{label}</p>
       </div>
     </div>
   );

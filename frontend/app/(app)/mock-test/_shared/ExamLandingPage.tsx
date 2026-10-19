@@ -17,7 +17,8 @@ Lock,
 Play,
 RotateCcw
 } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useAppNavigation } from '@/hooks/useAppNavigation';
 import Image from 'next/image';
 import { examLogos } from './exam-logos';
 import { contextualTitle } from './contextual-title';
@@ -63,7 +64,7 @@ const EXAM_META: Record<string, { name: string; category: string; subtitle: stri
 };
 
 export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamLandingPageProps) {
-  const router = useRouter();
+  const router = useAppNavigation();
   const searchParams = useSearchParams();
   const { token, user, loading: authLoading } = useAuth();
   const owner = user?.id;
@@ -81,11 +82,19 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
 
   const examLogo = examLogos[examSlug];
 
-  const [activeTab, setActiveTab] = useState<'mock' | 'overview' | 'prev'>(searchParams.get('tab') === 'prev' ? 'prev' : 'mock');
+  const activeTab = searchParams.get('tab') === 'prev' ? 'prev' : searchParams.get('tab') === 'overview' ? 'overview' : 'mock';
+  const updateFilter = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(key, value);
+    window.history.replaceState(null, '', `/mock-test/${examSlug}?${params}`);
+  };
+  const setActiveTab = (tab: string) => updateFilter('tab', tab);
   const [historyState, setHistory] = useState<{ owner: string | undefined; exam: string; attempts: MockAttemptHistory[] } | null>(null);
   const history = historyState && historyState.owner === owner && historyState.exam === examSlug && ready ? historyState.attempts : [];
-  const [selectedTier, setSelectedTier] = useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<string | undefined>(undefined);
+  const selectedTier = searchParams.get('tier') ?? '';
+  const setSelectedTier = (tier: string) => updateFilter('tier', tier);
+  const selectedYear = searchParams.get('year') ?? undefined;
+  const setSelectedYear = (year: string) => updateFilter('year', year);
   const [infoPaper, setInfoPaper] = useState<MockTestSlot | null>(null);
   const catalog = useExamCatalog(examSlug, activeTab, selectedTier, loadingOnly, selectedYear);
   const { metadata, effectiveTier, effectiveYear } = catalog;
@@ -242,7 +251,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
             <div className={`${styles.trafficLight} ${styles.maximize}`}></div>
           </div>
 
-          <button data-ui-button="icon" onClick={() => router.replace('/mock-test')} className={styles.sidebarBackBtn}>
+          <button data-ui-button="icon" onClick={() => router.back('/mock-test')} className={styles.sidebarBackBtn}>
             <ChevronLeft size={15} />
             <span>All Exams</span>
           </button>
@@ -354,7 +363,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                       </div>
                     )}
 
-                    <button data-ui-button="state" onClick={() => router.replace('/mock-test')} className={styles.allExamsTopBtn}>
+                    <button data-ui-button="state" onClick={() => router.back('/mock-test')} className={styles.allExamsTopBtn}>
                       All Exams
                     </button>
                   </div>

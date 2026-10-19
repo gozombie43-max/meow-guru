@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { useEffect,useRef,useState } from 'react';
 import BackButton from '@/components/BackButton';
 import { ChevronDown } from 'lucide-react';
@@ -10,6 +10,7 @@ import { getMockStartKey } from './startKey';
 import { getSlotDetails,startTest } from './api';
 import { getExamConfig,getSlotById,getTotalQuestions,type MockTestSlot } from './exam-config';
 import styles from './TestInstructions.module.css';
+import MockTestLoading from './MockTestLoading';
 import { ApiError } from '@/shared/api/error';
 
 interface TestInstructionsProps {
@@ -19,7 +20,7 @@ interface TestInstructionsProps {
 }
 
 export default function TestInstructions({ examSlug, testId, resumeAttemptId }: TestInstructionsProps) {
-  const router = useRouter();
+  const router = useAppNavigation();
   const { token, user } = useAuth();
   const starting = useRef(false);
   const errorRef = useRef<HTMLDivElement>(null);
@@ -27,6 +28,13 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
   const [startError, setStartError] = useState<{ message: string; signIn: boolean } | null>(null);
   const [language, setLanguage] = useState('en');
   const [loadedSlot, setLoadedSlot] = useState<{ key: string; slot: MockTestSlot } | null>(null);
+  const [slotError, setSlotError] = useState<{ key: string; message: string } | null>(null);
+  const [loadVersion, retryLoad] = useState(0);
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
   const slotKey = `${examSlug}:${testId}`;
   const slot = (loadedSlot?.key === slotKey ? loadedSlot.slot : null) ?? getSlotById(testId);
 
@@ -41,24 +49,30 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
     const controller = new AbortController();
     getSlotDetails(testId, examSlug, controller.signal)
         .then((res) => {
-          if (!controller.signal.aborted && res.slot) setLoadedSlot({ key: slotKey, slot: res.slot });
+          if (controller.signal.aborted) return;
+          if (!res.slot) throw new Error('This test is no longer available.');
+          setLoadedSlot({ key: slotKey, slot: res.slot });
+          setSlotError(null);
         })
         .catch((err) => {
-          if (!controller.signal.aborted) console.warn('Failed to load dynamic slot:', err);
+          if (!controller.signal.aborted) setSlotError({ key: slotKey, message: err instanceof Error ? err.message : 'Could not load test instructions.' });
         });
     return () => controller.abort();
-  }, [testId, examSlug, slotKey]);
+  }, [testId, examSlug, slotKey, loadVersion]);
 
   const config = slot?.paperMetadata ? { ...slot.paperMetadata, name: slot.paperMetadata.examName } : slot ? getExamConfig(slot.configKey) : null;
 
   if (!slot || !config) {
-    return (
+    if (slotError?.key === slotKey || loadedSlot?.key === slotKey) return (
       <div className={styles.container}>
         <div className={styles.card}>
-          <p>Loading test instructions...</p>
+          <BackButton href={`/mock-test/${examSlug}`} label="Back to mock tests" />
+          <p role="alert">{slotError?.key === slotKey ? slotError.message : 'This test has no valid instructions.'}</p>
+          <button data-ui-button="primary" onClick={() => { setSlotError(null); retryLoad(value => value + 1); }}>Retry loading instructions</button>
         </div>
       </div>
     );
+    return <MockTestLoading label="Loading test instructions…" />;
   }
 
   const totalQuestions = slot.paperMetadata ? config.sections.reduce((sum, section) => sum + section.questionCount, 0) : getTotalQuestions(slot.configKey);
@@ -75,11 +89,16 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
     const epoch = startResponseEpoch();
     try {
       if (isResume && resumeAttemptId) {
-        router.push(`/mock-test/${examSlug}/${testId}/attempt?resume=${resumeAttemptId}&lang=${language}`);
+        router.replace(`/mock-test/${examSlug}/${testId}/attempt?resume=${resumeAttemptId}&lang=${language}`);
       } else {
         const res = await startTest(examSlug, testId, token, getMockStartKey(user?.id, examSlug, testId));
+        if (!mounted.current) return;
+        if (res.status === 'completed') {
+          router.replace(`/mock-test/${examSlug}/${testId}/result/${res.attemptId}`);
+          return;
+        }
         seedStartResponse(`mock:${examSlug}:${testId}`, user?.id, res.attemptId, res, epoch);
-        router.push(`/mock-test/${examSlug}/${testId}/attempt?resume=${res.attemptId}&lang=${language}`);
+        router.replace(`/mock-test/${examSlug}/${testId}/attempt?resume=${res.attemptId}&lang=${language}`);
       }
     } catch (error) {
       console.error(error);

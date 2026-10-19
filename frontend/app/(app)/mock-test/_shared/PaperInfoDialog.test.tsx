@@ -6,6 +6,7 @@ import { mockStartStorageKey } from './startKey';
 
 const mocks = vi.hoisted(() => ({ push: vi.fn(), seed: vi.fn() }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: mocks.push }) }));
+vi.mock('@/hooks/useAppNavigation', () => ({ useAppNavigation: () => ({ push: mocks.push }) }));
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ token: 'token', user: { id: 'student' } }) }));
 vi.mock('@/lib/start-response-cache', () => ({ seedStartResponse: mocks.seed, startResponseEpoch: () => 0 }));
 vi.mock('./api', () => ({ startTest: vi.fn() }));

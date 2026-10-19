@@ -3,12 +3,33 @@ type Layer = { close: () => unknown };
 type Guard = { message: string; fallback: string };
 export type ExitConfirmation = { message: string; theme: "light" | "dark" };
 const marker = "__meowNavigation";
+const trailKey = "__meowRouteTrail";
 
 export function createNavigationController(win: Window) {
+  // Keep the actual history chain so returning to a parent can traverse directly
+  // to its existing entry (including its filters), instead of duplicating it.
+  const originalPush = win.history.pushState;
+  const originalReplace = win.history.replaceState;
+  const currentUrl = () => win.location.pathname + win.location.search + win.location.hash;
+  const trail = (): string[] => Array.isArray(win.history.state?.[trailKey])
+    ? win.history.state[trailKey] : [currentUrl()];
+  const targetUrl = (url?: string | URL | null) => {
+    const target = new URL(url == null ? win.location.href : String(url), win.location.href);
+    return target.pathname + target.search + target.hash;
+  };
+  win.history.replaceState = function (state, unused, url) {
+    const entries = trail();
+    originalReplace.call(this, { ...state, [trailKey]: [...entries.slice(0, -1), targetUrl(url)] }, unused, url);
+  };
+  win.history.pushState = function (state, unused, url) {
+    originalPush.call(this, { ...state, [trailKey]: [...trail(), targetUrl(url)].slice(-100) }, unused, url);
+  };
+  win.history.replaceState(win.history.state, "", win.location.href);
   const layers = new Map<symbol, Layer>();
   const guards = new Map<symbol, Guard>();
   let sentinelUrl: string | null = null;
   let pending: (() => void) | null = null;
+  let returning = false;
   let released = false;
   let confirmation: ExitConfirmation | null = null;
   let confirmedAction: (() => void) | null = null;
@@ -63,18 +84,26 @@ export function createNavigationController(win: Window) {
     emit();
   }
 
+  function complete(action: () => void) {
+    released = true;
+    layers.clear();
+    if (confirmation) resolveConfirmation(false);
+    // Guard cleanup may already be removing its temporary entry. Finish that
+    // traversal before changing routes, even when a submit response is immediate.
+    if (pending) { pending = action; return; }
+    if (isSentinel()) {
+      pending = action;
+      win.history.back();
+    } else action();
+  }
+
   function navigate(action: () => void) {
     if (pending) return;
-    requestApproval(() => {
-      released = true;
-      if (isSentinel()) {
-        pending = action;
-        win.history.back();
-      } else action();
-    });
+    requestApproval(() => complete(action));
   }
 
   function onPop(event: PopStateEvent) {
+    returning = false;
     if (!sentinelUrl || win.location.href !== sentinelUrl) return;
     // Same-document panel history must not become a route navigation.
     event.stopImmediatePropagation();
@@ -178,7 +207,21 @@ export function createNavigationController(win: Window) {
       else if (!closeTop()) navigate(action);
     },
     navigate,
+    complete,
+    returnTo(parent: string, fallback: () => void) {
+      if (returning) return;
+      const target = new URL(parent, win.location.href);
+      const entries = trail();
+      const index = entries.slice(0, -1).findLastIndex(entry => {
+        const url = new URL(entry, win.location.href);
+        return url.pathname === target.pathname && (!target.search || url.search === target.search);
+      });
+      if (index >= 0) { returning = true; win.history.go(index - entries.length + 1); }
+      else fallback();
+    },
     dispose() {
+      win.history.pushState = originalPush;
+      win.history.replaceState = originalReplace;
       win.removeEventListener("popstate", onPop, true);
       win.removeEventListener("keydown", onKey, true);
       win.removeEventListener("beforeunload", onUnload);

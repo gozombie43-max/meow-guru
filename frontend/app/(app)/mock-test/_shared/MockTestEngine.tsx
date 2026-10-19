@@ -9,8 +9,8 @@ import MockCountdown from './MockCountdown';
 import { createCoalescedSave } from '@/lib/coalesced-save';
 import { abortError } from '@/shared/api/policy';
 import BackButton from "@/components/BackButton";
-import { useBackLayer, useQuizLeaveGuard } from "@/hooks/useAppNavigation";
-import { useRouter,useSearchParams } from 'next/navigation';
+import { useAppNavigation, useBackLayer, useQuizLeaveGuard } from "@/hooks/useAppNavigation";
+import { useSearchParams } from 'next/navigation';
 import { useCallback,useEffect,useEffectEvent,useRef,useState } from 'react';
 import {
 autosaveAttempt,
@@ -39,7 +39,7 @@ function normalizeOption(option: string | MockOption, index: number): MockOption
 }
 
 export default function MockTestEngine({ examSlug, testId }: { examSlug: string; testId: string }) {
-  const router = useRouter();
+  const router = useAppNavigation();
   const searchParams = useSearchParams();
   const { token, user, loading: authLoading } = useAuth();
   const userId = user?.id;
@@ -160,7 +160,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       if (resumeAttemptId) { attemptIdRef.current = resumeAttemptId; setAttemptId(resumeAttemptId); }
       if (data.status === 'completed') {
         sessionStorage.removeItem(mockStartStorageKey(userId, examSlug, testId));
-        router.replace(`/mock-test/${examSlug}/${testId}/result/${data.id || data.attemptId}`);
+        router.complete(`/mock-test/${examSlug}/${testId}/result/${data.id || data.attemptId}`);
         return;
       }
       const nextPaper = data.paper;
@@ -290,7 +290,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       await submitAttempt(attemptId, token);
       sessionStorage.removeItem(mockStartStorageKey(userId, examSlug, testId));
       try { localStorage.removeItem(`mock-attempt:${scope}:${attemptId}`); } catch { /* Storage may be unavailable. */ }
-      router.replace(`/mock-test/${examSlug}/${testId}/result/${attemptId}`);
+      if (loadController.current?.signal.aborted || resourceRef.current !== scope) return;
+      router.complete(`/mock-test/${examSlug}/${testId}/result/${attemptId}`);
     } catch (error) {
       console.error(error);
       setSubmitError('Submission failed. Your saved progress is retained. Please retry.');
@@ -425,7 +426,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     }
   };
 
-  if (loadError) return <div className={styles.container}><p role="alert">{loadError}</p><button data-ui-button="state" onClick={() => void loadData(loadController.current?.signal)}>Retry loading test</button></div>;
+  if (!authLoading && !ready) return <div className={styles.container}><BackButton href={`/mock-test/${examSlug}`} label="Back to mock tests" /><p role="alert">Sign in to continue this test.</p><button data-ui-button="primary" onClick={() => router.replace('/login')}>Sign in</button></div>;
+
+  if (loadError) return <div className={styles.container}><BackButton href={`/mock-test/${examSlug}`} label="Back to mock tests" /><p role="alert">{loadError}</p><button data-ui-button="state" onClick={() => void loadData(loadController.current?.signal)}>Retry loading test</button></div>;
 
   if (!paper || loadedScope !== scope || !ready) return <MockTestLoading />;
 

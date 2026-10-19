@@ -72,6 +72,10 @@ const questions = ['ga', 'reasoning', 'quant', 'english'].flatMap(sectionKey => 
   id: `${sectionKey}-${index}`, sectionKey, question: `Two plus two? ${index + 1}`, options: ['three', 'four', 'five', 'six'], correctAnswer: 'B', solution: 'Private worked solution',
 })));
 await db.collection('mockSlots').insertOne({ id: 'browser-test', examSlug: 'ssc-cgl', configKey: 'ssc-cgl-tier1', title: 'Browser assessment', assessmentMode: 'confidential', timingPolicy: 'composite', fixedQuestions: questions });
+await db.collection('mockSlots').insertMany([
+  { id: 'browser-practice', title: 'Browser practice mock', isPyq: false },
+  { id: 'browser-pyq', title: 'Browser PYQ 2025', isPyq: true, year: 2025 },
+].map(slot => ({ ...slot, examSlug: 'ssc-cgl', configKey: 'ssc-cgl-tier1', assessmentMode: 'practice', isFree: true, fixedQuestions: questions })));
 const { requestLogging } = await import('../infrastructure/logger.js');
 const { metricsHandler } = await import('../infrastructure/metrics.js');
 const app = express(); app.use(requestLogging); app.use(express.json()); app.use(cookieParser()); app.use(passport.initialize());

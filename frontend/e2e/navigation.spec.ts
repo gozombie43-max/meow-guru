@@ -178,3 +178,46 @@ test("restoring a controller after reload reuses the existing history marker", a
   await acceptConfirmation(page);
   await expect(page).toHaveURL(/\/home$/);
 });
+
+test('mock parent Back restores the existing filtered catalog without duplicate results', async ({ page }) => {
+  await page.evaluate(() => window.removeGuard());
+  await expect.poll(() => page.evaluate(() => Boolean(history.state?.__meowNavigation))).toBe(false);
+  await page.evaluate(() => {
+    history.replaceState({}, '', '/mock-test');
+    history.pushState({}, '', '/mock-test/ssc-cgl?tab=prev&year=2025');
+    history.pushState({}, '', '/mock-test/ssc-cgl/paper/result/attempt');
+    history.pushState({}, '', '/mock-test/ssc-cgl/paper/review/attempt');
+    window.nav.returnTo('/mock-test/ssc-cgl/paper/result/attempt', () => { throw Error('Unexpected fallback'); });
+  });
+  await expect(page).toHaveURL(/\/result\/attempt$/);
+  await page.evaluate(() => window.nav.returnTo('/mock-test/ssc-cgl', () => { throw Error('Unexpected fallback'); }));
+  await expect(page).toHaveURL(/ssc-cgl\?tab=prev&year=2025$/);
+  await page.evaluate(() => history.back());
+  await expect(page).toHaveURL(/\/mock-test$/);
+});
+
+test('completion during guard cleanup consumes the temporary entry before replacing the route', async ({ page }) => {
+  await page.evaluate(async () => {
+    window.removeGuard();
+    await Promise.resolve();
+    window.nav.complete(() => history.replaceState({}, '', '/result'));
+  });
+  await expect(page).toHaveURL(/\/result$/);
+  expect(await page.evaluate(() => Boolean(history.state?.__meowNavigation))).toBe(false);
+  await page.evaluate(() => history.back());
+  await expect(page).toHaveURL(/\/home$/);
+});
+
+test('restarting from a dialog removes its temporary entry before pushing an attempt', async ({ page }) => {
+  await page.evaluate(() => window.removeGuard());
+  await expect.poll(() => page.evaluate(() => Boolean(history.state?.__meowNavigation))).toBe(false);
+  await page.evaluate(() => {
+    history.replaceState({}, '', '/mock-test/ssc-cgl?tab=prev');
+    window.nav.addLayer(() => false);
+    window.nav.navigate(() => history.pushState({}, '', '/mock-test/ssc-cgl/paper/attempt'));
+  });
+  await expect(page).toHaveURL(/\/attempt$/);
+  await page.evaluate(() => history.back());
+  await expect(page).toHaveURL(/ssc-cgl\?tab=prev$/);
+  expect(await page.evaluate(() => Boolean(history.state?.__meowNavigation))).toBe(false);
+});

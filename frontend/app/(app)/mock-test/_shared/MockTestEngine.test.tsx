@@ -12,7 +12,12 @@ import { ApiError } from '@/shared/api/error';
 
 const { replace, push, renderQuestion, search, authState } = vi.hoisted(() => ({ replace: vi.fn(), push: vi.fn(), renderQuestion: vi.fn(), search: { resume: null as string | null }, authState: { token: 'test-token', user: { id: 'student' } as { id: string } | null, loading: false } }));
 const router = { replace, push };
+const appNavigation = { push, replace, complete: replace, back: replace };
 vi.mock('next/navigation', () => ({ useRouter: () => router, useSearchParams: () => ({ get: () => search.resume }) }));
+vi.mock('@/hooks/useAppNavigation', async importOriginal => ({
+  ...await importOriginal<typeof import('@/hooks/useAppNavigation')>(),
+  useAppNavigation: () => appNavigation,
+}));
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => authState }));
 vi.mock('@/hooks/useMediaQuery', () => ({ useMediaQuery: vi.fn(() => true) }));
 vi.mock('@/components/MathRenderer', () => ({ default: ({ text }: { text: string }) => {
@@ -102,6 +107,18 @@ describe('test attempt persistence and expiry', () => {
     expect(submitAttempt).toHaveBeenCalledWith('attempt', 'test-token');
     expect(replace).toHaveBeenCalledWith('/mock-test/ssc-cgl/test/result/attempt');
   });
+
+  it('does not reopen results when submission finishes after leaving the attempt', async () => {
+    let finish!: (value: object) => void;
+    vi.mocked(submitAttempt).mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    await mount();
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Test' }));
+    await act(async () => fireEvent.click(screen.getAllByRole('button', { name: 'Submit Test' }).at(-1)!));
+    expect(submitAttempt).toHaveBeenCalledOnce();
+    cleanup();
+    await act(async () => finish({}));
+    expect(replace).not.toHaveBeenCalled();
+  });
 });
 
 describe('creation response handoff', () => {
@@ -136,7 +153,7 @@ describe('creation response handoff', () => {
     fireEvent.change(screen.getByRole('combobox', { name: 'Test language' }), { target: { value: 'hi' } });
     await act(async () => fireEvent.click(screen.getByRole('button', { name: /Start Mock Test/ })));
     expect(startTest).toHaveBeenCalledExactlyOnceWith('ssc-cgl', 'test', 'test-token', expect.any(String));
-    expect(push).toHaveBeenCalledWith('/mock-test/ssc-cgl/test/attempt?resume=attempt&lang=hi');
+    expect(replace).toHaveBeenCalledWith('/mock-test/ssc-cgl/test/attempt?resume=attempt&lang=hi');
     cleanup();
     search.resume = 'attempt';
     vi.advanceTimersByTime(5000);

@@ -20,8 +20,13 @@ export function useQuizLeaveGuard(active: boolean, fallback: string, message = "
 export function useAppNavigation() {
   const router = useRouter();
   return useMemo(() => ({
-    back: (parent: string) => navigationController().back(() => router.replace(parent)),
+    back: (parent: string) => navigationController().back(() => {
+      if (parent === '/mock-test' || parent.startsWith('/mock-test/')) {
+        navigationController().returnTo(parent, () => router.replace(parent));
+      } else router.replace(parent);
+    }),
     push: (href: string) => navigationController().navigate(() => router.push(href)),
     replace: (href: string) => navigationController().navigate(() => router.replace(href)),
+    complete: (href: string) => navigationController().complete(() => router.replace(href)),
   }), [router]);
 }

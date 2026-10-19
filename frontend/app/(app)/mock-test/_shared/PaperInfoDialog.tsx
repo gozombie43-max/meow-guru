@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useRouter } from 'next/navigation';
+import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { RotateCcw, X } from 'lucide-react';
 import { Dialog } from '@/components/ui/Dialog';
 import { useAuth } from '@/context/AuthContext';
@@ -13,7 +13,7 @@ import type { MockTestSlot } from './exam-config';
 import styles from './PaperInfoDialog.module.css';
 
 export default function PaperInfoDialog({ slot, canRestart, onClose }: { slot: MockTestSlot; canRestart: boolean; onClose: () => void }) {
-  const router = useRouter();
+  const router = useAppNavigation();
   const { token, user } = useAuth();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
