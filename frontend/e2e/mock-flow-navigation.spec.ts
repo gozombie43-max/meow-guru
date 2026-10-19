@@ -15,8 +15,9 @@ test.beforeEach(async ({ context, request }, testInfo) => {
   ]);
   await context.route('**/backend-api/**', async route => {
     const url = new URL(route.request().url());
-    const response = await route.fetch({ url: `http://127.0.0.1:3111${url.pathname.replace('/backend-api', '')}${url.search}` });
-    await route.fulfill({ response });
+    // Forward the browser request directly so navigation can cancel it without
+    // leaving a separate fetch callback trying to fulfill an already handled route.
+    await route.continue({ url: `http://127.0.0.1:3111${url.pathname.replace('/backend-api', '')}${url.search}` });
   });
 });
 

@@ -3,8 +3,8 @@ import { expect, it, vi } from 'vitest';
 import QuestionImage, { resolveQuestionImage } from '../QuestionImage';
 import RichContent from '../RichContent';
 
-it('reserves the stored ratio and delivers responsive variants for stable storage images', () => {
-  render(<QuestionImage src="/api/upload/image/key" alt="Question figure" width={1200} height={800} critical />);
+it('reserves the stored ratio and delivers responsive variants for static app images', () => {
+  render(<QuestionImage src="/images/figure.webp" alt="Question figure" width={1200} height={800} critical />);
   const img = screen.getByAltText('Question figure');
   expect(img.parentElement).toHaveStyle({ aspectRatio: '1200 / 800' });
   expect(img).toHaveAttribute('loading', 'eager');
