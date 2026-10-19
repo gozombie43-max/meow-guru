@@ -1,0 +1,258 @@
+{
+  "theme": "light",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-light has-bottom-nav",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(244, 245, 247)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "SubjectHub-module__IV6GIa__titlebar",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "MacTrafficLights-module__F8l63q__dot MacTrafficLights-module__F8l63q__close",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 95, 86)",
+      "image": "none",
+      "border": "rgb(224, 68, 62)",
+      "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 0px 0.5px inset"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "MacTrafficLights-module__F8l63q__dot MacTrafficLights-module__F8l63q__minimize",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 189, 46)",
+      "image": "none",
+      "border": "rgb(222, 161, 35)",
+      "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 0px 0.5px inset"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "MacTrafficLights-module__F8l63q__dot MacTrafficLights-module__F8l63q__maximize",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(39, 201, 63)",
+      "image": "none",
+      "border": "rgb(26, 171, 41)",
+      "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 0px 0.5px inset"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__navBtn",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__navBtn",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "cls": "SubjectHub-module__IV6GIa__searchInput",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__segmentedBtn SubjectHub-module__IV6GIa__segmentedBtnActive",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "rgba(0, 0, 0, 0.08) 0px 1px 3px 0px, rgba(0, 0, 0, 0.05) 0px 0px 1px 0px"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__segmentedBtn ",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__actionBtn",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "ASIDE",
+      "cls": "SubjectHub-module__IV6GIa__sidebar ",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(238, 240, 243)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(225, 228, 232) rgb(36, 40, 48) rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__sidebarItem SubjectHub-module__IV6GIa__sidebarItemActive",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 122, 255)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__sidebarItem ",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__sidebarItem ",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__sidebarItem ",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__sidebarItem ",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "SubjectHub-module__IV6GIa__mainCanvas",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(244, 245, 247)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "ASIDE",
+      "cls": "SubjectHub-module__IV6GIa__commandDeck",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(238, 240, 243)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "SubjectHub-module__IV6GIa__heroCardTitle",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "SubjectHub-module__IV6GIa__modeCard",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "linear-gradient(135deg, rgb(230, 247, 242) 0%, rgb(212, 243, 235) 100%)",
+      "border": "rgba(13, 148, 136, 0.22)",
+      "shadow": "rgba(13, 148, 136, 0.08) 0px 2px 8px 0px, rgba(255, 255, 255, 0.8) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "SubjectHub-module__IV6GIa__modeCard",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "linear-gradient(135deg, rgb(237, 244, 254) 0%, rgb(219, 234, 254) 100%)",
+      "border": "rgba(37, 99, 235, 0.22)",
+      "shadow": "rgba(37, 99, 235, 0.08) 0px 2px 8px 0px, rgba(255, 255, 255, 0.8) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "SubjectHub-module__IV6GIa__modeCard",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "linear-gradient(135deg, rgb(241, 243, 253) 0%, rgb(224, 231, 255) 100%)",
+      "border": "rgba(79, 70, 229, 0.22)",
+      "shadow": "rgba(79, 70, 229, 0.08) 0px 2px 8px 0px, rgba(255, 255, 255, 0.8) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "SubjectHub-module__IV6GIa__modeCard",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "linear-gradient(135deg, rgb(247, 242, 254) 0%, rgb(237, 233, 254) 100%)",
+      "border": "rgba(124, 58, 237, 0.22)",
+      "shadow": "rgba(124, 58, 237, 0.08) 0px 2px 8px 0px, rgba(255, 255, 255, 0.8) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "SubjectHub-module__IV6GIa__modeCard",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "linear-gradient(135deg, rgb(237, 249, 255) 0%, rgb(224, 242, 254) 100%)",
+      "border": "rgba(2, 132, 199, 0.22)",
+      "shadow": "rgba(2, 132, 199, 0.08) 0px 2px 8px 0px, rgba(255, 255, 255, 0.8) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "SubjectHub-module__IV6GIa__modeCard",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "linear-gradient(135deg, rgb(254, 242, 242) 0%, rgb(254, 226, 226) 100%)",
+      "border": "rgba(225, 29, 72, 0.22)",
+      "shadow": "rgba(225, 29, 72, 0.08) 0px 2px 8px 0px, rgba(255, 255, 255, 0.8) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "SubjectHub-module__IV6GIa__resourceCard",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "SubjectHub-module__IV6GIa__resourceCard",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    }
+  ]
+}

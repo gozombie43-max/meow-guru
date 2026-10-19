@@ -1,0 +1,141 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "ASIDE",
+      "cls": "jsx-8e5f8ece2c65f28b study-mac-sidebar",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(17, 17, 19)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgba(255, 255, 255, 0.08) rgb(255, 255, 255) rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "jsx-8e5f8ece2c65f28b study-light red",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(255, 95, 86)",
+      "image": "none",
+      "border": "rgb(224, 68, 62)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "jsx-8e5f8ece2c65f28b study-light yellow",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(255, 189, 46)",
+      "image": "none",
+      "border": "rgb(222, 161, 35)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "jsx-8e5f8ece2c65f28b study-light green",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(39, 201, 63)",
+      "image": "none",
+      "border": "rgb(26, 171, 41)",
+      "shadow": "none"
+    },
+    {
+      "tag": "NAV",
+      "cls": "jsx-8e5f8ece2c65f28b study-sidebar-nav",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "study-nav-item active",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "study-nav-item",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "study-nav-item",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "study-nav-item",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "study-nav-item",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "jsx-8e5f8ece2c65f28b study-mac-main",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "jsx-8e5f8ece2c65f28b study-mac-title",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "jsx-8e5f8ece2c65f28b study-mac-sub",
+      "color": "rgba(235, 235, 245, 0.6)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.6)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "jsx-8e5f8ece2c65f28b study-pc-start-btn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(10, 132, 255)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    }
+  ]
+}

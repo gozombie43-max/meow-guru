@@ -129,8 +129,9 @@ function PaperManager({ mode }: { mode: "ssc" | "iit-jam" }) {
     </form>}
     <div className={styles.tableWrap} aria-busy={loading}>
       {loading ? <p className={styles.empty} role="status">Loading papers…</p> : !visible.length ? <p className={styles.empty}>{papers.length ? "No papers match these filters." : "No papers available. Upload a paper to get started."}</p> :
-        <table><thead><tr>{["Paper", "Exam / tier", "Type", "Date / shift", "Questions", "Access", "Actions"].map(label => <th key={label} scope="col">{label}</th>)}</tr></thead>
-          <tbody>{visible.map(paper => <tr key={`${paper.examSlug}:${paper.id}`}>
+        <table><thead><tr>{["No.", "Paper", "Exam / tier", "Type", "Date / shift", "Questions", "Access", "Actions"].map(label => <th key={label} scope="col">{label}</th>)}</tr></thead>
+          <tbody>{visible.map((paper, index) => <tr key={`${paper.examSlug}:${paper.id}`}>
+            <td className={styles.paperNumber}>{(currentPage - 1) * 25 + index + 1}</td>
             <td><strong>{paper.title}</strong><small>{paper.id}</small></td>
             <td>{examName(paper.examSlug)}<small>{paper.tier || "—"}</small></td>
             <td>{kind(paper) === "pyq" ? "PYQ" : "Mock"}</td><td>{paperDateLabel(paper)}<small>{paper.shift == null ? '—' : /^\d+$/.test(String(paper.shift)) ? `Shift ${paper.shift}` : paper.shift}</small></td>

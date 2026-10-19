@@ -1,0 +1,114 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "notif-fixed-top",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "notif-back-btn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "notif-scroll-body",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "notif-desktop-hero",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.4)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.4)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.4)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.4)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "notif-empty-link",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "notif-empty-link",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    }
+  ]
+}

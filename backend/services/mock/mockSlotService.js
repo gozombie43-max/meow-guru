@@ -6,14 +6,12 @@ import { pyqCatalogSort, pyqSortProjection } from './pyqCatalogSort.js';
 import { invalidPaper } from '../assessmentPolicy.js';
 import { getExamConfig, getSlotById as getStaticSlotById, getSlotsForExam as getStaticSlotsForExam, MOCK_TEST_SLOTS } from '../../config/exam-config.js';
 import { getMockSlotsCollection } from '../../config/mongodb.js';
+import { mutateMockCatalog, readMockCatalogMetadata } from '../../repositories/mockCatalogMetadataRepository.js';
 
-// Compute paper metadata inside Mongo; question arrays never cross the driver.
+// Read saved paper metadata; question arrays never cross the driver.
 const readSlotCatalog = (slots, examSlug) => slots.aggregate([
   { $match: { examSlug } },
   { $sort: { order: 1 } },
-  { $set: { _fixedCount: { $size: { $cond: [{ $isArray: '$fixedQuestions' }, '$fixedQuestions', []] } } } },
-  { $set: { hasFixedPaper: { $or: [{ $gt: ['$_fixedCount', 0] }, { $eq: ['$hasFixedPaper', true] }] },
-    questionCount: { $cond: [{ $gt: ['$_fixedCount', 0] }, '$_fixedCount', { $ifNull: ['$questionCount', 0] }] } } },
   { $project: { fixedQuestions: 0, sourcePaper: 0, _fixedCount: 0, _id: 0, _cosmosRid: 0 } },
 ]).toArray();
 
@@ -27,33 +25,18 @@ export async function fetchSlotsForExam(examSlug) {
   }
 }
 
-// Paginate in Mongo before computing paper metadata or transferring documents.
+// Saved counts supply totals; Mongo returns only the requested catalog page.
 export async function fetchSlotPage(examSlug, { kind = 'mock', tier = '', year = '', offset = 0, limit = 20 } = {}) {
-  const pyq = { $or: [{ $eq: ['$isPyq', true] }, { $eq: ['$type', 'pyq'] }] };
+  const { metadata, total } = await readMockCatalogMetadata(examSlug, { kind, tier, year });
+  const pyq = { $or: [{ $eq: ['$isPyq', true] }, { $eq: [{ $toLower: { $ifNull: ['$type', ''] } }, 'pyq'] }] };
   const filter = { _kind: kind, ...(year ? { _year: Number(year) } : {}), ...(tier ? { $or: [{ tier }, { tier: { $in: [null, ''] } }] } : {}) };
-  const [result] = await getMockSlotsCollection().aggregate([
+  const slots = limit === 0 ? [] : await getMockSlotsCollection().aggregate([
     { $match: { examSlug } },
     { $set: { _kind: { $cond: [pyq, 'pyq', 'mock'] }, _year: { $convert: { input: '$year', to: 'int', onError: null, onNull: null } } } },
-    { $facet: {
-      metadata: [{ $group: { _id: { kind: '$_kind', tier: '$tier', year: '$_year' }, count: { $sum: 1 } } }],
-      total: [{ $match: filter }, { $count: 'count' }],
-      slots: limit === 0 ? [{ $match: { $expr: false } }] : [
         { $match: filter }, ...(kind === 'pyq' ? pyqCatalogSort : [{ $sort: { order: 1, id: 1 } }]), { $skip: offset }, { $limit: limit },
-        { $set: { _fixedCount: { $size: { $cond: [{ $isArray: '$fixedQuestions' }, '$fixedQuestions', []] } } } },
-        { $set: { hasFixedPaper: { $or: [{ $gt: ['$_fixedCount', 0] }, { $eq: ['$hasFixedPaper', true] }] }, questionCount: { $cond: [{ $gt: ['$_fixedCount', 0] }, '$_fixedCount', { $ifNull: ['$questionCount', 0] }] } } },
         { $project: { fixedQuestions: 0, sourcePaper: 0, _fixedCount: 0, _kind: 0, _year: 0, _id: 0, _cosmosRid: 0, ...pyqSortProjection } },
-      ],
-    } },
   ]).toArray();
-  const metadata = { mockCount: 0, pyqCount: 0, tiers: [], years: [] };
-  for (const row of result.metadata) {
-    metadata[row._id.kind === 'pyq' ? 'pyqCount' : 'mockCount'] += row.count;
-    if (row._id.tier && !metadata.tiers.includes(row._id.tier)) metadata.tiers.push(row._id.tier);
-  }
-  metadata.years = [...new Set(result.metadata.filter(row => row._id.kind === 'pyq' && row._id.year >= 1000 && row._id.year <= 2999).map(row => row._id.year))].sort((a, b) => b - a);
-  metadata.tiers.sort();
-  const total = result.total[0]?.count || 0;
-  return { slots: result.slots.map(summarizeSlot), metadata, total, nextOffset: limit > 0 && offset + limit < total ? offset + limit : null };
+  return { slots: slots.map(summarizeSlot), metadata, total, nextOffset: limit > 0 && offset + limit < total ? offset + limit : null };
 }
 
 export async function fetchAllAdminSlots(
@@ -230,8 +213,6 @@ export async function fetchSlotById(
 
 export async function seedDefaultSlots(examMode = undefined) {
   const mode = parseQuestionExamMode(examMode);
-  const slots =
-    getMockSlotsCollection();
   let createdCount = 0;
 
   for (const slot of MOCK_TEST_SLOTS) {
@@ -241,7 +222,7 @@ export async function seedDefaultSlots(examMode = undefined) {
         new Date().toISOString();
 
       const result =
-        await slots.updateOne(
+        await mutateMockCatalog(slot.examSlug, (slots, options) => slots.updateOne(
           {
             id: slot.id,
             examSlug: slot.examSlug,
@@ -257,9 +238,10 @@ export async function seedDefaultSlots(examMode = undefined) {
             },
           },
           {
+            ...options,
             upsert: true,
           }
-        );
+        ));
 
       if (result.upsertedCount > 0) {
         createdCount++;
@@ -317,6 +299,7 @@ export async function createMockSlot(
     title: slotData.title,
     tier: slotData.tier || null,
     type: slotData.type || 'mock',
+    isPyq: String(slotData.type || 'mock').toLowerCase() === 'pyq',
     year: slotData.year || null,
     shift: slotData.shift || null,
     isFree: Boolean(slotData.isFree),
@@ -326,11 +309,16 @@ export async function createMockSlot(
       Array.isArray(slotData.questions)
         ? slotData.questions
         : null,
+    questionCount: Array.isArray(slotData.questions) ? slotData.questions.length : 0,
+    hasFixedPaper: Array.isArray(slotData.questions) && slotData.questions.length > 0,
     createdAt: now,
     updatedAt: now,
   };
 
-  await slots.insertOne(doc);
+  await mutateMockCatalog(doc.examSlug, async (collection, options) => {
+    if (await collection.findOne({ id: doc.id, examSlug: doc.examSlug }, options)) throw new Error(`Mock slot already exists: ${doc.id}`);
+    return collection.insertOne(doc, options);
+  });
 
   return cleanMongoDoc(doc);
 }
@@ -376,9 +364,9 @@ export async function updateMockSlot(
     updatedAt:
       new Date().toISOString(),
   };
+  if (safeUpdates.type !== undefined) updatedDoc.isPyq = String(safeUpdates.type).toLowerCase() === 'pyq';
 
-  await getMockSlotsCollection()
-    .updateOne(
+  await mutateMockCatalog(updatedDoc.examSlug, (collection, options) => collection.updateOne(
       {
         id: updatedDoc.id,
         examSlug: updatedDoc.examSlug,
@@ -387,9 +375,10 @@ export async function updateMockSlot(
         $set: updatedDoc,
       },
       {
+        ...options,
         upsert: true,
       }
-    );
+    ));
 
   return updatedDoc;
 }
@@ -410,11 +399,10 @@ export async function deleteMockSlot(
     );
   }
 
-  await getMockSlotsCollection()
-    .deleteOne({
+  await mutateMockCatalog(examSlug, (collection, options) => collection.deleteOne({
       id: slotId,
       examSlug,
-    });
+    }, options));
 
   return {
     success: true,

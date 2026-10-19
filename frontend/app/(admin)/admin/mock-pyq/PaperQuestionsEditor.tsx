@@ -14,7 +14,10 @@ type Question = Translation & {
   questionImage: string | null; translations?: { bn: Translation };
 };
 type Paper = { id: string; examSlug: string; title: string };
-type PaperContent = { questions: Question[]; updatedAt: string | null };
+type PaperContent = { questions: Question[]; updatedAt: string | null; optionImageStatus?: Record<string, { en: boolean[]; bn?: boolean[] }> };
+type ZipPreview = { questionCount: number; fileCount: number; images: { questionId: string; target: string; option?: string; language?: string; file: string; replaces: boolean }[] };
+type ZipStatus = { stage: "idle" | "selected" | "validating" | "ready" | "uploading" | "success" | "error"; message: string; filename?: string; images?: ZipPreview["images"] };
+const hasOptionImage = (value: string) => /!\[[^\]]*\]\([^)]+\)|\/api\/upload\/image\/|(?:https?:\/\/|\/(?:images|pyq-assets)\/)[^\s)]+\.(?:png|jpe?g|webp|gif|svg)(?:[?#\s)]|$)/i.test(value);
 async function read(response: Response) {
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "Request failed. Please try again.");
@@ -34,6 +37,10 @@ export default function PaperQuestionsEditor({ paper, mode, onClose }: { paper: 
   const [revision, setRevision] = useState(0);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [zipFile, setZipFile] = useState<File | null>(null);
+  const [zipPreview, setZipPreview] = useState<ZipPreview | null>(null);
+  const [zipStatus, setZipStatus] = useState<ZipStatus>({ stage: "idle", message: "Choose a ZIP to begin." });
+  const [zipOpen, setZipOpen] = useState(false);
   const [numericalDrafts, setNumericalDrafts] = useState<Record<string, string>>({});
   const operations = useRef<AbortController | null>(null);
   const base = adminScopedUrl(`${API_BASE}/api/mocktest/admin/slots/${encodeURIComponent(paper.id)}/questions?examSlug=${encodeURIComponent(paper.examSlug)}`, mode);
@@ -52,20 +59,64 @@ export default function PaperQuestionsEditor({ paper, mode, onClose }: { paper: 
   const changed = questions.filter((q, index) => JSON.stringify(q) !== JSON.stringify(content?.questions[index]) || numericalDrafts[q.id] !== undefined);
   const dirty = changed.length > 0;
   useEffect(() => {
-    if (!dirty) return;
+    if (!dirty && !uploading) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+  }, [dirty, uploading]);
 
   const selected = questions.find(q => q.id === selectedId);
   const filtered = questions.filter(q => (!section || q.sectionKey === section) && `${q.id} ${q.question} ${q.translations?.bn.question || ""}`.toLowerCase().includes(search.toLowerCase()));
   const sections = [...new Set(questions.flatMap(q => q.sectionKey ? [q.sectionKey] : []))];
   const locked = saving || uploading;
+  const zipBusy = zipStatus.stage === "validating" || zipStatus.stage === "uploading";
+  const linkedQuestions = content?.questions.filter(q => q.questionImage).length || 0;
+  const linkedOptions = content?.questions.reduce((count, q) => count + q.options.filter((option, index) => content.optionImageStatus?.[q.id]?.en[index] || hasOptionImage(option)).length + (q.translations?.bn.options.filter((option, index) => content.optionImageStatus?.[q.id]?.bn?.[index] || hasOptionImage(option)).length || 0), 0) || 0;
   const change = (patch: Partial<Question>) => {
+    setZipPreview(null);
     setQuestions(previous => previous.map(q => q.id === selectedId ? { ...q, ...patch } : q));
     setNotice("");
   };
+
+  function downloadManifest() {
+    const first = questions[0];
+    if (!first) return;
+    const manifest = { version: 1, examSlug: paper.examSlug, paperId: paper.id, images: [
+      { questionId: first.id, target: "question", file: "images/question.png" },
+      ...(first.options.length ? [{ questionId: first.id, target: "option", option: "A", language: "en", file: "images/option-a.png" }] : []),
+    ] };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(manifest, null, 2)], { type: "application/json" }));
+    const link = document.createElement("a"); link.href = url; link.download = "manifest.json"; link.click(); URL.revokeObjectURL(url);
+  }
+
+  async function importZip(action: "validate" | "apply") {
+    if (!zipFile || !content || dirty || locked || (action === "apply" && !zipPreview)) return;
+    setUploading(true); setError(""); setNotice("");
+    setZipOpen(true);
+    setZipStatus({ stage: action === "validate" ? "validating" : "uploading", filename: zipFile.name,
+      message: action === "validate" ? "Validating ZIP and checking image targets…" : "Uploading images to B2 and saving paper links…" });
+    try {
+      const body = new FormData(); body.append("zipFile", zipFile); body.append("action", action);
+      body.append("expectedUpdatedAt", JSON.stringify(content.updatedAt));
+      const endpoint = adminScopedUrl(`${API_BASE}/api/mocktest/admin/slots/${encodeURIComponent(paper.id)}/question-images-zip?examSlug=${encodeURIComponent(paper.examSlug)}`, mode);
+      const data = await read(await requestResponse(endpoint, { method: "POST", body, signal: operations.current?.signal }, { timeoutMs: 180000 }));
+      if (operations.current?.signal.aborted) return;
+      if (action === "validate") {
+        setZipPreview(data);
+        setZipStatus({ stage: "ready", filename: zipFile.name, message: "ZIP validated. Review the targets below, then upload." });
+      }
+      else {
+        setZipFile(null); setZipPreview(null); setLoading(true); setRevision(value => value + 1);
+        setZipStatus({ stage: "success", filename: zipFile.name, images: data.images || zipPreview?.images,
+          message: `${data.fileCount} image file${data.fileCount === 1 ? "" : "s"} uploaded to B2 and linked to ${data.savedQuestions} question${data.savedQuestions === 1 ? "" : "s"}.` });
+      }
+    } catch (reason) {
+      if (!operations.current?.signal.aborted) {
+        setZipPreview(null);
+        setZipStatus({ stage: "error", filename: zipFile.name, message: `${reason instanceof Error ? reason.message : "Could not import ZIP."}${action === "apply" ? " Reload the paper to check its state before retrying." : ""}` });
+      }
+    } finally { setUploading(false); }
+  }
   const changeText = (patch: Partial<Translation>) => {
     if (!selected) return;
     if (language === "bn" && selected.translations) change({ translations: { bn: { ...selected.translations.bn, ...patch } } });
@@ -103,7 +154,7 @@ export default function PaperQuestionsEditor({ paper, mode, onClose }: { paper: 
         signal: operations.current?.signal, body: JSON.stringify({ examSlug: paper.examSlug, expectedUpdatedAt: content.updatedAt, edits }) }));
       if (operations.current?.signal.aborted) return;
       const saved = questions.map(q => ({ ...q, correctAnswer: edits.find(edit => edit.id === q.id)?.correctAnswer ?? q.correctAnswer }));
-      setQuestions(saved); setContent({ questions: saved, updatedAt: data.updatedAt }); setNumericalDrafts({});
+      setQuestions(saved); setContent({ ...content, questions: saved, updatedAt: data.updatedAt }); setNumericalDrafts({});
       setNotice(`${edits.length} question${edits.length === 1 ? "" : "s"} saved.`);
     } catch (reason) { if (!operations.current?.signal.aborted) setError(reason instanceof Error ? reason.message : "Could not save questions."); }
     finally { setSaving(false); }
@@ -111,7 +162,7 @@ export default function PaperQuestionsEditor({ paper, mode, onClose }: { paper: 
 
   function reload() {
     if (dirty && !window.confirm("Discard unsaved question changes and reload this paper?")) return;
-    setError(""); setNotice(""); setLoading(true); setContent(null); setQuestions([]); setNumericalDrafts({}); setRevision(value => value + 1);
+    setZipPreview(null); setError(""); setNotice(""); setLoading(true); setContent(null); setQuestions([]); setNumericalDrafts({}); setRevision(value => value + 1);
   }
 
   const text = language === "bn" && selected?.translations ? selected.translations.bn : selected;
@@ -124,6 +175,45 @@ export default function PaperQuestionsEditor({ paper, mode, onClose }: { paper: 
     </div>
     {error && <p className={styles.error} role="alert">{error}</p>}
     {notice && <p role="status">{notice}</p>}
+    {content && <details className={styles.imagePanel} open={zipOpen} onToggle={event => setZipOpen(event.currentTarget.open)}>
+        <summary>Bulk upload question &amp; option images (.zip)</summary>
+        <p className={styles.linkedStatus}>Already linked in this paper: {linkedQuestions} question image{linkedQuestions === 1 ? "" : "s"} · {linkedOptions} option image{linkedOptions === 1 ? "" : "s"}.</p>
+        <p>Validate your ZIP, review the targets, then upload to B2 and save links to this paper.</p>
+        <p>Question images replace the shared illustration. Option images replace the selected option’s entire content in the chosen language.</p>
+        <div className={styles.actions}>
+          <a href="/docs/paper-image-zip-policy.md" download>Download ZIP format &amp; policy (.md)</a>
+          <button data-ui-button="secondary" type="button" disabled={locked} onClick={downloadManifest}>Download manifest template</button>
+        </div>
+        <p>Paper ID: <code>{paper.id}</code> · Exam: <code>{paper.examSlug}</code>. Use exact question IDs shown below.</p>
+        <label>Paper image ZIP<input aria-label="Paper image ZIP" type="file" accept=".zip,application/zip" disabled={dirty || locked || loading} onChange={event => {
+          const file = event.target.files?.[0]; setZipPreview(null); setZipFile(null); setError("");
+          setZipOpen(true);
+          if (file && (!/\.zip$/i.test(file.name) || file.size > 20 * 1024 * 1024)) setZipStatus({ stage: "error", filename: file.name, message: "Choose a .zip file no larger than 20 MiB. Split larger uploads." });
+          else { setZipFile(file || null); setZipStatus({ stage: file ? "selected" : "idle", filename: file?.name, message: file ? "ZIP selected. Validate it before uploading." : "Choose a ZIP to begin." }); }
+          event.target.value = "";
+        }} /></label>
+        {dirty && <p>Save or reload your question changes before importing a ZIP.</p>}
+        <div className={styles.actions}>
+          <button data-ui-button="secondary" type="button" disabled={!zipFile || dirty || locked || loading} onClick={() => void importZip("validate")}>{zipStatus.stage === "validating" ? "Validating ZIP…" : "Validate ZIP"}</button>
+          <button data-ui-button="primary" className={styles.primary} type="button" disabled={!zipPreview || dirty || locked || loading} onClick={() => void importZip("apply")}>{zipStatus.stage === "uploading" ? "Uploading & linking…" : "Upload & link images"}</button>
+        </div>
+        <div className={styles.zipStatus} data-stage={zipStatus.stage} role={zipStatus.stage === "error" ? "alert" : "status"} aria-live={zipStatus.stage === "error" ? "assertive" : "polite"} aria-atomic="true" aria-busy={zipBusy}>
+          <div className={styles.zipStatusHeading}>{zipBusy && <span className={styles.zipSpinner} aria-hidden="true" />}<strong>{{ idle: "Ready to upload", selected: "ZIP selected", validating: "Validating ZIP", ready: "Ready to upload", uploading: "Upload in progress", success: "Upload successful", error: "ZIP upload needs attention" }[zipStatus.stage]}</strong></div>
+          {zipStatus.filename && <p className={styles.zipFilename}>{zipStatus.filename}</p>}
+          <p>{zipStatus.message}</p>
+          {zipBusy && <><progress aria-label={zipStatus.stage === "validating" ? "ZIP validation in progress" : "Image upload in progress"} /><p>Keep this page open until processing finishes.</p></>}
+          {zipStatus.stage === "error" && zipFile && <p>Correct the ZIP and choose it again, or validate again to retry.</p>}
+          {zipStatus.stage === "success" && <p>Saved to this paper. You can upload another ZIP.</p>}
+        </div>
+        {(zipPreview || zipStatus.stage === "success") && <div><p>{zipPreview ? `Validated: ${zipPreview.fileCount} file${zipPreview.fileCount === 1 ? "" : "s"} · ${zipPreview.questionCount} question${zipPreview.questionCount === 1 ? "" : "s"}. Review before uploading:` : "Completed targets:"}</p>
+          <ul>{(zipPreview?.images || zipStatus.images || []).map((image, index) => {
+            const existing = content.questions.find(q => q.id === image.questionId);
+            const optionIndex = "ABCDEFGH".indexOf(image.option || "");
+            const existingImage = image.target === "question" ? Boolean(existing?.questionImage) : content.optionImageStatus?.[image.questionId]?.[image.language === "bn" ? "bn" : "en"]?.[optionIndex] || hasOptionImage((image.language === "bn" ? existing?.translations?.bn.options : existing?.options)?.[optionIndex] || "");
+            return <li key={index}><code>{image.questionId}</code> · {image.target}{image.option ? ` ${image.option} (${image.language})` : " (all languages)"} ← {image.file}<span className={styles.targetStatus}>{zipStatus.stage === "success" ? "Uploaded & linked" : existingImage ? "Already linked · will replace image" : image.replaces ? "New image · replaces existing content" : "New image · ready to upload"}</span></li>;
+          })}</ul>
+        </div>}
+      </details>}
     {loading ? <p className={styles.empty} role="status">Loading all paper questions…</p> : content && <>
       <div className={styles.filters}>
         <label>Find question<input aria-label="Find question" type="search" placeholder="Search text or question ID" value={search} onChange={e => setSearch(e.target.value)} /></label>
@@ -149,7 +239,7 @@ export default function PaperQuestionsEditor({ paper, mode, onClose }: { paper: 
             <h3>Question image</h3><p>Attach an illustration or a scan of the question. The image is shared across languages.</p>
             <label>Image URL<input aria-label="Question image URL" value={selected.questionImage || ""} onChange={e => change({ questionImage: e.target.value || null })} placeholder="https://…" /></label>
             <label>Upload question image<input aria-label="Upload question image" type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={e => { const file = e.target.files?.[0]; if (file) void uploadImage(file, selected.id); e.target.value = ""; }} /></label>
-            {uploading && <p role="status">Uploading image…</p>}
+            {uploading && !zipBusy && <p role="status">Uploading image…</p>}
             {selected.questionImage && /^(https?:\/\/|\/(?!\/))/i.test(selected.questionImage) && <QuestionImage src={selected.questionImage} alt={`Question ${position + 1} image preview`} />}
             {selected.questionImage && <button data-ui-button="secondary" type="button" onClick={() => change({ questionImage: null })}>Remove image</button>}
           </div>

@@ -269,7 +269,7 @@ describe('metadata and catalog database work', () => {
   });
   it('returns accurate fixed/native/dynamic/empty counts from a Mongo catalog that excludes papers', async () => {
     await db.collection('mockSlots').insertMany([
-      { id: 'fixed', examSlug: 'ssc-cgl', order: 1, fixedQuestions: Array.from({ length: 4 }, () => ({ solution: 'private content' })) },
+      { id: 'fixed', examSlug: 'ssc-cgl', order: 1, questionCount: 4, hasFixedPaper: true, fixedQuestions: Array.from({ length: 4 }, () => ({ solution: 'private content' })) },
       { id: 'empty', examSlug: 'ssc-cgl', order: 2, fixedQuestions: [], questionCount: 100 },
       { id: 'dynamic', examSlug: 'ssc-cgl', order: 3, questionCount: 75 },
       { id: 'native', examSlug: 'ssc-cgl', order: 4, hasFixedPaper: true, questionCount: 3,

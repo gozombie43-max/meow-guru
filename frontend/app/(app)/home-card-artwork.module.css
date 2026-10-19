@@ -54,6 +54,15 @@
 .battle    { --art-color:#0e85c0; --art-glow:rgba(14,133,192,.08); }
 .recent    { --art-color:#6452c8; --art-glow:rgba(100,82,200,.07); }
 
+/* Light cards keep their white surface beneath the subject illustration. */
+:global(html:not(.theme-dark)) .artwork {
+  --art-svg-opacity: .38;
+}
+
+:global(html:not(.theme-dark)) .artwork::after {
+  background: none;
+}
+
 /* Dark — subtle left-edge feathering matching the dark theme, without overpowering card content */
 :global(html.theme-dark) .artwork {
   --art-svg-opacity: .65;

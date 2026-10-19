@@ -1,0 +1,159 @@
+{
+  "theme": "light",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-light",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(244, 245, 247)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "AdminShell-module__0WdyHq__header",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "AdminShell-module__0WdyHq__back",
+      "color": "rgb(0, 122, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(0, 122, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "NAV",
+      "cls": "AdminShell-module__0WdyHq__nav",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "AdminShell-module__0WdyHq__active",
+      "color": "rgb(0, 122, 255)",
+      "background": "rgba(0, 122, 255, 0.12)",
+      "image": "none",
+      "border": "rgb(0, 122, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "exam-mode-module__LmfVCa__compactSwitch",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "cls": "AdminUsersPage-module__GPr9lG__searchInput",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "AdminUsersPage-module__GPr9lG__filterSelect",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "url(\"data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "AdminUsersPage-module__GPr9lG__filterSelect",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "url(\"data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "AdminUsersPage-module__GPr9lG__filterSelect",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "url(\"data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "AdminUsersPage-module__GPr9lG__filterSelect",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "url(\"data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    }
+  ]
+}

@@ -63,7 +63,7 @@ it('rejects malformed fingerprints before Mongo and does not initialize missing 
 });
 it('keeps empty slot catalogs read-only and preserves published papers without regenerating demo defaults', async () => {
   const slot = { id: 'published-custom-paper', examSlug: 'ssc-cgl', configKey: 'ssc-cgl-tier1',
-    title: 'Published custom paper', fixedQuestions: [{ id: 'published-q1', question: 'Keep me' }] };
+    title: 'Published custom paper', questionCount: 1, hasFixedPaper: true, fixedQuestions: [{ id: 'published-q1', question: 'Keep me' }] };
   const write = vi.spyOn(Collection.prototype, 'updateOne'), bulkWrite = vi.spyOn(Collection.prototype, 'bulkWrite');
   expect(MOCK_TEST_SLOTS).toEqual([]);
   expect(await fetchSlotsForExam(slot.examSlug)).toEqual([]);

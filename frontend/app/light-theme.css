@@ -17,6 +17,37 @@
 
 html.theme-light,
 body.theme-light {
+  /* Selected light appearance. Keep the root constants stable for dark pages
+     that deliberately embed an existing light assessment surface. */
+  --light-canvas: #f4f5f7;
+  --light-surface: #ffffff;
+  --light-surface-muted: #eef0f3;
+  --light-border: #e1e4e8;
+  --light-text: #242830;
+  --light-text-secondary: #606773;
+  --light-text-muted: #656d79;
+  --light-shadow: 0 2px 8px rgb(24 28 36 / 4%);
+  --light-success: #18743b;
+  --light-success-soft: #e8f6ed;
+  --light-danger: #b42332;
+  --light-danger-soft: #fcebec;
+  --light-warning: #8a5b12;
+  --light-warning-soft: #fff5df;
+
+  /* Fixed legacy colors opt into this palette only when light is selected.
+     Their original values remain the fallback in dark mode. */
+  --light-only-canvas: var(--light-canvas);
+  --light-only-surface: var(--light-surface);
+  --light-only-surface-muted: var(--light-surface-muted);
+  --light-only-border: var(--light-border);
+  --light-only-text: var(--light-text);
+  --light-only-text-secondary: var(--light-text-secondary);
+  --light-only-text-muted: var(--light-text-muted);
+  --light-only-success: var(--light-success);
+  --light-only-success-soft: var(--light-success-soft);
+  --light-only-danger: var(--light-danger);
+  --light-only-danger-soft: var(--light-danger-soft);
+
   --background: var(--light-canvas);
   --foreground: var(--light-text);
   --bg-gradient: var(--light-canvas);
@@ -35,9 +66,34 @@ body.theme-light {
   --color-border-tertiary: var(--light-border);
   --color-background-primary: var(--light-surface);
   --color-background-secondary: var(--light-canvas);
+  --color-background-danger: var(--light-danger-soft);
+  --color-text-danger: var(--light-danger);
   background: var(--light-canvas);
   color: var(--light-text);
   color-scheme: light;
+}
+
+/* An explicit dark preview must not inherit a surrounding light migration. */
+.theme-dark,
+[data-theme="dark"],
+.training-dark {
+  --light-only-canvas: initial;
+  --light-only-surface: initial;
+  --light-only-surface-muted: initial;
+  --light-only-border: initial;
+  --light-only-text: initial;
+  --light-only-text-secondary: initial;
+  --light-only-text-muted: initial;
+  --light-only-success: initial;
+  --light-only-success-soft: initial;
+  --light-only-danger: initial;
+  --light-only-danger-soft: initial;
+}
+
+/* Placeholder text needs the same contrast as other supporting copy. */
+html.theme-light :is(input, textarea):not(:where(.theme-dark, [data-theme="dark"], .training-dark) *)::placeholder {
+  color: var(--light-text-muted);
+  opacity: 1;
 }
 
 html.theme-light :is(button, a, input, select, textarea):focus-visible:not(.tfp-search-input, [data-custom-focus]) {

@@ -1,0 +1,492 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark has-bottom-nav home-redesign",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "page-module__GXmrjW__pageWrapper page-module__GXmrjW__dark",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "ASIDE",
+      "cls": "page-module__GXmrjW__desktopSidebar",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240) rgba(0, 0, 0, 0) rgb(229, 234, 240) rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "MacTrafficLights-module__F8l63q__dot MacTrafficLights-module__F8l63q__close",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(255, 95, 86)",
+      "image": "none",
+      "border": "rgb(224, 68, 62)",
+      "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 0px 0.5px inset"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "MacTrafficLights-module__F8l63q__dot MacTrafficLights-module__F8l63q__minimize",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(255, 189, 46)",
+      "image": "none",
+      "border": "rgb(222, 161, 35)",
+      "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 0px 0.5px inset"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "MacTrafficLights-module__F8l63q__dot MacTrafficLights-module__F8l63q__maximize",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(39, 201, 63)",
+      "image": "none",
+      "border": "rgb(26, 171, 41)",
+      "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 0px 0.5px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__logo",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "exam-mode-module__LmfVCa__switch",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "NAV",
+      "cls": "page-module__GXmrjW__railNav",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__railLink page-module__GXmrjW__railActive",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(10, 132, 255, 0.16)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__railLink ",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__railLink ",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__railLink ",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__railLink ",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "page-module__GXmrjW__adminContactCard",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(41, 41, 44)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "page-module__GXmrjW__contactEyebrow",
+      "color": "rgba(235, 235, 245, 0.4)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.4)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "page-module__GXmrjW__contactRole",
+      "color": "rgba(235, 235, 245, 0.4)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.4)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "page-module__GXmrjW__contactDescription",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__contactWhatsapp",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 131, 68)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "page-module__GXmrjW__topbar",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "cls": "page-module__GXmrjW__searchInput",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "page-module__GXmrjW__actionButton",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "NotificationBell-module__B9lOVG__bellButton ",
+      "color": "rgb(148, 163, 184)",
+      "background": "rgba(255, 255, 255, 0.06)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.1)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "UserProfileMenu-module__U6YXqW__avatarTrigger ",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "page-module__GXmrjW__heroCard",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "page-module__GXmrjW__heroTitle",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "page-module__GXmrjW__heroSubtitle",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "page-module__GXmrjW__exploreSection",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "page-module__GXmrjW__sectionTitle",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__subjectCard",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "page-module__GXmrjW__subjectCardTitle",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "page-module__GXmrjW__subjectCardSubtitle",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__subjectCard",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "page-module__GXmrjW__subjectCardTitle",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "page-module__GXmrjW__subjectCardSubtitle",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__subjectCard",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "page-module__GXmrjW__subjectCardTitle",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "page-module__GXmrjW__subjectCardSubtitle",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__subjectCard",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "page-module__GXmrjW__subjectCardTitle",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "page-module__GXmrjW__subjectCardSubtitle",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__resourceCard",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__battleCard",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "page-module__GXmrjW__recentQuizzesColumn recent-quiz-module__GgkiEG__section",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "page-module__GXmrjW__recentQuizzesTitle",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__GXmrjW__viewAllLink",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "ARTICLE",
+      "cls": "recent-quiz-module__GgkiEG__card",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "recent-quiz-module__GgkiEG__detail",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "recent-quiz-module__GgkiEG__resume",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(10, 132, 255)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    }
+  ]
+}

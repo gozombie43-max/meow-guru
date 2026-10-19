@@ -728,25 +728,25 @@
         :global(html.theme-light) .resource-page {
           --bg: var(--light-canvas);
           --card-bg: var(--light-surface);
-          --card-hover: #f8fafc;
-          --border: rgba(0, 0, 0, 0.08);
+          --card-hover: var(--light-only-canvas, #f8fafc);
+          --border: var(--light-only-border, rgba(0, 0, 0, 0.08));
           --header-bg: rgba(246, 248, 250, 0.92);
           --text-primary: var(--light-text);
           --text-secondary: var(--light-text-secondary);
           --text-tertiary: var(--light-text-muted);
-          --tab-bg: rgba(0, 0, 0, 0.05);
+          --tab-bg: var(--light-only-surface-muted, rgba(0, 0, 0, 0.05));
           --tab-color: var(--light-text-secondary);
           --modal-bg: var(--light-surface);
           --modal-option-bg: var(--light-canvas);
-          --notice-bg: rgba(0, 0, 0, 0.04);
-          --spinner-color: rgba(60, 60, 67, 0.6);
+          --notice-bg: var(--light-only-surface-muted, rgba(0, 0, 0, 0.04));
+          --spinner-color: var(--light-only-text-secondary, rgba(60, 60, 67, 0.6));
           --segment-track: rgba(118, 118, 128, 0.12);
           --segment-active-bg: var(--light-surface);
         }
 
         :global(body.theme-light) .res-segment-btn.active,
         :global(html.theme-light) .res-segment-btn.active {
-          color: #000000;
+          color: var(--light-only-text, #000000);
           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
         }
 
@@ -757,14 +757,14 @@
         @media (hover: hover) {
           :global(body.theme-light) .res-card:hover {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            background: #f8fafc;
-            border-color: rgba(0, 0, 0, 0.14);
+            background: var(--light-only-canvas, #f8fafc);
+            border-color: var(--light-only-border, rgba(0, 0, 0, 0.14));
           }
         }
 
         :global(body.theme-light) .res-card:active {
           background: #ebeef2;
-          border-color: rgba(0, 0, 0, 0.16);
+          border-color: var(--light-only-border, rgba(0, 0, 0, 0.16));
         }
 
         @media (max-width: 767px) {

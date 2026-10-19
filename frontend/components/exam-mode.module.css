@@ -168,7 +168,7 @@
   width:19px;
   height:19px;
   border-radius:50%;
-  background:white;
+  background:var(--light-only-surface, white);
   transition:transform .15s;
 }
 .switch[aria-checked=true] .track {

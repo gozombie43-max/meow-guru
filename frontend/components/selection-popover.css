@@ -1,9 +1,9 @@
 .selection-popover {
-  --selection-surface: #fff;
-  --selection-text: #1c1c1e;
-  --selection-muted: #68686e;
-  --selection-hover: #f0f1f3;
-  --selection-border: rgb(0 0 0 / .08);
+  --selection-surface: var(--light-only-surface, #fff);
+  --selection-text: var(--light-only-text, #1c1c1e);
+  --selection-muted: var(--light-only-text-muted, #68686e);
+  --selection-hover: var(--light-only-surface-muted, #f0f1f3);
+  --selection-border: var(--light-only-border, rgb(0 0 0 / .08));
   position: fixed;
   inset: auto;
   margin: 0;

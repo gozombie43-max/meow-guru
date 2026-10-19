@@ -1,0 +1,234 @@
+[
+  {
+    "width": 320,
+    "theme": "light",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "∫x²dx\nlim f(x)\ndy/dx\nπ\nMath",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "Reasoning",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "d\ne\nf\nA\nb\nc\n\"\nEnglish",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "GK",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(253, 253, 253)"
+      }
+    ],
+    "overlays": [],
+    "errors": []
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "∫x²dx\nlim f(x)\ndy/dx\nπ\nMath",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Reasoning",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "d\ne\nf\nA\nb\nc\n\"\nEnglish",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "GK",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(28, 28, 30)"
+      }
+    ],
+    "overlays": [],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "∫x²dx\nlim f(x)\ndy/dx\nπ\nMath",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "Reasoning",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "d\ne\nf\nA\nb\nc\n\"\nEnglish",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "GK",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(253, 253, 253)"
+      }
+    ],
+    "overlays": [],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "∫x²dx\nlim f(x)\ndy/dx\nπ\nMath",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Reasoning",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "d\ne\nf\nA\nb\nc\n\"\nEnglish",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "GK",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(28, 28, 30)"
+      }
+    ],
+    "overlays": [],
+    "errors": []
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "∫x²dx\nlim f(x)\ndy/dx\nπ\nMath",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "Reasoning",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "d\ne\nf\nA\nb\nc\n\"\nEnglish",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "GK",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(253, 253, 253)"
+      }
+    ],
+    "overlays": [],
+    "errors": []
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "∫x²dx\nlim f(x)\ndy/dx\nπ\nMath",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Reasoning",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "d\ne\nf\nA\nb\nc\n\"\nEnglish",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "GK",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(28, 28, 30)"
+      }
+    ],
+    "overlays": [],
+    "errors": []
+  },
+  {
+    "width": 1366,
+    "theme": "light",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(253, 253, 253)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(253, 253, 253)"
+      }
+    ],
+    "overlays": [],
+    "errors": []
+  },
+  {
+    "width": 1366,
+    "theme": "dark",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(28, 28, 30)"
+      }
+    ],
+    "overlays": [],
+    "errors": []
+  }
+]

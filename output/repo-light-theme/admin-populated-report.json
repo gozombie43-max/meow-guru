@@ -1,0 +1,162 @@
+[
+  {
+    "width": 390,
+    "route": "/admin",
+    "theme": "light",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 1366,
+    "route": "/admin",
+    "theme": "light",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 390,
+    "route": "/admin",
+    "theme": "dark",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 1366,
+    "route": "/admin",
+    "theme": "dark",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 390,
+    "route": "/admin/users",
+    "theme": "light",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin/users",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 1366,
+    "route": "/admin/users",
+    "theme": "light",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin/users",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 390,
+    "route": "/admin/users",
+    "theme": "dark",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin/users",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 1366,
+    "route": "/admin/users",
+    "theme": "dark",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin/users",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 1366,
+    "route": "/admin/notifications",
+    "theme": "light",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin/notifications",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 390,
+    "route": "/admin/notifications",
+    "theme": "light",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin/notifications",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 1366,
+    "route": "/admin/notifications",
+    "theme": "dark",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin/notifications",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 390,
+    "route": "/admin/notifications",
+    "theme": "dark",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin/notifications",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 390,
+    "route": "/admin/mock-pyq",
+    "theme": "light",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin/mock-pyq",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 1366,
+    "route": "/admin/mock-pyq",
+    "theme": "light",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin/mock-pyq",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 390,
+    "route": "/admin/mock-pyq",
+    "theme": "dark",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin/mock-pyq",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  },
+  {
+    "width": 1366,
+    "route": "/admin/mock-pyq",
+    "theme": "dark",
+    "status": 200,
+    "finalURL": "http://localhost:3000/admin/mock-pyq",
+    "overflow": false,
+    "errors": [],
+    "neutralContrast": []
+  }
+]

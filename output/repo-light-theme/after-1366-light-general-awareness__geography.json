@@ -1,0 +1,384 @@
+{
+  "theme": "light",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-light has-bottom-nav",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(244, 245, 247)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "RankedTopicGroupPage-module__MAKpma__header",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__backButton",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "RankedTopicGroupPage-module__MAKpma__headerTitle",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "RankedTopicGroupPage-module__MAKpma__headerFilter",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "RankedTopicGroupPage-module__MAKpma__content",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "RankedTopicGroupPage-module__MAKpma__intro",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "RankedTopicGroupPage-module__MAKpma__eyebrow",
+      "color": "rgb(22, 132, 91)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(22, 132, 91)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "RankedTopicGroupPage-module__MAKpma__heading",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "RankedTopicGroupPage-module__MAKpma__description",
+      "color": "rgb(101, 109, 121)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(101, 109, 121)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "cls": "RankedTopicGroupPage-module__MAKpma__searchInput",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "RankedTopicGroupPage-module__MAKpma__table",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    }
+  ]
+}

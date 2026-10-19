@@ -10,7 +10,7 @@
           --divider: rgba(255, 255, 255, 0.09);
           --text-primary: #ffffff;
           --text-secondary: #98989d;
-          --text-muted: #636366;
+          --text-muted: var(--light-only-text-secondary, #636366);
           --item-hover: rgba(255, 255, 255, 0.06);
           --table-header: rgba(255, 255, 255, 0.03);
           --table-alt: rgba(255, 255, 255, 0.02);
@@ -34,15 +34,15 @@
           --desktop-bg: var(--light-canvas);
           --sidebar-bg: rgba(235, 235, 240, 0.92);
           --workspace-bg: var(--light-surface);
-          --window-border: rgba(0, 0, 0, 0.15);
-          --divider: rgba(0, 0, 0, 0.08);
+          --window-border: var(--light-only-border, rgba(0, 0, 0, 0.15));
+          --divider: var(--light-only-border, rgba(0, 0, 0, 0.08));
           --text-primary: var(--light-text);
-          --text-secondary: #6e6e73;
-          --text-muted: #86868b;
-          --item-hover: rgba(0, 0, 0, 0.04);
+          --text-secondary: var(--light-only-text-muted, #6e6e73);
+          --text-muted: var(--light-only-text-muted, #86868b);
+          --item-hover: var(--light-only-surface-muted, rgba(0, 0, 0, 0.04));
           --table-header: rgba(0, 0, 0, 0.025);
           --table-alt: rgba(0, 0, 0, 0.015);
-          --quote-bg: rgba(0, 0, 0, 0.03);
+          --quote-bg: var(--light-only-surface-muted, rgba(0, 0, 0, 0.03));
           --quote-border: var(--ios-system-blue);
           --system-blue: var(--ios-system-blue);
         }
@@ -122,7 +122,7 @@
         }
         .apple-dict-viewport[data-theme="light"] .mobile-back-btn {
           border: 1px solid rgba(0, 0, 0, 0.15);
-          background: rgba(0, 0, 0, 0.05);
+          background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.05));
         }
         .mobile-back-btn:active {
           transform: scale(0.95);
@@ -181,7 +181,7 @@
         }
         .apple-dict-viewport[data-theme="light"] .mobile-counter-filter-btn {
           border: 1px solid rgba(0, 0, 0, 0.15);
-          background: rgba(0, 0, 0, 0.05);
+          background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.05));
         }
         .mobile-counter-filter-btn:active {
           transform: scale(0.95);
@@ -207,7 +207,7 @@
         }
         .apple-dict-viewport[data-theme="light"] .appearance-toggle {
           border: 1px solid rgba(0, 0, 0, 0.15);
-          background: rgba(0, 0, 0, 0.05);
+          background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.05));
         }
         .appearance-toggle:active {
           transform: scale(0.94);
@@ -264,7 +264,7 @@
 
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn {
           border: 1px solid rgba(0, 0, 0, 0.16);
-          background: rgba(0, 0, 0, 0.07);
+          background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.07));
           color: var(--light-text);
           box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
         }
@@ -293,9 +293,9 @@
         }
 
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn:disabled {
-          border-color: rgba(0, 0, 0, 0.06);
+          border-color: var(--light-only-border, rgba(0, 0, 0, 0.06));
           color: rgba(0, 0, 0, 0.3);
-          background: rgba(0, 0, 0, 0.02);
+          background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.02));
         }
 
         /* Dictionary Body Content Area */
@@ -481,7 +481,7 @@
         }
 
         .apple-dict-viewport[data-theme="light"] .table-row:active {
-          background: rgba(0, 0, 0, 0.06);
+          background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.06));
         }
 
         .cell-term {
@@ -1146,7 +1146,7 @@
           .red { background: #ff5f56; border: 0.5px solid #e0443e; }
           .yellow { background: #ffbd2e; border: 0.5px solid #dea123; }
           .green { background: #27c93f; border: 0.5px solid #1aab29; }
-          .symbol { font-size: 8px; font-weight: 800; color: rgba(0, 0, 0, 0.7); line-height: 1; opacity: 0; transition: opacity 0.15s ease; }
+          .symbol { font-size: 8px; font-weight: 800; color: var(--light-only-text-secondary, rgba(0, 0, 0, 0.7)); line-height: 1; opacity: 0; transition: opacity 0.15s ease; }
           .traffic-lights:hover .symbol,
           .light:focus-visible .symbol { opacity: 1; }
 
@@ -1165,7 +1165,7 @@
           }
 
           .apple-dict-viewport[data-theme="light"] .search-box {
-            background: rgba(0, 0, 0, 0.05);
+            background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.05));
           }
 
           .search-icon { width: 14px; height: 14px; color: var(--text-muted); }

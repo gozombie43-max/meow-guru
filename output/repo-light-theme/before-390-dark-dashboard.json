@@ -1,0 +1,213 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "page-module__Ycb01a__header",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240) rgb(229, 234, 240) rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__Ycb01a__back",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__Ycb01a__profile",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "page-module__Ycb01a__content",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "page-module__Ycb01a__intro",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "page-module__Ycb01a__eyebrow",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__Ycb01a__mockLink",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "page-module__Ycb01a__resume",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(10, 132, 255, 0.07)",
+      "image": "none",
+      "border": "rgba(10, 132, 255, 0.24)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__Ycb01a__primary",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(10, 132, 255)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "page-module__Ycb01a__section",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__Ycb01a__subject",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__Ycb01a__subject",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(56, 56, 60) rgb(229, 234, 240) rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__Ycb01a__subject",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(56, 56, 60) rgb(229, 234, 240) rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__Ycb01a__subject",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(56, 56, 60) rgb(229, 234, 240) rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "page-module__Ycb01a__section",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "page-module__Ycb01a__activityRow",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    }
+  ]
+}

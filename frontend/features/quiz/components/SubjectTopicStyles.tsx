@@ -297,7 +297,7 @@ export function SubjectTopicStyles() {
            ════════════════════════════════════ */
         body.theme-light .sg-page {
           --bg: var(--light-canvas);
-          --card: #FFFFFF;
+          --card: var(--light-only-surface, #FFFFFF);
           --card-2: var(--light-border);
           --sep: var(--light-border);
           --label: var(--light-text);
@@ -308,7 +308,7 @@ export function SubjectTopicStyles() {
         body.theme-light .sg-navbar { background: var(--light-canvas); }
         body.theme-light .sg-nav-inline { border-bottom-color: var(--light-border); }
         body.theme-light .sg-banner {
-          background: #FFFFFF;
+          background: var(--light-only-surface, #FFFFFF);
           border-color: var(--light-border);
           box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
           font-size: 16px; font-weight: 650; margin: 0 0 2px;
@@ -327,8 +327,8 @@ export function SubjectTopicStyles() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: #ffffff;
-          color: #000000;
+          background: var(--light-only-surface, #ffffff);
+          color: var(--light-only-text, #000000);
           font-size: 13px;
           font-weight: 700;
           letter-spacing: -0.01em;
@@ -527,7 +527,7 @@ export function SubjectTopicStyles() {
            ════════════════════════════════════ */
         body.theme-light .sg-page {
           --bg: var(--light-canvas);
-          --card: #FFFFFF;
+          --card: var(--light-only-surface, #FFFFFF);
           --card-2: var(--light-border);
           --sep: var(--light-border);
           --label: var(--light-text);
@@ -538,18 +538,18 @@ export function SubjectTopicStyles() {
         body.theme-light .sg-navbar { background: var(--light-canvas); }
         body.theme-light .sg-nav-inline { border-bottom-color: var(--light-border); }
         body.theme-light .sg-banner {
-          background: #FFFFFF;
+          background: var(--light-only-surface, #FFFFFF);
           border-color: var(--light-border);
           box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
         }
         body.theme-light .sg-card {
           background: var(--card-gradient, linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%));
           border-color: var(--card-border, rgba(0, 0, 0, 0.08));
-          color: #0f172a;
+          color: var(--light-only-text, #0f172a);
           box-shadow: var(--card-shadow, 0 2px 6px rgba(0, 0, 0, 0.04)), inset 0 1px 0 rgba(255, 255, 255, 0.8);
         }
         body.theme-light .sg-card:hover {
-          color: #0f172a;
+          color: var(--light-only-text, #0f172a);
           border-color: var(--card-accent, rgba(0, 113, 227, 0.4));
           box-shadow: var(--card-shadow, 0 4px 12px rgba(0, 0, 0, 0.08)), inset 0 1px 0 rgba(255, 255, 255, 0.9);
         }
@@ -564,10 +564,10 @@ export function SubjectTopicStyles() {
           stroke: #ffffff;
         }
         body.theme-light .sg-card-name {
-          color: #0f172a;
+          color: var(--light-only-text, #0f172a);
         }
         body.theme-light .sg-card-sub {
-          color: #64748b;
+          color: var(--light-only-text-muted, #64748b);
         }
         body.theme-light .sg-tab-bg-svg > path:first-child {
           fill: var(--card-2);
@@ -670,8 +670,8 @@ export function SubjectTopicStyles() {
 
           body.theme-light .sg-navbar { background: transparent; }
           body.theme-light .sg-back {
-            background: #ffffff;
-            border-color: rgba(0,0,0,0.08);
+            background: var(--light-only-surface, #ffffff);
+            border-color: var(--light-only-border, rgba(0,0,0,0.08));
             box-shadow: 0 1px 4px rgba(0,0,0,0.04);
           }
           body.theme-light .sg-back:hover {

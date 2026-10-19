@@ -1,0 +1,267 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark has-bottom-nav",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "english-module__4ukqra__titlebar",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "MacTrafficLights-module__F8l63q__dot MacTrafficLights-module__F8l63q__close",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(255, 95, 86)",
+      "image": "none",
+      "border": "rgb(224, 68, 62)",
+      "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 0px 0.5px inset"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "MacTrafficLights-module__F8l63q__dot MacTrafficLights-module__F8l63q__minimize",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(255, 189, 46)",
+      "image": "none",
+      "border": "rgb(222, 161, 35)",
+      "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 0px 0.5px inset"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "MacTrafficLights-module__F8l63q__dot MacTrafficLights-module__F8l63q__maximize",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(39, 201, 63)",
+      "image": "none",
+      "border": "rgb(26, 171, 41)",
+      "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 0px 0.5px inset"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "english-module__4ukqra__navBtn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "english-module__4ukqra__navBtn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "cls": "english-module__4ukqra__searchInput",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "english-module__4ukqra__segmentedBtn english-module__4ukqra__segmentedBtnActive",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "rgba(0, 0, 0, 0.4) 0px 1px 4px 0px"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "english-module__4ukqra__segmentedBtn ",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "english-module__4ukqra__actionBtn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "ASIDE",
+      "cls": "english-module__4ukqra__sidebar ",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgba(255, 255, 255, 0.12) rgb(255, 255, 255) rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "english-module__4ukqra__sidebarItem english-module__4ukqra__sidebarItemActive",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(10, 132, 255)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "english-module__4ukqra__sidebarItem ",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "english-module__4ukqra__sidebarItem ",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "english-module__4ukqra__sidebarItem ",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "english-module__4ukqra__mainCanvas",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "ASIDE",
+      "cls": "english-module__4ukqra__commandDeck",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "english-module__4ukqra__heroCardTitle",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "english-module__4ukqra__studyModeBanner",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "linear-gradient(135deg, rgba(10, 132, 255, 0.16) 0%, rgba(99, 102, 241, 0.16) 100%)",
+      "border": "rgba(10, 132, 255, 0.32)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 10px 0px"
+    },
+    {
+      "tag": "A",
+      "cls": "english-module__4ukqra__modeCard",
+      "color": "rgb(248, 250, 252)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.09)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 8px 0px, rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "english-module__4ukqra__modeCard",
+      "color": "rgb(248, 250, 252)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.09)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 8px 0px, rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "english-module__4ukqra__modeCard",
+      "color": "rgb(248, 250, 252)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.09)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 8px 0px, rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "english-module__4ukqra__modeCard",
+      "color": "rgb(248, 250, 252)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.09)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 8px 0px, rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "english-module__4ukqra__modeCard",
+      "color": "rgb(248, 250, 252)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.09)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 8px 0px, rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "english-module__4ukqra__modeCard",
+      "color": "rgb(248, 250, 252)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.09)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 8px 0px, rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "english-module__4ukqra__resourceCard",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "english-module__4ukqra__resourceCard",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "english-module__4ukqra__resourceCard",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    }
+  ]
+}

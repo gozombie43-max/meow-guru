@@ -3,8 +3,9 @@ const EVENT = 'mock-catalog-changed';
 const revisions = new Map<string, string>();
 
 export function mockCatalogRevision(exam: string): string {
-  try { return localStorage.getItem(`${PREFIX}${exam}`) || revisions.get(exam) || ''; }
-  catch { return revisions.get(exam) || ''; }
+  const read = (key: string) => { try { return localStorage.getItem(`${PREFIX}${key}`) || revisions.get(key) || ''; } catch { return revisions.get(key) || ''; } };
+  const global = read('*');
+  return `${global ? `${global}|` : ''}${read(exam)}`;
 }
 
 /** Mark this exam stale after a successful admin write, including in other tabs. */
@@ -16,10 +17,10 @@ export function invalidateMockCatalog(exam: string) {
 }
 
 export function subscribeMockCatalog(exam: string, refresh: () => void) {
-  const onChange = (event: Event) => { if ((event as CustomEvent<string>).detail === exam) refresh(); };
+  const onChange = (event: Event) => { if ([exam, '*'].includes((event as CustomEvent<string>).detail)) refresh(); };
   const onStorage = (event: StorageEvent) => {
-    if (event.key === `${PREFIX}${exam}` && event.newValue !== event.oldValue) {
-      revisions.set(exam, event.newValue || '');
+    if ([`${PREFIX}${exam}`, `${PREFIX}*`].includes(event.key || '') && event.newValue !== event.oldValue) {
+      revisions.set(event.key === `${PREFIX}*` ? '*' : exam, event.newValue || '');
       refresh();
     }
   };

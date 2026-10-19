@@ -1,0 +1,28 @@
+{
+  "scope": "Local fixture rendering and computed palette checks; not production or full browser regression coverage",
+  "routes": 32,
+  "viewports": [
+    390,
+    1366
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "captures": 128,
+  "pageErrors": 0,
+  "horizontalOverflow": 0,
+  "neutralContrastFindings": 0,
+  "darkComparisons": 64,
+  "darkStyleDifferences": [],
+  "adminCaptures": 16,
+  "adminPageErrors": 0,
+  "adminOverflow": 0,
+  "adminNeutralContrastFindings": 0,
+  "checks": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "interfaceAndPalette": "passed",
+    "productionBuild": "passed (816 static pages)"
+  }
+}

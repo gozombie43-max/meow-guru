@@ -1,0 +1,132 @@
+{
+  "theme": "light",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-light has-bottom-nav",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(244, 245, 247)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "profile-module__pYABma__page",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "profile-module__pYABma__header",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(244, 245, 247)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "profile-module__pYABma__profileCard",
+      "color": "rgb(245, 248, 255)",
+      "background": "rgb(9, 28, 52)",
+      "image": "none",
+      "border": "rgb(82, 108, 142)",
+      "shadow": "rgba(5, 18, 39, 0.12) 0px 8px 24px 0px"
+    },
+    {
+      "tag": "H2",
+      "cls": "",
+      "color": "rgb(245, 248, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(245, 248, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "",
+      "color": "rgb(198, 211, 232)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(198, 211, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "profile-module__pYABma__edit",
+      "color": "rgb(245, 248, 255)",
+      "background": "rgba(12, 27, 49, 0.65)",
+      "image": "none",
+      "border": "rgb(245, 248, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "profile-module__pYABma__studyNote",
+      "color": "rgb(222, 232, 247)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(222, 232, 247)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "profile-module__pYABma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "profile-module__pYABma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(225, 228, 232) rgb(36, 40, 48) rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "NAV",
+      "cls": "profile-module__pYABma__group",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "profile-module__pYABma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "profile-module__pYABma__row",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(225, 228, 232) rgb(36, 40, 48) rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "profile-module__pYABma__row profile-module__pYABma__logout",
+      "color": "rgb(211, 76, 70)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(211, 76, 70)",
+      "shadow": "none"
+    }
+  ]
+}

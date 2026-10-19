@@ -643,7 +643,7 @@ export function QuizSettingsModal({
         }
 
         .ios-settings-popover[data-theme="light"] .ios-settings-divider {
-          background: #F0F2F5;
+          background: var(--light-only-surface-muted, #F0F2F5);
         }
 
         /* iOS Segmented Controls */
@@ -658,8 +658,8 @@ export function QuizSettingsModal({
         }
 
         .ios-settings-popover[data-theme="light"] .ios-settings-segmented {
-          background: #EEF2F6;
-          border-color: #E2E8F0;
+          background: var(--light-only-surface-muted, #EEF2F6);
+          border-color: var(--light-only-border, #E2E8F0);
         }
 
         .ios-segment-btn {
@@ -681,7 +681,7 @@ export function QuizSettingsModal({
         }
 
         .ios-settings-popover[data-theme="light"] .ios-segment-btn {
-          color: #64748B;
+          color: var(--light-only-text-muted, #64748B);
         }
 
         .ios-segment-btn.is-active {
@@ -724,7 +724,7 @@ export function QuizSettingsModal({
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background: #ffffff;
+          background: var(--light-only-surface, #ffffff);
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
           transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
           transform: translateX(0);
@@ -768,7 +768,7 @@ export function QuizSettingsModal({
         }
         .ios-settings-card {
           padding: 2px 10px; border-radius: 16px;
-          background: rgb(128 128 128 / 7%);
+          background: var(--light-only-surface-muted, rgb(128 128 128 / 7%));
           border: 1px solid rgb(128 128 128 / 12%);
         }
         .ios-settings-popover .ios-settings-card .ios-settings-item { padding: 9px 0; gap: 8px; }
@@ -779,7 +779,7 @@ export function QuizSettingsModal({
         }
         .ios-settings-popover .ios-settings-item-left { gap: 8px; }
         .ios-settings-popover .ios-settings-icon-box { width: 24px; height: 28px; background: transparent; color: var(--ui-secondary); }
-        .ios-settings-popover .ios-settings-card .ios-settings-divider { background: rgb(128 128 128 / 12%); margin: 0; }
+        .ios-settings-popover .ios-settings-card .ios-settings-divider { background: var(--light-only-surface-muted, rgb(128 128 128 / 12%)); margin: 0; }
         .ios-settings-card > .ios-settings-divider:last-child { display: none; }
         .ios-settings-popover .ios-settings-custom-size { padding: 9px 0; gap: 8px; flex-wrap: nowrap; }
         .ios-settings-popover .ios-text-size-stepper { padding: 3px; gap: 2px; border: 0; background: var(--ui-muted-surface); }

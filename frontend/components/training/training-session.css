@@ -299,7 +299,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.05));
   overflow: hidden;
   pointer-events: none;
 }
@@ -1144,7 +1144,7 @@
 
 .trade-kpi-item:hover {
   transform: translateY(-2px);
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.04));
 }
 
 .training-dark .trade-kpi-item:hover {
@@ -1853,12 +1853,12 @@
 .trade-choice-row.is-correct-pick {
   background: rgba(16, 185, 129, 0.08);
 }
-.trade-choice-row.is-correct-pick .choice-label { color: #059669; }
+.trade-choice-row.is-correct-pick .choice-label { color: var(--light-only-success, #059669); }
 
 .trade-choice-row.is-wrong-pick {
   background: rgba(239, 68, 68, 0.08);
 }
-.trade-choice-row.is-wrong-pick .choice-label { color: #dc2626; }
+.trade-choice-row.is-wrong-pick .choice-label { color: var(--light-only-danger, #dc2626); }
 
 .trade-choice-row.is-official-pick {
   background: rgb(var(--ios-system-blue-rgb) / 0.08);

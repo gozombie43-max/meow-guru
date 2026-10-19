@@ -1,0 +1,159 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "AdminShell-module__0WdyHq__header",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "AdminShell-module__0WdyHq__back",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "NAV",
+      "cls": "AdminShell-module__0WdyHq__nav",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "AdminShell-module__0WdyHq__active",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(10, 132, 255, 0.16)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "exam-mode-module__LmfVCa__compactSwitch",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "cls": "AdminUsersPage-module__GPr9lG__searchInput",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "AdminUsersPage-module__GPr9lG__filterSelect",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "url(\"data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "AdminUsersPage-module__GPr9lG__filterSelect",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "url(\"data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "AdminUsersPage-module__GPr9lG__filterSelect",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "url(\"data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "AdminUsersPage-module__GPr9lG__filterSelect",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "url(\"data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    }
+  ]
+}

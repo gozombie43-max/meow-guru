@@ -1,0 +1,150 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "bs-header",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "bs-back",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "bs-brand",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "bs-theme",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "bs-scroll-body",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "bs-eyebrow",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "NAV",
+      "cls": "bs-nav",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "rgba(0, 0, 0, 0.05) 0px 1px 4px 0px"
+    },
+    {
+      "tag": "P",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "bs-button",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    }
+  ]
+}

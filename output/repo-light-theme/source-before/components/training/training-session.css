@@ -1,0 +1,2851 @@
+/* ==========================================================================
+   TRAINING SESSION & QUIZ SURFACE STYLES
+   ========================================================================== */
+
+.training-page.training-session {
+  height: 100dvh;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+.training-session-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: calc(10px + var(--safe-top)) max(20px, var(--safe-right)) 10px
+    max(20px, var(--safe-left));
+  background: var(--ui-header-surface) !important;
+  border-bottom: none !important;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  box-shadow: none !important;
+}
+
+.training-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.training-header-back {
+  display: grid;
+  place-items: center;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--tr-text);
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.training-header-back:hover,
+.training-header-back:active {
+  background: rgba(255, 255, 255, 0.08) !important;
+  transform: none !important;
+}
+
+.training-header-overview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 750;
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  color: var(--tr-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  height: 38px;
+  min-height: 38px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.training-header-overview-btn:hover {
+  background: var(--tr-border);
+}
+
+.training-header-overview-btn.is-active {
+  background: var(--tr-accent);
+  color: #fff;
+  border-color: var(--tr-accent);
+}
+
+.training-session-title-wrap {
+  min-width: 0;
+}
+
+.training-session-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.training-session-mode-badge {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: rgb(var(--ios-system-blue-rgb) / 0.1);
+  color: var(--tr-accent);
+  flex-shrink: 0;
+}
+
+.training-dark .training-session-mode-badge {
+  background: rgba(133, 170, 255, 0.15);
+  color: var(--tr-accent);
+}
+
+.training-session-header strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--tr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.training-session-subtitle {
+  display: block;
+  color: var(--tr-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+/* ── Header Center (Counter, Lives/Answered) ── */
+.training-header-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.training-header-counter {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: var(--tr-secondary);
+  white-space: nowrap;
+}
+
+.training-header-counter .mobile-text {
+  display: none;
+}
+
+.training-header-answered-pill {
+  display: inline-flex;
+  align-items: center;
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  border-radius: 9999px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--tr-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.training-header-answered-pill .mobile-text {
+  display: none;
+}
+
+.training-survival-lives {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 3px 9px;
+  border-radius: 9999px;
+}
+
+.training-lives-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #ef4444;
+}
+
+.training-lives-hearts {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.training-heart-icon.is-alive {
+  color: #ef4444;
+  filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.35));
+}
+
+.training-heart-icon.is-lost {
+  color: var(--tr-secondary);
+  opacity: 0.35;
+}
+
+.training-sidebar-survival-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.training-sidebar-survival-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.training-sidebar-survival-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #ef4444;
+}
+
+.training-sidebar-survival-rule {
+  font-size: 11px;
+  color: var(--tr-secondary);
+  font-weight: 600;
+}
+
+/* ── Header Right (Timer Clock & Finish Button) ── */
+.training-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.training-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  font-size: 14px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  color: var(--tr-text);
+  white-space: nowrap;
+  flex-shrink: 0;
+  height: 38px;
+  min-height: 38px;
+  transition: all 0.2s ease;
+}
+
+.training-clock svg {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.training-clock span {
+  display: inline-block !important;
+  color: var(--tr-text);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.training-clock-urgent {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #ef4444;
+  animation: pulse-urgent 1.5s infinite;
+}
+
+.training-clock-urgent span {
+  color: #ef4444 !important;
+}
+
+.training-header-finish {
+  padding: 0 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  height: 38px;
+  min-height: 38px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Integrated Progress Track Pin to Header Bottom ── */
+.training-header-progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.training-dark .training-header-progress-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.training-header-progress-bar {
+  height: 100%;
+  background: var(--tr-accent);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pulse-urgent {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+  }
+}
+
+.training-session-main {
+  max-width: 1160px;
+  margin: auto;
+  padding: 24px 24px calc(32px + var(--safe-bottom));
+}
+
+.training-session-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 16px;
+  color: var(--tr-secondary);
+  font-size: 14px;
+}
+
+.training-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--tr-border);
+  border-top-color: var(--tr-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   MAIN QUIZ COLUMNS
+   ========================================================================== */
+
+.training-session-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 24px;
+  align-items: start;
+}
+
+.training-question-panel {
+  background: var(--tr-surface);
+  border: 1px solid var(--tr-border);
+  border-radius: 16px;
+  padding: 28px;
+  min-width: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.training-question-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.training-tag-block,
+.training-tag-topic,
+.training-tag-difficulty,
+.training-tag-source {
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.training-tag-topic {
+  background: rgb(var(--ios-system-blue-rgb) / 0.08);
+  color: var(--tr-accent);
+  border: 1px solid rgb(var(--ios-system-blue-rgb) / 0.2);
+}
+
+.training-dark .training-tag-topic {
+  background: rgba(133, 170, 255, 0.12);
+  border-color: rgba(133, 170, 255, 0.25);
+}
+
+.training-tag-difficulty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--tr-muted);
+  color: var(--tr-text);
+  border: 1px solid var(--tr-border);
+}
+
+.diff-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ios-system-blue);
+}
+
+.diff-dot.diff-1 { background: #10b981; }
+.diff-dot.diff-2 { background: var(--ios-system-blue); }
+.diff-dot.diff-3 { background: #f59e0b; }
+.diff-dot.diff-4 { background: #f97316; }
+.diff-dot.diff-5 { background: #ef4444; }
+
+.training-tag-source,
+.training-tag-block {
+  background: var(--tr-muted);
+  color: var(--tr-secondary);
+  border: 1px solid var(--tr-border);
+}
+
+.training-question-text {
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--tr-text);
+  font-weight: 450;
+  margin: 20px 0 24px;
+  overflow-wrap: anywhere;
+}
+
+.training-question-image-wrap {
+  margin: 16px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--tr-border);
+  max-width: 100%;
+}
+
+.training-question-panel img,
+.training-answer-review img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ==========================================================================
+   ANSWER CHOICES
+   ========================================================================== */
+
+.training-answers {
+  display: grid;
+  gap: 12px;
+}
+
+.training-option-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--tr-border);
+  background: var(--tr-surface);
+  color: var(--tr-text);
+  text-align: left;
+  white-space: normal;
+  line-height: 1.55;
+  font-size: 15px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.training-option-btn:hover:not(:disabled) {
+  border-color: var(--tr-accent);
+  background: var(--tr-muted);
+  transform: translateY(-1px);
+}
+
+.training-option-btn.selected {
+  border-color: var(--tr-accent);
+  background: rgb(var(--ios-system-blue-rgb) / 0.08);
+  box-shadow: 0 0 0 1px var(--tr-accent);
+}
+
+.training-dark .training-option-btn.selected {
+  background: rgba(133, 170, 255, 0.12);
+  border-color: var(--tr-accent);
+}
+
+.training-option-letter {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--tr-border);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  background: var(--tr-muted);
+  color: var(--tr-secondary);
+  transition: all 0.15s ease;
+}
+
+.training-option-btn.selected .training-option-letter {
+  background: var(--tr-accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+.training-option-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ==========================================================================
+   PACE INDICATOR
+   ========================================================================== */
+
+.training-pace {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--tr-border);
+}
+
+.training-pace-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--tr-secondary);
+  background: var(--tr-muted);
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--tr-border);
+}
+
+.training-pace-times strong {
+  color: var(--tr-text);
+}
+
+.training-pace-delta {
+  font-weight: 750;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.training-pace-delta.delta-fast {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.training-pace-delta.delta-slow {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+}
+
+.training-pace-source {
+  font-size: 11px;
+  color: var(--tr-secondary);
+}
+
+/* ==========================================================================
+   CONFIDENCE CHIPS
+   ========================================================================== */
+
+.training-confidence {
+  margin: 22px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.training-confidence legend {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--tr-text);
+  margin-bottom: 8px;
+}
+
+.training-confidence-hint {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--tr-secondary);
+  margin-left: 6px;
+}
+
+.training-confidence-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.training-conf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--tr-surface);
+  border: 1px solid var(--tr-border);
+  color: var(--tr-secondary);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.training-conf-chip:hover:not(:disabled) {
+  border-color: var(--tr-text);
+  color: var(--tr-text);
+}
+
+.training-conf-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.training-conf-chip.conf-sure.active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: #10b981;
+  color: #059669;
+}
+
+.training-conf-chip.conf-unsure.active {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: #f59e0b;
+  color: #d97706;
+}
+
+.training-conf-chip.conf-guess.active {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: #8b5cf6;
+  color: #7c3aed;
+}
+
+/* ==========================================================================
+   ACTION BUTTONS
+   ========================================================================== */
+
+.training-session-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  border-top: 1px solid var(--tr-border);
+  padding-top: 20px;
+}
+
+.training-session-actions button {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   SIDEBAR / NAVIGATOR PALETTE
+   ========================================================================== */
+
+.training-session-aside .training-sidebar-panel {
+  background: var(--tr-surface);
+  border: 1px solid var(--tr-border);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.training-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.training-sidebar-header h2 {
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.training-sidebar-counter {
+  font-size: 11.5px;
+  font-weight: 750;
+  color: var(--tr-accent);
+  background: color-mix(in srgb, var(--tr-accent) 12%, transparent);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.training-sidebar-desc {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--tr-secondary);
+  margin-bottom: 14px;
+}
+
+.training-palette {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+  margin: 14px 0 16px;
+}
+
+.training-palette-btn {
+  aspect-ratio: 1;
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  color: var(--tr-text);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  min-height: 38px;
+}
+
+.training-palette-btn.upcoming {
+  opacity: 0.5;
+}
+
+.training-palette-btn:hover:not(:disabled):not(.training-palette-static) {
+  border-color: var(--tr-accent);
+  transform: scale(1.04);
+}
+
+.training-palette-btn.current {
+  outline: 2px solid var(--tr-accent);
+  outline-offset: 1px;
+  background: var(--tr-surface);
+  border-color: var(--tr-accent);
+  color: var(--tr-accent);
+  font-weight: 850;
+  opacity: 1;
+}
+
+.training-palette-btn.answered {
+  background: var(--tr-accent);
+  color: #fff;
+  border-color: var(--tr-accent);
+  opacity: 1;
+}
+
+.training-palette-btn.answered.current {
+  background: var(--tr-accent);
+  color: #fff;
+  outline: 2px solid var(--tr-text);
+  outline-offset: 1px;
+}
+
+.training-palette-btn.skipped {
+  border-color: #f59e0b;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  opacity: 1;
+}
+
+.training-palette-static {
+  cursor: default;
+}
+
+.training-palette-check {
+  stroke-width: 2.5;
+}
+
+.training-sidebar-marking-section {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--tr-border);
+}
+
+.training-marking-title {
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--tr-secondary);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.training-marking-badge {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 10px;
+  flex-wrap: wrap;
+}
+
+.marking-pos {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.marking-neg {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.training-footnote {
+  font-size: 11px;
+  color: var(--tr-secondary);
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+.training-finish-trigger {
+  width: 100%;
+  margin-top: 14px;
+  min-height: 42px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.training-finish-panel {
+  margin-top: 14px;
+  background: rgba(239, 68, 68, 0.04);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.training-finish-panel h2 {
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.training-finish-panel p {
+  font-size: 12px;
+  margin: 6px 0 12px;
+}
+
+.training-finish-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.training-finish-actions button {
+  width: 100%;
+  min-height: 40px;
+  font-size: 12px;
+  font-weight: 650;
+  border-radius: 8px;
+}
+
+/* ==========================================================================
+   TRADING DASHBOARD & LEDGER RESULTS UI/UX (AIRY, BORDERLESS & SLEEK)
+   ========================================================================== */
+
+.training-results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1180px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Trading Performance Hero ── */
+.trade-hero-panel {
+  background: var(--tr-surface);
+  border-radius: 20px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.training-dark .trade-hero-panel {
+  background: var(--tr-surface);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.trade-hero-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.trade-hero-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.trade-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgb(var(--ios-system-blue-rgb) / 0.1);
+  color: var(--tr-accent);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.trade-exam-tag {
+  display: inline-flex;
+  align-items: center;
+  background: var(--tr-muted);
+  color: var(--tr-secondary);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.trade-rating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.trade-rating-pill.is-outstanding {
+  background: rgba(16, 185, 129, 0.14);
+  color: #059669;
+}
+
+.trade-rating-pill.is-positive {
+  background: rgb(var(--ios-system-blue-rgb) / 0.14);
+  color: var(--tr-accent);
+}
+
+.trade-rating-pill.is-moderate {
+  background: rgba(245, 158, 11, 0.14);
+  color: #d97706;
+}
+
+.trade-rating-pill.is-risk {
+  background: rgba(239, 68, 68, 0.14);
+  color: #dc2626;
+}
+
+/* PnL Headline Showcase */
+/* PnL Headline Showcase */
+.trade-pnl-headline {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.trade-pnl-main {
+  background: var(--tr-muted);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.trade-pnl-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.trade-pnl-label {
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--tr-secondary);
+}
+
+.trade-pnl-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.trade-pnl-percent {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.trade-pnl-percent.is-pos {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.trade-pnl-percent.is-neg {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.trade-pnl-details {
+  font-size: 11.5px;
+  color: var(--tr-secondary);
+  white-space: nowrap;
+}
+
+/* KaTeX Proper Math Fraction on the Right Side */
+.trade-math-fraction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--tr-text);
+  line-height: 1;
+  user-select: none;
+  background: transparent;
+  padding: 0 4px;
+}
+
+.trade-math-fraction .katex-display {
+  margin: 0 !important;
+  display: inline-block;
+}
+
+.trade-math-fraction .katex {
+  font-size: 1.25em;
+  line-height: 1;
+}
+
+.trade-math-fraction .frac-line {
+  border-bottom: 2.5px solid currentColor !important;
+  opacity: 0.85;
+}
+
+.trade-math-fraction.is-pos {
+  color: #059669;
+}
+.training-dark .trade-math-fraction.is-pos {
+  color: #10b981;
+}
+
+.trade-math-fraction.is-neg {
+  color: #dc2626;
+}
+.training-dark .trade-math-fraction.is-neg {
+  color: #f87171;
+}
+
+.trade-math-fraction.is-zero {
+  color: var(--tr-text);
+}
+
+.trade-math-fraction-settlement .katex-display {
+  margin: 0 !important;
+  display: inline-block;
+}
+
+.trade-math-fraction-settlement .katex {
+  font-size: 1em;
+  line-height: 1;
+}
+
+.trade-math-fraction-settlement .frac-line {
+  border-bottom: 2px solid currentColor !important;
+}
+
+/* 4-Column KPI Stats Strip */
+.trade-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.trade-kpi-item {
+  background: var(--tr-muted);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+  text-align: left;
+  cursor: pointer;
+  border: none;
+  font: inherit;
+  color: inherit;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.trade-kpi-item:hover {
+  transform: translateY(-2px);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.training-dark .trade-kpi-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.trade-kpi-item.is-tempo {
+  cursor: default;
+}
+.trade-kpi-item.is-tempo:hover {
+  transform: none;
+  background: var(--tr-muted);
+}
+
+.trade-kpi-item.is-gain .kpi-tag { color: #059669; }
+.trade-kpi-item.is-gain .kpi-value { color: #059669; }
+.training-dark .trade-kpi-item.is-gain .kpi-tag { color: #10b981; }
+.training-dark .trade-kpi-item.is-gain .kpi-value { color: #10b981; }
+
+.trade-kpi-item.is-loss .kpi-tag { color: #dc2626; }
+.trade-kpi-item.is-loss .kpi-value { color: #dc2626; }
+.training-dark .trade-kpi-item.is-loss .kpi-tag { color: #f87171; }
+.training-dark .trade-kpi-item.is-loss .kpi-value { color: #f87171; }
+
+.trade-kpi-item.is-neutral .kpi-tag { color: var(--tr-secondary); }
+.trade-kpi-item.is-neutral .kpi-value { color: var(--tr-text); }
+
+.trade-kpi-item.is-tempo .kpi-tag { color: var(--tr-accent); }
+.trade-kpi-item.is-tempo .kpi-value { color: var(--tr-text); }
+
+.kpi-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.kpi-value {
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-note {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--tr-secondary);
+}
+
+.trade-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--tr-border);
+  flex-wrap: wrap;
+}
+
+.trade-action-cta,
+.trade-review-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 750;
+  min-height: 44px;
+}
+
+/* ── Trading Navigation Tabs ── */
+.trade-nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--tr-surface);
+  border-radius: 16px;
+  padding: 6px;
+  position: sticky;
+  top: 10px;
+  z-index: 20;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(16px);
+  overflow-x: auto;
+}
+
+.trade-tab-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tr-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 38px;
+  white-space: nowrap;
+}
+
+.trade-tab-btn:hover {
+  color: var(--tr-text);
+  background: var(--tr-muted);
+}
+
+.trade-tab-btn.is-active {
+  background: var(--tr-muted);
+  color: var(--tr-text);
+  font-weight: 800;
+}
+
+.trade-tab-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: var(--tr-border);
+  color: var(--tr-text);
+}
+
+.trade-tab-badge.is-alert {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+.results-tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── 2-Column Desktop Grid for Tab 1 (Settlement & Strategy) ── */
+.trade-overview-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.trade-overview-main-col,
+.trade-overview-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── 2-Column Desktop Grid for Tab 3 (Mistakes & AI Diagnostics) ── */
+.trade-insights-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 20px;
+  align-items: start;
+}
+
+/* ── Frameless Trading Section ── */
+.trade-section {
+  background: var(--tr-surface);
+  border-radius: 20px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.trade-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.trade-section-header h2 {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--tr-text);
+  margin: 3px 0 0;
+}
+
+.trade-kicker {
+  font-size: 10.5px;
+  font-weight: 850;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--tr-accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.trade-marking-rules {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.trade-rule-pos {
+  font-size: 11px;
+  font-weight: 750;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 3px 9px;
+  border-radius: 9999px;
+}
+
+.trade-rule-neg {
+  font-size: 11px;
+  font-weight: 750;
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 3px 9px;
+  border-radius: 9999px;
+}
+
+.trade-rule-zero {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tr-secondary);
+  background: var(--tr-muted);
+  padding: 3px 9px;
+  border-radius: 9999px;
+}
+
+.trade-section-note {
+  font-size: 13px;
+  color: var(--tr-secondary);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ── Financial Settlement Ledger Table ── */
+.trade-settlement-table {
+  display: flex;
+  flex-direction: column;
+  background: var(--tr-muted);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.trade-settlement-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 140px;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--tr-border);
+  gap: 14px;
+}
+
+.trade-settlement-row:last-child {
+  border-bottom: none;
+}
+
+.trade-settlement-row.is-total-row {
+  background: rgb(var(--ios-system-blue-rgb) / 0.06);
+  padding: 16px 18px;
+}
+
+.trade-settlement-col-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.trade-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.trade-dot.is-pos { background: #10b981; }
+.trade-dot.is-neg { background: #ef4444; }
+.trade-dot.is-zero { background: var(--tr-secondary); }
+
+.trade-total-icon {
+  color: var(--tr-accent);
+  flex-shrink: 0;
+}
+
+.trade-settlement-col-item strong {
+  display: block;
+  font-size: 13.5px;
+  color: var(--tr-text);
+}
+
+.trade-settlement-col-item span {
+  display: block;
+  font-size: 12px;
+  color: var(--tr-secondary);
+  margin-top: 1px;
+}
+
+.trade-settlement-col-rate {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tr-secondary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.trade-settlement-col-val {
+  font-size: 18px;
+  font-weight: 850;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.trade-settlement-col-val.is-pos { color: #059669; }
+.training-dark .trade-settlement-col-val.is-pos { color: #10b981; }
+
+.trade-settlement-col-val.is-neg { color: #dc2626; }
+.training-dark .trade-settlement-col-val.is-neg { color: #f87171; }
+
+.trade-settlement-col-val.is-zero { color: var(--tr-secondary); }
+
+.trade-settlement-col-val.is-total {
+  color: var(--tr-accent);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+/* ── Sector & Topic Ledger ── */
+.trade-mastery-ribbon {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.trade-mastery-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--tr-muted);
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.trade-mastery-chip .chip-delta.is-pos { color: #059669; font-weight: 750; }
+.trade-mastery-chip .chip-delta.is-neg { color: #dc2626; font-weight: 750; }
+
+.trade-topic-ledger {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trade-topic-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--tr-muted);
+  border-radius: 12px;
+}
+
+.trade-topic-left strong {
+  display: block;
+  font-size: 13.5px;
+}
+
+.trade-topic-sub {
+  font-size: 11.5px;
+  color: var(--tr-secondary);
+}
+
+.trade-topic-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.trade-topic-bar {
+  width: 90px;
+  height: 6px;
+  background: var(--tr-border);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.trade-topic-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+}
+
+.trade-topic-bar-fill.is-pos { background: #10b981; }
+.trade-topic-bar-fill.is-mid { background: #f59e0b; }
+.trade-topic-bar-fill.is-low { background: #ef4444; }
+
+.trade-topic-ratio {
+  font-size: 12.5px;
+  color: var(--tr-text);
+  font-variant-numeric: tabular-nums;
+  min-width: 90px;
+  text-align: right;
+}
+
+/* ── Strategy Execution Log ── */
+.trade-mode-banner {
+  background: rgb(var(--ios-system-blue-rgb) / 0.08);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--tr-text);
+}
+
+.trade-findings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trade-finding-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--tr-text);
+  line-height: 1.55;
+  background: var(--tr-muted);
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+.finding-indicator {
+  color: var(--tr-accent);
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.trade-empty-note {
+  font-size: 13px;
+  color: var(--tr-secondary);
+  margin: 0;
+}
+
+/* ── Question Review Trade Ledger ── */
+.trade-review-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trade-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--tr-surface);
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.trade-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.trade-filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 750;
+  background: var(--tr-muted);
+  border: none;
+  color: var(--tr-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.trade-filter-tab:hover {
+  color: var(--tr-text);
+}
+
+.trade-filter-tab.is-active {
+  background: var(--tr-text);
+  color: var(--tr-surface);
+}
+
+.trade-filter-tab.is-gain.is-active {
+  background: #059669;
+  color: #fff;
+}
+
+.trade-filter-tab.is-loss.is-active {
+  background: #dc2626;
+  color: #fff;
+}
+
+.trade-filter-tab.is-zero.is-active {
+  background: var(--tr-text);
+  color: var(--tr-surface);
+}
+
+.trade-expand-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--tr-muted);
+  border: none;
+  color: var(--tr-secondary);
+  cursor: pointer;
+}
+
+.trade-expand-all-btn:hover {
+  color: var(--tr-text);
+}
+
+.trade-empty-state {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--tr-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: var(--tr-surface);
+  border-radius: 16px;
+}
+
+.trade-ledger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trade-ledger-item {
+  background: var(--tr-surface);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border-left: 4px solid var(--tr-border);
+}
+
+.trade-ledger-item.is-gain {
+  border-left-color: #10b981;
+}
+
+.trade-ledger-item.is-loss {
+  border-left-color: #ef4444;
+}
+
+.trade-ledger-item.is-zero {
+  border-left-color: var(--tr-secondary);
+}
+
+.trade-ledger-item:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.trade-ledger-item-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.trade-ledger-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.trade-score-tag {
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.trade-score-tag.is-gain {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.trade-score-tag.is-loss {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.trade-score-tag.is-zero {
+  background: var(--tr-muted);
+  color: var(--tr-secondary);
+}
+
+.trade-q-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--tr-text);
+}
+
+.trade-topic-tag {
+  font-size: 12px;
+  color: var(--tr-secondary);
+}
+
+.trade-ledger-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.trade-time-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--tr-secondary);
+  background: var(--tr-muted);
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.trade-chevron {
+  color: var(--tr-secondary);
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+}
+
+.trade-ledger-body {
+  padding: 16px 18px 18px;
+  border-top: 1px solid var(--tr-border);
+  background: var(--tr-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trade-q-text {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--tr-text);
+}
+
+.trade-q-image {
+  margin-top: 10px;
+}
+
+/* Choices Comparison */
+.trade-choices-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.trade-choice-row {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--tr-muted);
+  font-size: 13px;
+}
+
+.trade-choice-row .choice-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+  color: var(--tr-secondary);
+}
+
+.trade-choice-row.is-correct-pick {
+  background: rgba(16, 185, 129, 0.08);
+}
+.trade-choice-row.is-correct-pick .choice-label { color: #059669; }
+
+.trade-choice-row.is-wrong-pick {
+  background: rgba(239, 68, 68, 0.08);
+}
+.trade-choice-row.is-wrong-pick .choice-label { color: #dc2626; }
+
+.trade-choice-row.is-official-pick {
+  background: rgb(var(--ios-system-blue-rgb) / 0.08);
+}
+.trade-choice-row.is-official-pick .choice-label { color: var(--tr-accent); }
+
+/* Impact note */
+.trade-impact-note {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+}
+
+.trade-impact-note.is-gain {
+  background: rgba(16, 185, 129, 0.08);
+  color: var(--tr-text);
+}
+.trade-impact-note.is-gain strong { color: #059669; }
+
+.trade-impact-note.is-loss {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--tr-text);
+}
+.trade-impact-note.is-loss strong { color: #dc2626; }
+
+.trade-impact-note.is-zero {
+  background: var(--tr-muted);
+  color: var(--tr-text);
+}
+
+.trade-impact-note span {
+  font-size: 11.5px;
+  color: var(--tr-secondary);
+}
+
+/* Solution Callout */
+.trade-solution-callout {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgb(var(--ios-system-blue-rgb) / 0.05);
+  border-left: 3px solid var(--tr-accent);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.solution-head {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--tr-accent);
+  margin-bottom: 4px;
+}
+
+.trade-item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+  border-top: 1px dashed var(--tr-border);
+  font-size: 12px;
+}
+
+.trade-conf-tag {
+  color: var(--tr-secondary);
+}
+
+.trade-conf-tag strong {
+  color: var(--tr-text);
+}
+
+.trade-mistake-select-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--tr-text);
+}
+
+.trade-mistake-select-label select {
+  min-height: 32px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--tr-border);
+  background: var(--tr-muted);
+  color: var(--tr-text);
+  font: inherit;
+  font-size: 11.5px;
+}
+
+/* ── Mistakes & AI Diagnosis ── */
+.trade-failure-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.trade-failure-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--tr-muted);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+}
+
+.chip-count {
+  background: var(--tr-surface);
+  border-radius: 9999px;
+  padding: 1px 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+.trade-ai-action-wrap {
+  margin-top: 8px;
+}
+
+.trade-ai-suggest-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.trade-ai-diagnosis-container {
+  margin-top: 10px;
+  background: rgba(139, 92, 246, 0.05);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.trade-diagnosis-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--tr-text);
+  margin-bottom: 10px;
+}
+
+.trade-diagnosis-head svg {
+  color: #8b5cf6;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.trade-diagnosis-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trade-diagnosis-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--tr-surface);
+  border-radius: 10px;
+}
+
+.diagnosis-content strong {
+  font-size: 12.5px;
+}
+
+.diagnosis-content .cat-pill {
+  color: var(--tr-accent);
+}
+
+.diagnosis-content p {
+  font-size: 11.5px;
+  color: var(--tr-secondary);
+  margin: 2px 0 0;
+}
+
+.trade-diagnosis-card button {
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Mobile Responsive Rules ── */
+@media (max-width: 767px) {
+  .training-results-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    gap: 12px;
+  }
+
+  .trade-hero-panel,
+  .trade-section {
+    padding: 16px 14px;
+    border-radius: 16px;
+    width: 100%;
+    gap: 14px;
+  }
+
+  .trade-pnl-headline {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .trade-pnl-main {
+    padding: 12px 14px;
+    border-radius: 14px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .trade-math-fraction {
+    font-size: 20px;
+    padding: 0;
+  }
+
+  .trade-kpi-strip {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .trade-kpi-item {
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
+
+  .kpi-value {
+    font-size: 18px;
+  }
+
+  .trade-nav-tabs {
+    gap: 4px;
+    padding: 4px;
+    width: 100%;
+    border-radius: 12px;
+  }
+
+  .trade-tab-btn {
+    font-size: 11.5px;
+    padding: 8px 6px;
+    gap: 4px;
+    flex: 1;
+    justify-content: center;
+    min-height: 36px;
+  }
+
+  .trade-settlement-row {
+    grid-template-columns: 1fr auto;
+    padding: 12px 14px;
+    gap: 8px;
+  }
+
+  .trade-settlement-col-rate {
+    display: none;
+  }
+
+  .trade-settlement-col-val {
+    font-size: 15px;
+  }
+
+  .trade-topic-entry {
+    padding: 10px 12px;
+    width: 100%;
+  }
+
+  .trade-topic-bar {
+    width: 60px;
+  }
+
+  .trade-topic-ratio {
+    min-width: 70px;
+    font-size: 11.5px;
+  }
+
+  .trade-filter-bar {
+    padding: 8px 10px;
+    border-radius: 12px;
+    gap: 8px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .trade-filter-group {
+    width: 100%;
+    gap: 4px;
+  }
+
+  .trade-filter-tab {
+    padding: 5px 9px;
+    font-size: 11px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .trade-expand-all-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .trade-choices-comparison {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .trade-item-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .trade-mistake-select-label {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .trade-mistake-select-label select {
+    width: 100%;
+  }
+}
+
+/* ── Tablet Fallback for Results ── */
+@media (max-width: 1023px) {
+  .trade-overview-layout,
+  .trade-insights-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+/* ── Desktop & PC Layout Optimizations (>= 1024px) ── */
+@media (min-width: 1024px) {
+  .training-results-container {
+    gap: 24px;
+    padding-bottom: 32px;
+  }
+
+  .trade-hero-panel {
+    padding: 28px 32px;
+    gap: 22px;
+  }
+
+  .trade-pnl-headline {
+    grid-template-columns: minmax(320px, 360px) minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .trade-pnl-main {
+    padding: 18px 24px;
+  }
+
+  .trade-math-fraction {
+    font-size: 28px;
+  }
+
+  .trade-kpi-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .trade-kpi-item {
+    padding: 14px 18px;
+  }
+
+  .trade-kpi-item .kpi-value {
+    font-size: 24px;
+  }
+
+  .trade-section {
+    padding: 26px 30px;
+    gap: 18px;
+  }
+
+  .trade-section-header h2 {
+    font-size: 19px;
+  }
+
+  .trade-overview-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+  }
+
+  .trade-insights-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: 22px;
+    align-items: start;
+  }
+
+  .trade-filter-bar {
+    padding: 12px 18px;
+  }
+
+  .trade-choices-comparison {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .trade-choice-row {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .trade-solution-callout {
+    padding: 16px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Shared fullscreen training shell, aligned with the quiz engine. */
+.training-session .training-session-header {
+  position: relative;
+  padding: calc(10px + var(--safe-top)) max(24px, var(--safe-right)) 10px max(24px, var(--safe-left));
+  box-shadow: none;
+}
+.training-session .training-header-back { width: 44px; height: 44px; }
+.training-session .training-clock { border-radius: 10px; min-height: 44px; }
+.training-session .training-clock span { color: inherit; font-size: 16px; font-weight: 700; margin: 0; }
+.training-session .training-clock-urgent { animation: none; }
+.training-session .training-session-main {
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: 20px max(24px, var(--safe-right)) 20px max(24px, var(--safe-left));
+  display: flex;
+  flex-direction: column;
+}
+
+.training-session .training-session-main::-webkit-scrollbar {
+  width: 6px;
+}
+.training-session .training-session-main::-webkit-scrollbar-track {
+  background: transparent;
+}
+.training-session .training-session-main::-webkit-scrollbar-thumb {
+  background: var(--tr-border);
+  border-radius: 9999px;
+}
+
+.training-session .training-session-columns { grid-template-columns: minmax(0, 1fr) 288px; gap: 24px; }
+.training-session .training-question-panel { grid-column: 1; grid-row: 1; padding: clamp(20px, 3vw, 40px); box-shadow: none; }
+.training-session .training-session-aside { grid-column: 2; grid-row: 1; position: sticky; top: 0; min-width: 0; }
+.training-session .training-sidebar-panel { padding: 20px; box-shadow: none; }
+.training-session .training-palette { grid-template-columns: repeat(4, minmax(44px, 1fr)); max-height: 360px; overflow-y: auto; }
+.training-session .training-palette-btn { min-height: 44px; aspect-ratio: auto; }
+.training-session .training-question-text { font-size: 19px; line-height: 1.8; margin: 26px 0; }
+.training-session .training-option-btn { align-items: center; padding: 16px; min-height: 60px; gap: 14px; font-size: 16px; }
+.training-session .training-option-btn:hover:not(:disabled) { transform: none; }
+.training-session .training-option-letter { border-radius: 50%; width: 30px; height: 30px; }
+.training-option-check { width: 20px; flex: 0 0 20px; color: var(--tr-accent); }
+.training-session .training-option-btn.selected { background: color-mix(in srgb, var(--tr-accent) 9%, var(--tr-surface)); box-shadow: none; }
+.training-session .training-option-btn.selected .training-option-letter { background: var(--tr-muted); color: var(--tr-accent); border-color: var(--tr-accent); }
+.training-session .training-confidence-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 380px; }
+.training-session .training-conf-chip { min-height: 44px; justify-content: center; }
+.training-session-footer { background: var(--tr-surface); border-top: 1px solid var(--tr-border); padding: 12px max(24px, var(--safe-right)) calc(12px + var(--safe-bottom)) max(24px, var(--safe-left)); }
+.training-footer-inner { width: 100%; max-width: 1232px; margin: auto; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(360px, 520px); gap: 24px; align-items: center; }
+.training-footer-position { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--tr-text); white-space: nowrap; }
+.training-footer-position span { font-weight: 500; color: var(--tr-secondary); }
+.training-save-status { display: grid; gap: 4px; font-size: 13px; color: var(--tr-text); }
+.training-save-status span { color: var(--tr-secondary); font-size: 12px; }
+.training-session-footer .training-session-actions { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; border: 0; margin: 0; padding: 0; gap: 12px; }
+.training-session-actions .training-action-label-compact { display: none; }
+.training-session-footer .training-session-actions button { min-width: 0; }
+.training-session-footer .training-session-actions button svg { flex-shrink: 0; }
+.training-session-footer .training-session-actions button { padding: 12px 18px; min-height: 48px; white-space: normal; justify-content: center; }
+.training-session-footer .training-session-actions [data-ui-button="primary"] { justify-content: center; }
+.training-finish-dialog { width: min(440px, calc(100% - 32px)); max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px); overflow-y: auto; margin: auto; padding: 24px; border: 1px solid var(--tr-border); border-radius: 24px; background: var(--tr-surface); color: var(--tr-text); box-shadow: 0 24px 80px #0003; }
+.training-finish-dialog::backdrop { background: #10182766; backdrop-filter: blur(8px); }
+.training-finish-dialog h2 { font-size: 24px; margin: 16px 0 10px; }
+.training-finish-dialog p { color: var(--tr-secondary); line-height: 1.65; font-size: 14px; }
+.training-finish-dialog .training-finish-actions { display: grid; gap: 10px; margin-top: 24px; }
+.training-finish-dialog .training-unsaved-note { padding: 12px; background: var(--tr-muted); border-radius: 12px; }
+.has-finish-dialog > :not(dialog) { filter: blur(5px); }
+.training-session :focus-visible { outline: 3px solid var(--tr-accent); outline-offset: 3px; }
+/* Desktop / PC layout: spacious, vertically balanced, high-focus workspace */
+@media (min-width: 1024px) {
+  .training-header-overview-btn {
+    display: none !important;
+  }
+
+  .training-session .training-session-main {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 8px max(24px, var(--safe-right)) 8px max(24px, var(--safe-left));
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .training-session .training-session-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 290px;
+    gap: 20px;
+    align-items: start;
+    width: 100%;
+
+  }
+
+  .training-session .training-question-panel {
+    display: block;
+    background: var(--tr-surface);
+    border: 1px solid var(--tr-border);
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+  }
+
+  .training-session .training-question-tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .training-session .training-question-text {
+    margin: 12px 0 18px;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--tr-text);
+  }
+
+  /* 2-column options grid on PC for compact vertical balance */
+  .training-session .training-answers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+  }
+
+  .training-session .training-option-btn {
+    min-height: 50px;
+    padding: 10px 14px;
+    font-size: 15px;
+    border-radius: 10px;
+    border: 1.5px solid var(--tr-border);
+    background: var(--tr-surface);
+    color: var(--tr-text);
+    transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .training-session .training-option-btn:hover:not(:disabled) {
+    border-color: var(--tr-accent);
+    background: var(--tr-muted);
+    transform: translateY(-1px);
+  }
+
+  .training-session .training-option-btn.selected {
+    border-color: var(--tr-accent);
+    background: color-mix(in srgb, var(--tr-accent) 10%, var(--tr-surface));
+    box-shadow: 0 0 0 1px var(--tr-accent);
+  }
+
+  .training-session .training-option-letter {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 50%;
+    font-size: 12.5px;
+    font-weight: 800;
+  }
+
+  .training-session .training-pace {
+    align-content: center;
+    justify-content: flex-start;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--tr-border);
+  }
+
+  .training-session .training-confidence {
+    margin-top: 14px;
+    min-width: 0;
+  }
+
+  .training-session .training-confidence-chips {
+    gap: 8px;
+    max-width: none;
+  }
+
+  .training-session .training-conf-chip {
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+
+  .training-session .training-sidebar-panel {
+    background: var(--tr-surface);
+    border: 1px solid var(--tr-border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+  }
+
+  .training-session .training-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .training-session .training-sidebar-header h2 {
+    font-size: 14.5px;
+    font-weight: 750;
+    margin: 0;
+  }
+
+  .training-session .training-sidebar-counter {
+    font-size: 11px;
+    font-weight: 750;
+    color: var(--tr-accent);
+    background: color-mix(in srgb, var(--tr-accent) 12%, transparent);
+    padding: 2px 7px;
+    border-radius: 9999px;
+  }
+
+  .training-session .training-sidebar-desc {
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--tr-secondary);
+    margin-bottom: 12px;
+  }
+
+  .training-session .training-palette {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    margin: 10px 0 12px;
+  }
+
+  .training-session .training-palette-btn {
+    height: 34px;
+    min-height: 34px;
+    aspect-ratio: auto;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 750;
+  }
+
+  .training-session .training-sidebar-marking-section {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--tr-border);
+  }
+
+  .training-session .training-marking-title {
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--tr-secondary);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .training-session .training-footnote {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--tr-secondary);
+    margin-bottom: 0;
+  }
+}
+
+.training-question-info { position: relative; margin-left: auto; }
+.training-question-info summary {
+  display: grid; place-items: center; width: 44px; height: 44px;
+  list-style: none; cursor: pointer; border-radius: 12px;
+  color: var(--tr-secondary); border: 1px solid var(--tr-border);
+  background: var(--tr-surface);
+}
+.training-question-info summary::-webkit-details-marker { display: none; }
+.training-question-info[open] summary { color: var(--tr-accent); background: var(--tr-muted); }
+.training-question-info-content {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 30;
+  width: min(300px, calc(100vw - 64px)); padding: 16px;
+  background: var(--tr-surface); color: var(--tr-text);
+  border: 1px solid var(--tr-border); border-radius: 14px;
+  box-shadow: 0 8px 28px #0002; font-size: 13px;
+}
+.training-question-info-content dl { margin: 12px 0 0; display: grid; gap: 10px; }
+.training-question-info-content dl > div { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; }
+.training-question-info-content dt { color: var(--tr-secondary); }
+.training-question-info-content dd { margin: 0; overflow-wrap: anywhere; line-height: 1.5; }
+@media (max-width: 1023px) {
+  .training-session .training-session-header {
+    padding: calc(6px + var(--safe-top)) max(10px, var(--safe-right)) 6px max(10px, var(--safe-left));
+    gap: 6px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .training-header-left {
+    gap: 6px;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    flex: 0 1 auto;
+    max-width: calc(100% - 130px);
+  }
+
+  .training-session .training-header-back {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .training-header-overview-btn {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .training-header-overview-btn .training-nav-btn-text {
+    display: none;
+  }
+
+  .training-session-title-wrap {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .training-session-title-wrap.hide-on-mobile {
+    display: none !important;
+  }
+
+  .training-session-mode-badge {
+    display: none;
+  }
+
+  .training-session-header strong {
+    font-size: 13.5px;
+    font-weight: 750;
+    max-width: 130px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .training-session-subtitle {
+    display: none;
+  }
+
+  .training-header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .training-session .training-survival-lives {
+    height: 32px;
+    padding: 0 8px;
+    gap: 4px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    box-shadow: 0 1px 3px rgba(239, 68, 68, 0.12);
+  }
+
+  .training-session .training-survival-lives .training-lives-label {
+    font-size: 9px;
+    letter-spacing: 0.6px;
+  }
+
+  .training-session .training-survival-lives .training-heart-icon {
+    width: 12px;
+    height: 12px;
+  }
+
+  .training-header-right {
+    gap: 6px;
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  .training-session .training-clock {
+    height: 34px;
+    min-height: 34px;
+    padding: 0 8px;
+    gap: 4px;
+    border-radius: 8px;
+  }
+
+  .training-session .training-clock svg {
+    width: 13px;
+    height: 13px;
+    display: inline-block;
+  }
+
+  .training-session .training-clock span {
+    font-size: 12.5px;
+    display: inline-block !important;
+  }
+
+  .training-session .training-header-finish {
+    height: 34px;
+    min-height: 34px;
+    padding: 0 10px;
+    font-size: 12px;
+    border-radius: 8px;
+    font-weight: 750;
+  }
+
+  .training-session .training-session-main {
+    padding: 10px max(10px, var(--safe-right)) 20px max(10px, var(--safe-left));
+    scrollbar-gutter: auto;
+    background: var(--tr-surface);
+    width: 100%;
+    max-width: 100%;
+  }
+  .training-session .training-session-columns {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin: 0;
+  }
+  .training-session .training-question-panel {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    margin: 0;
+  }
+  .training-session .training-session-aside {
+    display: none;
+    position: static;
+    width: 100%;
+  }
+  .training-session .training-session-aside.is-open {
+    display: block;
+  }
+  .training-session .training-sidebar-panel {
+    background: var(--tr-muted);
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .training-session .training-question-text {
+    font-size: 15.5px;
+    margin: 14px 0 16px;
+    line-height: 1.65;
+  }
+  .training-session .training-question-tags {
+    gap: 5px;
+  }
+  .training-session .training-tag-topic {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+  .training-session .training-tag-source {
+    display: none;
+  }
+  .training-session .training-answers {
+    width: 100%;
+    gap: 8px;
+  }
+  .training-session .training-option-btn {
+    padding: 11px 12px;
+    gap: 10px;
+    font-size: 14.5px;
+    min-height: 50px;
+    border-radius: 10px;
+    width: 100%;
+  }
+  .training-session .training-pace {
+    margin-top: 14px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+  .training-session .training-pace-pill {
+    padding: 4px 8px;
+    gap: 6px;
+    font-size: 11.5px;
+    flex-shrink: 0;
+  }
+  .training-session .training-pace-source {
+    font-size: 10.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
+  }
+  @media (max-width: 380px) {
+    .training-session .training-pace-source {
+      display: none;
+    }
+  }
+  .training-session .training-confidence {
+    margin-top: 14px;
+    width: 100%;
+  }
+  .training-session .training-confidence-chips {
+    width: 100%;
+    max-width: 100%;
+    gap: 6px;
+  }
+  .training-session .training-conf-chip {
+    padding: 6px 10px;
+    font-size: 11.5px;
+    min-height: 38px;
+  }
+  .training-session-footer {
+    padding: 8px max(10px, var(--safe-right)) calc(10px + var(--safe-bottom)) max(10px, var(--safe-left));
+    width: 100%;
+  }
+  .training-footer-inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+  }
+  .training-save-status {
+    font-size: 11.5px;
+    text-align: left;
+    min-width: 0;
+  }
+  .training-save-status span {
+    display: none;
+  }
+  .training-session-footer .training-session-actions {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+  .training-session-footer .training-session-actions button {
+    width: 100%;
+    min-height: 46px;
+    font-size: 13.5px;
+    padding: 10px;
+    justify-content: center;
+  }
+}
+@media (max-width: 480px) {
+  .training-session-actions .training-action-label-full { display: none; }
+  .training-session-actions .training-action-label-compact { display: inline; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .training-session *, .training-session *::before, .training-session *::after { animation: none; transition: none; scroll-behavior: auto; }
+}

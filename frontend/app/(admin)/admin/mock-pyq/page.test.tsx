@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import MockPyqPage from "./page";
 import { requestResponse } from "@/shared/api/request";
@@ -27,7 +27,7 @@ describe("Mock & Pyq management", () => {
     vi.mocked(requestResponse).mockResolvedValueOnce(response({ slots }));
     render(<MockPyqPage />);
     await screen.findByRole('button', { name: 'Edit Paper 1' });
-    const titles = () => screen.getAllByRole('row').slice(1).map(row => within(row).getAllByRole('cell')[0].querySelector('strong')?.textContent);
+    const titles = () => screen.getAllByRole('row').slice(1).map(row => row.querySelector('strong')?.textContent);
     expect(titles()).toEqual(Array.from({ length: 25 }, (_, index) => `Paper ${index + 1}`));
     expect(screen.getByText('1 Nov 2025')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));

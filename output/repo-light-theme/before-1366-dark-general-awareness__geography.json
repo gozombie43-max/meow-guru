@@ -1,0 +1,384 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark has-bottom-nav",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "RankedTopicGroupPage-module__MAKpma__header",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__backButton",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "RankedTopicGroupPage-module__MAKpma__headerTitle",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "RankedTopicGroupPage-module__MAKpma__headerFilter",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "RankedTopicGroupPage-module__MAKpma__content",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "RankedTopicGroupPage-module__MAKpma__intro",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "RankedTopicGroupPage-module__MAKpma__eyebrow",
+      "color": "rgb(100, 210, 165)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(100, 210, 165)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "RankedTopicGroupPage-module__MAKpma__heading",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "RankedTopicGroupPage-module__MAKpma__description",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "cls": "RankedTopicGroupPage-module__MAKpma__searchInput",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "RankedTopicGroupPage-module__MAKpma__table",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255) rgb(255, 255, 255) rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "RankedTopicGroupPage-module__MAKpma__row",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    }
+  ]
+}

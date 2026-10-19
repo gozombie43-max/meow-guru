@@ -1,0 +1,78 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "TestInstructions-module__FsdfqG__title",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "TestInstructions-module__FsdfqG__subtitle",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "TestInstructions-module__FsdfqG__sectionHeading",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "TestInstructions-module__FsdfqG__sectionHeading",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "TestInstructions-module__FsdfqG__startBtn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(10, 132, 255)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    }
+  ]
+}

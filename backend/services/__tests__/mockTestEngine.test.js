@@ -2,6 +2,10 @@
 import { describe, it, expect, vi } from 'vitest';
 
 const mockSlotFindOne = vi.fn();
+vi.mock('../../repositories/mockCatalogMetadataRepository.js', () => ({
+  mutateMockCatalog: (_exam, mutation) => mutation({ updateOne: (...args) => mockSlotUpdateOne(...args) }, {}),
+  readMockCatalogMetadata: vi.fn(),
+}));
 const mockSlotUpdateOne = vi.fn();
 const mockQuestionsBulkWrite = vi.fn();
 const mockInvalidateQuestionMetadata = vi.fn();

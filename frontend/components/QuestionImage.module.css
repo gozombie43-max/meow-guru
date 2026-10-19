@@ -112,7 +112,7 @@
   height: 28px;
   padding: 0;
   background: transparent;
-  color: #000000;
+  color: var(--light-only-text, #000000);
   border: 0;
   border-radius: 6px;
   font-size: 0.75rem;
@@ -160,7 +160,7 @@
 }
 
 .retryBtn:hover {
-  background: #e2e8f0;
+  background: var(--light-only-surface-muted, #e2e8f0);
 }
 
 /* MODAL / LIGHTBOX FOR ZOOM */
@@ -221,7 +221,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  background: var(--light-only-surface, #ffffff);
   border-radius: 12px;
   padding: 12px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);

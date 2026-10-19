@@ -38,13 +38,13 @@ body.theme-dark {
 
 html.theme-light,
 body.theme-light {
-  --notif-bg: #f8f9fc;
+  --notif-bg: var(--light-only-canvas, #f8f9fc);
   --notif-card: var(--light-surface);
-  --notif-border: rgba(0, 0, 0, 0.08);
+  --notif-border: var(--light-only-border, rgba(0, 0, 0, 0.08));
   --notif-border-hover: #b9d5ff;
-  --notif-text: #111827;
-  --notif-muted: #6b7280;
-  --notif-soft: #f1f3f9;
+  --notif-text: var(--light-only-text, #111827);
+  --notif-muted: var(--light-only-text-muted, #6b7280);
+  --notif-soft: var(--light-only-surface-muted, #f1f3f9);
   --notif-accent: var(--ios-system-blue);
   --notif-accent-strong: #0052a3;
   --notif-accent-soft: #e8f2ff;

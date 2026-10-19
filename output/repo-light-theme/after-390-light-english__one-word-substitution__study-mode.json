@@ -1,0 +1,69 @@
+{
+  "theme": "light",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-light",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(244, 245, 247)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "jsx-b5add9cd0a611cd5 study-mobile-header",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "jsx-b5add9cd0a611cd5 study-mobile-title",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "jsx-b5add9cd0a611cd5 study-mobile-body",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "jsx-b5add9cd0a611cd5 study-mobile-hero-heading",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "jsx-b5add9cd0a611cd5 study-mobile-hero-sub",
+      "color": "rgb(101, 109, 121)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(101, 109, 121)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "jsx-b5add9cd0a611cd5 study-mobile-cta-btn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 122, 255)",
+      "image": "none",
+      "border": "rgb(0, 122, 255)",
+      "shadow": "none"
+    }
+  ]
+}

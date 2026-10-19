@@ -1,0 +1,276 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "AdminShell-module__0WdyHq__header",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "AdminShell-module__0WdyHq__back",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "NAV",
+      "cls": "AdminShell-module__0WdyHq__nav",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "AdminShell-module__0WdyHq__active",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(10, 132, 255, 0.16)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "exam-mode-module__LmfVCa__compactSwitch",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "papers-module__MXjL1W__root",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "papers-module__MXjL1W__primary",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(10, 132, 255)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    }
+  ]
+}

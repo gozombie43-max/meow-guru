@@ -1,6 +1,7 @@
 import { examPaperSchema, paperPresentation } from '@meow/contracts/exam-paper';
 import { getMockSlotsCollection } from '../../config/mongodb.js';
 import { invalidPaper } from '../assessmentPolicy.js';
+import { mutateMockCatalog } from '../../repositories/mockCatalogMetadataRepository.js';
 
 export async function uploadSchemaPaper({ slotData, paper, examMode }) {
   const result = examPaperSchema.safeParse(paper);
@@ -31,7 +32,7 @@ export async function uploadSchemaPaper({ slotData, paper, examMode }) {
     createdAt: existing?.createdAt || now, updatedAt: now,
   };
   // This schema is isolated from the topic-practice question bank.
-  await slots.updateOne({ id: slot.id, examSlug }, { $set: slot, $unset: { fixedQuestions: '' } }, { upsert: true });
+  await mutateMockCatalog(examSlug, (collection, options) => collection.updateOne({ id: slot.id, examSlug }, { $set: slot, $unset: { fixedQuestions: '' } }, { ...options, upsert: true }));
   return { success: true, slotId: slot.id, title: slot.title, examSlug, type: slot.type, tier: slot.tier,
     totalQuestions: slot.questionCount, insertedToBank: 0, isNewSlot: !existing };
 }

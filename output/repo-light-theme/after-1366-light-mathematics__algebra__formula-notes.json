@@ -1,0 +1,123 @@
+{
+  "theme": "light",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-light formula-notes-route",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(244, 245, 247)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "formula-notes-page FormulaNotes-module__nq0B0q__formula-notes-page",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(244, 245, 247)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "fn-header FormulaNotes-module__nq0B0q__fn-header",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "fn-back-btn FormulaNotes-module__nq0B0q__fn-back-btn",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "fn-header-title FormulaNotes-module__nq0B0q__fn-header-title",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "fn-search-btn FormulaNotes-module__nq0B0q__fn-search-btn",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "fn-add-btn FormulaNotes-module__nq0B0q__fn-add-btn",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "fn-tab-pill active FormulaNotes-module__nq0B0q__fn-tab-pill FormulaNotes-module__nq0B0q__active",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 122, 255)",
+      "image": "none",
+      "border": "rgb(0, 122, 255)",
+      "shadow": "rgba(0, 122, 255, 0.35) 0px 2px 10px 0px"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "fn-tab-pill FormulaNotes-module__nq0B0q__fn-tab-pill",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "fn-tab-pill FormulaNotes-module__nq0B0q__fn-tab-pill",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "fn-tab-pill FormulaNotes-module__nq0B0q__fn-tab-pill",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "fn-error-text FormulaNotes-module__nq0B0q__fn-error-text",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "fn-retry-btn FormulaNotes-module__nq0B0q__fn-retry-btn",
+      "color": "rgb(0, 122, 255)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    }
+  ]
+}

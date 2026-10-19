@@ -1,9 +1,9 @@
 .screen {
-  --surface: #fff;
-  --canvas: #f5f6fa;
-  --text: #17202e;
-  --muted: #5d6675;
-  --border: rgba(0, 0, 0, .09);
+  --surface: var(--light-only-surface, #fff);
+  --canvas: var(--light-only-canvas, #f5f6fa);
+  --text: var(--light-only-text, #17202e);
+  --muted: var(--light-only-text-secondary, #5d6675);
+  --border: var(--light-only-border, rgba(0, 0, 0, .09));
   --tint: rgba(10, 132, 255, .09);
   min-height: 100dvh;
   display: grid;

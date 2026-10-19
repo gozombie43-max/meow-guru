@@ -1,0 +1,150 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "auth-module__2O57vG__authContainer",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "radial-gradient(at 50% 10%, rgba(10, 132, 255, 0.08) 0%, rgba(0, 0, 0, 0) 60%), radial-gradient(at 80% 80%, rgba(88, 86, 214, 0.06) 0%, rgba(0, 0, 0, 0) 50%)",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "ASIDE",
+      "cls": "auth-module__2O57vG__pcShowcase",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "linear-gradient(155deg, rgba(10, 132, 255, 0.06) 0%, rgba(88, 86, 214, 0.04) 100%)",
+      "border": "rgb(255, 255, 255) rgba(255, 255, 255, 0.12) rgb(255, 255, 255) rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "auth-module__2O57vG__showcaseBrand",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "auth-module__2O57vG__showcaseHeading",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "auth-module__2O57vG__showcaseSubheading",
+      "color": "rgba(235, 235, 245, 0.4)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.4)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "auth-module__2O57vG__authCard",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "auth-module__2O57vG__brandTitle",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "auth-module__2O57vG__brandSubtitle",
+      "color": "rgba(235, 235, 245, 0.4)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.4)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "auth-module__2O57vG__segmentedTab auth-module__2O57vG__segmentedTabActive",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(10, 132, 255, 0.16)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 3px 8px 0px"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "auth-module__2O57vG__segmentedTab ",
+      "color": "rgba(235, 235, 245, 0.4)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.4)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "cls": "auth-module__2O57vG__inputField   ",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "auth-module__2O57vG__otpHelp",
+      "color": "rgba(235, 235, 245, 0.4)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.4)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "auth-module__2O57vG__primaryBtn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(10, 132, 255)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "auth-module__2O57vG__googleBtn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "rgba(0, 0, 0, 0.04) 0px 1px 3px 0px"
+    },
+    {
+      "tag": "A",
+      "cls": "auth-module__2O57vG__footerLink",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    }
+  ]
+}

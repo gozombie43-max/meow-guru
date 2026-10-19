@@ -1,0 +1,330 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "AdminShell-module__0WdyHq__header",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "AdminShell-module__0WdyHq__back",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "NAV",
+      "cls": "AdminShell-module__0WdyHq__nav",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "AdminShell-module__0WdyHq__active",
+      "color": "rgb(10, 132, 255)",
+      "background": "rgba(10, 132, 255, 0.16)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "exam-mode-module__LmfVCa__compactSwitch",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "AdminNotificationsPage-module__pAjDfa__content",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "AdminNotificationsPage-module__pAjDfa__analyticsSection",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "AdminNotificationsPage-module__pAjDfa__analyticsTitle",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "AdminNotificationsPage-module__pAjDfa__refreshBtn",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "AdminNotificationsPage-module__pAjDfa__cardTitle",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "AdminNotificationsPage-module__pAjDfa__cardSubtitle",
+      "color": "rgb(146, 154, 166)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(146, 154, 166)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "cls": "AdminNotificationsPage-module__pAjDfa__input",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "TEXTAREA",
+      "cls": "AdminNotificationsPage-module__pAjDfa__textarea",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "cls": "AdminNotificationsPage-module__pAjDfa__input",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "AdminNotificationsPage-module__pAjDfa__presetChip AdminNotificationsPage-module__pAjDfa__presetChipActive",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(10, 132, 255)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "AdminNotificationsPage-module__pAjDfa__presetChip ",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "AdminNotificationsPage-module__pAjDfa__presetChip ",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "AdminNotificationsPage-module__pAjDfa__presetChip ",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(44, 44, 46)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "AdminNotificationsPage-module__pAjDfa__submitBtn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(10, 132, 255)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "AdminNotificationsPage-module__pAjDfa__historySection",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "rgba(0, 0, 0, 0.3) 0px 12px 36px 0px"
+    },
+    {
+      "tag": "H2",
+      "cls": "AdminNotificationsPage-module__pAjDfa__historyTitle",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "AdminNotificationsPage-module__pAjDfa__refreshBtn",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "ScheduledNotificationsPanel-module__ED9OMW__container",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "ScheduledNotificationsPanel-module__ED9OMW__title",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "ScheduledNotificationsPanel-module__ED9OMW__refreshBtn",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "ScheduledNotificationsPanel-module__ED9OMW__tabBtn ScheduledNotificationsPanel-module__ED9OMW__tabActive",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "rgba(0, 0, 0, 0.08) 0px 1px 3px 0px"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "ScheduledNotificationsPanel-module__ED9OMW__tabBtn ",
+      "color": "rgb(146, 154, 166)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(146, 154, 166)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "ScheduledNotificationsPanel-module__ED9OMW__tabBtn ",
+      "color": "rgb(146, 154, 166)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(146, 154, 166)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "ScheduledNotificationsPanel-module__ED9OMW__tabBtn ",
+      "color": "rgb(146, 154, 166)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(146, 154, 166)",
+      "shadow": "none"
+    }
+  ]
+}

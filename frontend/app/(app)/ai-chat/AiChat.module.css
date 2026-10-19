@@ -8,7 +8,7 @@
           --line: var(--light-border);
           --accent: var(--light-accent);
           --accent-dark: var(--light-accent-hover);
-          --topbar-bg: rgba(255, 255, 255, 0.75);
+          --topbar-bg: var(--light-only-surface, rgba(255, 255, 255, 0.75));
           --input-bg: var(--light-surface);
           --bubble-ai: var(--light-surface-muted);
           --bubble-user: var(--light-accent);
@@ -635,7 +635,7 @@
           border: 1px solid var(--line);
           border-radius: 12px;
           padding: 8px 12px;
-          background: #fafafa;
+          background: var(--light-only-canvas, #fafafa);
         }
 
         .file-preview-wrapper .file-icon {
@@ -697,7 +697,7 @@
           min-height: 34px;
           border: 1px solid #fecaca;
           border-radius: 8px;
-          background: #fef2f2;
+          background: var(--light-only-danger-soft, #fef2f2);
           color: #991b1b;
           padding: 0 10px;
           font-size: 13px;

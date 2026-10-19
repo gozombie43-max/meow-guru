@@ -1,0 +1,402 @@
+{
+  "theme": "light",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-light",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(244, 245, 247)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "AdminShell-module__0WdyHq__header",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "AdminShell-module__0WdyHq__back",
+      "color": "rgb(0, 122, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(0, 122, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "NAV",
+      "cls": "AdminShell-module__0WdyHq__nav",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "AdminShell-module__0WdyHq__active",
+      "color": "rgb(0, 122, 255)",
+      "background": "rgba(0, 122, 255, 0.12)",
+      "image": "none",
+      "border": "rgb(0, 122, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "exam-mode-module__LmfVCa__compactSwitch",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "NAV",
+      "cls": "macos-module__VlxHgq__segmentedControl",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(238, 240, 243)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "macos-module__VlxHgq__tabItem macos-module__VlxHgq__tabItemActive",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "rgba(0, 0, 0, 0.133) 0px 1px 4px 0px"
+    },
+    {
+      "tag": "A",
+      "cls": "macos-module__VlxHgq__tabItem ",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "macos-module__VlxHgq__tabItem ",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "macos-module__VlxHgq__tabItem ",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "macos-module__VlxHgq__tabItem ",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "macos-module__VlxHgq__windowContent",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "upload-module__ncOSSW__heroHeader",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(36, 40, 48) rgba(0, 0, 0, 0.07)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "upload-module__ncOSSW__grid",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "upload-module__ncOSSW__card",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "rgba(0, 0, 0, 0.04) 0px 2px 8px 0px, rgba(0, 0, 0, 0.06) 0px 0px 1px 0px"
+    },
+    {
+      "tag": "H2",
+      "cls": "upload-module__ncOSSW__cardTitle",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "upload-module__ncOSSW__cardDesc",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "upload-module__ncOSSW__card",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "rgba(0, 0, 0, 0.04) 0px 2px 8px 0px, rgba(0, 0, 0, 0.06) 0px 0px 1px 0px"
+    },
+    {
+      "tag": "H2",
+      "cls": "upload-module__ncOSSW__cardTitle",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "upload-module__ncOSSW__cardDesc",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "upload-module__ncOSSW__card",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "rgba(0, 0, 0, 0.04) 0px 2px 8px 0px, rgba(0, 0, 0, 0.06) 0px 0px 1px 0px"
+    },
+    {
+      "tag": "H2",
+      "cls": "upload-module__ncOSSW__cardTitle",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "upload-module__ncOSSW__cardDesc",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "upload-module__ncOSSW__card",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "rgba(0, 0, 0, 0.04) 0px 2px 8px 0px, rgba(0, 0, 0, 0.06) 0px 0px 1px 0px"
+    },
+    {
+      "tag": "H2",
+      "cls": "upload-module__ncOSSW__cardTitle",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "upload-module__ncOSSW__cardDesc",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "upload-module__ncOSSW__specPanel",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "rgba(0, 0, 0, 0.03) 0px 1px 4px 0px"
+    },
+    {
+      "tag": "H3",
+      "cls": "upload-module__ncOSSW__specItemHeading",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "upload-module__ncOSSW__specItemDesc",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "upload-module__ncOSSW__specItemHeading",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "upload-module__ncOSSW__specItemDesc",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "upload-module__ncOSSW__specItemHeading",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "upload-module__ncOSSW__specItemDesc",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "upload-module__ncOSSW__specItemHeading",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "upload-module__ncOSSW__specItemDesc",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    }
+  ]
+}

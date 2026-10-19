@@ -8,6 +8,8 @@ import { createSession } from '../../auth/sessions.js';
 import router from '../mocktest.js';
 import { up as readinessIndexes } from '../../migrations/004-readiness.js';
 import { uploadFullPaper, fetchAllAdminSlots } from '../../services/mockTestEngine.js';
+import { initializeMockCatalogMetadata, mutateMockCatalog } from '../../repositories/mockCatalogMetadataRepository.js';
+import { createMockSlot, updateMockSlot, deleteMockSlot } from '../../services/mock/mockSlotService.js';
 
 vi.mock('../../services/mockPublicationNotificationService.js', () => ({ notifyNewMockPublished: vi.fn().mockResolvedValue(undefined) }));
 let mongo, db, server, base;
@@ -131,6 +133,45 @@ describe('native schema paper HTTP lifecycle', () => {
 });
 
 describe('paged mock catalog', () => {
+  it('updates saved counts on create, reclassification and delete without counting on reads', async () => {
+    const slot = { id: 'counted', examSlug: 'ssc-chsl', configKey: 'ssc-chsl-tier1', title: 'Real paper', type: 'mock', tier: 'Tier I' };
+    await createMockSlot(slot);
+    let summary = await (await request('/catalog-metadata')).json();
+    expect(summary.exams.find(exam => exam.examSlug === 'ssc-chsl')).toMatchObject({ mockCount: 1, pyqCount: 0, total: 1 });
+    await updateMockSlot(slot.examSlug, slot.id, { type: 'pyq', tier: 'Tier II', year: 2025 });
+    const aggregate = vi.spyOn(Collection.prototype, 'aggregate');
+    const count = vi.spyOn(Collection.prototype, 'countDocuments');
+    try {
+      summary = await (await request('/catalog-metadata')).json();
+      expect(summary.exams.find(exam => exam.examSlug === 'ssc-chsl')).toMatchObject({ mockCount: 0, pyqCount: 1, total: 1 });
+      const page = await (await request('/ssc-chsl/slots?catalog=1&kind=pyq&limit=0')).json();
+      expect(page).toMatchObject({ total: 1, slots: [], metadata: { mockCount: 0, pyqCount: 1, tiers: ['Tier II'], years: [2025] } });
+      expect(aggregate).not.toHaveBeenCalled(); expect(count).not.toHaveBeenCalled();
+    } finally { aggregate.mockRestore(); count.mockRestore(); }
+    await updateMockSlot(slot.examSlug, slot.id, { type: 'mock' });
+    expect((await (await request('/catalog-metadata')).json()).exams.find(exam => exam.examSlug === 'ssc-chsl')).toMatchObject({ mockCount: 1, pyqCount: 0, total: 1 });
+    await deleteMockSlot(slot.examSlug, slot.id);
+    expect((await (await request('/catalog-metadata')).json()).exams.find(exam => exam.examSlug === 'ssc-chsl').total).toBe(0);
+  });
+
+  it('serializes concurrent catalog changes and rolls paper and metadata changes back together', async () => {
+    await Promise.all(Array.from({ length: 6 }, (_, index) => createMockSlot({ id: `concurrent-${index}`, examSlug: 'ssc-chsl', configKey: 'ssc-chsl-tier1', title: 'Paper' })));
+    const before = await db.collection('mockCatalogMetadata').findOne({ _id: 'ssc-chsl' });
+    expect(before.total).toBe(6);
+    await expect(mutateMockCatalog('ssc-chsl', async (collection, options) => {
+      await collection.insertOne({ id: 'rolled-back', examSlug: 'ssc-chsl' }, options);
+      throw new Error('Abort this write');
+    })).rejects.toThrow('Abort this write');
+    expect(await db.collection('mockSlots').findOne({ id: 'rolled-back' })).toBeNull();
+    expect(await db.collection('mockCatalogMetadata').findOne({ _id: 'ssc-chsl' })).toEqual(before);
+  });
+
+  it('reports missing backfill instead of publishing demo totals or false zero counts', async () => {
+    await db.collection('mockCatalogMetadata').deleteMany({});
+    const response = await request('/catalog-metadata');
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toContain('initialization');
+  });
   it('sorts PYQs by date and numeric shift before paging, including older title-based papers', async () => {
     const papers = [
       { id: 'nov-19', title: '2025 Tier I 19 NOV (SHIFT 2) Official Paper' },
@@ -146,6 +187,7 @@ describe('paged mock catalog', () => {
       examSlug: 'sort-exam', type: 'pyq', tier: 'Tier I', year: 2025, order, ...paper,
     })));
     const ids = [];
+    await initializeMockCatalogMetadata(db);
     let offset = 0;
     do {
       const page = await (await request(`/sort-exam/slots?catalog=1&kind=pyq&limit=2&offset=${offset}`)).json();
@@ -161,6 +203,7 @@ describe('paged mock catalog', () => {
       id: `year-${i}`, examSlug: 'year-exam', order: i, type: 'pyq',
       tier: i < 60 ? 'Tier I' : 'Tier II', year: i < 30 ? 2024 : '2025',
     })));
+    await initializeMockCatalogMetadata(db);
     const metadata = await (await request('/year-exam/slots?catalog=1&limit=0')).json();
     expect(metadata.metadata.years).toEqual([2025, 2024]);
     const path = '/year-exam/slots?catalog=1&kind=pyq&tier=Tier%20I&year=2025&limit=20';
@@ -184,6 +227,7 @@ describe('paged mock catalog', () => {
       tier: i < 105 ? 'Tier I' : 'Tier II', type: i < 105 ? 'mock' : 'pyq',
       fixedQuestions: [{ correctAnswer: 'secret' }],
     })));
+    await initializeMockCatalogMetadata(db);
     const metadata = await (await request('/paged-exam/slots?catalog=1&limit=0')).json();
     expect(metadata.slots).toEqual([]);
     expect(metadata.metadata).toEqual({ mockCount: 105, pyqCount: 20, tiers: ['Tier I', 'Tier II'], years: [] });
@@ -223,6 +267,7 @@ beforeEach(async () => {
   token = (await createSession({ id: 'student' })).token;
   await db.collection('mockAttempts').deleteMany({});
   await db.collection('mockSlots').deleteMany({});
+  await db.collection('mockCatalogMetadata').deleteMany({});
   await db.collection('mockSlots').insertOne({
     id: 'audit-test', examSlug: 'ssc-cgl', configKey: 'ssc-cgl-tier1', title: 'Audit test',
     fixedQuestions: ['quant', 'ga', 'reasoning', 'english'].map(key => ({
@@ -231,6 +276,7 @@ beforeEach(async () => {
       explanation: 'Private explanation', correctIndex: 1,
     })),
   });
+  await initializeMockCatalogMetadata(db);
 });
 afterAll(async () => {
   if (server) await new Promise(resolve => server.close(resolve));

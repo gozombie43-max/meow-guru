@@ -1,12 +1,12 @@
 /* Shared ranked-topic layout for General Awareness subject groups. */
 .page {
-  --geo-bg: #f5f7f9;
+  --geo-bg: var(--light-only-canvas, #f5f7f9);
   --geo-surface: var(--light-surface);
-  --geo-surface-muted: #eef1f4;
-  --geo-border: #e3e7eb;
-  --geo-text: #15171a;
-  --geo-secondary: #68707a;
-  --geo-tertiary: #929aa4;
+  --geo-surface-muted: var(--light-only-surface-muted, #eef1f4);
+  --geo-border: var(--light-only-border, #e3e7eb);
+  --geo-text: var(--light-only-text, #15171a);
+  --geo-secondary: var(--light-only-text-muted, #68707a);
+  --geo-tertiary: var(--light-only-text-muted, #929aa4);
   width: 100%;
   box-sizing: border-box;
 }
@@ -53,7 +53,7 @@
 }
 
 :global(body.theme-light) .mobileTopbarTitle {
-  color: #000000 !important;
+  color: var(--light-only-text, #000000) !important;
 }
 
 .mobileBackBtn {
@@ -61,7 +61,7 @@
 }
 
 :global(body.theme-light) .mobileBackBtn {
-  color: #000000 !important;
+  color: var(--light-only-text, #000000) !important;
 }
 
 .mobileTopicName {
@@ -75,7 +75,7 @@
 }
 
 :global(body.theme-light) .mobileTopicName {
-  color: #000000 !important;
+  color: var(--light-only-text, #000000) !important;
 }
 
 .mobileRankNum {
@@ -165,7 +165,7 @@
 }
 
 :global(body.theme-light) .mobileRankNum {
-  color: rgba(60, 60, 67, 0.65) !important;
+  color: var(--light-only-text-secondary, rgba(60, 60, 67, 0.65)) !important;
 }
 
 :global(html.theme-light) .page .mobileLayout,

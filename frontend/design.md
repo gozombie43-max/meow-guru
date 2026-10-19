@@ -33,6 +33,19 @@ second header or footer to fullscreen engines. Explicit light exam containers
 inherit light control colors even when the surrounding app is dark.
 
 `app/light-theme.css`, imported by the root layout, owns the `--light-*` palette.
+The selected light theme uses a neutral gray canvas, white surfaces, quiet gray
+borders, and dark neutral text. Supporting text must meet 4.5:1 contrast on the
+canvas, cards, and muted surfaces. Keep decorative subject colors separate from
+the shared palette and preserve green/red assessment feedback.
+
+Legacy styles shared by both themes use `--light-only-*` aliases with their
+original color as the fallback. These aliases are defined only on the selected
+light page and reset inside explicit dark surfaces. Use this bridge when moving
+a fixed color to the shared palette would otherwise change dark mode. New light
+selectors should use the shared `--light-*` tokens directly. Run
+`npm run check:interface` to check contrast and theme isolation with the control
+and safe-area checks.
+
 Use `--light-canvas` for page backgrounds, `--light-surface` for white cards,
 `--light-surface-muted` for grouped controls, `--light-border` for separators,
 and `--light-text`, `--light-text-secondary`, and `--light-text-muted` for text.

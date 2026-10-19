@@ -77,6 +77,7 @@ await db.collection('mockSlots').insertMany([
   { id: 'browser-pyq', title: 'Browser PYQ 2025', isPyq: true, year: 2025 },
 ].map(slot => ({ ...slot, examSlug: 'ssc-cgl', configKey: 'ssc-cgl-tier1', assessmentMode: 'practice', isFree: true, fixedQuestions: questions })));
 const { requestLogging } = await import('../infrastructure/logger.js');
+await (await import('../repositories/mockCatalogMetadataRepository.js')).initializeMockCatalogMetadata(db);
 const { metricsHandler } = await import('../infrastructure/metrics.js');
 const app = express(); app.use(requestLogging); app.use(express.json()); app.use(cookieParser()); app.use(passport.initialize());
 app.get('/metrics', metricsHandler);

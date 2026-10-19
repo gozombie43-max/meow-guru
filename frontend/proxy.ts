@@ -30,6 +30,7 @@ export function proxy(request: NextRequest) {
     pathname === '/verify-email' ||
     pathname === '/reset-password' ||
     pathname === '/favicon.ico' ||
+    pathname === '/docs/paper-image-zip-policy.md' || // Public upload format guide
     // Static file extensions
     /\.(?:png|jpg|jpeg|gif|svg|ico|webp|css|js|woff2?|ttf|eot)$/i.test(pathname);
 

@@ -7,6 +7,7 @@ import { mockAnswerIndex } from '../mockAnswer.js';
 
 const failure = (statusCode, message) => Object.assign(new Error(message), { statusCode });
 const optionText = value => value && typeof value === 'object' ? String(value.text ?? value.value ?? '') : String(value ?? '');
+const containsImage = value => /!\[[^\]]*\]\([^)]+\)|\/api\/upload\/image\/|(?:https?:\/\/|\/(?:images|pyq-assets)\/)[^\s)]+\.(?:png|jpe?g|webp|gif|svg)(?:[?#\s)]|$)/i.test(optionText(value));
 const language = z.object({ question: z.string(), options: z.array(z.string()).min(2).max(8), solution: z.string() });
 const editSchema = z.object({
   id: z.string().min(1), question: z.string(), options: z.array(z.string()).max(8),
@@ -46,10 +47,13 @@ function editableQuestions(slot) {
 
 export async function fetchAdminPaperQuestions(examSlug, slotId, examMode) {
   const slot = await loadSlot(examSlug, slotId, examMode);
-  return { title: slot.title, updatedAt: slot.updatedAt || null, questions: editableQuestions(slot) };
+  const optionImageStatus = Object.fromEntries(slot.sourcePaper
+    ? Object.values(slot.sourcePaper.sections).flatMap(section => section.questions.map(q => [q.id, { en: q.options.en.map(containsImage), bn: q.options.bn.map(containsImage) }]))
+    : slot.fixedQuestions.map(q => [q.id, { en: (q.options || []).map((option, index) => Boolean(option?.image || q.optionImages?.[index] || containsImage(option))) }]));
+  return { title: slot.title, updatedAt: slot.updatedAt || null, questions: editableQuestions(slot), optionImageStatus };
 }
 
-export async function saveAdminPaperQuestions(examSlug, slotId, examMode, input) {
+export async function saveAdminPaperQuestions(examSlug, slotId, examMode, input, { validateOnly = false, replaceOptionImages = [] } = {}) {
   const parsed = saveSchema.safeParse(input);
   if (!parsed.success) throw failure(422, parsed.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('; '));
   const { expectedUpdatedAt, edits } = parsed.data;
@@ -90,13 +94,21 @@ export async function saveAdminPaperQuestions(examSlug, slotId, examMode, input)
       if (!edit) return q;
       if (edit.options.length !== (q.options || []).length) throw failure(422, 'Keep the existing number of options');
       if (edit.options.some(option => !option.trim())) throw failure(422, `Question ${q.id}: provide text or image markdown for every option`);
-      return { ...applyImage(q, edit), question: edit.question, solution: edit.solution, correctAnswer: edit.correctAnswer,
+      const next = { ...applyImage(q, edit), question: edit.question, solution: edit.solution, correctAnswer: edit.correctAnswer,
         options: edit.options.map((text, index) => typeof q.options[index] === 'object' ? { ...q.options[index], text } : text) };
+      for (const target of replaceOptionImages.filter(target => target.id === q.id)) {
+        if (typeof next.options[target.index] === 'object') delete next.options[target.index].image;
+        if (Array.isArray(next.optionImages)) {
+          next.optionImages = [...next.optionImages]; next.optionImages[target.index] = null;
+        }
+      }
+      return next;
     });
     validateQuestions(fixedQuestions);
     validateConfidentialUpload(slot, fixedQuestions);
     updates = { fixedQuestions };
   }
+  if (validateOnly) return { valid: true, savedQuestions: edits.length };
   const updatedAt = new Date(Math.max(Date.now(), Date.parse(slot.updatedAt || '') + 1 || 0)).toISOString();
   const result = await getMockSlotsCollection().updateOne({ id: slotId, examSlug, updatedAt: slot.updatedAt === undefined ? { $exists: false } : slot.updatedAt }, { $set: { ...updates, updatedAt } });
   if (!result.matchedCount) throw failure(409, 'This paper changed while saving. Reload the paper before saving.');

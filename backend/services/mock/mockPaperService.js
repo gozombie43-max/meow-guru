@@ -13,6 +13,7 @@ import { validateQuestions, validateConfidentialUpload, invalidPaper } from '../
 import { getExamConfig } from '../../config/exam-config.js';
 import { getQuestionsCollection, getMockSlotsCollection } from '../../config/mongodb.js';
 import { buildSchemaPaper, uploadSchemaPaper } from './schemaPaperService.js';
+import { mutateMockCatalog } from '../../repositories/mockCatalogMetadataRepository.js';
 
 export async function uploadFullPaper({ slotData, questions, paper, examMode }) {
   if (paper) return uploadSchemaPaper({ slotData, paper, examMode });
@@ -113,11 +114,13 @@ export async function uploadFullPaper({ slotData, questions, paper, examMode }) 
     title: slotData.title,
     tier: slotData.tier || null,
     type: slotData.type || 'mock',
+    isPyq: String(slotData.type || 'mock').toLowerCase() === 'pyq',
     year: slotData.year || null,
     shift: slotData.shift || null,
     isFree: Boolean(slotData.isFree),
     order: Number(slotData.order) || 1,
     questionCount: normalizedQuestions.length,
+    hasFixedPaper: true,
     fixedQuestions: normalizedQuestions,
     assessmentMode: slotData.assessmentMode === 'confidential' ? 'confidential' : 'practice',
     timingPolicy: slotData.timingPolicy || 'composite',
@@ -128,7 +131,7 @@ export async function uploadFullPaper({ slotData, questions, paper, examMode }) 
       now,
   };
 
-  await slotCollection.updateOne(
+  await mutateMockCatalog(slotDoc.examSlug, (collection, options) => collection.updateOne(
     {
       id: slotDoc.id,
       examSlug: slotDoc.examSlug,
@@ -138,9 +141,10 @@ export async function uploadFullPaper({ slotData, questions, paper, examMode }) 
       $unset: { sourcePaper: '', paperMetadata: '' },
     },
     {
+      ...options,
       upsert: true,
     }
-  );
+  ));
 
   // 2. Also optionally batch upsert questions into question bank
   let insertedToBank = 0;

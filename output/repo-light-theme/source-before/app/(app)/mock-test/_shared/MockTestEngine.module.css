@@ -1,0 +1,543 @@
+.container {
+  --bg: var(--light-canvas);
+  --card: var(--light-surface);
+  --text-dark: var(--light-text);
+  --text-muted: var(--light-text-secondary);
+  --border: var(--light-border);
+  --primary: var(--light-accent);
+  color-scheme: light;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--bg, #f8fafc);
+  color: var(--text-dark, #0f172a);
+  font-family: system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+}
+
+.ready { animation: testAppear 160ms ease-out both; }
+@keyframes testAppear { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .ready { animation: none; }
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(0.75rem + var(--safe-top)) 1.5rem 0.75rem;
+  background-color: var(--card, #ffffff);
+  border-bottom: 1px solid var(--border, #e2e8f0);
+  z-index: 10;
+}
+
+.examName {
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.timer {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary, var(--ios-system-blue));
+}
+
+.submitBtn {
+  background-color: var(--primary, var(--ios-system-blue));
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.submitBtn:hover {
+  opacity: 0.9;
+}
+
+.mainLayout {
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* DESKTOP LEFT PANEL */
+.leftPanel {
+  width: 280px;
+  background-color: var(--card, #ffffff);
+  border-right: 1px solid var(--border, #e2e8f0);
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  background: transparent;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.tab {
+  padding: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: transparent;
+  min-width: 0;
+  height: 44px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-muted, #64748b);
+}
+
+.tab.active {
+  border-color: var(--ios-system-blue, #007aff);
+  color: var(--text-dark, #172033);
+}
+
+.questionGrid {
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.qBubble {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border, #cbd5e1);
+  background: white;
+  color: var(--text-dark, #0f172a);
+}
+
+.qBubble.answered { background-color: #22c55e; color: white; border-color: #22c55e; }
+.qBubble.marked { background-color: #8b5cf6; color: white; border-color: #8b5cf6; }
+.qBubble.answeredMarked { background-color: #f59e0b; color: white; border-color: #f59e0b; }
+.qBubble.notAnswered { background-color: #94a3b8; color: white; border-color: #94a3b8; }
+.qBubble.notVisited { background-color: transparent; }
+.qBubble.current { box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary, var(--ios-system-blue)); }
+
+.legend {
+  padding: 1rem;
+  border-top: 1px solid var(--border, #e2e8f0);
+  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.legendCircle {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+/* RIGHT PANEL */
+.rightPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg, #f8fafc);
+  overflow-y: auto;
+}
+
+.questionContent {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 2rem;
+  flex: 1;
+  width: 100%;
+  max-width: 960px;
+  margin-inline: auto;
+}
+
+.qNumber {
+  color: var(--text-muted, #64748b);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.qText {
+  color: var(--text-dark, #0f172a);
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.65;
+  margin-bottom: 24px;
+}
+
+.qImage {
+  max-width: 100%;
+  margin-bottom: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.optionLabel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.5;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  background: var(--card, #ffffff);
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.optionText {
+  min-width: 0;
+  flex: 1;
+}
+
+.optionLabel:hover {
+  background-color: var(--bg, #f1f5f9);
+}
+
+.optionLabel.selected {
+  border-color: var(--ios-system-blue, #007aff);
+  background-color: var(--light-accent-soft);
+}
+
+.optionLabel input {
+  flex-shrink: 0;
+  margin: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--ios-system-blue, #007aff);
+}
+
+.actionsBar {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 2rem calc(1rem + var(--safe-bottom));
+  background: var(--card, #ffffff);
+  border-top: 1px solid var(--border, #e2e8f0);
+}
+
+.btnGroup {
+  display: flex;
+  gap: 1rem;
+}
+
+.btnOutline {
+  background: transparent;
+  border: 1px solid var(--border, #cbd5e1);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-dark, #334155);
+}
+
+.btnPrimary {
+  background: var(--primary, var(--ios-system-blue));
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* MOBILE */
+.mobileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(4px + var(--safe-top, 0px)) calc(16px + var(--safe-right, 0px)) 4px calc(16px + var(--safe-left, 0px));
+  flex-shrink: 0;
+  background: var(--card, #ffffff);
+  border-bottom: 1px solid var(--border, #e2e8f0);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mobilePill {
+  background: var(--bg, #f1f5f9);
+  border: 1px solid var(--border, #e2e8f0);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.mobileSectionControl {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  background: transparent;
+  padding: 4px 0;
+  flex-shrink: 0;
+  gap: 0.5rem;
+}
+
+.mobileTab {
+  min-width: 0;
+  height: 44px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.mobileTab.active {
+  border-color: var(--ios-system-blue, #007aff);
+  color: var(--text-dark, #172033);
+}
+
+.mobileMain {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  padding-bottom: calc(5rem + var(--safe-bottom)); /* space for fixed bottom bar */
+}
+
+.mobileBottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card, #ffffff);
+  border-top: 1px solid var(--border, #e2e8f0);
+  padding: 0.75rem 1rem calc(0.75rem + var(--safe-bottom));
+  display: flex;
+  justify-content: space-between;
+  z-index: 20;
+}
+
+/* BOTTOM SHEET */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 40;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s;
+}
+
+.backdrop.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.bottomSheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card, #ffffff);
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  padding: 1.5rem 1rem calc(1.5rem + var(--safe-bottom));
+  z-index: 50;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 80dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.bottomSheet.show {
+  transform: translateY(0);
+}
+
+/* MODAL */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal {
+  background: var(--card, #ffffff);
+  padding: 2rem;
+  border-radius: 0.75rem;
+  width: 90%;
+  max-width: 400px;
+}
+
+.modal h2 { margin-top: 0; margin-bottom: 1.5rem; }
+.modal p { margin-bottom: 0.5rem; display: flex; justify-content: space-between; }
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* Exam controls remain easy to hit without adding visual weight. */
+.container :is(button, .mobileTab, .tab) { min-height: 44px; }
+.container button:focus-visible,
+.optionLabel:has(input:focus-visible) {
+  outline: 3px solid var(--ios-system-blue);
+  outline-offset: 3px;
+}
+.timer { font-variant-numeric: tabular-nums; }
+.qBubble { border-radius: 8px; width: 100%; }
+.mobileMain { min-height: 0; }
+.optionLabel { min-height: 56px; }
+@media (max-width: 767px) {
+  .questionContent { padding: 16px 0; }
+  .mobileHeader { gap: 8px; flex-wrap: wrap; }
+  .mobileBottomBar { gap: 8px; }
+  .btnGroup { gap: 8px; }
+  .btnOutline, .btnPrimary { padding-inline: 12px; }
+}
+
+/* Respect the app theme during an attempt, including its palette and dialogs. */
+:global(html.theme-dark) .container {
+  --bg: var(--oled-canvas); --card: var(--oled-surface);
+  --text-dark: var(--oled-text); --text-muted: var(--oled-secondary);
+  --border: transparent; --primary: var(--oled-selected);
+  color-scheme: dark;
+}
+:global(html.theme-dark) .container :is(.topBar, .mobileHeader) { background: var(--dark-canvas) !important; border-bottom: none !important; }
+:global(html.theme-dark) .container :is(.modal, .bottomSheet) { border: 0; box-shadow: none; border-radius: 14px; }
+:global(html.theme-dark) .container .optionLabel { border: 1px solid transparent; border-radius: 14px; background: var(--oled-surface); }
+:global(html.theme-dark) .container .optionLabel:hover { background: var(--oled-hover); }
+:global(html.theme-dark) .container .optionLabel.selected { border-color: var(--ios-system-blue, #0a84ff); background: var(--dark-accent-soft); }
+:global(html.theme-dark) .container :is(.mobilePill, .btnOutline) { border: 0; border-radius: 999px !important; background: var(--oled-inset); }
+:global(html.theme-dark) .container :is(.tab, .mobileTab) { border: 1px solid #3b4048; border-radius: 8px; background: transparent; }
+:global(html.theme-dark) .container :is(.tab.active, .mobileTab.active) { border-color: var(--ios-system-blue, #007aff); color: #edf4fc; }
+:global(html.theme-dark) .container .qBubble.notVisited { background: var(--oled-inset); color: var(--oled-text); }
+:global(html.theme-dark) .container .qBubble.current { box-shadow: none; outline: 2px solid var(--ios-system-blue); outline-offset: 2px; }
+
+/* Keep navigation geometry and colors consistent with the shared button cascade. */
+.container :is(.actionsBar, .mobileBottomBar) {
+  background: var(--light-surface-muted) !important;
+  border-top: 0 !important;
+  --ui-control-height: 44px;
+  --ui-control-radius: 8px;
+  --ui-surface: transparent;
+  --ui-border: #64748b;
+  --ui-text: #334155;
+  --ui-action: var(--ios-system-blue, #007aff);
+}
+.container :is(.actionsBar, .mobileBottomBar) :is(.btnOutline, .btnPrimary) {
+  height: 44px;
+  min-width: 0;
+  border-radius: 8px !important;
+  padding: 0 8px !important;
+  font-size: 13px !important;
+  white-space: nowrap;
+}
+.container .mobileBottomBar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+:global(html.theme-dark) .container :is(.actionsBar, .mobileBottomBar) {
+  background: var(--dark-surface) !important;
+  --ui-border: #ffffff;
+  --ui-text: #ffffff;
+}
+:global(html.theme-dark) .container :is(.actionsBar, .mobileBottomBar) :is(.btnOutline, .btnPrimary) {
+  border-radius: 8px !important;
+}
+.container :is(.actionsBar, .mobileBottomBar) :is(.btnOutline, .btnPrimary):disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.container .mobileSectionControl .mobileTab {
+  height: auto;
+  min-height: 44px;
+}
+
+/* Keep exam metadata quiet so the question leads the reading order. */
+.container .mobileHeader .examName {
+  font-size: 13px !important;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+.container .mobileHeader .timer {
+  font-size: 14px !important;
+  font-weight: 600;
+  color: var(--ios-system-blue, #007aff);
+}
+.container .mobileHeader .mobilePill {
+  font-size: 12px;
+  font-weight: 500;
+}
+/* Fullscreen interactive shell: one scrolling body and one content inset. */
+@media (max-width: 1023px) {
+  .container .mobileMain {
+    padding: 16px calc(16px + var(--safe-right, 0px)) calc(88px + var(--safe-bottom, 0px)) calc(16px + var(--safe-left, 0px));
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .container .questionContent {
+    flex: 0 0 auto;
+    padding: 0;
+  }
+  .container .mobileBottomBar {
+    padding: 12px calc(16px + var(--safe-right, 0px)) calc(16px + var(--safe-bottom, 0px)) calc(16px + var(--safe-left, 0px));
+  }
+  .container .bottomSheet {
+    box-sizing: border-box;
+    max-height: calc(100dvh - var(--safe-top, 0px) - 16px);
+    padding-inline: max(16px, var(--safe-left, 0px)) max(16px, var(--safe-right, 0px));
+    overflow: hidden;
+  }
+  .bottomSheet .questionGrid { min-height: 0; }
+}

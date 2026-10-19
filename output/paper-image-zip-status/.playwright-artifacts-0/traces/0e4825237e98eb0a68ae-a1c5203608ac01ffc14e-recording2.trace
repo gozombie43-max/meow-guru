@@ -1,0 +1,36 @@
+{"version":10,"type":"context-options","origin":"library","browserName":"","playwrightVersion":"1.64.0","options":{},"platform":"win32","wallTime":1792432477416,"monotonicTime":2854.928,"sdkLanguage":"javascript","title":"paper-image-zip.spec.ts:22 › paper ZIP validates, uploads to storage and reloads linked question and option images"}
+{"type":"before","callId":"gzja@55","startTime":2861.589,"class":"APIRequestContext","method":"fetch","params":{"url":"http://127.0.0.1:3111/auth/login","method":"POST","jsonData":"{\"email\":\"browser-admin@example.test\",\"password\":\"Browser-fixture-123!\"}"}}
+{"type":"log","callId":"gzja@55","time":2871.122,"message":"→ POST http://127.0.0.1:3111/auth/login"}
+{"type":"log","callId":"gzja@55","time":2871.189,"message":"  user-agent: Playwright/1.64.0 (x64; windows 10.0) node/22.23"}
+{"type":"log","callId":"gzja@55","time":2871.216,"message":"  accept: */*"}
+{"type":"log","callId":"gzja@55","time":2871.237,"message":"  accept-encoding: gzip,deflate,br"}
+{"type":"log","callId":"gzja@55","time":2871.251,"message":"  content-type: application/json"}
+{"type":"log","callId":"gzja@55","time":2871.263,"message":"  content-length: 72"}
+{"type":"log","callId":"gzja@55","time":2908.867,"message":"← 200 OK"}
+{"type":"log","callId":"gzja@55","time":2908.912,"message":"  x-powered-by: Express"}
+{"type":"log","callId":"gzja@55","time":2908.929,"message":"  x-request-id: 7f49ca97-5583-4f0f-bbeb-eb1cae682499"}
+{"type":"log","callId":"gzja@55","time":2909.042,"message":"  set-cookie: refreshToken=[REDACTED_LOCAL_FIXTURE_TOKEN]; Max-Age=2591999; Path=/; Expires=Wed, 18 Nov 2026 17:54:37 GMT; HttpOnly; SameSite=Lax"}
+{"type":"log","callId":"gzja@55","time":2909.062,"message":"  content-type: application/json; charset=utf-8"}
+{"type":"log","callId":"gzja@55","time":2909.074,"message":"  content-length: 545"}
+{"type":"log","callId":"gzja@55","time":2909.084,"message":"  etag: W/\"221-6ujaat98ODLnSBotyAXugoaK8vA\""}
+{"type":"log","callId":"gzja@55","time":2909.095,"message":"  date: Mon, 19 Oct 2026 17:54:37 GMT"}
+{"type":"log","callId":"gzja@55","time":2909.106,"message":"  connection: keep-alive"}
+{"type":"log","callId":"gzja@55","time":2909.116,"message":"  keep-alive: timeout=5"}
+{"type":"after","callId":"gzja@55","endTime":2912.883,"result":{"response":{"url":"http://127.0.0.1:3111/auth/login","status":200,"statusText":"OK","headers":[{"name":"X-Powered-By","value":"Express"},{"name":"X-Request-ID","value":"7f49ca97-5583-4f0f-bbeb-eb1cae682499"},{"name":"Set-Cookie","value":"refreshToken=[REDACTED_LOCAL_FIXTURE_TOKEN]; Max-Age=2591999; Path=/; Expires=Wed, 18 Nov 2026 17:54:37 GMT; HttpOnly; SameSite=Lax"},{"name":"Content-Type","value":"application/json; charset=utf-8"},{"name":"Content-Length","value":"545"},{"name":"ETag","value":"W/\"221-6ujaat98ODLnSBotyAXugoaK8vA\""},{"name":"Date","value":"Mon, 19 Oct 2026 17:54:37 GMT"},{"name":"Connection","value":"keep-alive"},{"name":"Keep-Alive","value":"timeout=5"}],"serverAddr":{"ipAddress":"127.0.0.1","port":3111},"timing":{"startTime":1792432477427,"domainLookupStart":-1,"domainLookupEnd":-1,"connectStart":0,"secureConnectionStart":-1,"connectEnd":9.055000000000291,"requestStart":9.055000000000291,"responseStart":40.95300000000043},"responseEndTiming":44.44800000000032,"fetchUid":"18b00c67aa6a71d58778e04c1c36ea51"}}}
+{"type":"before","callId":"gzja@59","startTime":2923.321,"class":"APIRequestContext","method":"fetch","params":{"url":"http://127.0.0.1:3111/api/mocktest/admin/slots/browser-practice/questions?examSlug=ssc-cgl&examMode=ssc","method":"GET","headers":[{"name":"Authorization","value":"Bearer [REDACTED_LOCAL_FIXTURE_TOKEN]"}]}}
+{"type":"log","callId":"gzja@59","time":2925.402,"message":"→ GET http://127.0.0.1:3111/api/mocktest/admin/slots/browser-practice/questions?examSlug=ssc-cgl&examMode=ssc"}
+{"type":"log","callId":"gzja@59","time":2925.436,"message":"  user-agent: Playwright/1.64.0 (x64; windows 10.0) node/22.23"}
+{"type":"log","callId":"gzja@59","time":2925.448,"message":"  accept: */*"}
+{"type":"log","callId":"gzja@59","time":2925.458,"message":"  accept-encoding: gzip,deflate,br"}
+{"type":"log","callId":"gzja@59","time":2925.468,"message":"  Authorization: Bearer [REDACTED_LOCAL_FIXTURE_TOKEN]"}
+{"type":"log","callId":"gzja@59","time":2925.479,"message":"  cookie: refreshToken=[REDACTED_LOCAL_FIXTURE_TOKEN]"}
+{"type":"log","callId":"gzja@59","time":2947.92,"message":"← 200 OK"}
+{"type":"log","callId":"gzja@59","time":2947.948,"message":"  x-powered-by: Express"}
+{"type":"log","callId":"gzja@59","time":2947.96,"message":"  x-request-id: 95c311e4-2b71-4ffc-aa15-25d8e5cd344f"}
+{"type":"log","callId":"gzja@59","time":2947.971,"message":"  content-type: application/json; charset=utf-8"}
+{"type":"log","callId":"gzja@59","time":2947.982,"message":"  content-length: 20999"}
+{"type":"log","callId":"gzja@59","time":2947.993,"message":"  etag: W/\"5207-t+awkWpNyM2hcaLjjx+4hKWEpPU\""}
+{"type":"log","callId":"gzja@59","time":2948.004,"message":"  date: Mon, 19 Oct 2026 17:54:37 GMT"}
+{"type":"log","callId":"gzja@59","time":2948.014,"message":"  connection: keep-alive"}
+{"type":"log","callId":"gzja@59","time":2948.025,"message":"  keep-alive: timeout=5"}
+{"type":"after","callId":"gzja@59","endTime":2948.22,"result":{"response":{"url":"http://127.0.0.1:3111/api/mocktest/admin/slots/browser-practice/questions?examSlug=ssc-cgl&examMode=ssc","status":200,"statusText":"OK","headers":[{"name":"X-Powered-By","value":"Express"},{"name":"X-Request-ID","value":"95c311e4-2b71-4ffc-aa15-25d8e5cd344f"},{"name":"Content-Type","value":"application/json; charset=utf-8"},{"name":"Content-Length","value":"20999"},{"name":"ETag","value":"W/\"5207-t+awkWpNyM2hcaLjjx+4hKWEpPU\""},{"name":"Date","value":"Mon, 19 Oct 2026 17:54:37 GMT"},{"name":"Connection","value":"keep-alive"},{"name":"Keep-Alive","value":"timeout=5"}],"serverAddr":{"ipAddress":"127.0.0.1","port":3111},"timing":{"startTime":1792432477486,"domainLookupStart":-1,"domainLookupEnd":-1,"connectStart":-1,"secureConnectionStart":-1,"connectEnd":-1,"requestStart":1.0979999999999563,"responseStart":21.045000000000073},"responseEndTiming":22.327999999999975,"fetchUid":"575157c7b489fa99f723cccdadcfda49"}}}

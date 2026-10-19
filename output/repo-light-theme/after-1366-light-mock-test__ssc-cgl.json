@@ -1,0 +1,186 @@
+{
+  "theme": "light",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-light",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(244, 245, 247)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "ExamLandingPage-module__3GYzBW__page ExamLandingPage-module__3GYzBW__loadedPage",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "radial-gradient(at 10% 10%, rgba(186, 230, 253, 0.7) 0px, rgba(0, 0, 0, 0) 50%), radial-gradient(at 90% 15%, rgba(221, 214, 254, 0.6) 0px, rgba(0, 0, 0, 0) 50%), radial-gradient(at 50% 85%, rgba(254, 215, 215, 0.45) 0px, rgba(0, 0, 0, 0) 50%), linear-gradient(145deg, rgb(219, 234, 254) 0%, rgb(237, 233, 254) 40%, rgb(252, 231, 243) 70%, rgb(254, 243, 199) 100%)",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "ASIDE",
+      "cls": "ExamLandingPage-module__3GYzBW__macosSidebar",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(246, 246, 248, 0.6)",
+      "image": "none",
+      "border": "rgb(36, 40, 48) rgb(225, 228, 232) rgb(36, 40, 48) rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "ExamLandingPage-module__3GYzBW__sidebarBackBtn",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "exam-mode-module__LmfVCa__switch",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H2",
+      "cls": "ExamLandingPage-module__3GYzBW__sidebarTitle",
+      "color": "rgb(101, 109, 121)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(101, 109, 121)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "ExamLandingPage-module__3GYzBW__sidebarTab ExamLandingPage-module__3GYzBW__activeSidebarTab",
+      "color": "rgb(0, 122, 255)",
+      "background": "rgba(0, 113, 227, 0.12)",
+      "image": "none",
+      "border": "rgb(0, 122, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "ExamLandingPage-module__3GYzBW__sidebarTab ",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "ExamLandingPage-module__3GYzBW__sidebarTab ",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "ExamLandingPage-module__3GYzBW__headerCard",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(255, 255, 255)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0.06)",
+      "shadow": "rgba(0, 0, 0, 0.02) 0px 2px 8px 0px"
+    },
+    {
+      "tag": "H1",
+      "cls": "ExamLandingPage-module__3GYzBW__greeting",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "ExamLandingPage-module__3GYzBW__desktopSubtitle",
+      "color": "rgb(96, 103, 115)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(96, 103, 115)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SELECT",
+      "cls": "ExamLandingPage-module__3GYzBW__tierDropdown",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(238, 240, 243)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "ExamLandingPage-module__3GYzBW__allExamsTopBtn",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(244, 245, 247)",
+      "image": "none",
+      "border": "rgb(225, 228, 232)",
+      "shadow": "none"
+    },
+    {
+      "tag": "ARTICLE",
+      "cls": "ExamLandingPage-module__3GYzBW__testLineCard",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(238, 240, 243)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "ExamLandingPage-module__3GYzBW__testLineTitle",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "ExamLandingPage-module__3GYzBW__paperAction ExamLandingPage-module__3GYzBW__actionFilled",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "ARTICLE",
+      "cls": "ExamLandingPage-module__3GYzBW__testLineCard",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgb(238, 240, 243)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H3",
+      "cls": "ExamLandingPage-module__3GYzBW__testLineTitle",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "ExamLandingPage-module__3GYzBW__paperAction ExamLandingPage-module__3GYzBW__actionOutline",
+      "color": "rgb(36, 40, 48)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(36, 40, 48)",
+      "shadow": "none"
+    }
+  ]
+}

@@ -3,13 +3,13 @@
    ========================================================================= */
 .pageWrapper {
   /* Neutral white surfaces with a soft gray canvas and restrained borders. */
-  --light-canvas: #f4f5f7;
-  --light-surface: #fdfdfd;
-  --light-surface-muted: #eceef1;
-  --light-border: #e1e4e8;
-  --light-text: #242830;
-  --light-text-secondary: #606773;
-  --light-text-muted: #7a828e;
+  --light-canvas: var(--light-only-canvas, #f4f5f7);
+  --light-surface: var(--light-only-surface, #fdfdfd);
+  --light-surface-muted: var(--light-only-surface-muted, #eceef1);
+  --light-border: var(--light-only-border, #e1e4e8);
+  --light-text: var(--light-only-text, #242830);
+  --light-text-secondary: var(--light-only-text-secondary, #606773);
+  --light-text-muted: var(--light-only-text-muted, #7a828e);
   --mac-bg-outer: transparent;
   --mac-window-bg: var(--light-canvas);
   --mac-sidebar-bg: var(--light-surface-muted);
@@ -20,7 +20,7 @@
   --mac-text-secondary: var(--light-text-secondary);
   --mac-text-muted: var(--light-text-muted);
   --mac-border: var(--light-border);
-  --mac-border-subtle: rgba(36, 40, 48, 0.07);
+  --mac-border-subtle: var(--light-only-border, rgba(36, 40, 48, 0.07));
   --mac-primary: var(--light-accent);
   --mac-primary-hover: var(--light-accent-hover);
   --mac-primary-soft: var(--light-surface-muted);
@@ -62,13 +62,40 @@
 }
 
 :global(html:not(.theme-dark)) .pageWrapper:not(.dark) {
+  --light-surface: #ffffff;
   --ui-header-surface: #f4f5f7;
-  --ui-surface: #fdfdfd;
+  --ui-surface: var(--light-surface);
   --ui-muted-surface: #eceef1;
   --ui-border: #e1e4e8;
   --ui-text: #242830;
   --ui-secondary: #606773;
   --shadow: 0 2px 8px rgba(24, 28, 36, 0.04);
+}
+
+/* Home light appearance: quiet white cards and clear copy over the hero photo. */
+:global(html:not(.theme-dark)) .pageWrapper:not(.dark) .mobileSidebar:not(.sidebarOpen) {
+  box-shadow: none;
+}
+
+:global(html:not(.theme-dark)) .pageWrapper:not(.dark) :is(.subjectCard, .mobileSubjectCard, .resourceCard, .battleCard) {
+  border-radius: 22px;
+}
+
+:global(html:not(.theme-dark)) .pageWrapper:not(.dark) .mobileHero {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+:global(html:not(.theme-dark)) .pageWrapper:not(.dark) .mobileHeroStudyBackdrop {
+  opacity: .5;
+}
+
+:global(html:not(.theme-dark)) .pageWrapper:not(.dark) .mobileHeroStudyOverlay {
+  background: linear-gradient(90deg, rgb(245 248 252 / 35%) 0%, rgb(245 248 252 / 65%) 36%, rgb(255 255 255 / 94%) 54%, rgb(255 255 255 / 82%) 100%);
+}
+
+:global(html:not(.theme-dark)) .pageWrapper:not(.dark) :is(.resourceCard small, .battleCard small) {
+  color: var(--muted);
 }
 
 .dark,
@@ -574,7 +601,7 @@
 
 /* Desktop Hero Card */
 .heroCard {
-  background: linear-gradient(120deg, #fdfdfd 0%, #f7f8fa 60%, #eceff3 100%);
+  background: linear-gradient(120deg, var(--light-only-surface, #fdfdfd) 0%, var(--light-only-canvas, #f7f8fa) 60%, #eceff3 100%);
   border: 1px solid var(--mac-border);
   border-radius: 26px;
   box-shadow: var(--mac-shadow-card);
@@ -1073,7 +1100,7 @@
   padding: calc(12px + var(--safe-top)) max(16px, var(--safe-right)) 12px max(16px, var(--safe-left));
   margin: 0;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--light-only-surface, rgba(255, 255, 255, 0.88));
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--line);
@@ -1347,7 +1374,7 @@
   width: 18px;
   height: 18px;
   border-radius: 999px;
-  background: #fff;
+  background: var(--light-only-surface, #fff);
   display: block;
   box-shadow: 0 2px 6px rgba(17, 24, 52, 0.2);
   transition: transform 180ms ease;
@@ -1746,7 +1773,7 @@
   display: block;
   height: 5px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.06));
   overflow: hidden;
   margin-bottom: 12px;
 }
@@ -1809,20 +1836,20 @@
 .pencilOne {
   right: 12px;
   height: 60px;
-  background: linear-gradient(#f553b3 0 20%, #fff 20% 30%, #8651ff 30%);
+  background: linear-gradient(#f553b3 0 20%, var(--light-only-surface, #fff) 20% 30%, #8651ff 30%);
 }
 
 .pencilTwo {
   right: 24px;
   height: 70px;
-  background: linear-gradient(#fff 0 16%, #ff6b16 16% 28%, #f74d83 28%);
+  background: linear-gradient(var(--light-only-surface, #fff) 0 16%, #ff6b16 16% 28%, #f74d83 28%);
   transform: rotate(7deg);
 }
 
 .pencilThree {
   right: 36px;
   height: 50px;
-  background: linear-gradient(#fff 0 16%, #15a7ff 16% 28%, #ff7a11 28%);
+  background: linear-gradient(var(--light-only-surface, #fff) 0 16%, #15a7ff 16% 28%, #ff7a11 28%);
   transform: rotate(-9deg);
 }
 
@@ -1977,7 +2004,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--light-only-surface, #fff);
   box-shadow: 0 1px 3px rgb(0 0 0 / .18);
   transform: translateX(0);
 }

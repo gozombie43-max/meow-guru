@@ -17,7 +17,7 @@
   --mac-sidebar-border: var(--light-border);
   --mac-surface: var(--light-surface);
   --mac-surface-hover: var(--light-surface-muted);
-  --mac-surface-active: #D0D9E4;
+  --mac-surface-active: var(--light-only-surface-muted, #D0D9E4);
   --mac-border: var(--light-border);
   --mac-border-hover: rgba(0, 113, 227, 0.35);
   --mac-border-focus: var(--light-accent);
@@ -27,7 +27,7 @@
   --mac-ice-blue: var(--light-surface-muted);
   
   --mac-canvas-bg: var(--light-canvas);
-  --mac-canvas-header-bg: #F4F7FB;
+  --mac-canvas-header-bg: var(--light-only-canvas, #F4F7FB);
   
   --mac-card-bg: var(--light-surface);
   --mac-card-border: var(--light-border);
@@ -1101,7 +1101,7 @@
 .modeCardTitle {
   font-size: 11.5px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--light-only-text, #0f172a);
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -1117,7 +1117,7 @@
 .modeCardSub {
   font-size: 9px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--light-only-text-muted, #64748b);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1345,7 +1345,7 @@
 }
 
 :global(body.theme-light) .mobileTopbar {
-  background: rgba(255, 255, 255, 0.85) !important;
+  background: var(--light-only-surface, rgba(255, 255, 255, 0.85)) !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
@@ -1394,7 +1394,7 @@
 }
 
 :global(body.theme-light) .mobileSearchIcon {
-  color: #8e8e93 !important;
+  color: var(--light-only-text-muted, #8e8e93) !important;
 }
 
 .mobileSearchInput {
@@ -1418,9 +1418,9 @@
 }
 
 :global(body.theme-light) .mobileSearchInput {
-  background: #ffffff !important;
-  border-color: rgba(0, 0, 0, 0.12) !important;
-  color: #000000 !important;
+  background: var(--light-only-surface, #ffffff) !important;
+  border-color: var(--light-only-border, rgba(0, 0, 0, 0.12)) !important;
+  color: var(--light-only-text, #000000) !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
 }
 
@@ -1460,7 +1460,7 @@
 }
 
 :global(body.theme-light) .mobileSearchClearBtn {
-  background: rgba(0, 0, 0, 0.12) !important;
+  background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.12)) !important;
   color: #3c3c43 !important;
 }
 
@@ -1505,12 +1505,12 @@
 }
 
 :global(body.theme-light) .mobileMicBtn {
-  color: #636366 !important;
+  color: var(--light-only-text-secondary, #636366) !important;
 }
 
 :global(body.theme-light) .mobileMicBtn:hover {
-  color: #000000 !important;
-  background: rgba(0, 0, 0, 0.06) !important;
+  color: var(--light-only-text, #000000) !important;
+  background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.06)) !important;
 }
 
 .mobileMicBtnListening {
@@ -1551,7 +1551,7 @@
 }
 
 :global(body.theme-light) .mobileTabsScroll {
-  background: #E5E5EA !important;
+  background: var(--light-only-surface-muted, #E5E5EA) !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
@@ -1575,7 +1575,7 @@
   font-size: 0.90rem;
   letter-spacing: -0.01em;
   font-weight: 500;
-  color: #8E8E93;
+  color: var(--light-only-text-muted, #8E8E93);
   cursor: pointer;
   white-space: nowrap;
   transition: color 0.15s ease;
@@ -1588,7 +1588,7 @@
 :global(body.theme-light) .mobileTabBtn {
   background: transparent !important;
   border: none !important;
-  color: #636366 !important;
+  color: var(--light-only-text-secondary, #636366) !important;
 }
 
 .mobileTabBtn:hover {
@@ -1596,7 +1596,7 @@
 }
 
 :global(body.theme-light) .mobileTabBtn:hover {
-  color: #000000 !important;
+  color: var(--light-only-text, #000000) !important;
 }
 
 .mobileTabActive {
@@ -1649,7 +1649,7 @@
 }
 
 :global(body.theme-light) .mobileSectionHeaderLabel {
-  color: #6e6e73 !important;
+  color: var(--light-only-text-muted, #6e6e73) !important;
 }
 
 .mobileCountMeta {
@@ -1665,7 +1665,7 @@
 }
 
 :global(body.theme-light) .mobileCountText {
-  color: #8e8e93 !important;
+  color: var(--light-only-text-muted, #8e8e93) !important;
 }
 
 .mobileResetLink {
@@ -1688,7 +1688,7 @@
 }
 
 :global(body.theme-light) .mobileTopicsTitle {
-  color: #6e6e73 !important;
+  color: var(--light-only-text-muted, #6e6e73) !important;
 }
 
 /* ── iOS Inset Grouped Card Container ── */
@@ -1704,7 +1704,7 @@
 }
 
 :global(body.theme-light) .mobileTopicGroup {
-  background: #ffffff !important;
+  background: var(--light-only-surface, #ffffff) !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
 }
@@ -1787,7 +1787,7 @@
 }
 
 :global(body.theme-light) .mobileTopicName {
-  color: #000000 !important;
+  color: var(--light-only-text, #000000) !important;
 }
 
 /* ── iOS Subtle Chevron ── */

@@ -3,6 +3,7 @@ import { API_BASE } from '@/lib/api-base';
 import type { MockTestSlot } from './exam-config';
 import type { LanguageText, QuizLanguage } from '@meow/contracts/exam-paper';
 import { ApiError } from '@/shared/api/error';
+import { invalidateMockCatalog } from '@/lib/mock-catalog-revision';
 
 const BASE = API_BASE;
 
@@ -174,6 +175,7 @@ export async function adminCreateSlot(slotData: Record<string, unknown>, adminTo
   if (!res.ok) {
     throw new Error(await readError(res, 'Failed to create slot'));
   }
+  invalidateMockCatalog(String(slotData.examSlug));
   return res.json();
 }
 
@@ -186,6 +188,7 @@ export async function adminUpdateSlot(slotId: string, examSlug: string, updates:
   if (!res.ok) {
     throw new Error(await readError(res, 'Failed to update slot'));
   }
+  invalidateMockCatalog(examSlug);
   return res.json();
 }
 
@@ -198,6 +201,7 @@ export async function adminDeleteSlot(slotId: string, examSlug: string, adminTok
     const error = await res.json().catch(() => ({}));
     throw new Error(error.error || 'Failed to delete slot');
   }
+  invalidateMockCatalog(examSlug);
   return res.json();
 }
 
@@ -207,6 +211,7 @@ export async function adminSeedSlots(adminToken: string) {
     headers: getAdminHeaders(adminToken),
   });
   if (!res.ok) throw new Error('Failed to seed default slots');
+  invalidateMockCatalog('*');
   return res.json();
 }
 

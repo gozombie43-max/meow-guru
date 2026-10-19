@@ -1,0 +1,132 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark ai-chat-route",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "ai-chat-page ios-theme-dark sidebar-collapsed AiChat-module__Y-7F-W__ai-chat-page AiChat-module__Y-7F-W__ios-theme-dark AiChat-module__Y-7F-W__sidebar-collapsed",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "ASIDE",
+      "cls": "ai-sidebar is-collapsed AiChat-module__Y-7F-W__ai-sidebar AiChat-module__Y-7F-W__is-collapsed",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(229, 234, 240) rgb(56, 56, 60) rgb(229, 234, 240) rgb(229, 234, 240)",
+      "shadow": "rgba(15, 23, 42, 0.18) 18px 0px 44px 0px"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "icon-btn AiChat-module__Y-7F-W__icon-btn",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "new-chat AiChat-module__Y-7F-W__new-chat",
+      "color": "rgb(32, 33, 35)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(32, 33, 35)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "chat-workspace is-empty AiChat-module__Y-7F-W__chat-workspace AiChat-module__Y-7F-W__is-empty",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "chat-topbar AiChat-module__Y-7F-W__chat-topbar",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "mobile-menu icon-btn AiChat-module__Y-7F-W__mobile-menu AiChat-module__Y-7F-W__icon-btn",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "SECTION",
+      "cls": "welcome-panel AiChat-module__Y-7F-W__welcome-panel",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "composer-tool clip-btn AiChat-module__Y-7F-W__composer-tool",
+      "color": "rgb(82, 82, 91)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(82, 82, 91)",
+      "shadow": "none"
+    },
+    {
+      "tag": "TEXTAREA",
+      "cls": "",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "composer-tool mic-btn AiChat-module__Y-7F-W__composer-tool AiChat-module__Y-7F-W__mic-btn",
+      "color": "rgb(82, 82, 91)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(82, 82, 91)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "send-btn AiChat-module__Y-7F-W__send-btn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(10, 132, 255)",
+      "image": "none",
+      "border": "rgb(10, 132, 255)",
+      "shadow": "none"
+    }
+  ]
+}

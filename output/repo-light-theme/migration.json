@@ -1,0 +1,2840 @@
+[
+  {
+    "file": "app\\(app)\\battle\\_shared\\sections.css",
+    "changes": [
+      {
+        "line": 2,
+        "selector": ".bs-page",
+        "property": "--bs-card",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      },
+      {
+        "line": 2,
+        "selector": ".bs-page",
+        "property": "--bs-soft",
+        "before": "#f5f6f8",
+        "after": "var(--light-only-canvas, #f5f6f8)"
+      },
+      {
+        "line": 2,
+        "selector": ".bs-page",
+        "property": "--bs-text",
+        "before": "#17181c",
+        "after": "var(--light-only-text, #17181c)"
+      },
+      {
+        "line": 4,
+        "selector": ".bs-header",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.94)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.94))"
+      },
+      {
+        "line": 2,
+        "selector": ".bs-page",
+        "property": "--bs-muted",
+        "before": "#636872",
+        "after": "var(--light-only-text-secondary, #636872)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\general-awareness\\_shared\\RankedTopicGroupPage.module.css",
+    "changes": [
+      {
+        "line": 3,
+        "selector": ".page",
+        "property": "--geo-bg",
+        "before": "#f5f7f9",
+        "after": "var(--light-only-canvas, #f5f7f9)"
+      },
+      {
+        "line": 5,
+        "selector": ".page",
+        "property": "--geo-surface-muted",
+        "before": "#eef1f4",
+        "after": "var(--light-only-surface-muted, #eef1f4)"
+      },
+      {
+        "line": 6,
+        "selector": ".page",
+        "property": "--geo-border",
+        "before": "#e3e7eb",
+        "after": "var(--light-only-border, #e3e7eb)"
+      },
+      {
+        "line": 7,
+        "selector": ".page",
+        "property": "--geo-text",
+        "before": "#15171a",
+        "after": "var(--light-only-text, #15171a)"
+      },
+      {
+        "line": 56,
+        "selector": ":global(body.theme-light) .mobileTopbarTitle",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 64,
+        "selector": ":global(body.theme-light) .mobileBackBtn",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 78,
+        "selector": ":global(body.theme-light) .mobileTopicName",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 168,
+        "selector": ":global(body.theme-light) .mobileRankNum",
+        "property": "color",
+        "before": "rgba(60, 60, 67, 0.65)",
+        "after": "var(--light-only-text-secondary, rgba(60, 60, 67, 0.65))"
+      },
+      {
+        "line": 8,
+        "selector": ".page",
+        "property": "--geo-secondary",
+        "before": "#68707a",
+        "after": "var(--light-only-text-muted, #68707a)"
+      },
+      {
+        "line": 9,
+        "selector": ".page",
+        "property": "--geo-tertiary",
+        "before": "#929aa4",
+        "after": "var(--light-only-text-muted, #929aa4)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\notifications\\notifications.css",
+    "changes": [
+      {
+        "line": 41,
+        "selector": "html.theme-light,\r\nbody.theme-light",
+        "property": "--notif-bg",
+        "before": "#f8f9fc",
+        "after": "var(--light-only-canvas, #f8f9fc)"
+      },
+      {
+        "line": 43,
+        "selector": "html.theme-light,\r\nbody.theme-light",
+        "property": "--notif-border",
+        "before": "rgba(0, 0, 0, 0.08)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.08))"
+      },
+      {
+        "line": 45,
+        "selector": "html.theme-light,\r\nbody.theme-light",
+        "property": "--notif-text",
+        "before": "#111827",
+        "after": "var(--light-only-text, #111827)"
+      },
+      {
+        "line": 47,
+        "selector": "html.theme-light,\r\nbody.theme-light",
+        "property": "--notif-soft",
+        "before": "#f1f3f9",
+        "after": "var(--light-only-surface-muted, #f1f3f9)"
+      },
+      {
+        "line": 46,
+        "selector": "html.theme-light,\r\nbody.theme-light",
+        "property": "--notif-muted",
+        "before": "#6b7280",
+        "after": "var(--light-only-text-muted, #6b7280)"
+      }
+    ]
+  },
+  {
+    "file": "components\\auth\\verification.module.css",
+    "changes": [
+      {
+        "line": 2,
+        "selector": ".screen",
+        "property": "--surface",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      },
+      {
+        "line": 3,
+        "selector": ".screen",
+        "property": "--canvas",
+        "before": "#f5f6fa",
+        "after": "var(--light-only-canvas, #f5f6fa)"
+      },
+      {
+        "line": 4,
+        "selector": ".screen",
+        "property": "--text",
+        "before": "#17202e",
+        "after": "var(--light-only-text, #17202e)"
+      },
+      {
+        "line": 6,
+        "selector": ".screen",
+        "property": "--border",
+        "before": "rgba(0, 0, 0, .09)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, .09))"
+      },
+      {
+        "line": 5,
+        "selector": ".screen",
+        "property": "--muted",
+        "before": "#5d6675",
+        "after": "var(--light-only-text-secondary, #5d6675)"
+      }
+    ]
+  },
+  {
+    "file": "components\\selection-popover.css",
+    "changes": [
+      {
+        "line": 2,
+        "selector": ".selection-popover",
+        "property": "--selection-surface",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      },
+      {
+        "line": 3,
+        "selector": ".selection-popover",
+        "property": "--selection-text",
+        "before": "#1c1c1e",
+        "after": "var(--light-only-text, #1c1c1e)"
+      },
+      {
+        "line": 5,
+        "selector": ".selection-popover",
+        "property": "--selection-hover",
+        "before": "#f0f1f3",
+        "after": "var(--light-only-surface-muted, #f0f1f3)"
+      },
+      {
+        "line": 6,
+        "selector": ".selection-popover",
+        "property": "--selection-border",
+        "before": "rgb(0 0 0 / .08)",
+        "after": "var(--light-only-border, rgb(0 0 0 / .08))"
+      },
+      {
+        "line": 4,
+        "selector": ".selection-popover",
+        "property": "--selection-muted",
+        "before": "#68686e",
+        "after": "var(--light-only-text-muted, #68686e)"
+      }
+    ]
+  },
+  {
+    "file": "components\\subject-hub\\mobile-topic-card.module.css",
+    "changes": [
+      {
+        "line": 9,
+        "selector": ".card",
+        "property": "--topic-label",
+        "before": "#7c8899",
+        "after": "var(--light-only-text-muted, #7c8899)"
+      },
+      {
+        "line": 90,
+        "selector": ":global(html.theme-light) .card",
+        "property": "--topic-label",
+        "before": "#64748b",
+        "after": "var(--light-only-text-muted, #64748b)"
+      },
+      {
+        "line": 8,
+        "selector": ".card",
+        "property": "--topic-total",
+        "before": "#94a3b8",
+        "after": "var(--light-only-text-muted, #94a3b8)"
+      },
+      {
+        "line": 87,
+        "selector": ":global(html.theme-light) .card",
+        "property": "--topic-solved",
+        "before": "#334155",
+        "after": "var(--light-only-text-secondary, #334155)"
+      },
+      {
+        "line": 89,
+        "selector": ":global(html.theme-light) .card",
+        "property": "--topic-total",
+        "before": "#64748b",
+        "after": "var(--light-only-text-muted, #64748b)"
+      }
+    ]
+  },
+  {
+    "file": "features\\quiz\\components\\ui\\SeriesStartViews.module.css",
+    "changes": [
+      {
+        "line": 80,
+        "selector": ":global(body.theme-light) .pageRoot,\r\n:global(html.theme-light) .pageRoot,\r\n.pageRoot[data-theme=\"light\"]",
+        "property": "--mac-bg-desktop",
+        "before": "#F6F8FA",
+        "after": "var(--light-only-canvas, #F6F8FA)"
+      },
+      {
+        "line": 287,
+        "selector": ".heroIconBox",
+        "property": "color",
+        "before": "#0f172a",
+        "after": "var(--light-only-text, #0f172a)"
+      },
+      {
+        "line": 443,
+        "selector": ".progressBar",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.06)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.06))"
+      },
+      {
+        "line": 559,
+        "selector": ".chipBtnActive .chipDot",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 948,
+        "selector": ":global(body.theme-light) .iosScreen,\r\n:global(html.theme-light) .iosScreen,\r\n.iosScreen[data-theme=\"light\"]",
+        "property": "--ios-separator",
+        "before": "rgba(60, 60, 67, 0.18)",
+        "after": "var(--light-only-border, rgba(60, 60, 67, 0.18))"
+      },
+      {
+        "line": 949,
+        "selector": ":global(body.theme-light) .iosScreen,\r\n:global(html.theme-light) .iosScreen,\r\n.iosScreen[data-theme=\"light\"]",
+        "property": "--ios-ink",
+        "before": "#1c1c1e",
+        "after": "var(--light-only-text, #1c1c1e)"
+      },
+      {
+        "line": 952,
+        "selector": ":global(body.theme-light) .iosScreen,\r\n:global(html.theme-light) .iosScreen,\r\n.iosScreen[data-theme=\"light\"]",
+        "property": "--ios-field",
+        "before": "rgba(118, 118, 128, 0.12)",
+        "after": "var(--light-only-surface-muted, rgba(118, 118, 128, 0.12))"
+      },
+      {
+        "line": 1160,
+        "selector": ".iosChipActive .iosChipDot",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 950,
+        "selector": ":global(body.theme-light) .iosScreen,\r\n:global(html.theme-light) .iosScreen,\r\n.iosScreen[data-theme=\"light\"]",
+        "property": "--ios-muted",
+        "before": "#6e6a85",
+        "after": "var(--light-only-text-muted, #6e6a85)"
+      },
+      {
+        "line": 951,
+        "selector": ":global(body.theme-light) .iosScreen,\r\n:global(html.theme-light) .iosScreen,\r\n.iosScreen[data-theme=\"light\"]",
+        "property": "--ios-subtle",
+        "before": "rgba(60, 60, 67, 0.6)",
+        "after": "var(--light-only-text-secondary, rgba(60, 60, 67, 0.6))"
+      }
+    ]
+  },
+  {
+    "file": "app\\(admin)\\admin\\notifications\\AdminNotificationsPage.module.css",
+    "changes": [
+      {
+        "line": 615,
+        "selector": ".errorBanner",
+        "property": "color",
+        "before": "#ef4444",
+        "after": "var(--light-only-danger, #ef4444)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(admin)\\admin\\users\\AdminUsersPage.module.css",
+    "changes": [
+      {
+        "line": 396,
+        "selector": ".roleBadge.user",
+        "property": "background",
+        "before": "#f1f5f9",
+        "after": "var(--light-only-surface-muted, #f1f5f9)"
+      },
+      {
+        "line": 396,
+        "selector": ".roleBadge.user",
+        "property": "color",
+        "before": "#334155",
+        "after": "var(--light-only-text-secondary, #334155)"
+      },
+      {
+        "line": 772,
+        "selector": ".actionBtn.danger",
+        "property": "color",
+        "before": "#ef4444",
+        "after": "var(--light-only-danger, #ef4444)"
+      },
+      {
+        "line": 778,
+        "selector": ".actionBtn.danger:hover",
+        "property": "border-color",
+        "before": "#ef4444",
+        "after": "var(--light-only-danger, #ef4444)"
+      },
+      {
+        "line": 954,
+        "selector": ".errorBanner",
+        "property": "color",
+        "before": "#ef4444",
+        "after": "var(--light-only-danger, #ef4444)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(admin)\\AdminShell.module.css",
+    "changes": [
+      {
+        "line": 13,
+        "selector": ".shell",
+        "property": "--admin-surface",
+        "before": "rgba(255, 255, 255, 0.88)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.88))"
+      },
+      {
+        "line": 20,
+        "selector": ".shell",
+        "property": "--admin-separator",
+        "before": "rgba(60, 60, 67, 0.12)",
+        "after": "var(--light-only-border, rgba(60, 60, 67, 0.12))"
+      },
+      {
+        "line": 24,
+        "selector": ".shell",
+        "property": "--admin-success",
+        "before": "#18743b",
+        "after": "var(--light-only-success, #18743b)"
+      },
+      {
+        "line": 25,
+        "selector": ".shell",
+        "property": "--admin-success-soft",
+        "before": "#e8f6ed",
+        "after": "var(--light-only-success-soft, #e8f6ed)"
+      },
+      {
+        "line": 27,
+        "selector": ".shell",
+        "property": "--admin-danger",
+        "before": "#c62828",
+        "after": "var(--light-only-danger, #c62828)"
+      },
+      {
+        "line": 28,
+        "selector": ".shell",
+        "property": "--admin-danger-soft",
+        "before": "#fcebec",
+        "after": "var(--light-only-danger-soft, #fcebec)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\access-code\\page.module.css",
+    "changes": [
+      {
+        "line": 55,
+        "selector": ":global(html.theme-light) .successMsg",
+        "property": "color",
+        "before": "#18743b",
+        "after": "var(--light-only-success, #18743b)"
+      },
+      {
+        "line": 134,
+        "selector": ".subtitle",
+        "property": "color",
+        "before": "#8e8e93",
+        "after": "var(--light-only-text-muted, #8e8e93)"
+      },
+      {
+        "line": 265,
+        "selector": ".continueBtn:disabled",
+        "property": "color",
+        "before": "#636366",
+        "after": "var(--light-only-text-secondary, #636366)"
+      },
+      {
+        "line": 290,
+        "selector": ".infoText",
+        "property": "color",
+        "before": "#636366",
+        "after": "var(--light-only-text-secondary, #636366)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\ai-chat\\AiChat.module.css",
+    "changes": [
+      {
+        "line": 11,
+        "selector": ".ai-chat-page",
+        "property": "--topbar-bg",
+        "before": "rgba(255, 255, 255, 0.75)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.75))"
+      },
+      {
+        "line": 638,
+        "selector": ".file-preview-wrapper",
+        "property": "background",
+        "before": "#fafafa",
+        "after": "var(--light-only-canvas, #fafafa)"
+      },
+      {
+        "line": 700,
+        "selector": ".attachment-error",
+        "property": "background",
+        "before": "#fef2f2",
+        "after": "var(--light-only-danger-soft, #fef2f2)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\battle\\battle.css",
+    "changes": [
+      {
+        "line": 9,
+        "selector": ":root",
+        "property": "--battle-green",
+        "before": "#16845b",
+        "after": "var(--light-only-success, #16845b)"
+      },
+      {
+        "line": 10,
+        "selector": ":root",
+        "property": "--battle-red",
+        "before": "#cc3e4b",
+        "after": "var(--light-only-danger, #cc3e4b)"
+      },
+      {
+        "line": 14,
+        "selector": ".battle-page",
+        "property": "background",
+        "before": "#f7f5fa",
+        "after": "var(--light-only-canvas, #f7f5fa)"
+      },
+      {
+        "line": 23,
+        "selector": ".battle-connection",
+        "property": "background",
+        "before": "#ebe7ef",
+        "after": "var(--light-only-surface-muted, #ebe7ef)"
+      },
+      {
+        "line": 33,
+        "selector": ".battle-trust-row",
+        "property": "color",
+        "before": "#4d4758",
+        "after": "var(--light-only-text-secondary, #4d4758)"
+      },
+      {
+        "line": 48,
+        "selector": ".battle-tabs button.is-active",
+        "property": "background",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      },
+      {
+        "line": 51,
+        "selector": ".battle-field input, .battle-field select",
+        "property": "background",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      },
+      {
+        "line": 68,
+        "selector": ".battle-notice.is-error",
+        "property": "background",
+        "before": "#fff1f2",
+        "after": "var(--light-only-danger-soft, #fff1f2)"
+      },
+      {
+        "line": 71,
+        "selector": ".battle-quick-links a",
+        "property": "background",
+        "before": "rgba(255, 255, 255, .75)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, .75))"
+      },
+      {
+        "line": 72,
+        "selector": ".battle-quick-links a:hover",
+        "property": "background",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      },
+      {
+        "line": 78,
+        "selector": ".battle-centered",
+        "property": "background",
+        "before": "#f7f5fa",
+        "after": "var(--light-only-canvas, #f7f5fa)"
+      },
+      {
+        "line": 84,
+        "selector": ".battle-waiting-page",
+        "property": "background",
+        "before": "radial-gradient(circle at 50% 10%, #e5f0ff, #f7f5fa 50%)",
+        "after": "radial-gradient(circle at 50% 10%, #e5f0ff, var(--light-only-canvas, #f7f5fa) 50%)"
+      },
+      {
+        "line": 103,
+        "selector": ".battle-invite > div",
+        "property": "background",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      },
+      {
+        "line": 113,
+        "selector": ".battle-game-shell",
+        "property": "background",
+        "before": "#f7f5fa",
+        "after": "var(--light-only-canvas, #f7f5fa)"
+      },
+      {
+        "line": 199,
+        "selector": ".battle-result-page",
+        "property": "background",
+        "before": "radial-gradient(circle at 50% 8%, #e1eeff, #f7f5fa 48%)",
+        "after": "radial-gradient(circle at 50% 8%, #e1eeff, var(--light-only-canvas, #f7f5fa) 48%)"
+      },
+      {
+        "line": 230,
+        "selector": ".battle-secondary-button",
+        "property": "background",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      },
+      {
+        "line": 255,
+        "selector": ".battle-review-tabs button.is-active",
+        "property": "background",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      },
+      {
+        "line": 266,
+        "selector": ".battle-review-opt",
+        "property": "background",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\english\\english.module.css",
+    "changes": [
+      {
+        "line": 20,
+        "selector": ".pageRoot",
+        "property": "--mac-surface-active",
+        "before": "#D0D9E4",
+        "after": "var(--light-only-surface-muted, #D0D9E4)"
+      },
+      {
+        "line": 30,
+        "selector": ".pageRoot",
+        "property": "--mac-canvas-header-bg",
+        "before": "#F4F7FB",
+        "after": "var(--light-only-canvas, #F4F7FB)"
+      },
+      {
+        "line": 1104,
+        "selector": ".modeCardTitle",
+        "property": "color",
+        "before": "#0f172a",
+        "after": "var(--light-only-text, #0f172a)"
+      },
+      {
+        "line": 1120,
+        "selector": ".modeCardSub",
+        "property": "color",
+        "before": "#64748b",
+        "after": "var(--light-only-text-muted, #64748b)"
+      },
+      {
+        "line": 1348,
+        "selector": ":global(body.theme-light) .mobileTopbar",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.85)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.85))"
+      },
+      {
+        "line": 1397,
+        "selector": ":global(body.theme-light) .mobileSearchIcon",
+        "property": "color",
+        "before": "#8e8e93",
+        "after": "var(--light-only-text-muted, #8e8e93)"
+      },
+      {
+        "line": 1421,
+        "selector": ":global(body.theme-light) .mobileSearchInput",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1422,
+        "selector": ":global(body.theme-light) .mobileSearchInput",
+        "property": "border-color",
+        "before": "rgba(0, 0, 0, 0.12)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.12))"
+      },
+      {
+        "line": 1423,
+        "selector": ":global(body.theme-light) .mobileSearchInput",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 1463,
+        "selector": ":global(body.theme-light) .mobileSearchClearBtn",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.12)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.12))"
+      },
+      {
+        "line": 1508,
+        "selector": ":global(body.theme-light) .mobileMicBtn",
+        "property": "color",
+        "before": "#636366",
+        "after": "var(--light-only-text-secondary, #636366)"
+      },
+      {
+        "line": 1512,
+        "selector": ":global(body.theme-light) .mobileMicBtn:hover",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 1513,
+        "selector": ":global(body.theme-light) .mobileMicBtn:hover",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.06)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.06))"
+      },
+      {
+        "line": 1554,
+        "selector": ":global(body.theme-light) .mobileTabsScroll",
+        "property": "background",
+        "before": "#E5E5EA",
+        "after": "var(--light-only-surface-muted, #E5E5EA)"
+      },
+      {
+        "line": 1578,
+        "selector": ".mobileTabBtn",
+        "property": "color",
+        "before": "#8E8E93",
+        "after": "var(--light-only-text-muted, #8E8E93)"
+      },
+      {
+        "line": 1591,
+        "selector": ":global(body.theme-light) .mobileTabBtn",
+        "property": "color",
+        "before": "#636366",
+        "after": "var(--light-only-text-secondary, #636366)"
+      },
+      {
+        "line": 1599,
+        "selector": ":global(body.theme-light) .mobileTabBtn:hover",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 1652,
+        "selector": ":global(body.theme-light) .mobileSectionHeaderLabel",
+        "property": "color",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 1668,
+        "selector": ":global(body.theme-light) .mobileCountText",
+        "property": "color",
+        "before": "#8e8e93",
+        "after": "var(--light-only-text-muted, #8e8e93)"
+      },
+      {
+        "line": 1691,
+        "selector": ":global(body.theme-light) .mobileTopicsTitle",
+        "property": "color",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 1707,
+        "selector": ":global(body.theme-light) .mobileTopicGroup",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1790,
+        "selector": ":global(body.theme-light) .mobileTopicName",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\english\\idioms-phrases\\study-mode\\page.module.css",
+    "changes": [
+      {
+        "line": 4,
+        "selector": ".container",
+        "property": "--label",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 5,
+        "selector": ".container",
+        "property": "--secondary-label",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 6,
+        "selector": ".container",
+        "property": "--tertiary-label",
+        "before": "#8e8e93",
+        "after": "var(--light-only-text-muted, #8e8e93)"
+      },
+      {
+        "line": 7,
+        "selector": ".container",
+        "property": "--separator",
+        "before": "rgba(60,60,67,0.29)",
+        "after": "var(--light-only-border, rgba(60,60,67,0.29))"
+      },
+      {
+        "line": 10,
+        "selector": ".container",
+        "property": "--fill",
+        "before": "rgba(120,120,128,0.12)",
+        "after": "var(--light-only-surface-muted, rgba(120,120,128,0.12))"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\english\\_shared\\StudyModeComparison.module.css",
+    "changes": [
+      {
+        "line": 13,
+        "selector": ".apple-dict-viewport",
+        "property": "--text-muted",
+        "before": "#636366",
+        "after": "var(--light-only-text-secondary, #636366)"
+      },
+      {
+        "line": 37,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"]",
+        "property": "--window-border",
+        "before": "rgba(0, 0, 0, 0.15)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.15))"
+      },
+      {
+        "line": 38,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"]",
+        "property": "--divider",
+        "before": "rgba(0, 0, 0, 0.08)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.08))"
+      },
+      {
+        "line": 40,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"]",
+        "property": "--text-secondary",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 41,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"]",
+        "property": "--text-muted",
+        "before": "#86868b",
+        "after": "var(--light-only-text-muted, #86868b)"
+      },
+      {
+        "line": 42,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"]",
+        "property": "--item-hover",
+        "before": "rgba(0, 0, 0, 0.04)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.04))"
+      },
+      {
+        "line": 45,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"]",
+        "property": "--quote-bg",
+        "before": "rgba(0, 0, 0, 0.03)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.03))"
+      },
+      {
+        "line": 125,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"] .mobile-back-btn",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      },
+      {
+        "line": 184,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"] .mobile-counter-filter-btn",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      },
+      {
+        "line": 210,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"] .appearance-toggle",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      },
+      {
+        "line": 267,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"] .mobile-footer-btn",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.07)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.07))"
+      },
+      {
+        "line": 296,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"] .mobile-footer-btn:disabled",
+        "property": "border-color",
+        "before": "rgba(0, 0, 0, 0.06)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.06))"
+      },
+      {
+        "line": 298,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"] .mobile-footer-btn:disabled",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.02)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.02))"
+      },
+      {
+        "line": 484,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"] .table-row:active",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.06)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.06))"
+      },
+      {
+        "line": 1149,
+        "selector": ".symbol",
+        "property": "color",
+        "before": "rgba(0, 0, 0, 0.7)",
+        "after": "var(--light-only-text-secondary, rgba(0, 0, 0, 0.7))"
+      },
+      {
+        "line": 1168,
+        "selector": ".apple-dict-viewport[data-theme=\"light\"] .search-box",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\mathematics\\_shared\\FormulaNotes.module.css",
+    "changes": [
+      {
+        "line": 651,
+        "selector": ":global(body.theme-light) .formula-notes-page,\n        :global(html.theme-light) .formula-notes-page",
+        "property": "--card-bg",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 652,
+        "selector": ":global(body.theme-light) .formula-notes-page,\n        :global(html.theme-light) .formula-notes-page",
+        "property": "--card-hover",
+        "before": "#f8fafc",
+        "after": "var(--light-only-canvas, #f8fafc)"
+      },
+      {
+        "line": 653,
+        "selector": ":global(body.theme-light) .formula-notes-page,\n        :global(html.theme-light) .formula-notes-page",
+        "property": "--border",
+        "before": "rgba(0, 0, 0, 0.08)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.08))"
+      },
+      {
+        "line": 658,
+        "selector": ":global(body.theme-light) .formula-notes-page,\n        :global(html.theme-light) .formula-notes-page",
+        "property": "--tab-bg",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      },
+      {
+        "line": 660,
+        "selector": ":global(body.theme-light) .formula-notes-page,\n        :global(html.theme-light) .formula-notes-page",
+        "property": "--modal-bg",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 663,
+        "selector": ":global(body.theme-light) .formula-notes-page,\n        :global(html.theme-light) .formula-notes-page",
+        "property": "--spinner-color",
+        "before": "rgba(60, 60, 67, 0.6)",
+        "after": "var(--light-only-text-secondary, rgba(60, 60, 67, 0.6))"
+      },
+      {
+        "line": 673,
+        "selector": ":global(body.theme-light) .fn-card:hover",
+        "property": "background",
+        "before": "#f8fafc",
+        "after": "var(--light-only-canvas, #f8fafc)"
+      },
+      {
+        "line": 674,
+        "selector": ":global(body.theme-light) .fn-card:hover",
+        "property": "border-color",
+        "before": "rgba(0, 0, 0, 0.14)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.14))"
+      },
+      {
+        "line": 680,
+        "selector": ":global(body.theme-light) .fn-card:active",
+        "property": "border-color",
+        "before": "rgba(0, 0, 0, 0.16)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.16))"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\mock-test\\page.module.css",
+    "changes": [
+      {
+        "line": 358,
+        "selector": ".examLogoBox",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 544,
+        "selector": ".detailHeroLogo",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.95)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.95))"
+      },
+      {
+        "line": 997,
+        "selector": ".macosWindow",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.78)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.78))"
+      },
+      {
+        "line": 1079,
+        "selector": ".sidebarTab:hover",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.04)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.04))"
+      },
+      {
+        "line": 1179,
+        "selector": ".examCard",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.85)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.85))"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\mock-test\\_shared\\ExamLandingPage.module.css",
+    "changes": [
+      {
+        "line": 198,
+        "selector": ".examLogo",
+        "property": "background",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      },
+      {
+        "line": 572,
+        "selector": ".macosWindow",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.78)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.78))"
+      },
+      {
+        "line": 725,
+        "selector": ".sidebarTab:hover",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.04)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.04))"
+      },
+      {
+        "line": 763,
+        "selector": ".sidebarTierTab:hover",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.04)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.04))"
+      },
+      {
+        "line": 815,
+        "selector": ".headerCard",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.7)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.7))"
+      },
+      {
+        "line": 887,
+        "selector": ".testLineCard",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.85)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.85))"
+      },
+      {
+        "line": 947,
+        "selector": ".page",
+        "property": "--catalog-success",
+        "before": "#087f5b",
+        "after": "var(--light-only-success, #087f5b)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\mock-test\\_shared\\MockTestEngine.module.css",
+    "changes": [
+      {
+        "line": 136,
+        "selector": ".qBubble",
+        "property": "background",
+        "before": "white",
+        "after": "var(--light-only-surface, white)"
+      },
+      {
+        "line": 473,
+        "selector": ".container :is(.actionsBar, .mobileBottomBar)",
+        "property": "--ui-text",
+        "before": "#334155",
+        "after": "var(--light-only-text-secondary, #334155)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\mock-test\\_shared\\ReviewEngine.module.css",
+    "changes": [
+      {
+        "line": 44,
+        "selector": ".languageSwitch::after",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\page.module.css",
+    "changes": [
+      {
+        "line": 6,
+        "selector": ".pageWrapper",
+        "property": "--light-canvas",
+        "before": "#f4f5f7",
+        "after": "var(--light-only-canvas, #f4f5f7)"
+      },
+      {
+        "line": 7,
+        "selector": ".pageWrapper",
+        "property": "--light-surface",
+        "before": "#fdfdfd",
+        "after": "var(--light-only-surface, #fdfdfd)"
+      },
+      {
+        "line": 8,
+        "selector": ".pageWrapper",
+        "property": "--light-surface-muted",
+        "before": "#eceef1",
+        "after": "var(--light-only-surface-muted, #eceef1)"
+      },
+      {
+        "line": 9,
+        "selector": ".pageWrapper",
+        "property": "--light-border",
+        "before": "#e1e4e8",
+        "after": "var(--light-only-border, #e1e4e8)"
+      },
+      {
+        "line": 10,
+        "selector": ".pageWrapper",
+        "property": "--light-text",
+        "before": "#242830",
+        "after": "var(--light-only-text, #242830)"
+      },
+      {
+        "line": 11,
+        "selector": ".pageWrapper",
+        "property": "--light-text-secondary",
+        "before": "#606773",
+        "after": "var(--light-only-text-secondary, #606773)"
+      },
+      {
+        "line": 12,
+        "selector": ".pageWrapper",
+        "property": "--light-text-muted",
+        "before": "#7a828e",
+        "after": "var(--light-only-text-muted, #7a828e)"
+      },
+      {
+        "line": 23,
+        "selector": ".pageWrapper",
+        "property": "--mac-border-subtle",
+        "before": "rgba(36, 40, 48, 0.07)",
+        "after": "var(--light-only-border, rgba(36, 40, 48, 0.07))"
+      },
+      {
+        "line": 604,
+        "selector": ".heroCard",
+        "property": "background",
+        "before": "linear-gradient(120deg, #fdfdfd 0%, #f7f8fa 60%, #eceff3 100%)",
+        "after": "linear-gradient(120deg, var(--light-only-surface, #fdfdfd) 0%, var(--light-only-canvas, #f7f8fa) 60%, #eceff3 100%)"
+      },
+      {
+        "line": 1103,
+        "selector": ".mobileTopbar",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.88)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.88))"
+      },
+      {
+        "line": 1377,
+        "selector": ".sidebarThemeSwitch span",
+        "property": "background",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      },
+      {
+        "line": 1776,
+        "selector": ".progressTrack",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.06)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.06))"
+      },
+      {
+        "line": 1839,
+        "selector": ".pencilOne",
+        "property": "background",
+        "before": "linear-gradient(#f553b3 0 20%, #fff 20% 30%, #8651ff 30%)",
+        "after": "linear-gradient(#f553b3 0 20%, var(--light-only-surface, #fff) 20% 30%, #8651ff 30%)"
+      },
+      {
+        "line": 1845,
+        "selector": ".pencilTwo",
+        "property": "background",
+        "before": "linear-gradient(#fff 0 16%, #ff6b16 16% 28%, #f74d83 28%)",
+        "after": "linear-gradient(var(--light-only-surface, #fff) 0 16%, #ff6b16 16% 28%, #f74d83 28%)"
+      },
+      {
+        "line": 1852,
+        "selector": ".pencilThree",
+        "property": "background",
+        "before": "linear-gradient(#fff 0 16%, #15a7ff 16% 28%, #ff7a11 28%)",
+        "after": "linear-gradient(var(--light-only-surface, #fff) 0 16%, #15a7ff 16% 28%, #ff7a11 28%)"
+      },
+      {
+        "line": 2007,
+        "selector": ".mobileSidebar .sidebarPreferences > button > span:last-child > span",
+        "property": "background",
+        "before": "#fff",
+        "after": "var(--light-only-surface, #fff)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\play\\setup\\[mode]\\setup.css",
+    "changes": [
+      {
+        "line": 435,
+        "selector": ".play-setup-error",
+        "property": "color",
+        "before": "#dc2626",
+        "after": "var(--light-only-danger, #dc2626)"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\resource\\Resource.module.css",
+    "changes": [
+      {
+        "line": 731,
+        "selector": ":global(body.theme-light) .resource-page,\r\n        :global(html.theme-light) .resource-page",
+        "property": "--card-hover",
+        "before": "#f8fafc",
+        "after": "var(--light-only-canvas, #f8fafc)"
+      },
+      {
+        "line": 732,
+        "selector": ":global(body.theme-light) .resource-page,\r\n        :global(html.theme-light) .resource-page",
+        "property": "--border",
+        "before": "rgba(0, 0, 0, 0.08)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.08))"
+      },
+      {
+        "line": 737,
+        "selector": ":global(body.theme-light) .resource-page,\r\n        :global(html.theme-light) .resource-page",
+        "property": "--tab-bg",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      },
+      {
+        "line": 741,
+        "selector": ":global(body.theme-light) .resource-page,\r\n        :global(html.theme-light) .resource-page",
+        "property": "--notice-bg",
+        "before": "rgba(0, 0, 0, 0.04)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.04))"
+      },
+      {
+        "line": 742,
+        "selector": ":global(body.theme-light) .resource-page,\r\n        :global(html.theme-light) .resource-page",
+        "property": "--spinner-color",
+        "before": "rgba(60, 60, 67, 0.6)",
+        "after": "var(--light-only-text-secondary, rgba(60, 60, 67, 0.6))"
+      },
+      {
+        "line": 749,
+        "selector": ":global(body.theme-light) .res-segment-btn.active,\r\n        :global(html.theme-light) .res-segment-btn.active",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 760,
+        "selector": ":global(body.theme-light) .res-card:hover",
+        "property": "background",
+        "before": "#f8fafc",
+        "after": "var(--light-only-canvas, #f8fafc)"
+      },
+      {
+        "line": 761,
+        "selector": ":global(body.theme-light) .res-card:hover",
+        "property": "border-color",
+        "before": "rgba(0, 0, 0, 0.14)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.14))"
+      },
+      {
+        "line": 767,
+        "selector": ":global(body.theme-light) .res-card:active",
+        "property": "border-color",
+        "before": "rgba(0, 0, 0, 0.16)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.16))"
+      }
+    ]
+  },
+  {
+    "file": "components\\admin\\AdminTool.module.css",
+    "changes": [
+      {
+        "line": 178,
+        "selector": ".btnSecondary:hover:not(:disabled)",
+        "property": "background",
+        "before": "#e5e5ea",
+        "after": "var(--light-only-surface-muted, #e5e5ea)"
+      },
+      {
+        "line": 179,
+        "selector": ".btnSecondary:hover:not(:disabled)",
+        "property": "border-color",
+        "before": "rgba(0, 0, 0, 0.2)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.2))"
+      }
+    ]
+  },
+  {
+    "file": "components\\admin\\ScheduledNotificationsPanel.module.css",
+    "changes": [
+      {
+        "line": 120,
+        "selector": ".tabCount",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.08)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.08))"
+      },
+      {
+        "line": 202,
+        "selector": ".statusCancelled",
+        "property": "color",
+        "before": "#64748b",
+        "after": "var(--light-only-text-muted, #64748b)"
+      }
+    ]
+  },
+  {
+    "file": "components\\auth\\auth.module.css",
+    "changes": [
+      {
+        "line": 10,
+        "selector": ".authContainer,\r\n.modalOverlay",
+        "property": "--ios-card-bg",
+        "before": "rgba(255, 255, 255, 0.82)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.82))"
+      },
+      {
+        "line": 27,
+        "selector": ".authContainer,\r\n.modalOverlay",
+        "property": "--ios-google-hover",
+        "before": "#f9f9fb",
+        "after": "var(--light-only-canvas, #f9f9fb)"
+      },
+      {
+        "line": 35,
+        "selector": ".authContainer,\r\n.modalOverlay",
+        "property": "--ios-modal-border",
+        "before": "rgba(0, 0, 0, 0.1)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.1))"
+      },
+      {
+        "line": 208,
+        "selector": ".showcasePill",
+        "property": "background",
+        "before": "rgba(118, 118, 128, 0.07)",
+        "after": "var(--light-only-surface-muted, rgba(118, 118, 128, 0.07))"
+      },
+      {
+        "line": 835,
+        "selector": ".modalSheet",
+        "property": "background-color",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 841,
+        "selector": ".modalSheet",
+        "property": "color",
+        "before": "#1c1c1e",
+        "after": "var(--light-only-text, #1c1c1e)"
+      }
+    ]
+  },
+  {
+    "file": "components\\exam-mode.module.css",
+    "changes": [
+      {
+        "line": 171,
+        "selector": ".track>span",
+        "property": "background",
+        "before": "white",
+        "after": "var(--light-only-surface, white)"
+      }
+    ]
+  },
+  {
+    "file": "components\\MacTrafficLights.module.css",
+    "changes": [
+      {
+        "line": 48,
+        "selector": ".icon",
+        "property": "color",
+        "before": "rgba(0, 0, 0, 0.6)",
+        "after": "var(--light-only-text-secondary, rgba(0, 0, 0, 0.6))"
+      }
+    ]
+  },
+  {
+    "file": "components\\QuestionImage.module.css",
+    "changes": [
+      {
+        "line": 115,
+        "selector": ".zoomTrigger",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 163,
+        "selector": ".retryBtn:hover",
+        "property": "background",
+        "before": "#e2e8f0",
+        "after": "var(--light-only-surface-muted, #e2e8f0)"
+      },
+      {
+        "line": 224,
+        "selector": ".modalImgWrapper",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      }
+    ]
+  },
+  {
+    "file": "components\\SubjectHub.module.css",
+    "changes": [
+      {
+        "line": 20,
+        "selector": ".pageRoot",
+        "property": "--mac-surface-active",
+        "before": "#D0D9E4",
+        "after": "var(--light-only-surface-muted, #D0D9E4)"
+      },
+      {
+        "line": 30,
+        "selector": ".pageRoot",
+        "property": "--mac-canvas-header-bg",
+        "before": "#F4F7FB",
+        "after": "var(--light-only-canvas, #F4F7FB)"
+      },
+      {
+        "line": 1117,
+        "selector": ".modeCardTitle",
+        "property": "color",
+        "before": "#0f172a",
+        "after": "var(--light-only-text, #0f172a)"
+      },
+      {
+        "line": 1133,
+        "selector": ".modeCardSub",
+        "property": "color",
+        "before": "#64748b",
+        "after": "var(--light-only-text-muted, #64748b)"
+      },
+      {
+        "line": 1406,
+        "selector": ":global(body.theme-light) .mobileTopbar",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.85)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.85))"
+      },
+      {
+        "line": 1459,
+        "selector": ":global(body.theme-light) .mobileSearchIcon",
+        "property": "color",
+        "before": "#8e8e93",
+        "after": "var(--light-only-text-muted, #8e8e93)"
+      },
+      {
+        "line": 1483,
+        "selector": ":global(body.theme-light) .mobileSearchInput",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1484,
+        "selector": ":global(body.theme-light) .mobileSearchInput",
+        "property": "border-color",
+        "before": "rgba(0, 0, 0, 0.12)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.12))"
+      },
+      {
+        "line": 1485,
+        "selector": ":global(body.theme-light) .mobileSearchInput",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 1525,
+        "selector": ":global(body.theme-light) .mobileSearchClearBtn",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.12)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.12))"
+      },
+      {
+        "line": 1570,
+        "selector": ":global(body.theme-light) .mobileMicBtn",
+        "property": "color",
+        "before": "#636366",
+        "after": "var(--light-only-text-secondary, #636366)"
+      },
+      {
+        "line": 1574,
+        "selector": ":global(body.theme-light) .mobileMicBtn:hover",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 1575,
+        "selector": ":global(body.theme-light) .mobileMicBtn:hover",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.06)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.06))"
+      },
+      {
+        "line": 1616,
+        "selector": ":global(body.theme-light) .mobileTabsScroll",
+        "property": "background",
+        "before": "#E5E5EA",
+        "after": "var(--light-only-surface-muted, #E5E5EA)"
+      },
+      {
+        "line": 1640,
+        "selector": ".mobileTabBtn",
+        "property": "color",
+        "before": "#8E8E93",
+        "after": "var(--light-only-text-muted, #8E8E93)"
+      },
+      {
+        "line": 1653,
+        "selector": ":global(body.theme-light) .mobileTabBtn",
+        "property": "color",
+        "before": "#636366",
+        "after": "var(--light-only-text-secondary, #636366)"
+      },
+      {
+        "line": 1661,
+        "selector": ":global(body.theme-light) .mobileTabBtn:hover",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 1714,
+        "selector": ":global(body.theme-light) .mobileSectionHeaderLabel",
+        "property": "color",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 1730,
+        "selector": ":global(body.theme-light) .mobileCountText",
+        "property": "color",
+        "before": "#8e8e93",
+        "after": "var(--light-only-text-muted, #8e8e93)"
+      },
+      {
+        "line": 1753,
+        "selector": ":global(body.theme-light) .mobileTopicsTitle",
+        "property": "color",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 1769,
+        "selector": ":global(body.theme-light) .mobileTopicGroup",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1852,
+        "selector": ":global(body.theme-light) .mobileTopicName",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 2077,
+        "selector": ":global(body.theme-light) .mobileHeaderFilterBtn",
+        "property": "color",
+        "before": "#1c1c1e",
+        "after": "var(--light-only-text, #1c1c1e)"
+      },
+      {
+        "line": 2127,
+        "selector": ":global(body.theme-light) .mobileFilterDropdown",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 2128,
+        "selector": ":global(body.theme-light) .mobileFilterDropdown",
+        "property": "border-color",
+        "before": "rgba(0, 0, 0, 0.12)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.12))"
+      },
+      {
+        "line": 2153,
+        "selector": ":global(body.theme-light) .mobileFilterDropdownHeader",
+        "property": "color",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 2154,
+        "selector": ":global(body.theme-light) .mobileFilterDropdownHeader",
+        "property": "border-bottom-color",
+        "before": "rgba(0, 0, 0, 0.06)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.06))"
+      },
+      {
+        "line": 2192,
+        "selector": ":global(body.theme-light) .mobileFilterOptionItem",
+        "property": "color",
+        "before": "#1c1c1e",
+        "after": "var(--light-only-text, #1c1c1e)"
+      },
+      {
+        "line": 2201,
+        "selector": ":global(body.theme-light) .mobileFilterOptionItem:hover",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      }
+    ]
+  },
+  {
+    "file": "components\\training\\training-session.css",
+    "changes": [
+      {
+        "line": 302,
+        "selector": ".training-header-progress-track",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      },
+      {
+        "line": 1147,
+        "selector": ".trade-kpi-item:hover",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.04)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.04))"
+      },
+      {
+        "line": 1856,
+        "selector": ".trade-choice-row.is-correct-pick .choice-label",
+        "property": "color",
+        "before": "#059669",
+        "after": "var(--light-only-success, #059669)"
+      },
+      {
+        "line": 1861,
+        "selector": ".trade-choice-row.is-wrong-pick .choice-label",
+        "property": "color",
+        "before": "#dc2626",
+        "after": "var(--light-only-danger, #dc2626)"
+      }
+    ]
+  },
+  {
+    "file": "components\\UserProfileMenu.module.css",
+    "changes": [
+      {
+        "line": 125,
+        "selector": ".popover",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 189,
+        "selector": ".userEmail",
+        "property": "color",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 280,
+        "selector": ".divider",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.06)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.06))"
+      },
+      {
+        "line": 315,
+        "selector": ".menuItem:hover",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      },
+      {
+        "line": 427,
+        "selector": ".menuItemSub",
+        "property": "color",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 469,
+        "selector": ".guestDesc",
+        "property": "color",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 511,
+        "selector": ".registerBtn",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      },
+      {
+        "line": 545,
+        "selector": ".modalCard",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 625,
+        "selector": ".modalCloseBtn",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      },
+      {
+        "line": 626,
+        "selector": ".modalCloseBtn",
+        "property": "color",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 641,
+        "selector": ".modalCloseBtn:hover",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.1)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.1))"
+      },
+      {
+        "line": 740,
+        "selector": ".formInput",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.02)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.02))"
+      },
+      {
+        "line": 756,
+        "selector": ".formInput:focus",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 769,
+        "selector": ".formHelp",
+        "property": "color",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 809,
+        "selector": ".cancelBtn:hover",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.04)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.04))"
+      },
+      {
+        "line": 856,
+        "selector": ".settingItem",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.02)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.02))"
+      },
+      {
+        "line": 895,
+        "selector": ".settingSublabel",
+        "property": "color",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 932,
+        "selector": ".switchThumb",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 967,
+        "selector": ".accountKey",
+        "property": "color",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      }
+    ]
+  },
+  {
+    "file": "features\\quiz\\components\\ui\\QuizResumeDialog.module.css",
+    "changes": [
+      {
+        "line": 50,
+        "selector": ".dialog[data-theme=\"light\"]",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.88)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.88))"
+      },
+      {
+        "line": 52,
+        "selector": ".dialog[data-theme=\"light\"]",
+        "property": "color",
+        "before": "#1d1d1f",
+        "after": "var(--light-only-text, #1d1d1f)"
+      },
+      {
+        "line": 97,
+        "selector": ".dialog[data-theme=\"light\"] .progressCard",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.04)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.04))"
+      },
+      {
+        "line": 123,
+        "selector": ".dialog[data-theme=\"light\"] .progress",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.1)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.1))"
+      },
+      {
+        "line": 135,
+        "selector": ".dialog[data-theme=\"light\"] .cancel:hover",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      }
+    ]
+  },
+  {
+    "file": "features\\quiz\\components\\views\\DesktopQuizView.css",
+    "changes": [
+      {
+        "line": 489,
+        "selector": ".mac-series-quiz[data-theme=\"light\"] .mac-series-window",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 505,
+        "selector": ".mac-series-quiz[data-theme=\"light\"] .mac-series-icon-button",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 523,
+        "selector": ".mac-series-quiz[data-theme=\"light\"] .mac-palette-btn",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 549,
+        "selector": ".mac-series-quiz[data-theme=\"light\"] .mac-palette-btn.is-wrong",
+        "property": "color",
+        "before": "#c62828",
+        "after": "var(--light-only-danger, #c62828)"
+      },
+      {
+        "line": 561,
+        "selector": ".mac-series-quiz[data-theme=\"light\"] .mac-series-bookmark",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 566,
+        "selector": ".mac-series-quiz[data-theme=\"light\"] .mac-series-bookmark:hover",
+        "property": "border-color",
+        "before": "#d8dee4",
+        "after": "var(--light-only-border, #d8dee4)"
+      },
+      {
+        "line": 579,
+        "selector": ".mac-series-quiz[data-theme=\"light\"] .mac-series-option",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 580,
+        "selector": ".mac-series-quiz[data-theme=\"light\"] .mac-series-option",
+        "property": "border",
+        "before": "1px solid #d8dee4",
+        "after": "1px solid var(--light-only-border, #d8dee4)"
+      },
+      {
+        "line": 589,
+        "selector": ".mac-series-quiz[data-theme=\"light\"]\n          .mac-series-option:not(:disabled):hover",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 608,
+        "selector": ".mac-series-quiz[data-theme=\"light\"] .mac-series-option.is-correct",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 619,
+        "selector": ".mac-series-quiz[data-theme=\"light\"] .mac-series-option.is-wrong",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 646,
+        "selector": ".mac-series-quiz[data-theme=\"light\"]\n          .mac-series-option.is-correct\n          .mac-series-answer-icon",
+        "property": "color",
+        "before": "#16a34a",
+        "after": "var(--light-only-success, #16a34a)"
+      },
+      {
+        "line": 651,
+        "selector": ".mac-series-quiz[data-theme=\"light\"]\n          .mac-series-option.is-wrong\n          .mac-series-answer-icon",
+        "property": "color",
+        "before": "#dc2626",
+        "after": "var(--light-only-danger, #dc2626)"
+      },
+      {
+        "line": 672,
+        "selector": ".mac-series-quiz[data-theme=\"light\"]\n          .mac-series-option.is-correct\n          .mac-series-option-letter",
+        "property": "background",
+        "before": "#16a34a",
+        "after": "var(--light-only-success, #16a34a)"
+      },
+      {
+        "line": 679,
+        "selector": ".mac-series-quiz[data-theme=\"light\"]\n          .mac-series-option.is-wrong\n          .mac-series-option-letter",
+        "property": "background",
+        "before": "#dc2626",
+        "after": "var(--light-only-danger, #dc2626)"
+      },
+      {
+        "line": 685,
+        "selector": ".mac-series-quiz[data-theme=\"light\"] .mac-series-footer-secondary",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 697,
+        "selector": ".mac-series-quiz[data-theme=\"light\"] .mac-series-footer-solution,\n        .mac-series-quiz[data-theme=\"light\"] .mac-series-footer-ai",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 707,
+        "selector": ".mac-series-quiz[data-theme=\"light\"]\n          .mac-series-footer-solution:not(:disabled):hover,\n        .mac-series-quiz[data-theme=\"light\"]\n          .mac-series-footer-ai:not(:disabled):hover",
+        "property": "border-color",
+        "before": "#d8dee4",
+        "after": "var(--light-only-border, #d8dee4)"
+      }
+    ]
+  },
+  {
+    "file": "features\\quiz\\components\\views\\mobile-quiz-view.css",
+    "changes": [
+      {
+        "line": 422,
+        "selector": ".ios-series-question-bar",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.85)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.85))"
+      },
+      {
+        "line": 457,
+        "selector": ".ios-series-question.is-wrong::after",
+        "property": "background",
+        "before": "#ef4444",
+        "after": "var(--light-only-danger, #ef4444)"
+      },
+      {
+        "line": 868,
+        "selector": ".ios-series-option.is-correct .ios-series-option-letter",
+        "property": "background",
+        "before": "#16a34a",
+        "after": "var(--light-only-success, #16a34a)"
+      },
+      {
+        "line": 874,
+        "selector": ".ios-series-option.is-wrong .ios-series-option-letter",
+        "property": "background",
+        "before": "#dc2626",
+        "after": "var(--light-only-danger, #dc2626)"
+      },
+      {
+        "line": 1417,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .lang-toggle.lang-toggle",
+        "property": "--lang-toggle-bg",
+        "before": "#F0F2F5",
+        "after": "var(--light-only-surface-muted, #F0F2F5)"
+      },
+      {
+        "line": 1418,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .lang-toggle.lang-toggle",
+        "property": "--lang-toggle-border",
+        "before": "#D8DEE4",
+        "after": "var(--light-only-border, #D8DEE4)"
+      },
+      {
+        "line": 1419,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .lang-toggle.lang-toggle",
+        "property": "--lang-toggle-active-bg",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 1421,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .lang-toggle.lang-toggle",
+        "property": "--lang-toggle-divider",
+        "before": "#D8DEE4",
+        "after": "var(--light-only-border, #D8DEE4)"
+      },
+      {
+        "line": 1422,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .lang-toggle.lang-toggle",
+        "property": "--lang-toggle-text",
+        "before": "#57606A",
+        "after": "var(--light-only-text-secondary, #57606A)"
+      },
+      {
+        "line": 1424,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .lang-toggle.lang-toggle",
+        "property": "--lang-toggle-text-hover",
+        "before": "#24292F",
+        "after": "var(--light-only-text, #24292F)"
+      },
+      {
+        "line": 1431,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-icon-button",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1448,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-question",
+        "property": "border-color",
+        "before": "#e2e8f0",
+        "after": "var(--light-only-border, #e2e8f0)"
+      },
+      {
+        "line": 1449,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-question",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1450,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-question",
+        "property": "color",
+        "before": "#64748b",
+        "after": "var(--light-only-text-muted, #64748b)"
+      },
+      {
+        "line": 1460,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-question.is-correct::after,\r\n.ios-series-quiz[data-theme=\"light\"] .ios-series-question.is-answered::after",
+        "property": "background",
+        "before": "#16a34a",
+        "after": "var(--light-only-success, #16a34a)"
+      },
+      {
+        "line": 1463,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-question.is-wrong::after",
+        "property": "background",
+        "before": "#dc2626",
+        "after": "var(--light-only-danger, #dc2626)"
+      },
+      {
+        "line": 1480,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-exam-details[open] summary",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.05)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.05))"
+      },
+      {
+        "line": 1484,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-exam-popover",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1494,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-question-card",
+        "property": "border-color",
+        "before": "rgba(0, 0, 0, 0.055)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.055))"
+      },
+      {
+        "line": 1495,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-question-card",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1500,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-timer",
+        "property": "border-color",
+        "before": "#e2e8f0",
+        "after": "var(--light-only-border, #e2e8f0)"
+      },
+      {
+        "line": 1501,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-timer",
+        "property": "background",
+        "before": "#f1f5f9",
+        "after": "var(--light-only-surface-muted, #f1f5f9)"
+      },
+      {
+        "line": 1502,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-timer",
+        "property": "color",
+        "before": "#334155",
+        "after": "var(--light-only-text-secondary, #334155)"
+      },
+      {
+        "line": 1508,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-option",
+        "property": "border-color",
+        "before": "rgba(0, 0, 0, 0.055)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.055))"
+      },
+      {
+        "line": 1509,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-option",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1518,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-option:not(:disabled):hover",
+        "property": "background",
+        "before": "#f8fafc",
+        "after": "var(--light-only-canvas, #f8fafc)"
+      },
+      {
+        "line": 1522,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-option-letter",
+        "property": "background",
+        "before": "#f1f5f9",
+        "after": "var(--light-only-surface-muted, #f1f5f9)"
+      },
+      {
+        "line": 1523,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-option-letter",
+        "property": "color",
+        "before": "#0f172a",
+        "after": "var(--light-only-text, #0f172a)"
+      },
+      {
+        "line": 1544,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-option.is-correct",
+        "property": "background",
+        "before": "#f0fdf4",
+        "after": "var(--light-only-success-soft, #f0fdf4)"
+      },
+      {
+        "line": 1548,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-option.is-correct .ios-series-option-letter",
+        "property": "background",
+        "before": "#16a34a",
+        "after": "var(--light-only-success, #16a34a)"
+      },
+      {
+        "line": 1552,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-option.is-wrong",
+        "property": "background",
+        "before": "#fef2f2",
+        "after": "var(--light-only-danger-soft, #fef2f2)"
+      },
+      {
+        "line": 1556,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-option.is-wrong .ios-series-option-letter",
+        "property": "background",
+        "before": "#dc2626",
+        "after": "var(--light-only-danger, #dc2626)"
+      },
+      {
+        "line": 1559,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-footer",
+        "property": "border-top-color",
+        "before": "#e2e8f0",
+        "after": "var(--light-only-border, #e2e8f0)"
+      },
+      {
+        "line": 1560,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-footer",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1563,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-footer-prev",
+        "property": "border-color",
+        "before": "#e2e8f0",
+        "after": "var(--light-only-border, #e2e8f0)"
+      },
+      {
+        "line": 1564,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-footer-prev",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1565,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-footer-prev",
+        "property": "color",
+        "before": "#0f172a",
+        "after": "var(--light-only-text, #0f172a)"
+      },
+      {
+        "line": 1569,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-footer-prev:not(:disabled):hover",
+        "property": "background",
+        "before": "#f8fafc",
+        "after": "var(--light-only-canvas, #f8fafc)"
+      },
+      {
+        "line": 1572,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-footer-pill",
+        "property": "border-color",
+        "before": "#e2e8f0",
+        "after": "var(--light-only-border, #e2e8f0)"
+      },
+      {
+        "line": 1573,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-footer-pill",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1577,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-pill-item:not(:disabled):hover",
+        "property": "background",
+        "before": "rgba(0, 0, 0, 0.035)",
+        "after": "var(--light-only-surface-muted, rgba(0, 0, 0, 0.035))"
+      },
+      {
+        "line": 1589,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-pill-divider",
+        "property": "background",
+        "before": "#e2e8f0",
+        "after": "var(--light-only-surface-muted, #e2e8f0)"
+      },
+      {
+        "line": 1614,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-palette-grid button",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 1631,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-palette-grid button.is-wrong",
+        "property": "color",
+        "before": "#c62828",
+        "after": "var(--light-only-danger, #c62828)"
+      },
+      {
+        "line": 1674,
+        "selector": ".ios-series-quiz[data-theme=\"light\"]",
+        "property": "--quiz-surface-hover",
+        "before": "#e2e8f0",
+        "after": "var(--light-only-surface-muted, #e2e8f0)"
+      },
+      {
+        "line": 1681,
+        "selector": ".ios-series-quiz[data-theme=\"light\"]",
+        "property": "--quiz-success",
+        "before": "#1a8f51",
+        "after": "var(--light-only-success, #1a8f51)"
+      },
+      {
+        "line": 1682,
+        "selector": ".ios-series-quiz[data-theme=\"light\"]",
+        "property": "--quiz-error",
+        "before": "#c73644",
+        "after": "var(--light-only-danger, #c73644)"
+      },
+      {
+        "line": 1961,
+        "selector": ".ios-series-quiz[data-theme=\"light\"] .ios-series-timer",
+        "property": "background",
+        "before": "rgb(0 0 0 / 2%)",
+        "after": "var(--light-only-surface-muted, rgb(0 0 0 / 2%))"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\english\\_shared\\study-mode-start.tsx",
+    "changes": [
+      {
+        "line": 31,
+        "selector": ".study-start-root[data-theme=\"light\"]",
+        "property": "--bg-desktop",
+        "before": "#e5e5ea",
+        "after": "var(--light-only-surface-muted, #e5e5ea)"
+      },
+      {
+        "line": 32,
+        "selector": ".study-start-root[data-theme=\"light\"]",
+        "property": "--bg-window",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 33,
+        "selector": ".study-start-root[data-theme=\"light\"]",
+        "property": "--bg-sidebar",
+        "before": "#f8f8fa",
+        "after": "var(--light-only-canvas, #f8f8fa)"
+      },
+      {
+        "line": 34,
+        "selector": ".study-start-root[data-theme=\"light\"]",
+        "property": "--bg-card",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 35,
+        "selector": ".study-start-root[data-theme=\"light\"]",
+        "property": "--border-window",
+        "before": "rgba(0, 0, 0, 0.08)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.08))"
+      },
+      {
+        "line": 36,
+        "selector": ".study-start-root[data-theme=\"light\"]",
+        "property": "--border-subtle",
+        "before": "rgba(0, 0, 0, 0.08)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.08))"
+      },
+      {
+        "line": 37,
+        "selector": ".study-start-root[data-theme=\"light\"]",
+        "property": "--text-primary",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 38,
+        "selector": ".study-start-root[data-theme=\"light\"]",
+        "property": "--text-secondary",
+        "before": "#6e6e73",
+        "after": "var(--light-only-text-muted, #6e6e73)"
+      },
+      {
+        "line": 39,
+        "selector": ".study-start-root[data-theme=\"light\"]",
+        "property": "--text-tertiary",
+        "before": "#8e8e93",
+        "after": "var(--light-only-text-muted, #8e8e93)"
+      },
+      {
+        "line": 301,
+        "selector": ".study-light-symbol",
+        "property": "color",
+        "before": "rgba(0, 0, 0, 0.7)",
+        "after": "var(--light-only-text-secondary, rgba(0, 0, 0, 0.7))"
+      }
+    ]
+  },
+  {
+    "file": "app\\(app)\\english\\_shared\\StudyModeTermsQuizEngine.tsx",
+    "changes": [
+      {
+        "line": 16,
+        "selector": ".ows-app[data-theme=\"light\"]",
+        "property": "--card",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 16,
+        "selector": ".ows-app[data-theme=\"light\"]",
+        "property": "--divider",
+        "before": "rgba(28,28,41,0.14)",
+        "after": "var(--light-only-border, rgba(28,28,41,0.14))"
+      }
+    ]
+  },
+  {
+    "file": "components\\LangToggle.tsx",
+    "changes": [
+      {
+        "line": 4,
+        "selector": ".lang-toggle",
+        "property": "--lang-toggle-border",
+        "before": "rgba(0, 0, 0, 0.08)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.08))"
+      },
+      {
+        "line": 6,
+        "selector": ".lang-toggle",
+        "property": "--lang-toggle-active-bg",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 8,
+        "selector": ".lang-toggle",
+        "property": "--lang-toggle-divider",
+        "before": "rgba(0, 0, 0, 0.08)",
+        "after": "var(--light-only-border, rgba(0, 0, 0, 0.08))"
+      }
+    ]
+  },
+  {
+    "file": "features\\brain-scan\\components\\BrainScanStyles.tsx",
+    "changes": [
+      {
+        "line": 27,
+        "selector": ".scan-orb",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.8)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.8))"
+      },
+      {
+        "line": 71,
+        "selector": ".hero-copy,\r\n        .hero-card,\r\n        .coach-panel,\r\n        .reason-card,\r\n        .heat-card,\r\n        .target-card",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.88)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.88))"
+      },
+      {
+        "line": 139,
+        "selector": ".hero-meta span",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.82)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.82))"
+      },
+      {
+        "line": 140,
+        "selector": ".hero-meta span",
+        "property": "color",
+        "before": "#334155",
+        "after": "var(--light-only-text-secondary, #334155)"
+      },
+      {
+        "line": 217,
+        "selector": ".scan-chip",
+        "property": "color",
+        "before": "#334155",
+        "after": "var(--light-only-text-secondary, #334155)"
+      },
+      {
+        "line": 218,
+        "selector": ".scan-chip",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.78)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.78))"
+      },
+      {
+        "line": 257,
+        "selector": ".panel-note",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.72)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.72))"
+      },
+      {
+        "line": 276,
+        "selector": ".step-list span",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.72)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.72))"
+      },
+      {
+        "line": 297,
+        "selector": ".metric-row span,\r\n        .signal-row span",
+        "property": "color",
+        "before": "#64748b",
+        "after": "var(--light-only-text-muted, #64748b)"
+      },
+      {
+        "line": 347,
+        "selector": ".reason-head span,\r\n        .target-badge",
+        "property": "color",
+        "before": "#334155",
+        "after": "var(--light-only-text-secondary, #334155)"
+      },
+      {
+        "line": 360,
+        "selector": ".reason-fix,\r\n        .list-note,\r\n        .target-prescription",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.75)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.75))"
+      },
+      {
+        "line": 374,
+        "selector": ".topic-card",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.74)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.74))"
+      },
+      {
+        "line": 422,
+        "selector": ".target-meta span",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.78)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.78))"
+      },
+      {
+        "line": 434,
+        "selector": ".share-top span",
+        "property": "color",
+        "before": "#64748b",
+        "after": "var(--light-only-text-muted, #64748b)"
+      },
+      {
+        "line": 450,
+        "selector": ".empty-panel",
+        "property": "background",
+        "before": "rgba(255, 255, 255, 0.75)",
+        "after": "var(--light-only-surface, rgba(255, 255, 255, 0.75))"
+      }
+    ]
+  },
+  {
+    "file": "features\\quiz\\components\\SubjectTopicStyles.tsx",
+    "changes": [
+      {
+        "line": 299,
+        "selector": "body.theme-light .sg-page",
+        "property": "--card",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 310,
+        "selector": "body.theme-light .sg-banner",
+        "property": "background",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 329,
+        "selector": ".sg-banner-open-btn",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 330,
+        "selector": ".sg-banner-open-btn",
+        "property": "color",
+        "before": "#000000",
+        "after": "var(--light-only-text, #000000)"
+      },
+      {
+        "line": 529,
+        "selector": "body.theme-light .sg-page",
+        "property": "--card",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 540,
+        "selector": "body.theme-light .sg-banner",
+        "property": "background",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 547,
+        "selector": "body.theme-light .sg-card",
+        "property": "color",
+        "before": "#0f172a",
+        "after": "var(--light-only-text, #0f172a)"
+      },
+      {
+        "line": 551,
+        "selector": "body.theme-light .sg-card:hover",
+        "property": "color",
+        "before": "#0f172a",
+        "after": "var(--light-only-text, #0f172a)"
+      },
+      {
+        "line": 566,
+        "selector": "body.theme-light .sg-card-name",
+        "property": "color",
+        "before": "#0f172a",
+        "after": "var(--light-only-text, #0f172a)"
+      },
+      {
+        "line": 569,
+        "selector": "body.theme-light .sg-card-sub",
+        "property": "color",
+        "before": "#64748b",
+        "after": "var(--light-only-text-muted, #64748b)"
+      },
+      {
+        "line": 672,
+        "selector": "body.theme-light .sg-back",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 673,
+        "selector": "body.theme-light .sg-back",
+        "property": "border-color",
+        "before": "rgba(0,0,0,0.08)",
+        "after": "var(--light-only-border, rgba(0,0,0,0.08))"
+      }
+    ]
+  },
+  {
+    "file": "features\\quiz\\components\\ui\\QuizSettingsModal.tsx",
+    "changes": [
+      {
+        "line": 315,
+        "selector": ".ios-settings-popover[data-theme=\"light\"] .ios-settings-divider",
+        "property": "background",
+        "before": "#F0F2F5",
+        "after": "var(--light-only-surface-muted, #F0F2F5)"
+      },
+      {
+        "line": 330,
+        "selector": ".ios-settings-popover[data-theme=\"light\"] .ios-settings-segmented",
+        "property": "background",
+        "before": "#EEF2F6",
+        "after": "var(--light-only-surface-muted, #EEF2F6)"
+      },
+      {
+        "line": 331,
+        "selector": ".ios-settings-popover[data-theme=\"light\"] .ios-settings-segmented",
+        "property": "border-color",
+        "before": "#E2E8F0",
+        "after": "var(--light-only-border, #E2E8F0)"
+      },
+      {
+        "line": 353,
+        "selector": ".ios-settings-popover[data-theme=\"light\"] .ios-segment-btn",
+        "property": "color",
+        "before": "#64748B",
+        "after": "var(--light-only-text-muted, #64748B)"
+      },
+      {
+        "line": 396,
+        "selector": ".ios-settings-switch-thumb",
+        "property": "background",
+        "before": "#ffffff",
+        "after": "var(--light-only-surface, #ffffff)"
+      },
+      {
+        "line": 440,
+        "selector": ".ios-settings-card",
+        "property": "background",
+        "before": "rgb(128 128 128 / 7%)",
+        "after": "var(--light-only-surface-muted, rgb(128 128 128 / 7%))"
+      },
+      {
+        "line": 451,
+        "selector": ".ios-settings-popover .ios-settings-card .ios-settings-divider",
+        "property": "background",
+        "before": "rgb(128 128 128 / 12%)",
+        "after": "var(--light-only-surface-muted, rgb(128 128 128 / 12%))"
+      }
+    ]
+  },
+  {
+    "file": "features\\quiz\\components\\ui\\QuizStyles.tsx",
+    "changes": [
+      {
+        "line": 8,
+        "selector": ".__STYLE_EXPR_0__",
+        "property": "--quiz-surface",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 10,
+        "selector": ".__STYLE_EXPR_0__",
+        "property": "--quiz-nav-bg",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 13,
+        "selector": ".__STYLE_EXPR_0__",
+        "property": "--quiz-card-bg",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 27,
+        "selector": ".__STYLE_EXPR_0__",
+        "property": "--quiz-option-bg",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 42,
+        "selector": ".__STYLE_EXPR_0__",
+        "property": "--quiz-option-correct-bg",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 47,
+        "selector": ".__STYLE_EXPR_0__",
+        "property": "--quiz-option-wrong-bg",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 52,
+        "selector": ".__STYLE_EXPR_0__",
+        "property": "--quiz-footer-bg",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 56,
+        "selector": ".__STYLE_EXPR_0__",
+        "property": "--quiz-error-bg",
+        "before": "#fff1f2",
+        "after": "var(--light-only-danger-soft, #fff1f2)"
+      },
+      {
+        "line": 64,
+        "selector": ".__STYLE_EXPR_0__",
+        "property": "--quiz-toggle-bg",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 81,
+        "selector": ".__STYLE_EXPR_0__",
+        "property": "--quiz-status-empty-bg",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      }
+    ]
+  },
+  {
+    "file": "features\\quiz\\components\\ui\\SolutionViews.tsx",
+    "changes": [
+      {
+        "line": 157,
+        "selector": ".ios-solution-backdrop[data-theme=\"light\"] .ios-solution-sheet",
+        "property": "--ui-header-surface",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      },
+      {
+        "line": 158,
+        "selector": ".ios-solution-backdrop[data-theme=\"light\"] .ios-solution-sheet",
+        "property": "background",
+        "before": "#FFFFFF",
+        "after": "var(--light-only-surface, #FFFFFF)"
+      }
+    ]
+  }
+]

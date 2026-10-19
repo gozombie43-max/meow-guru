@@ -25,7 +25,7 @@ export function BrainScanStyles() {
           place-items: center;
           border-radius: 999px;
           border: 1px solid rgba(148, 163, 184, 0.18);
-          background: rgba(255, 255, 255, 0.8);
+          background: var(--light-only-surface, rgba(255, 255, 255, 0.8));
           font-size: 2rem;
           animation: floaty 1.8s ease-in-out infinite;
           margin-bottom: 0.75rem;
@@ -69,7 +69,7 @@ export function BrainScanStyles() {
         .heat-card,
         .target-card {
           border: 1px solid rgba(148, 163, 184, 0.18);
-          background: rgba(255, 255, 255, 0.88);
+          background: var(--light-only-surface, rgba(255, 255, 255, 0.88));
           box-shadow: 0 16px 40px rgba(16, 32, 51, 0.07);
         }
 
@@ -137,8 +137,8 @@ export function BrainScanStyles() {
         }
 
         .hero-meta span {
-          background: rgba(255, 255, 255, 0.82);
-          color: #334155;
+          background: var(--light-only-surface, rgba(255, 255, 255, 0.82));
+          color: var(--light-only-text-secondary, #334155);
           border: 1px solid rgba(148, 163, 184, 0.18);
         }
 
@@ -215,8 +215,8 @@ export function BrainScanStyles() {
 
         .scan-chip {
           text-decoration: none;
-          color: #334155;
-          background: rgba(255, 255, 255, 0.78);
+          color: var(--light-only-text-secondary, #334155);
+          background: var(--light-only-surface, rgba(255, 255, 255, 0.78));
           border: 1px solid rgba(148, 163, 184, 0.18);
           box-shadow: 0 8px 24px rgba(16, 32, 51, 0.04);
         }
@@ -255,7 +255,7 @@ export function BrainScanStyles() {
         .panel-note {
           padding: 12px;
           border-radius: 16px;
-          background: rgba(255, 255, 255, 0.72);
+          background: var(--light-only-surface, rgba(255, 255, 255, 0.72));
           border: 1px solid rgba(148, 163, 184, 0.18);
           color: #102033;
           font-weight: 600;
@@ -274,7 +274,7 @@ export function BrainScanStyles() {
         .step-list span {
           padding: 10px 12px;
           border-radius: 14px;
-          background: rgba(255, 255, 255, 0.72);
+          background: var(--light-only-surface, rgba(255, 255, 255, 0.72));
           border: 1px solid rgba(148, 163, 184, 0.18);
           color: #102033;
           font-size: 0.9rem;
@@ -295,7 +295,7 @@ export function BrainScanStyles() {
 
         .metric-row span,
         .signal-row span {
-          color: #64748b;
+          color: var(--light-only-text-muted, #64748b);
           background: transparent;
           border: 0;
           padding: 0;
@@ -345,7 +345,7 @@ export function BrainScanStyles() {
 
         .reason-head span,
         .target-badge {
-          color: #334155;
+          color: var(--light-only-text-secondary, #334155);
         }
 
         .reason-copy {
@@ -358,7 +358,7 @@ export function BrainScanStyles() {
           margin-top: 10px;
           padding: 12px;
           border-radius: 14px;
-          background: rgba(255, 255, 255, 0.75);
+          background: var(--light-only-surface, rgba(255, 255, 255, 0.75));
           border: 1px solid rgba(148, 163, 184, 0.18);
           color: #102033;
           font-weight: 700;
@@ -372,7 +372,7 @@ export function BrainScanStyles() {
         .topic-card {
           padding: 12px;
           border-radius: 16px;
-          background: rgba(255, 255, 255, 0.74);
+          background: var(--light-only-surface, rgba(255, 255, 255, 0.74));
           border: 1px solid rgba(148, 163, 184, 0.18);
         }
 
@@ -420,7 +420,7 @@ export function BrainScanStyles() {
 
         .target-meta span {
           border-color: rgba(148, 163, 184, 0.18);
-          background: rgba(255, 255, 255, 0.78);
+          background: var(--light-only-surface, rgba(255, 255, 255, 0.78));
         }
 
         .share-wrap {
@@ -432,7 +432,7 @@ export function BrainScanStyles() {
         }
 
         .share-top span {
-          color: #64748b;
+          color: var(--light-only-text-muted, #64748b);
           background: transparent;
           border: 0;
           padding: 0;
@@ -448,7 +448,7 @@ export function BrainScanStyles() {
         .empty-panel {
           padding: 14px;
           border-radius: 16px;
-          background: rgba(255, 255, 255, 0.75);
+          background: var(--light-only-surface, rgba(255, 255, 255, 0.75));
           border: 1px dashed rgba(148, 163, 184, 0.18);
         }
 

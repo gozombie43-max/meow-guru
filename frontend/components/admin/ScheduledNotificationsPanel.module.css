@@ -117,7 +117,7 @@
   font-size: 11px;
   padding: 2px 6px;
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.08));
   font-weight: 700;
 }
 
@@ -199,7 +199,7 @@
 
 .statusCancelled {
   background: rgba(100, 116, 139, 0.12);
-  color: #64748b;
+  color: var(--light-only-text-muted, #64748b);
 }
 
 .cardBody {

@@ -1,0 +1,302 @@
+[
+  {
+    "width": 320,
+    "theme": "light",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "∫x²dx\nlim f(x)\ndy/dx\nπ\nMath",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "Reasoning",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "d\ne\nf\nA\nb\nc\n\"\nEnglish",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "GK",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(255, 255, 255)"
+      }
+    ],
+    "overlays": [
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none"
+    ],
+    "errors": []
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "∫x²dx\nlim f(x)\ndy/dx\nπ\nMath",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Reasoning",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "d\ne\nf\nA\nb\nc\n\"\nEnglish",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "GK",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(28, 28, 30)"
+      }
+    ],
+    "overlays": [
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)"
+    ],
+    "errors": [],
+    "darkPixelsUnchanged": true
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "∫x²dx\nlim f(x)\ndy/dx\nπ\nMath",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "Reasoning",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "d\ne\nf\nA\nb\nc\n\"\nEnglish",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "GK",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(255, 255, 255)"
+      }
+    ],
+    "overlays": [
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none"
+    ],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "∫x²dx\nlim f(x)\ndy/dx\nπ\nMath",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Reasoning",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "d\ne\nf\nA\nb\nc\n\"\nEnglish",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "GK",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(28, 28, 30)"
+      }
+    ],
+    "overlays": [
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)"
+    ],
+    "errors": [],
+    "darkPixelsUnchanged": true
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "∫x²dx\nlim f(x)\ndy/dx\nπ\nMath",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "Reasoning",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "d\ne\nf\nA\nb\nc\n\"\nEnglish",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "GK",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(255, 255, 255)"
+      }
+    ],
+    "overlays": [
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none"
+    ],
+    "errors": []
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "∫x²dx\nlim f(x)\ndy/dx\nπ\nMath",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Reasoning",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "d\ne\nf\nA\nb\nc\n\"\nEnglish",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "GK",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(28, 28, 30)"
+      }
+    ],
+    "overlays": [
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)"
+    ],
+    "errors": [],
+    "darkPixelsUnchanged": true
+  },
+  {
+    "width": 1366,
+    "theme": "light",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(255, 255, 255)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(255, 255, 255)"
+      }
+    ],
+    "overlays": [
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none",
+      "none"
+    ],
+    "errors": []
+  },
+  {
+    "width": 1366,
+    "theme": "dark",
+    "overflow": false,
+    "cards": [
+      {
+        "text": "All books & notes\nBooks, chapter notes, extras & DPP",
+        "background": "rgb(28, 28, 30)"
+      },
+      {
+        "text": "Battle mode\nChallenge yourself & win rewards",
+        "background": "rgb(28, 28, 30)"
+      }
+    ],
+    "overlays": [
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)",
+      "radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0) 60%), linear-gradient(rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.12) 100%)"
+    ],
+    "errors": [],
+    "darkPixelsUnchanged": true
+  }
+]

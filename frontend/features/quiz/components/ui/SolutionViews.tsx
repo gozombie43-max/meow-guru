@@ -409,8 +409,8 @@ export function SolutionBottomSheet({
                 background: rgba(15, 23, 42, 0.4);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-sheet {
-                --ui-header-surface: #FFFFFF;
-                background: #FFFFFF;
+                --ui-header-surface: var(--light-only-surface, #FFFFFF);
+                background: var(--light-only-surface, #FFFFFF);
                 border-color: var(--light-border);
                 color: var(--light-text);
               }

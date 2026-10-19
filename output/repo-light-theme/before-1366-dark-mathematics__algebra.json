@@ -1,0 +1,105 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark has-bottom-nav",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "sg-navbar",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "sg-back",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "sg-nav-title",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "sg-banner",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.07)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "sg-card",
+      "color": "rgb(248, 250, 252)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.09)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 8px 0px, rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "sg-card",
+      "color": "rgb(248, 250, 252)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.09)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 8px 0px, rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "sg-card",
+      "color": "rgb(248, 250, 252)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.09)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 8px 0px, rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "sg-card",
+      "color": "rgb(248, 250, 252)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.09)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 8px 0px, rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "sg-card",
+      "color": "rgb(248, 250, 252)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.09)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 8px 0px, rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset"
+    },
+    {
+      "tag": "A",
+      "cls": "sg-card",
+      "color": "rgb(248, 250, 252)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.09)",
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 2px 8px 0px, rgba(255, 255, 255, 0.06) 0px 1px 0px 0px inset"
+    }
+  ]
+}

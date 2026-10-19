@@ -648,19 +648,19 @@
         :global(body.theme-light) .formula-notes-page,
         :global(html.theme-light) .formula-notes-page {
           --bg: var(--light-canvas);
-          --card-bg: #ffffff;
-          --card-hover: #f8fafc;
-          --border: rgba(0, 0, 0, 0.08);
+          --card-bg: var(--light-only-surface, #ffffff);
+          --card-hover: var(--light-only-canvas, #f8fafc);
+          --border: var(--light-only-border, rgba(0, 0, 0, 0.08));
           --header-bg: rgba(246, 248, 250, 0.92);
           --text-primary: var(--light-text);
           --text-secondary: var(--light-text-secondary);
           --text-tertiary: var(--light-text-muted);
-          --tab-bg: rgba(0, 0, 0, 0.05);
+          --tab-bg: var(--light-only-surface-muted, rgba(0, 0, 0, 0.05));
           --tab-color: var(--light-text-secondary);
-          --modal-bg: #ffffff;
+          --modal-bg: var(--light-only-surface, #ffffff);
           --modal-option-bg: var(--light-canvas);
           --notice-color: var(--light-text-secondary);
-          --spinner-color: rgba(60, 60, 67, 0.6);
+          --spinner-color: var(--light-only-text-secondary, rgba(60, 60, 67, 0.6));
         }
 
         :global(body.theme-light) .fn-card {
@@ -670,12 +670,12 @@
         @media (hover: hover) {
           :global(body.theme-light) .fn-card:hover {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            background: #f8fafc;
-            border-color: rgba(0, 0, 0, 0.14);
+            background: var(--light-only-canvas, #f8fafc);
+            border-color: var(--light-only-border, rgba(0, 0, 0, 0.14));
           }
         }
 
         :global(body.theme-light) .fn-card:active {
           background: #ebeef2;
-          border-color: rgba(0, 0, 0, 0.16);
+          border-color: var(--light-only-border, rgba(0, 0, 0, 0.16));
         }

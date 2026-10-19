@@ -7,7 +7,7 @@
 .modalOverlay {
   /* Light Theme (Default) */
   --ios-bg: var(--light-canvas);
-  --ios-card-bg: rgba(255, 255, 255, 0.82);
+  --ios-card-bg: var(--light-only-surface, rgba(255, 255, 255, 0.82));
   --ios-card-border: rgba(255, 255, 255, 0.95);
   --ios-card-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
   --ios-text: var(--light-text);
@@ -24,7 +24,7 @@
   --ios-segmented-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
   --ios-google-bg: var(--light-surface);
   --ios-google-border: var(--light-border);
-  --ios-google-hover: #f9f9fb;
+  --ios-google-hover: var(--light-only-canvas, #f9f9fb);
   --ios-google-text: var(--light-text);
   --ios-divider: var(--light-border);
   --ios-divider-text: var(--light-text-muted);
@@ -32,7 +32,7 @@
   --ios-error-text: #d70015;
   --ios-error-border: rgba(255, 59, 48, 0.25);
   --ios-modal-bg: var(--light-surface);
-  --ios-modal-border: rgba(0, 0, 0, 0.1);
+  --ios-modal-border: var(--light-only-border, rgba(0, 0, 0, 0.1));
 }
 
 .authContainer {
@@ -205,7 +205,7 @@
   gap: 9px;
   padding: 7px 11px;
   border-radius: 10px;
-  background: rgba(118, 118, 128, 0.07);
+  background: var(--light-only-surface-muted, rgba(118, 118, 128, 0.07));
   border: 1px solid var(--ios-input-border);
   color: var(--ios-text);
   font-size: 12px;
@@ -832,13 +832,13 @@
 .modalSheet {
   width: 100%;
   max-width: 380px;
-  background-color: #ffffff;
+  background-color: var(--light-only-surface, #ffffff);
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 22px;
   padding: 24px 22px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
   animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  color: #1c1c1e;
+  color: var(--light-only-text, #1c1c1e);
   box-sizing: border-box;
 }
 

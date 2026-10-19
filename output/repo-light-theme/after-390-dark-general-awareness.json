@@ -1,0 +1,249 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark has-bottom-nav",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "SubjectHub-module__IV6GIa__mobileTopbar SubjectHub-module__IV6GIa__oledMobileTopbar",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__mobileBackBtn",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__mobileHeaderFilterBtn  ",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(229, 234, 240)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__mobileFilterOptionItem SubjectHub-module__IV6GIa__mobileFilterOptionItemActive",
+      "color": "rgb(105, 169, 237)",
+      "background": "rgba(52, 127, 209, 0.16)",
+      "image": "none",
+      "border": "rgba(52, 127, 209, 0.35)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__mobileFilterOptionItem ",
+      "color": "rgb(209, 217, 230)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__mobileFilterOptionItem ",
+      "color": "rgb(209, 217, 230)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__mobileFilterOptionItem ",
+      "color": "rgb(209, 217, 230)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "INPUT",
+      "cls": "SubjectHub-module__IV6GIa__mobileSearchInput",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(23, 23, 26)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.04)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "SubjectHub-module__IV6GIa__oledSortBtn ",
+      "color": "rgb(242, 242, 244)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(242, 242, 244)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "mobile-topic-card-module__KNVWea__card",
+      "color": "rgb(237, 241, 247)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(237, 241, 247)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "mobile-topic-card-module__KNVWea__card",
+      "color": "rgb(237, 241, 247)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(237, 241, 247)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "mobile-topic-card-module__KNVWea__card",
+      "color": "rgb(237, 241, 247)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(237, 241, 247)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "mobile-topic-card-module__KNVWea__card",
+      "color": "rgb(237, 241, 247)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(237, 241, 247)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "mobile-topic-card-module__KNVWea__card",
+      "color": "rgb(237, 241, 247)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(237, 241, 247)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "mobile-topic-card-module__KNVWea__card",
+      "color": "rgb(237, 241, 247)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(237, 241, 247)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "mobile-topic-card-module__KNVWea__card",
+      "color": "rgb(237, 241, 247)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(237, 241, 247)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "mobile-topic-card-module__KNVWea__card",
+      "color": "rgb(237, 241, 247)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(237, 241, 247)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "mobile-topic-card-module__KNVWea__card",
+      "color": "rgb(237, 241, 247)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(237, 241, 247)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "mobile-topic-card-module__KNVWea__card",
+      "color": "rgb(237, 241, 247)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(237, 241, 247)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "mobile-topic-card-module__KNVWea__card",
+      "color": "rgb(237, 241, 247)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(237, 241, 247)",
+      "shadow": "none"
+    },
+    {
+      "tag": "NAV",
+      "cls": "bottom-pill-nav",
+      "color": "rgb(229, 234, 240)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgb(56, 56, 60)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "bottom-nav-item",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "bottom-nav-item",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "bottom-nav-item",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "bottom-nav-item",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "bottom-nav-item",
+      "color": "rgb(162, 169, 180)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(162, 169, 180)",
+      "shadow": "none"
+    }
+  ]
+}

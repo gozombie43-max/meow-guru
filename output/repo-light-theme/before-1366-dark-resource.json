@@ -1,0 +1,150 @@
+{
+  "theme": "dark",
+  "overflow": false,
+  "colors": [
+    {
+      "tag": "BODY",
+      "cls": "geistsans_2cb6dbe9-module__dDLn0W__variable theme-dark",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "MAIN",
+      "cls": "resource-page scope res-picker-layout Resource-module__uzPmIa__resource-page Resource-module__uzPmIa__scope Resource-module__uzPmIa__res-picker-layout",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "HEADER",
+      "cls": "res-header",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "A",
+      "cls": "res-nav-btn res-back-btn Resource-module__uzPmIa__res-nav-btn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "H1",
+      "cls": "res-nav-title Resource-module__uzPmIa__res-nav-title",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "res-nav-btn Resource-module__uzPmIa__res-nav-btn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "res-nav-btn res-add-btn Resource-module__uzPmIa__res-nav-btn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "res-section-trigger Resource-module__uzPmIa__res-section-trigger",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(28, 28, 30)",
+      "image": "none",
+      "border": "rgba(255, 255, 255, 0.12)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "res-chip active Resource-module__uzPmIa__res-chip Resource-module__uzPmIa__active",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(0, 0, 0, 0)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "res-chip Resource-module__uzPmIa__res-chip",
+      "color": "rgba(235, 235, 245, 0.75)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.75)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "res-chip Resource-module__uzPmIa__res-chip",
+      "color": "rgba(235, 235, 245, 0.75)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.75)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "res-chip Resource-module__uzPmIa__res-chip",
+      "color": "rgba(235, 235, 245, 0.75)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.75)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "res-notice-close Resource-module__uzPmIa__res-notice-close",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "res-empty-title Resource-module__uzPmIa__res-empty-title",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "none"
+    },
+    {
+      "tag": "P",
+      "cls": "res-empty-sub Resource-module__uzPmIa__res-empty-sub",
+      "color": "rgba(235, 235, 245, 0.65)",
+      "background": "rgba(0, 0, 0, 0)",
+      "image": "none",
+      "border": "rgba(235, 235, 245, 0.65)",
+      "shadow": "none"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "res-empty-btn Resource-module__uzPmIa__res-empty-btn",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(10, 132, 255)",
+      "image": "none",
+      "border": "rgb(255, 255, 255)",
+      "shadow": "rgba(10, 132, 255, 0.35) 0px 4px 14px 0px"
+    }
+  ]
+}

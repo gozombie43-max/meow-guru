@@ -1,5 +1,6 @@
 import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { fetchSlotPage } from '../services/mock/mockSlotService.js';
+import { readMockCatalogSummary } from '../repositories/mockCatalogMetadataRepository.js';
 import { v4 as uuidv4 } from 'uuid';
 import { activePaper } from '../services/mockTestPresentation.js';
 import { validateAssessment } from '../services/assessmentPolicy.js';
@@ -55,6 +56,11 @@ function presentAttempt(doc) {
   return { ...safe, attemptId: doc.id, paper: activePaper(safe.paper), timeLeft: doc.deadlineAt ? timeLeft : undefined };
 }
 
+export const fetchCatalogSummary = async (_req, res) => {
+  try { res.json({ exams: await readMockCatalogSummary() }); }
+  catch (error) { res.status(error.statusCode || 500).json({ error: error.statusCode ? error.message : 'Could not load paper counts' }); }
+};
+
 export const fetchExamSlots = async (req, res) => {
   try {
     const { examSlug } = req.params;
@@ -76,7 +82,7 @@ export const fetchExamSlots = async (req, res) => {
     res.json({ slots });
   } catch (err) {
     runtimeLog.error('Fetch slots error:', err);
-    res.status(500).json({ error: 'Failed to fetch mock test slots' });
+    res.status(err.statusCode || 500).json({ error: err.statusCode ? err.message : 'Failed to fetch mock test slots' });
   }
 };
 

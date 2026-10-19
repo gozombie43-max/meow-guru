@@ -52,7 +52,7 @@
 }
 
 :global(html.theme-light) .errorMsg { color: #b42318; }
-:global(html.theme-light) .successMsg { color: #18743b; }
+:global(html.theme-light) .successMsg { color: var(--light-only-success, #18743b); }
 
 :global(html.theme-dark) .pageWrapper { background: var(--dark-canvas); }
 :global(html.theme-dark) .card {
@@ -131,7 +131,7 @@
 .subtitle {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   font-size: 15px;
-  color: #8e8e93;
+  color: var(--light-only-text-muted, #8e8e93);
   text-align: center;
   line-height: 1.45;
   max-width: 280px;
@@ -262,7 +262,7 @@
 
 .continueBtn:disabled {
   background: rgba(44, 44, 46, 0.9);
-  color: #636366;
+  color: var(--light-only-text-secondary, #636366);
   cursor: not-allowed;
 }
 
@@ -287,7 +287,7 @@
 .infoText {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   font-size: 13px;
-  color: #636366;
+  color: var(--light-only-text-secondary, #636366);
   text-align: center;
   margin-top: 20px;
   line-height: 1.4;

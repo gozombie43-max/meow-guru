@@ -3,6 +3,7 @@ import { JAM_MOCK_CONFIGS } from '@meow/contracts/jam';
 import { examPaperSchema } from '@meow/contracts/exam-paper';
 import { useExamMode } from '@/context/ExamModeContext';
 import { adminScopedUrl } from '@/lib/admin-exam-mode';
+import { invalidateMockCatalog } from '@/lib/mock-catalog-revision';
 import { requestResponse } from "@/shared/api/request";
 
 import { getAccessToken } from "@/shared/api/client";
@@ -130,6 +131,7 @@ export default function MockTestManager({}: { backLink?: ReactNode }) {
       const response = await requestResponse(adminScopedUrl(source === "upload" ? `${apiUrl}/admin/upload-paper` : `${apiUrl}/admin/slots`, mode), { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken()}` }, body: JSON.stringify(source === "upload" ? nativePaper ? { slot, paper: nativePaper } : { slot, questions } : slot) });
       const data = await response.json().catch(() => ({})); 
       if (!response.ok) throw new Error(data.error || "Deployment failed");
+      invalidateMockCatalog(slot.examSlug);
 setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? questions.length} questions to MongoDB.` : `Dynamic slot "${id}" created successfully.`); 
       await loadSlots(); 
     } catch (error) { 
@@ -143,6 +145,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
     try { 
       const response = await requestResponse(adminScopedUrl(`${apiUrl}/admin/slots/${encodeURIComponent(slot.id)}?examSlug=${encodeURIComponent(slot.examSlug)}`, mode), { method: "DELETE", headers: { Authorization: `Bearer ${adminToken()}` } });
       if (!response.ok) throw new Error("Could not delete slot."); 
+      invalidateMockCatalog(slot.examSlug);
       await loadSlots(); 
     } catch (error) { 
       setStatus(error instanceof Error ? error.message : "Deletion failed."); 
@@ -155,6 +158,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
       const response = await requestResponse(adminScopedUrl(`${apiUrl}/admin/slots/seed`, mode), { method: "POST", headers: { Authorization: `Bearer ${adminToken()}` } });
       const data = await response.json().catch(() => ({})); 
       if (!response.ok) throw new Error(data.error || "Could not seed slots."); 
+      invalidateMockCatalog('*');
       setStatus(`Seeded ${data.totalSeeded || 0} default slots into MongoDB.`); 
       await loadSlots(); 
     } catch (error) { 

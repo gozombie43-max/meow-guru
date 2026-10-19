@@ -1,0 +1,233 @@
+.shell {
+  --color-text-primary: var(--admin-text);
+  --color-text-secondary: var(--admin-text-secondary);
+  --color-text-tertiary: var(--admin-text-tertiary);
+  --color-border-secondary: var(--admin-border);
+  --color-border-tertiary: var(--admin-border);
+  --color-background-primary: var(--admin-surface-solid);
+  --color-background-secondary: var(--admin-surface-muted);
+  --color-background-danger: var(--admin-danger-soft);
+  --color-text-danger: var(--admin-danger);
+  --app-header-height: 105px;
+  --admin-bg: var(--light-canvas);
+  --admin-surface: rgba(255, 255, 255, 0.88);
+  --admin-surface-solid: var(--light-surface);
+  --admin-surface-muted: var(--light-surface-muted);
+  --admin-text: var(--light-text);
+  --admin-text-secondary: var(--light-text-secondary);
+  --admin-text-tertiary: var(--light-text-muted);
+  --admin-border: var(--light-border);
+  --admin-separator: rgba(60, 60, 67, 0.12);
+  --admin-blue: var(--light-accent);
+  --admin-blue-soft: rgb(var(--ios-system-blue-rgb) / 0.12);
+  --admin-shadow: 0 8px 30px rgba(18, 18, 23, 0.07);
+  --admin-success: #18743b;
+  --admin-success-soft: #e8f6ed;
+  --admin-success-border: #b4dbc1;
+  --admin-danger: #c62828;
+  --admin-danger-soft: #fcebec;
+  --admin-danger-border: #efbfc3;
+  width: 100%;
+  min-height: 100dvh;
+  padding-top: calc(var(--app-header-height) + var(--safe-top));
+  display: block;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+:global(.theme-dark) .shell,
+:global(body.theme-dark) .shell,
+:global(html.theme-dark) .shell,
+:global(.dark) .shell {
+  --admin-bg: var(--dark-canvas);
+  --admin-surface: var(--dark-surface);
+  --admin-surface-solid: var(--dark-surface);
+  --admin-surface-muted: var(--dark-surface-muted);
+  --admin-text: var(--dark-text);
+  --admin-text-secondary: var(--dark-text-secondary);
+  --admin-text-tertiary: var(--dark-text-muted);
+  --admin-border: var(--dark-border);
+  --admin-separator: var(--dark-border);
+  --admin-blue: var(--dark-accent);
+  --admin-blue-soft: var(--dark-accent-soft);
+  --admin-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+  --admin-success: #75d99a;
+  --admin-success-soft: #173424;
+  --admin-success-border: #305c40;
+  --admin-danger: #ff999f;
+  --admin-danger-soft: #3c2024;
+  --admin-danger-border: #683039;
+  color-scheme: dark;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  flex: 0 0 auto;
+  padding: var(--safe-top) max(12px, var(--safe-right)) 8px max(12px, var(--safe-left));
+  background: var(--admin-surface);
+  border-bottom: 1px solid var(--admin-separator);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+}
+
+.headerLayout {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: 48px 48px;
+  align-items: center;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  grid-column: 1;
+  grid-row: 1;
+  min-height: 44px;
+  margin-left: -7px;
+  color: var(--admin-blue);
+  font-size: 16px;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.modeControl { grid-column: 2; grid-row: 1; justify-self: end; color: var(--admin-text-secondary); }
+
+.back span {
+  margin-left: -2px;
+}
+
+.nav {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  gap: 6px;
+  margin: 0 auto;
+  padding: 2px 1px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
+.nav a {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 9px;
+  color: var(--admin-text-secondary);
+  font-size: 12px;
+  font-weight: 550;
+  text-decoration: none;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.nav a.active {
+  background: var(--admin-blue-soft);
+  color: var(--admin-blue);
+  font-weight: 650;
+}
+
+.scroller {
+  min-width: 0;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.content {
+  width: 100%;
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 16px max(16px, var(--safe-right)) calc(24px + var(--safe-bottom)) max(16px, var(--safe-left));
+}
+
+.content :is(input, select, textarea) { font: inherit; }
+.content :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { min-height: 44px; font-size: 16px; max-width: 100%; }
+.content button { min-height: 44px; font-family: inherit; }
+.content :is(h1, h2, h3) { overflow-wrap: anywhere; }
+.content :is(p, label) { overflow-wrap: anywhere; }
+.content input[type="checkbox"], .content input[type="radio"] { accent-color: var(--admin-blue); }
+@media(max-width:767px) {
+  .content :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { font-size: 16px !important; }
+}
+.shell, .shell * { box-sizing: border-box; }
+
+.content :global(.admin-question-bank) :is(input:not([type="checkbox"]), select, textarea) { min-width: 0; max-width: 100%; min-height: 44px; font-size: 16px; }
+.content :global(.admin-question-bank) button { min-height: 44px; }
+.content :global(.admin-question-bank) { overflow-wrap: anywhere; }
+
+.shell a:focus-visible,
+.shell button:focus-visible,
+.shell input:focus-visible,
+.shell select:focus-visible,
+.shell textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--admin-blue) 45%, transparent);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .nav a:hover {
+    background: var(--admin-blue-soft);
+    color: var(--admin-blue);
+  }
+}
+
+@media (min-width: 768px) {
+  .shell { --app-header-height: 111px; }
+  .header {
+    padding-bottom: 10px;
+  }
+
+  .headerLayout { grid-template-rows: 52px 48px; }
+
+  .nav {
+    justify-content: safe center;
+  }
+
+  .nav a {
+    min-width: 112px;
+  }
+
+  .scroller {
+    min-width: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .shell { --app-header-height: 65px; }
+  .header { padding-top: calc(var(--safe-top) + 8px); padding-bottom: 8px; }
+  .headerLayout { grid-template-columns: minmax(78px, 1fr) minmax(0, 900px) minmax(78px, 1fr); grid-template-rows: 48px; column-gap: 12px; }
+  .nav { grid-column: 2; grid-row: 1; }
+  .nav a { min-width: 0; }
+  .modeControl { grid-column: 3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav a,
+  .scroller {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}

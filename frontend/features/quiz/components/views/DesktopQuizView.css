@@ -486,7 +486,7 @@
           background: var(--light-canvas);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-window {
-          background: #ffffff;
+          background: var(--light-only-surface, #ffffff);
           border: 1px solid var(--light-border);
           box-shadow:
             0 20px 60px -10px rgba(15, 23, 42, 0.08),
@@ -502,7 +502,7 @@
         }
         .mac-series-quiz[data-theme="light"] .mac-series-icon-button {
           color: var(--light-text-secondary);
-          background: #ffffff;
+          background: var(--light-only-surface, #ffffff);
           border: 1px solid var(--light-border);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-icon-button:hover {
@@ -520,7 +520,7 @@
           background: var(--light-canvas);
         }
         .mac-series-quiz[data-theme="light"] .mac-palette-btn {
-          background: #ffffff;
+          background: var(--light-only-surface, #ffffff);
           color: var(--light-text);
           border: 1px solid var(--light-border);
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
@@ -546,7 +546,7 @@
         .mac-series-quiz[data-theme="light"] .mac-palette-btn.is-wrong {
           background: #ffebee;
           border-color: #ef9a9a;
-          color: #c62828;
+          color: var(--light-only-danger, #c62828);
           font-weight: 700;
         }
 
@@ -558,12 +558,12 @@
         }
         .mac-series-quiz[data-theme="light"] .mac-series-bookmark {
           border-color: var(--light-border);
-          background: #ffffff;
+          background: var(--light-only-surface, #ffffff);
           color: var(--light-text-secondary);
           box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-bookmark:hover {
-          border-color: #d8dee4;
+          border-color: var(--light-only-border, #d8dee4);
           background: #f1f4f7;
           color: var(--light-accent);
         }
@@ -576,8 +576,8 @@
           cursor: default;
         }
         .mac-series-quiz[data-theme="light"] .mac-series-option {
-          background: #ffffff;
-          border: 1px solid #d8dee4;
+          background: var(--light-only-surface, #ffffff);
+          border: 1px solid var(--light-only-border, #d8dee4);
           color: var(--light-text);
           box-shadow: none;
         }
@@ -586,7 +586,7 @@
         }
         .mac-series-quiz[data-theme="light"]
           .mac-series-option:not(:disabled):hover {
-          background: #ffffff;
+          background: var(--light-only-surface, #ffffff);
           border-color: rgba(0, 113, 227, 0.4);
           box-shadow: 0 4px 14px rgba(0, 113, 227, 0.1);
           transform: none;
@@ -605,7 +605,7 @@
           color: var(--light-accent);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-option.is-correct {
-          background: #ffffff;
+          background: var(--light-only-surface, #ffffff);
           border-color: rgba(22, 163, 74, 0.45);
           color: var(--light-text);
           box-shadow: none;
@@ -616,7 +616,7 @@
           color: var(--light-text);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-option.is-wrong {
-          background: #ffffff;
+          background: var(--light-only-surface, #ffffff);
           border-color: rgba(220, 38, 38, 0.45);
           color: var(--light-text);
           box-shadow: none;
@@ -643,12 +643,12 @@
         .mac-series-quiz[data-theme="light"]
           .mac-series-option.is-correct
           .mac-series-answer-icon {
-          color: #16a34a;
+          color: var(--light-only-success, #16a34a);
         }
         .mac-series-quiz[data-theme="light"]
           .mac-series-option.is-wrong
           .mac-series-answer-icon {
-          color: #dc2626;
+          color: var(--light-only-danger, #dc2626);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-your-answer {
           color: #6e7781;
@@ -669,20 +669,20 @@
         .mac-series-quiz[data-theme="light"]
           .mac-series-option.is-correct
           .mac-series-option-letter {
-          background: #16a34a;
+          background: var(--light-only-success, #16a34a);
           color: #fff;
           border-color: transparent;
         }
         .mac-series-quiz[data-theme="light"]
           .mac-series-option.is-wrong
           .mac-series-option-letter {
-          background: #dc2626;
+          background: var(--light-only-danger, #dc2626);
           color: #fff;
           border-color: transparent;
         }
 
         .mac-series-quiz[data-theme="light"] .mac-series-footer-secondary {
-          background: #ffffff;
+          background: var(--light-only-surface, #ffffff);
           border: 1px solid var(--light-border);
           color: var(--light-text-secondary);
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
@@ -694,7 +694,7 @@
         }
         .mac-series-quiz[data-theme="light"] .mac-series-footer-solution,
         .mac-series-quiz[data-theme="light"] .mac-series-footer-ai {
-          background: #ffffff;
+          background: var(--light-only-surface, #ffffff);
           border: 1px solid var(--light-border);
           color: var(--light-text-secondary);
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
@@ -704,7 +704,7 @@
         .mac-series-quiz[data-theme="light"]
           .mac-series-footer-ai:not(:disabled):hover {
           background: var(--light-accent-soft);
-          border-color: #d8dee4;
+          border-color: var(--light-only-border, #d8dee4);
           color: var(--light-text);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-footer-primary {

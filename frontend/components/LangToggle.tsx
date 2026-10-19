@@ -101,11 +101,11 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
       <style>{`
         .lang-toggle {
           --lang-toggle-bg: var(--light-border);
-          --lang-toggle-border: rgba(0, 0, 0, 0.08);
+          --lang-toggle-border: var(--light-only-border, rgba(0, 0, 0, 0.08));
           --lang-toggle-highlight: rgba(255, 255, 255, 0.85);
-          --lang-toggle-active-bg: #ffffff;
+          --lang-toggle-active-bg: var(--light-only-surface, #ffffff);
           --lang-toggle-active-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.06);
-          --lang-toggle-divider: rgba(0, 0, 0, 0.08);
+          --lang-toggle-divider: var(--light-only-border, rgba(0, 0, 0, 0.08));
           --lang-toggle-text: var(--light-text-secondary);
           --lang-toggle-text-hover: var(--light-text);
           --lang-toggle-text-active: var(--light-text);

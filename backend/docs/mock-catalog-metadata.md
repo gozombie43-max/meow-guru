@@ -1,0 +1,11 @@
+# Saved mock and PYQ catalog counts
+
+The public exam cards read `/api/mocktest/catalog-metadata`. Totals come from the `mockCatalogMetadata` collection, one document per exam. Each document saves mock/PYQ totals and tier/year count groups. Public metadata reads do not count or aggregate `mockSlots`. Paginated paper reads use these saved groups for totals and request only the selected page of paper summaries.
+
+Run `npm run db:migrate` from the backend when installing this change. Migration `024-mock-catalog-metadata` backfills existing catalog documents after the earlier demo-slot cleanup, and saves historical question counts and fixed-paper availability. It runs once. If initialization has not completed, the summary API returns 503 and cards show counts unavailable instead of fabricated totals or false zeroes. An exam absent from successfully initialized metadata has zero saved tests.
+
+Creates, legacy/native paper uploads, edits to catalog metadata, deletes and explicit seeding refresh the affected exam snapshot in the same MongoDB transaction as the slot write. The snapshot revision serializes concurrent writes for that exam. A transaction failure rolls back both. MongoDB must support transactions, as required by the existing mock-attempt lifecycle. Editing question text or attaching images does not change the number of tests.
+
+The browser fetches all exam totals with one small request, deduplicates concurrent requests, and keeps a ten-minute memory/session cache. Successful admin writes invalidate the affected exam in the current tab and other tabs on the same browser. Other devices refresh their saved counts on their next page visit after the cache expires. There is no per-card count request and no question-array download to calculate counts.
+
+Imports or maintenance tools that bypass application write services must refresh metadata explicitly with `initializeMockCatalogMetadata(db)` from `repositories/mockCatalogMetadataRepository.js` after their writes. Do this during a maintenance window, with catalog writers stopped: this full rebuild is intended for backfill/repair, while normal application mutations use the transactional path. Direct database edits do not invoke application hooks. Do not change the stored totals by hand.

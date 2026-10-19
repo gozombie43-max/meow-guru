@@ -278,15 +278,15 @@ export default function StudyModeStartView({
 
         .study-start-root[data-theme="light"] {
           --bg-root: var(--light-canvas);
-          --bg-desktop: #e5e5ea;
-          --bg-window: #ffffff;
-          --bg-sidebar: #f8f8fa;
-          --bg-card: #ffffff;
-          --border-window: rgba(0, 0, 0, 0.08);
-          --border-subtle: rgba(0, 0, 0, 0.08);
-          --text-primary: #000000;
-          --text-secondary: #6e6e73;
-          --text-tertiary: #8e8e93;
+          --bg-desktop: var(--light-only-surface-muted, #e5e5ea);
+          --bg-window: var(--light-only-surface, #ffffff);
+          --bg-sidebar: var(--light-only-canvas, #f8f8fa);
+          --bg-card: var(--light-only-surface, #ffffff);
+          --border-window: var(--light-only-border, rgba(0, 0, 0, 0.08));
+          --border-subtle: var(--light-only-border, rgba(0, 0, 0, 0.08));
+          --text-primary: var(--light-only-text, #000000);
+          --text-secondary: var(--light-only-text-muted, #6e6e73);
+          --text-tertiary: var(--light-only-text-muted, #8e8e93);
         }
 
         /* ════════════════════════════════════════════════════
@@ -548,7 +548,7 @@ export default function StudyModeStartView({
         .study-light-symbol {
           font-size: 8px;
           font-weight: 800;
-          color: rgba(0, 0, 0, 0.7);
+          color: var(--light-only-text-secondary, rgba(0, 0, 0, 0.7));
           line-height: 1;
           opacity: 0;
           transition: opacity 0.15s ease;

@@ -1,13 +1,13 @@
 .container {
   --bg: var(--light-canvas);
   --bg-elevated: var(--light-surface);
-  --label: #000000;
-  --secondary-label: #6e6e73;
-  --tertiary-label: #8e8e93;
-  --separator: rgba(60,60,67,0.29);
+  --label: var(--light-only-text, #000000);
+  --secondary-label: var(--light-only-text-muted, #6e6e73);
+  --tertiary-label: var(--light-only-text-muted, #8e8e93);
+  --separator: var(--light-only-border, rgba(60,60,67,0.29));
   --blue: var(--ios-system-blue);
   --green: #34c759;
-  --fill: rgba(120,120,128,0.12);
+  --fill: var(--light-only-surface-muted, rgba(120,120,128,0.12));
   --shadow: rgba(0,0,0,0.06);
 
   background: var(--bg);

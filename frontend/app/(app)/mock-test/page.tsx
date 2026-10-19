@@ -9,6 +9,8 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import styles from './page.module.css';
 import { examLogos } from './_shared/exam-logos';
+import { fetchCatalogSummary, type ExamPaperCounts } from './_shared/catalog-summary';
+import { subscribeMockCatalog } from '@/lib/mock-catalog-revision';
 
 type ExamType = 'ssc' | 'rrb' | 'banking' | 'upsc' | 'defence' | 'other';
 
@@ -17,7 +19,6 @@ type ExamCard = {
   name: string;
   subtitle?: string;
   type: ExamType;
-  count: string;
   badge?: string;
   badgeTone?: 'hot' | 'free' | 'new' | 'premium';
   logoUrl?: string;
@@ -44,7 +45,6 @@ const examCards: ExamCard[] = [
     name: 'SSC CGL',
     subtitle: 'Combined Graduate Level',
     type: 'ssc',
-    count: '142 Tests',
     logoUrl: examLogos['ssc-cgl'],
     logoText: 'SSC',
   },
@@ -53,7 +53,6 @@ const examCards: ExamCard[] = [
     name: 'SSC CHSL',
     subtitle: 'Higher Secondary (10+2)',
     type: 'ssc',
-    count: '84 Tests',
     logoUrl: examLogos['ssc-chsl'],
     logoText: 'SSC',
   },
@@ -62,7 +61,6 @@ const examCards: ExamCard[] = [
     name: 'SSC MTS',
     subtitle: 'Multi Tasking Staff',
     type: 'ssc',
-    count: '48 Tests',
     logoUrl: examLogos['ssc-mts'],
     logoText: 'SSC',
   },
@@ -71,7 +69,6 @@ const examCards: ExamCard[] = [
     name: 'SSC GD',
     subtitle: 'General Duty Constable',
     type: 'ssc',
-    count: '52 Tests',
     logoUrl: examLogos['ssc-gd'],
     logoText: 'SSC',
   },
@@ -82,7 +79,6 @@ const examCards: ExamCard[] = [
     name: 'RRB NTPC',
     subtitle: 'Non-Technical Categories',
     type: 'rrb',
-    count: '70 Tests',
     logoUrl: examLogos['rrb-ntpc'],
     logoText: 'RRB',
   },
@@ -91,7 +87,6 @@ const examCards: ExamCard[] = [
     name: 'RRB Group D',
     subtitle: 'Level 1 Posts Exam',
     type: 'rrb',
-    count: '58 Tests',
     logoUrl: examLogos['rrb-group-d'],
     logoText: 'RRB',
   },
@@ -100,7 +95,6 @@ const examCards: ExamCard[] = [
     name: 'RRB JE',
     subtitle: 'Junior Engineer Stage 1 & 2',
     type: 'rrb',
-    count: '45 Tests',
     logoUrl: examLogos['rrb-je'],
     logoText: 'RRB',
   },
@@ -111,7 +105,6 @@ const examCards: ExamCard[] = [
     name: 'IBPS PO',
     subtitle: 'Probationary Officer',
     type: 'banking',
-    count: '96 Tests',
     logoUrl: examLogos['ibps-po'],
     logoText: 'IBPS',
   },
@@ -120,7 +113,6 @@ const examCards: ExamCard[] = [
     name: 'IBPS Clerk',
     subtitle: 'Clerical Cadre Exam',
     type: 'banking',
-    count: '80 Tests',
     logoUrl: examLogos['ibps-clerk'],
     logoText: 'IBPS',
   },
@@ -129,7 +121,6 @@ const examCards: ExamCard[] = [
     name: 'SBI PO',
     subtitle: 'State Bank Probationary Officer',
     type: 'banking',
-    count: '110 Tests',
     logoUrl: examLogos['sbi-po'],
     logoText: 'SBI',
   },
@@ -138,7 +129,6 @@ const examCards: ExamCard[] = [
     name: 'SBI Clerk',
     subtitle: 'Junior Associate (Clerk)',
     type: 'banking',
-    count: '80 Tests',
     logoUrl: examLogos['sbi-clerk'],
     logoText: 'SBI',
   },
@@ -149,7 +139,6 @@ const examCards: ExamCard[] = [
     name: 'UPSC CSE',
     subtitle: 'Civil Services (IAS / IPS)',
     type: 'upsc',
-    count: '95 Tests',
     logoUrl: examLogos['upsc'],
     logoText: 'UPSC',
   },
@@ -158,7 +147,6 @@ const examCards: ExamCard[] = [
     name: 'UPPSC PCS',
     subtitle: 'Combined State / Subordinate',
     type: 'upsc',
-    count: '65 Tests',
     logoUrl: examLogos['uppsc'],
     logoText: 'UPPSC',
   },
@@ -167,7 +155,6 @@ const examCards: ExamCard[] = [
     name: 'WBCS (Exe)',
     subtitle: 'Executive & Allied Services',
     type: 'upsc',
-    count: '55 Tests',
     logoUrl: examLogos['wbcs'],
     logoText: 'WBCS',
   },
@@ -178,7 +165,6 @@ const examCards: ExamCard[] = [
     name: 'NDA',
     subtitle: 'National Defence Academy',
     type: 'defence',
-    count: '65 Tests',
     logoUrl: examLogos['nda'],
     logoText: 'NDA',
   },
@@ -187,7 +173,6 @@ const examCards: ExamCard[] = [
     name: 'CDS',
     subtitle: 'Combined Defence Services',
     type: 'defence',
-    count: '40 Tests',
     logoUrl: examLogos['cds'],
     logoText: 'CDS',
   },
@@ -196,7 +181,6 @@ const examCards: ExamCard[] = [
     name: 'CUET UG',
     subtitle: 'Common University Entrance',
     type: 'defence',
-    count: '50 Tests',
     logoUrl: examLogos['cuet'],
     logoText: 'CUET',
   },
@@ -207,7 +191,6 @@ const examCards: ExamCard[] = [
     name: 'CAT',
     subtitle: 'Common Admission Test (IIMs)',
     type: 'other',
-    count: '120 Tests',
     logoUrl: examLogos['cat'],
     logoText: 'CAT',
   },
@@ -221,6 +204,22 @@ export default function MockTestPage() {
 function StandardMockTestPage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
+  const [counts, setCounts] = useState<Record<string, ExamPaperCounts> | null>(null);
+  const [countError, setCountError] = useState('');
+  const [countRevision, setCountRevision] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    const exams = examCards.map(card => card.id);
+    const load = () => {
+      void fetchCatalogSummary(exams).then(saved => {
+        if (active) { setCounts(Object.fromEntries(saved.map(exam => [exam.examSlug, exam]))); setCountError(''); }
+      }).catch(() => { if (active) setCountError('Paper counts unavailable.'); });
+    };
+    load();
+    const unsubscribe = exams.map(exam => subscribeMockCatalog(exam, load));
+    return () => { active = false; unsubscribe.forEach(stop => stop()); };
+  }, [countRevision]);
 
   useEffect(() => {
     const body = document.body;
@@ -298,6 +297,7 @@ function StandardMockTestPage() {
               <div className={styles.contentBody}>
                 {/* Exam Grid */}
                 <section className={styles.section}>
+                  {countError && <p role="status">{countError} <button type="button" data-ui-button="secondary" onClick={() => setCountRevision(value => value + 1)}>Retry counts</button></p>}
                   <div className={styles.examGrid}>
                     {filteredExams.map((card) => (
                       <Link
@@ -338,7 +338,7 @@ function StandardMockTestPage() {
                         <div className={styles.examFooter}>
                           <div className={styles.examCountPill}>
                             <Layers size={11} className={styles.countIcon} />
-                            <span>{card.count} Included</span>
+                            <span title={counts ? `${counts[card.id]?.mockCount || 0} mocks · ${counts[card.id]?.pyqCount || 0} PYQs` : undefined}>{counts ? `${counts[card.id]?.total || 0} Test${counts[card.id]?.total === 1 ? '' : 's'} Included` : countError ? 'Counts unavailable' : 'Loading counts…'}</span>
                           </div>
                           
                         </div>

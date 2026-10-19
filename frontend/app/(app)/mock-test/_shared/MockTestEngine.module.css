@@ -133,7 +133,7 @@
   font-weight: 500;
   cursor: pointer;
   border: 1px solid var(--border, #cbd5e1);
-  background: white;
+  background: var(--light-only-surface, white);
   color: var(--text-dark, #0f172a);
 }
 
@@ -470,7 +470,7 @@
   --ui-control-radius: 8px;
   --ui-surface: transparent;
   --ui-border: #64748b;
-  --ui-text: #334155;
+  --ui-text: var(--light-only-text-secondary, #334155);
   --ui-action: var(--ios-system-blue, #007aff);
 }
 .container :is(.actionsBar, .mobileBottomBar) :is(.btnOutline, .btnPrimary) {

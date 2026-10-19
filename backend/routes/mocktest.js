@@ -2,8 +2,10 @@ import express from 'express';
 import { idempotency } from '../middleware/idempotency.js';
 import { protect } from '../middleware/protect.js';
 import adminAuth from '../middleware/auth.js';
+import { uploadLimiter } from '../middleware/rateLimiter.js';
 import { adminGetPaperQuestions, adminSavePaperQuestions } from '../controllers/adminPaperEditorController.js';
 import { parseQuestionExamMode } from '../services/questions/questionExamMode.js';
+import { fetchCatalogSummary } from '../controllers/mockTestController.js';
 
 import {
   fetchExamSlots,
@@ -38,6 +40,7 @@ router.use('/admin', (req, res, next) => {
 // ─── Public Slot Routes ───────────────────────────────────
 
 // GET /:examSlug/slots — Read catalog; default initialization is migration 018.
+router.get('/catalog-metadata', fetchCatalogSummary);
 router.get('/:examSlug/slots', fetchExamSlots);
 
 // GET /slots/:slotId — Fetch a single slot by ID
@@ -52,6 +55,12 @@ router.post('/admin/slots', adminAuth, adminCreateSlot);
 router.patch('/admin/slots/:slotId', adminAuth, adminUpdateSlot);
 router.get('/admin/slots/:slotId/questions', adminAuth, adminGetPaperQuestions);
 router.patch('/admin/slots/:slotId/questions', adminAuth, adminSavePaperQuestions);
+router.post('/admin/slots/:slotId/question-images-zip', adminAuth, uploadLimiter, async (req, res, next) => {
+  try {
+    const { handlePaperImageZip } = await import('../controllers/paperImageZipController.js');
+    await handlePaperImageZip(req, res);
+  } catch (error) { next(error); }
+});
 
 // DELETE /admin/slots/:slotId — Delete a mock test slot
 router.delete('/admin/slots/:slotId', adminAuth, adminDeleteSlot);

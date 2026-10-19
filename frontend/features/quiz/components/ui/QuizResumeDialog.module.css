@@ -47,9 +47,9 @@
 }
 
 .dialog[data-theme="light"] {
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--light-only-surface, rgba(255, 255, 255, 0.88));
   border: 1px solid rgba(0, 0, 0, 0.08);
-  color: #1d1d1f;
+  color: var(--light-only-text, #1d1d1f);
   box-shadow: 0 28px 64px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
@@ -94,7 +94,7 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 .dialog[data-theme="light"] .progressCard {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.04));
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 .progressLabel {
@@ -120,7 +120,7 @@
   background: rgba(255, 255, 255, 0.12);
 }
 .dialog[data-theme="light"] .progress {
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.1));
 }
 .progress::-webkit-progress-bar { background: transparent; border-radius: 8px; }
 .progress::-webkit-progress-value { background: var(--ui-accent, var(--ios-system-blue)); border-radius: 8px; }
@@ -132,7 +132,7 @@
 .hint { margin: 0; text-align: center; color: var(--ui-secondary, rgba(235, 235, 245, 0.6)); font-size: 11px; line-height: 1.4; }
 .cancel { padding: 10px 16px; border: 0; background: transparent; color: var(--ui-secondary, rgba(235, 235, 245, 0.7)); font-size: 14px; cursor: pointer; border-radius: 10px; }
 .cancel:hover { background: rgba(255, 255, 255, 0.06); }
-.dialog[data-theme="light"] .cancel:hover { background: rgba(0, 0, 0, 0.05); }
+.dialog[data-theme="light"] .cancel:hover { background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.05)); }
 
 @media (max-width: 639px) {
   .dialog {

@@ -5,8 +5,8 @@
   --topic-divider: rgb(175 194 218 / 13%);
   --topic-solved: #c8d3e2;
   --topic-slash: rgba(235 235 245 / 48%);
-  --topic-total: #94a3b8;
-  --topic-label: #7c8899;
+  --topic-total: var(--light-only-text-muted, #94a3b8);
+  --topic-label: var(--light-only-text-muted, #7c8899);
   position: relative;
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr) 20px;
@@ -84,10 +84,10 @@
   --topic-text: var(--light-text, #172033);
   --topic-muted: var(--light-text-secondary, #596579);
   --topic-divider: var(--light-border, #dce3ed);
-  --topic-solved: #334155;
-  --topic-slash: rgba(15 23 42 / 40%);
-  --topic-total: #64748b;
-  --topic-label: #64748b;
+  --topic-solved: var(--light-only-text-secondary, #334155);
+  --topic-slash: var(--light-only-text-muted, rgba(15 23 42 / 40%));
+  --topic-total: var(--light-only-text-muted, #64748b);
+  --topic-label: var(--light-only-text-muted, #64748b);
 }
 
 @media (max-width: 340px) {

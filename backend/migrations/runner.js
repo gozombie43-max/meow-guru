@@ -1,4 +1,5 @@
 import * as removeDemoMockSlots from './023-remove-demo-mock-slots.js';
+import * as mockCatalogMetadata from './024-mock-catalog-metadata.js';
 import * as userHistory from './017-user-history.js';
 import * as defaultMockSlots from './018-default-mock-slots.js';
 import * as battleCompetitivePolicy from './019-battle-competitive-policy.js';
@@ -24,7 +25,7 @@ import * as idempotency from './013-idempotency.js';
 import * as feedKeysets from './014-feed-keysets.js';
 import * as auditSecurity from './015-audit-security.js';
 
-export const migrations = [existingIndexes, runtime, productionHardening, readiness, training, oauthState, trainingHardening, trainingPerformance, trainingExamWideCandidates, trainingLearnerStateMeta, questionBrowserSort, normalizedQuestionIndexes, idempotency, feedKeysets, auditSecurity, databaseRemediation, userHistory, defaultMockSlots, battleCompetitivePolicy, battleCoordinator, authEmailSecurity, emailLoginOtp, removeDemoMockSlots];
+export const migrations = [existingIndexes, runtime, productionHardening, readiness, training, oauthState, trainingHardening, trainingPerformance, trainingExamWideCandidates, trainingLearnerStateMeta, questionBrowserSort, normalizedQuestionIndexes, idempotency, feedKeysets, auditSecurity, databaseRemediation, userHistory, defaultMockSlots, battleCompetitivePolicy, battleCoordinator, authEmailSecurity, emailLoginOtp, removeDemoMockSlots, mockCatalogMetadata];
 export async function assertMigrations(db) {
   const applied = await db.collection('schemaMigrations').find({ _id: { $in: migrations.map(m => m.id) }, completedAt: { $exists: true } }, { timeoutMS: 2000 }).toArray();
   if (applied.length !== migrations.length) throw new Error('Database migrations required: run npm run db:migrate before starting this release');

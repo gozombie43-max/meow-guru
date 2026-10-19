@@ -612,7 +612,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #ef4444;
+  color: var(--light-only-danger, #ef4444);
   font-size: 13px;
   font-weight: 500;
 }
