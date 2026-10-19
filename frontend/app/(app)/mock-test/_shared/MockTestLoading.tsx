@@ -2,7 +2,7 @@ import styles from './MockTestLoading.module.css';
 
 export default function MockTestLoading({ label = 'Loading test…' }: { label?: string }) {
   return (
-    <div className={styles.screen}>
+    <div className={styles.screen} aria-busy="true">
       <div className={styles.status} role="status" aria-live="polite">
         <svg className={styles.spinner} viewBox="0 0 32 32" aria-hidden="true">
           {Array.from({ length: 12 }, (_, index) => (

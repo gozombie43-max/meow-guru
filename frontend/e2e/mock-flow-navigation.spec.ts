@@ -23,6 +23,48 @@ test.beforeEach(async ({ context, request }, testInfo) => {
 test.afterEach(async ({ context }) => { await context.unrouteAll({ behavior: 'wait' }); });
 
 for (const kind of ['mock', 'pyq']) {
+  test(`${kind}: Resume waits for the current attempt before running a cached timer`, async ({ page }) => {
+    test.setTimeout(90000);
+    await page.clock.install();
+    const title = kind === 'pyq' ? 'Browser PYQ 2025' : 'Browser practice mock';
+    const testId = kind === 'pyq' ? 'browser-pyq' : 'browser-practice';
+    let submissions = 0;
+    page.on('request', request => {
+      if (request.method() === 'POST' && request.url().endsWith('/submit')) submissions++;
+    });
+    // Restore a stale cached countdown while the server still has time left.
+    // The fresh attempt GET must finish before this countdown can submit.
+    await page.route(`**/backend-api/api/mocktest/ssc-cgl/${testId}/start`, async route => {
+      const response = await route.fetch({ url: `http://127.0.0.1:3111/api/mocktest/ssc-cgl/${testId}/start` });
+      await route.fulfill({ response, json: { ...await response.json(), timeLeft: 60 } });
+    });
+    await page.route('**/backend-api/api/mocktest/attempt/*', async route => {
+      if (route.request().method() === 'GET') await new Promise(resolve => setTimeout(resolve, 1500));
+      await route.fallback();
+    });
+    await page.goto(`/mock-test/ssc-cgl${kind === 'pyq' ? '?tab=prev' : ''}`);
+    const catalogUrl = page.url();
+    const card = page.getByRole('article').filter({ hasText: title });
+    await card.getByRole('button', { name: 'Start Mock', exact: true }).click();
+    await page.getByRole('button', { name: 'Start Mock Test', exact: true }).click();
+    await expect(page.getByRole('radio').first()).toBeVisible();
+    const attemptUrl = new URL(page.url());
+    attemptUrl.searchParams.delete('lang');
+    await page.getByRole('button', { name: 'Leave mock test' }).click();
+    await page.getByRole('button', { name: 'Exit quiz', exact: true }).click();
+    await expect(page).toHaveURL(catalogUrl);
+    await page.clock.fastForward(65000);
+    await card.getByRole('button', { name: 'Resume Mock', exact: true }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Loading test…' })).toBeVisible();
+    await page.clock.fastForward(1000);
+    expect(submissions).toBe(0);
+    await expect(page.getByRole('radio').first()).toBeVisible();
+    await page.clock.fastForward(5000);
+    await expect(page).toHaveURL(attemptUrl.toString());
+    await expect(page.getByRole('radio').first()).toBeVisible();
+    expect(submissions).toBe(0);
+  });
+
   test(`${kind}: instructions, exit, resume, submit, review and retake preserve parent history`, async ({ page }, testInfo) => {
     test.setTimeout(180000);
     const mobile = testInfo.project.name === 'mobile';

@@ -11,7 +11,7 @@ import { abortError } from '@/shared/api/policy';
 import BackButton from "@/components/BackButton";
 import { useAppNavigation, useBackLayer, useQuizLeaveGuard } from "@/hooks/useAppNavigation";
 import { useSearchParams } from 'next/navigation';
-import { useCallback,useEffect,useEffectEvent,useRef,useState } from 'react';
+import { useCallback,useEffect,useEffectEvent,useLayoutEffect,useRef,useState } from 'react';
 import {
 autosaveAttempt,
 getAttempt,
@@ -54,6 +54,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const resourceRef = useRef(scope);
   useEffect(() => { resourceRef.current = scope; }, [scope]);
   const loadController = useRef<AbortController | null>(null);
+  const attemptReadyRef = useRef(false);
   const [loadedScope, setLoadedScope] = useState('');
 
   const [paper, setPaper] = useState<MockPaper | null>(null);
@@ -141,6 +142,10 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const saveProgress = useCallback((progress: Omit<AttemptProgress, 'revision'>) => getSaver().save(progress), [getSaver]);
 
   const loadData = useCallback(async (signal?: AbortSignal) => {
+    // Cached routes retain their old clocks while hidden. Restore server state
+    // before allowing those clocks to expire or submit the resumed attempt.
+    attemptReadyRef.current = false;
+    setLoadedScope('');
     const currentToken = tokenRef.current;
     if (!ready || !currentToken) return;
     try {
@@ -168,7 +173,6 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       if (!nextPaper?.sections?.length) throw new Error('Attempt did not include a valid paper');
       setPaper(nextPaper);
       paperRef.current = nextPaper;
-      setLoadedScope(scope);
       const sectionKey = nextPaper.sections[data.currentSection ?? 0]?.key;
       const remaining = nextPaper.schemaDriven ? (sectionKey ? data.sectionRemainingTimes?.[sectionKey] : null) : data.timeLeft ?? (nextPaper.totalDurationMin ?? 60) * 60;
       setDeadline(remaining == null ? 0 : (created?.receivedAt ?? Date.now()) + remaining * 1000);
@@ -205,6 +209,10 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       conflictRef.current = false;
       setHasConflict(false);
       autoSubmitAttemptedRef.current = false;
+      setIsSubmitting(false);
+      setSubmitError(null);
+      attemptReadyRef.current = true;
+      setLoadedScope(scope);
       if (resumeAttemptId) clearStartResponse(`mock:${examSlug}:${testId}`, userId, resumeAttemptId);
     } catch (e) {
       if (signal?.aborted) return;
@@ -214,17 +222,20 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   }, [examSlug, testId, userId, ready, resumeAttemptId, router, getSaver, scope, requestedLanguage]);
 
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const controller = new AbortController();
     loadController.current = controller;
     // Fetching the attempt is the external synchronization boundary for this screen.
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- the route-bound attempt must load immediately for timer and recovery correctness.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hide cached questions before paint while restoring the route-bound attempt.
     void loadData(controller.signal);
-    return () => controller.abort();
+    return () => {
+      attemptReadyRef.current = false;
+      controller.abort();
+    };
   }, [loadData]);
 
   const saveLatestProgress = useEffectEvent(() => {
-    if (!attemptId || !token || isSubmitting || loadedScope !== scope || sectionTransitionRef.current) return;
+    if (!attemptReadyRef.current || !attemptId || !token || isSubmitting || loadedScope !== scope || sectionTransitionRef.current) return;
     void saveProgress({ answers, questionStatuses, currentSection, currentQuestion, ...(paper?.schemaDriven ? { language } : {}) }).catch(console.error);
   });
 
@@ -271,12 +282,12 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  useQuizLeaveGuard(Boolean(paper) && (paper?.schemaDriven === true || deadline > 0) && !isSubmitting,
+  useQuizLeaveGuard(loadedScope === scope && Boolean(paper) && (paper?.schemaDriven === true || deadline > 0) && !isSubmitting,
     `/mock-test/${examSlug}`,
     "Leave this mock test? Saved progress is retained, but the exam timer will continue.");
 
   const handleFinalSubmit = useCallback(async () => {
-    if (isSubmitting || !attemptId || !token || sectionTransitionRef.current) return;
+    if (!attemptReadyRef.current || loadedScope !== scope || isSubmitting || !attemptId || !token || sectionTransitionRef.current) return;
     setIsSubmitting(true);
     setSubmitError(null);
     try {
@@ -313,13 +324,14 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     paper,
     language,
     scope,
+    loadedScope,
   ]);
 
   useEffect(() => {
-    if (!sectionsExhausted || sectionSaving || isSubmitting || autoSubmitAttemptedRef.current) return;
+    if (!attemptReadyRef.current || loadedScope !== scope || !sectionsExhausted || sectionSaving || isSubmitting || autoSubmitAttemptedRef.current) return;
     autoSubmitAttemptedRef.current = true;
     void handleFinalSubmit();
-  }, [sectionsExhausted, sectionSaving, isSubmitting, handleFinalSubmit]);
+  }, [sectionsExhausted, sectionSaving, isSubmitting, handleFinalSubmit, loadedScope, scope]);
 
   const finishSection = (statuses = questionStatuses) => {
     if (sectionTransitionRef.current) return;
@@ -332,7 +344,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   };
 
   const handleExpire = () => {
-    if (!paper || isSubmitting || autoSubmitAttemptedRef.current) return;
+    if (!attemptReadyRef.current || loadedScope !== scope || !paper || isSubmitting || autoSubmitAttemptedRef.current) return;
     if (paper.schemaDriven && !paper.compositeTimer) { if (!sectionError) finishSection(); return; }
     autoSubmitAttemptedRef.current = true;
     void handleFinalSubmit();
@@ -449,7 +461,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   });
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${styles.ready}`}>
       {confidential && <div role="note" style={{ padding: '8px 16px', fontSize: 12 }}>Confidential assessment · One attempt · {paper.compositeTimer ? 'Total exam time' : 'Section timing'} applies · No answer review</div>}
       {saveError && <div role="status">{saveError}{hasConflict && <button data-ui-button="state" onClick={() => window.location.reload()}>Reload saved attempt</button>}</div>}
       {sectionError && <div role="alert">{sectionError}<button data-ui-button="state" disabled={hasConflict || sectionSaving} onClick={() => finishSection()}>Retry saving section</button></div>}

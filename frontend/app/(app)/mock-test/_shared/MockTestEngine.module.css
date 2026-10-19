@@ -17,6 +17,12 @@
   overflow: hidden;
 }
 
+.ready { animation: testAppear 160ms ease-out both; }
+@keyframes testAppear { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .ready { animation: none; }
+}
+
 .topBar {
   display: flex;
   justify-content: space-between;

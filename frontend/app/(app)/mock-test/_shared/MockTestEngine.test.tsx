@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import MockTestEngine from './MockTestEngine';
-import { StrictMode } from 'react';
+import { Activity, StrictMode } from 'react';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { seedStartResponse } from '@/lib/start-response-cache';
 import { getMockStartKey } from './startKey';
@@ -226,6 +226,29 @@ it('aborts stale attempt reads and ignores a late response', async () => {
   expect(signal?.aborted).toBe(true);
   await act(async () => release({ status: 'completed', id: 'old' }));
   expect(replace).not.toHaveBeenCalled(); expect(screen.getByText('New attempt')).toBeVisible();
+});
+
+it('does not submit a cached attempt from its old timer while Resume is restoring it', async () => {
+  search.resume = 'resumed';
+  const active = { status: 'in_progress' as const, attemptId: 'resumed', timeLeft: 2,
+    paper: { sections: [{ questions: [{ id: 'q', question: 'Saved question', options: ['A', 'B'] }] }] } };
+  vi.mocked(getAttempt).mockResolvedValueOnce(active);
+  let view!: ReturnType<typeof render>;
+  await act(async () => { view = render(<Activity mode="visible"><MockTestEngine examSlug="ssc-cgl" testId="test" /></Activity>); });
+  await act(async () => view.rerender(<Activity mode="hidden"><MockTestEngine examSlug="ssc-cgl" testId="test" /></Activity>));
+  await act(async () => vi.advanceTimersByTime(5000));
+  let restore!: (value: MockAttempt) => void;
+  vi.mocked(getAttempt).mockReturnValueOnce(new Promise(resolve => { restore = resolve; }));
+  await act(async () => view.rerender(<Activity mode="visible"><MockTestEngine examSlug="ssc-cgl" testId="test" /></Activity>));
+  expect(screen.getByRole('status')).toHaveTextContent('Loading test…');
+  expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+  await act(async () => vi.advanceTimersByTime(1000));
+  expect(submitAttempt).not.toHaveBeenCalled();
+  expect(replace).not.toHaveBeenCalled();
+  await act(async () => restore({ ...active, timeLeft: 45, answers: { q: '1' } }));
+  expect(screen.getByRole('radio', { name: 'Answer B' })).toBeChecked();
+  await act(async () => vi.advanceTimersByTime(5000));
+  expect(submitAttempt).not.toHaveBeenCalled();
 });
 
 it('keeps a late autosave completion from replacing another attempt revision', async () => {
