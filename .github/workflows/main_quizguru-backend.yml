@@ -4,23 +4,13 @@
 name: Build and deploy Node.js app to Azure Web App - quizguru-backend
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'backend/**'
-      - 'contracts/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/ci-verify.yml'
-      - '.github/workflows/main_quizguru-backend.yml'
-  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: quizguru-backend-production
+  cancel-in-progress: false
 
 jobs:
-  verification:
-    uses: ./.github/workflows/ci-verify.yml
-    secrets: inherit
-
   build:
     runs-on: ubuntu-latest
     permissions:
@@ -60,7 +50,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build, verification]
+    needs: build
     permissions:
       id-token: write
       contents: read

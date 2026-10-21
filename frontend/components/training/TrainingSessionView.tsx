@@ -3,17 +3,18 @@ import { useRef, useState, useEffect } from "react";
 import { LoaderCircle } from "lucide-react";
 import { useBackLayer, useQuizLeaveGuard } from "@/hooks/useAppNavigation";
 import { useThemeMode } from "@/hooks/useTheme";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import dynamic from "next/dynamic";
 const TrainingResults = dynamic(() => import("./TrainingResults").then(module => module.TrainingResults));
 import { TrainingLoading } from "./TrainingLoading";
 import { useTrainingSession } from "./session/hooks/useTrainingSession";
 import { TrainingSessionHeader } from "./session/TrainingSessionHeader";
 import { TrainingQuestion } from "./session/TrainingQuestion";
-import { TrainingPalette } from "./session/TrainingPalette";
+const TrainingPalette = dynamic(() => import("./session/TrainingPalette").then(module => module.TrainingPalette));
 import { TrainingPace } from "./session/TrainingPace";
 import { TrainingConfidence } from "./session/TrainingConfidence";
 import { TrainingFooter } from "./session/TrainingFooter";
-import { TrainingFinishDialog } from "./session/TrainingFinishDialog";
+const TrainingFinishDialog = dynamic(() => import("./session/TrainingFinishDialog").then(module => module.TrainingFinishDialog));
 import "@/app/(app)/play/play.css";
 import "./training-session.css";
 
@@ -38,6 +39,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
   } = useTrainingSession(id);
 
   const [showOverview, setShowOverview] = useState(false);
+  const desktop = useMediaQuery('(min-width: 1024px)');
 
   const mainRef = useRef<HTMLElement>(null);
   const finishRef = useRef<HTMLDialogElement>(null);
@@ -94,14 +96,14 @@ export default function TrainingSessionView({ id }: { id: string }) {
 
         {session?.status === "active" && q && (
           <div className="training-session-columns">
-            <TrainingPalette 
+            {(desktop || showOverview) && <TrainingPalette
               session={session}
               showOverview={showOverview}
               setShowOverview={setShowOverview}
               canNavigate={canNavigate || false}
               busy={busy}
               act={act}
-            />
+            />}
 
             <section className="training-question-panel">
               <TrainingQuestion 
@@ -140,7 +142,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
         />
       )}
 
-      <TrainingFinishDialog 
+      {confirmFinish && <TrainingFinishDialog
         finishRef={finishRef} 
         confirmFinish={confirmFinish} 
         setConfirmFinish={setConfirmFinish} 
@@ -150,7 +152,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
         error={error} 
         busy={busy} 
         act={act} 
-      />
+      />}
     </div>
   );
 }

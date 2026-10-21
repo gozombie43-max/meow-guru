@@ -419,6 +419,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       if (page.viewportSize()!.width < 1024) {
         const toggle = page.locator('.training-header-overview-btn');
+        await expect(page.locator("#training-overview")).toHaveCount(0);
         await toggle.click();
         await expect(page.locator("#training-overview")).toBeVisible();
         await toggle.click();

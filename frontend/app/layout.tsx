@@ -5,6 +5,8 @@ import { VirtualKeyboardProvider } from '@/components/VirtualKeyboardProvider';
 import SelectionPopover from '@/components/SelectionPopover';
 import SkipToContent from '@/components/SkipToContent';
 import ThemeColor from '@/components/ThemeColor';
+import { API_BASE } from '@/lib/api-base';
+import { earlySessionScript } from '@/lib/early-session';
 import './globals.css';
 import './light-theme.css';
 import './dark-theme.css';
@@ -76,6 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           id="theme-bootstrap"
           dangerouslySetInnerHTML={{ __html: themeBootstrapScript }}
         />
+        <script id="session-bootstrap" dangerouslySetInnerHTML={{ __html: earlySessionScript(API_BASE) }} />
       </head>
       <body className={GeistSans.variable} suppressHydrationWarning>
         <SkipToContent />

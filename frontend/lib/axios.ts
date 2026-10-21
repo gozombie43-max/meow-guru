@@ -4,6 +4,7 @@ import { normalizeError } from '@/shared/api/error';
 import type {} from '@/shared/api/request';
 import { correlationHeaders } from '@/shared/api/correlation';
 import { API_BASE } from '@/lib/api-base';
+import { consumeEarlyRefresh } from './early-session';
 
 export const AUTH_TOKEN_CHANGED_EVENT = 'auth-token-changed';
 const LEGACY_AUTH_STORAGE_KEYS = ['token', 'refreshToken'] as const;
@@ -44,9 +45,11 @@ export const requestTokenRefresh = async (): Promise<string | null> => {
         {},
         { withCredentials: true, timeout: 15_000 }
       );
-      const { data } = typeof navigator !== 'undefined' && navigator.locks
-        ? await navigator.locks.request('meow-session-refresh', refresh)
-        : await refresh();
+      const prepared = consumeEarlyRefresh(API_BASE);
+      const { data } = prepared ? { data: { token: await prepared } }
+        : typeof navigator !== 'undefined' && navigator.locks
+          ? await navigator.locks.request('meow-session-refresh', refresh)
+          : await refresh();
 
       if (data.token) {
         updateAccessToken(data.token);

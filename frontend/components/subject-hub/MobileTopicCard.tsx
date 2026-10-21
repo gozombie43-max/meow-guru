@@ -15,6 +15,7 @@ export interface MobileTopicCardProps {
   /** Kept for compatibility with shared topic metadata. */
   icon?: LucideIcon;
   accent: string;
+  priority?: boolean;
   detail?: { color?: string; questionCount?: number; progress?: number; userSolved?: number };
 }
 
@@ -23,6 +24,7 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
   slug,
   name,
   accent,
+  priority = false,
   detail,
 }: MobileTopicCardProps) {
   const router = useRouter();
@@ -42,7 +44,7 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
       aria-label={`${name}, ${count} questions`}
     >
       <div className={styles.iconTile} aria-hidden="true">
-        <TopicThumbnail src={topicImage(slug)} size={56} />
+        <TopicThumbnail src={topicImage(slug)} size={56} priority={priority} />
       </div>
       <div className={styles.topicCopy}>
         <span className={styles.topicTitle}>{name}</span>

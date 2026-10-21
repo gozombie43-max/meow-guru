@@ -2,12 +2,56 @@ name: Continuous Verification & Quality Gate
 
 on:
   workflow_call:
+    inputs:
+      verification_only:
+        description: Prevent reusable verification from deploying production
+        type: boolean
+        default: true
+  workflow_dispatch:
+    inputs:
+      deploy_backend:
+        description: Deploy the verified main commit to production
+        type: boolean
+        default: false
   push:
-    branches: [main, master, develop]
+    branches: ['**']
   pull_request:
     branches: [main, master, develop]
+  schedule:
+    - cron: '30 20 * * *'
+
+# Superseded development runs can stop. Main/manual runs keep their deployment gates.
+concurrency:
+  group: verification-${{ github.workflow }}-${{ github.event_name }}-${{ (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && github.run_id || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.event_name != 'workflow_dispatch' }}
+
+permissions:
+  contents: read
 
 jobs:
+  policy:
+    name: Verification Policy
+    runs-on: ubuntu-latest
+    outputs:
+      full_validation: ${{ steps.policy.outputs.full_validation }}
+      lighthouse: ${{ steps.policy.outputs.lighthouse }}
+      deploy_backend: ${{ steps.policy.outputs.deploy_backend }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Verify workflow routing policy
+        run: node --test scripts/ci-policy.test.mjs scripts/ci-gate.test.mjs
+      - name: Select verification and deployment scope
+        id: policy
+        env:
+          VERIFICATION_ONLY: ${{ inputs.verification_only }}
+          DEPLOY_BACKEND: ${{ inputs.deploy_backend }}
+        run: node scripts/ci-policy.mjs
+
   lint-and-typecheck:
     name: Lint & Typecheck
     runs-on: ubuntu-latest
@@ -135,6 +179,9 @@ jobs:
   security-and-vulnerability-scan:
     name: Security & Vulnerability Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
 
     steps:
       - name: Checkout repository
@@ -146,6 +193,7 @@ jobs:
         uses: gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: 'false'
 
       - name: Audit Backend Dependencies
         run: npm audit --workspace backend --audit-level=high
@@ -165,22 +213,116 @@ jobs:
           node-version: "22.x"
           cache: npm
           cache-dependency-path: package-lock.json
-      - name: Install application and browser fixture dependencies
+      - name: Install application dependencies
         run: npm ci
       - name: Build contracts, backend and production frontend
         run: npm run build
       - name: Enforce entry JavaScript budgets
         working-directory: ./frontend
         run: npm run check:performance
-      - name: Install browser for assessment regression
-        working-directory: ./frontend
-        run: npm exec playwright install --with-deps chromium
+      - name: Install Chromium
+        run: npm exec --workspace frontend -- playwright install --with-deps chromium
       - name: Shared interface and design contract
         working-directory: ./frontend
         run: npm run check:interface
-      - name: Authenticated assessment browser regression
+      - name: Upload build output size report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nextjs-build-report
+          path: frontend/.next/diagnostics/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  browser-smoke:
+    name: Development Browser Smoke
+    needs: policy
+    if: needs.policy.outputs.full_validation == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      API_URL: http://127.0.0.1:3111
+      PLAYWRIGHT_HTML_OPEN: never
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Install Chromium
+        run: npm exec --workspace frontend -- playwright install --with-deps chromium
+      - name: Authenticated assessment and resource smoke on desktop and mobile
         working-directory: ./frontend
-        run: npm run test:e2e
+        run: npm run test:e2e -- assessment.spec.ts resource.spec.ts --forbid-only --reporter=line,html
+      - name: Upload smoke evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-smoke
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  browser-regression:
+    name: Browser Regression (${{ matrix.project }})
+    needs: policy
+    if: needs.policy.outputs.full_validation == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [desktop, mobile]
+    env:
+      API_URL: http://127.0.0.1:3111
+      PLAYWRIGHT_HTML_OPEN: never
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Install Chromium
+        run: npm exec --workspace frontend -- playwright install --with-deps chromium
+      - name: Run full project with its own backend and database fixture
+        working-directory: ./frontend
+        run: npm run test:e2e -- --project=${{ matrix.project }} --forbid-only --reporter=line,html
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: browser-regression-${{ matrix.project }}
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  lighthouse:
+    name: Lighthouse Performance Report
+    needs: policy
+    if: needs.policy.outputs.lighthouse == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      API_URL: http://127.0.0.1:3111
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run build
       - name: Setup Chrome
         id: setup-chrome
         uses: browser-actions/setup-chrome@19ae4b339ee18925ab85cf12c1041150ea4a44c8 # v1
@@ -195,22 +337,49 @@ jobs:
         run: |
           npm exec --yes --package=@lhci/cli@0.15.1 -- lhci autorun
           node scripts/check-lighthouse-routes.mjs
-      - name: Upload build output size report
+      - name: Upload Lighthouse evidence, including failed assertions
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: nextjs-build-report
-          path: frontend/.next/diagnostics/
+          name: lighthouse-report
+          path: |
+            frontend/.lighthouseci/
+            frontend/.next/diagnostics/lighthouse/
+          include-hidden-files: true
           retention-days: 14
           if-no-files-found: ignore
 
-  quality-gate:
-    name: Quality Gate
+  fast-quality-gate:
+    name: Fast Quality Gate
     if: always()
-    needs: [lint-and-typecheck, frontend-tests, backend-tests, security-and-vulnerability-scan, build-and-analyze]
+    needs: [policy, lint-and-typecheck, frontend-tests, backend-tests, security-and-vulnerability-scan, build-and-analyze, browser-smoke]
     runs-on: ubuntu-latest
     steps:
-      - name: Require every check to pass
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Require fast checks and the selected smoke coverage
         env:
           RESULTS: ${{ toJSON(needs) }}
-        run: echo "$RESULTS" | jq -e 'all(.[]; .result == "success")'
+        run: node scripts/ci-gate.mjs fast
+
+  quality-gate:
+    # Preserve the existing required check name and its full release protection.
+    name: Quality Gate
+    if: always()
+    needs: [policy, fast-quality-gate, browser-regression, lighthouse]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Require the full suite whenever policy selects it
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: node scripts/ci-gate.mjs release
+
+  deploy-backend:
+    name: Deploy verified backend
+    needs: [policy, quality-gate]
+    if: needs.policy.outputs.deploy_backend == 'true'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/main_quizguru-backend.yml
+    secrets: inherit

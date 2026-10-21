@@ -1,11 +1,9 @@
-"use client";
-import { use } from "react";
 import TrainingSessionView from "@/components/training/TrainingSessionView";
-export default function SessionPage({
+export default async function SessionPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = use(params);
+  const { id } = await params;
   return <TrainingSessionView id={id} />;
 }
