@@ -7,6 +7,46 @@ test.afterEach(async ({ context }) => {
   await context.unrouteAll({ behavior: 'wait' });
 });
 
+for (const failPreload of [false, true]) {
+  test(`session profile loads before application JavaScript and recovers safely; failed preload=${failPreload}`, async ({ page, context, request }, info) => {
+    const login = await request.post(`${fixture}/auth/login`, { data: { email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!' } });
+    expect(login.ok()).toBeTruthy();
+    const { token } = await login.json();
+    await routeFixture(context, token);
+    let refreshes = 0, profiles = 0, privateReads = 0;
+    page.on('request', req => {
+      const path = new URL(req.url()).pathname;
+      if (path.endsWith('/auth/refresh')) refreshes++;
+      if (path.endsWith('/users/me')) profiles++;
+      if (path.endsWith('/topics/private')) privateReads++;
+    });
+    if (failPreload) {
+      let failed = false;
+      await context.route('**/backend-api/users/me', route => {
+        if (failed) return route.fallback();
+        failed = true;
+        return route.fulfill({ status: 503, json: { message: 'Temporarily unavailable' } });
+      });
+    }
+    let release!: () => void;
+    const scripts = new Promise<void>(resolve => { release = resolve; });
+    await context.route('**/_next/static/chunks/*.js', async route => { await scripts; await route.continue(); });
+    const earlyProfile = page.waitForResponse(response => response.url().endsWith('/users/me'));
+    try {
+      await page.goto('/mathematics', { waitUntil: 'commit' });
+      expect((await earlyProfile).status()).toBe(failPreload ? 503 : 200);
+      expect({ refreshes, profiles, privateReads }).toEqual({ refreshes: 1, profiles: 1, privateReads: 0 });
+    } finally { release(); }
+    await expect.poll(() => privateReads).toBe(1);
+    expect(refreshes).toBe(1);
+    expect(profiles).toBe(failPreload ? 2 : 1);
+    expect(await page.evaluate(() => ({
+      preload: Boolean(window.__MEOW_SESSION_BOOTSTRAP__),
+      persistedToken: localStorage.getItem('token') || sessionStorage.getItem('token'),
+    }))).toEqual({ preload: false, persistedToken: null });
+  });
+}
+
 for (const resume of [false, true]) {
   test(`public quiz data overlaps blocked auth restoration; resume=${resume}`, async ({ page, context, request }, info) => {
     const login = await request.post(`${fixture}/auth/login`, { data: { email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!' } });
@@ -164,6 +204,21 @@ test('Mathematics loads private progress separately from its public catalog', as
   expect(reads.filter(url => url.includes('/questions/topic-counts?')).length).toBeLessThanOrEqual(1);
   const stored = await page.evaluate(() => Object.keys(localStorage).filter(key => key.includes('topic-counts')).map(key => localStorage.getItem(key)));
   expect(stored.every(value => !value?.includes('userProgress'))).toBe(true);
+  if (info.project.name === 'mobile') {
+    const firstImage = page.locator('[data-topic-thumbnail]').first();
+    await expect(firstImage).toBeVisible();
+    await expect.poll(() => firstImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+    const delivered = await firstImage.evaluate((image: HTMLImageElement) => ({ src: image.currentSrc, width: image.naturalWidth }));
+    expect(new URL(delivered.src).pathname).toBe('/_next/image');
+    expect(delivered.width).toBeLessThanOrEqual(128);
+    for (const theme of ['light', 'dark']) {
+      await page.evaluate(value => localStorage.setItem('ui-theme', value), theme);
+      await page.reload();
+      await expect(firstImage).toBeVisible();
+      await expect.poll(() => firstImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+      await page.screenshot({ path: info.outputPath(`topic-thumbnails-${theme}.png`), animations: 'disabled' });
+    }
+  }
 });
 test('mock history replays a 401 once without refetching when its token rotates', async ({ page, context, request }, info) => {
   const credentials = { email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!' };

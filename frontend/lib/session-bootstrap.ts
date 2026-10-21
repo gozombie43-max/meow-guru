@@ -1,4 +1,5 @@
 import { getAccessToken, requestTokenRefresh } from "./axios";
+import { discardEarlySession } from './early-session';
 
 let preparedSession: Promise<string | null> | null = null;
 let restorationStarted = false;
@@ -20,6 +21,7 @@ export function restorePreparedSession(): Promise<string | null> {
 }
 
 export function discardPreparedSession() {
+  discardEarlySession();
   restorationStarted = true;
   preparedSession = null;
 }

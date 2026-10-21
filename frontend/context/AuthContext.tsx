@@ -11,6 +11,8 @@ import api, {
 } from '@/lib/axios';
 import { disconnectSocket } from '@/lib/socket-lifecycle';
 import { discardPreparedSession, restorePreparedSession } from '@/lib/session-bootstrap';
+import { consumeEarlyProfile } from '@/lib/early-session';
+import { API_BASE } from '@/lib/api-base';
 
 const isAuthError = (err: unknown) => {
   const status = (err as { response?: { status?: number } })?.response?.status;
@@ -107,8 +109,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (signal?.aborted) abort(); else signal?.addEventListener('abort', abort, { once: true });
     profileReads.current.add(controller);
     try {
-      const res = await api.get('/users/me', { signal: controller.signal, apiPolicy: { retries: 2 },
-        ...(t ? { headers: { Authorization: `Bearer ${t}` } } : {}) });
+      const prepared = t ? consumeEarlyProfile(API_BASE, t, controller.signal) : null;
+      const profile = prepared ? await prepared : undefined;
+      if (controller.signal.aborted || epoch !== authEpoch.current) throw abortError();
+      // A failed preload counts as the first read in the existing three-read budget.
+      const res = profile ? { data: profile as User }
+        : await api.get('/users/me', { signal: controller.signal, apiPolicy: { retries: prepared ? 1 : 2 },
+          ...(t ? { headers: { Authorization: `Bearer ${t}` } } : {}) });
       if (controller.signal.aborted || epoch !== authEpoch.current) throw abortError();
       setUser(res.data);
     } finally {

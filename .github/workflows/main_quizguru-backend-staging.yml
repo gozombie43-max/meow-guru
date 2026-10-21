@@ -15,7 +15,15 @@ concurrency:
 
 jobs:
   verification:
+    # Reusable CI declares a production deployment job; this is its permission ceiling.
+    # verification_only prevents that job from running in this staging workflow.
+    permissions:
+      contents: read
+      pull-requests: read
+      id-token: write
     uses: ./.github/workflows/ci-verify.yml
+    with:
+      verification_only: true
     secrets: inherit
 
   build:

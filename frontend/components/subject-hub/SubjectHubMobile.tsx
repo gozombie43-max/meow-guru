@@ -199,7 +199,7 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
         {/* Topic Cards */}
         <div className={defaultStyles.oledTopicScrollArea}>
           <div className={defaultStyles.oledTopicGrid}>
-            {(mobileTopics ?? []).map((topic) => {
+            {(mobileTopics ?? []).map((topic, index) => {
               const detail = config.mobileTopicDetails?.[topic.slug];
               return (
                 <MobileTopicCard
@@ -210,6 +210,7 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
                   icon={topic.icon}
                   accent={detail?.color ?? topic.color}
                   detail={detail}
+                  priority={index === 0}
                 />
               );
             })}

@@ -45,7 +45,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const userId = user?.id;
   const ready = !authLoading && !!token && !!userId;
   const tokenRef = useRef(token);
-  useEffect(() => { tokenRef.current = token; }, [token]);
+  // A ready profile can arrive in the same render as its first token. Synchronize
+  // before the attempt-loading layout effect without reloading on token rotation.
+  useLayoutEffect(() => { tokenRef.current = token; }, [token]);
   const saveScope = `${userId}:${examSlug}:${testId}`;
   const isDesktop = useMediaQuery('(min-width: 1024px)');
   const resumeAttemptId = searchParams?.get('resume');

@@ -10,7 +10,7 @@ import { autosaveAttempt, getAttempt, getSlotDetails, startTest, submitAttempt }
 import type { MockAttempt } from './api';
 import { ApiError } from '@/shared/api/error';
 
-const { replace, push, renderQuestion, search, authState } = vi.hoisted(() => ({ replace: vi.fn(), push: vi.fn(), renderQuestion: vi.fn(), search: { resume: null as string | null }, authState: { token: 'test-token', user: { id: 'student' } as { id: string } | null, loading: false } }));
+const { replace, push, renderQuestion, search, authState } = vi.hoisted(() => ({ replace: vi.fn(), push: vi.fn(), renderQuestion: vi.fn(), search: { resume: null as string | null }, authState: { token: 'test-token' as string | null, user: { id: 'student' } as { id: string } | null, loading: false } }));
 const router = { replace, push };
 const appNavigation = { push, replace, complete: replace, back: replace };
 vi.mock('next/navigation', () => ({ useRouter: () => router, useSearchParams: () => ({ get: () => search.resume }) }));
@@ -49,6 +49,32 @@ afterEach(() => { cleanup(); vi.useRealTimers(); });
 async function mount() {
   await act(async () => { render(<MockTestEngine examSlug="ssc-cgl" testId="test" />); });
 }
+
+it.each([null, 'restored-attempt'])('loads the attempt when the first token and verified user arrive together; resume=%s', async resume => {
+  search.resume = resume;
+  authState.token = null;
+  authState.user = null;
+  authState.loading = true;
+  vi.mocked(getAttempt).mockResolvedValue({ attemptId: 'restored-attempt', timeLeft: 60, paper: {
+    sections: [{ questions: [{ id: 'q', question: 'Restored question', options: ['three', 'four'] }] }],
+  } });
+  let view!: ReturnType<typeof render>;
+  await act(async () => { view = render(<MockTestEngine examSlug="ssc-cgl" testId="test" />); });
+  expect(startTest).not.toHaveBeenCalled();
+  expect(getAttempt).not.toHaveBeenCalled();
+  authState.token = 'restored-token';
+  authState.user = { id: 'student' };
+  authState.loading = false;
+  await act(async () => view.rerender(<MockTestEngine examSlug="ssc-cgl" testId="test" />));
+  expect(screen.getAllByRole('radio')).toHaveLength(2);
+  if (resume) {
+    expect(getAttempt).toHaveBeenCalledExactlyOnceWith(resume, 'restored-token', expect.any(AbortSignal));
+    expect(startTest).not.toHaveBeenCalled();
+  } else {
+    expect(startTest).toHaveBeenCalledExactlyOnceWith('ssc-cgl', 'test', 'restored-token', expect.any(String));
+    expect(getAttempt).not.toHaveBeenCalled();
+  }
+});
 
 describe('test attempt persistence and expiry', () => {
   it('shows load failures with a retry action', async () => {
