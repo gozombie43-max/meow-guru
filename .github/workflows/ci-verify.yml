@@ -220,6 +220,8 @@ jobs:
       - name: Enforce entry JavaScript budgets
         working-directory: ./frontend
         run: npm run check:performance
+      - name: Install Chromium
+        run: npm exec --workspace frontend -- playwright install --with-deps chromium
       - name: Shared interface and design contract
         working-directory: ./frontend
         run: npm run check:interface
