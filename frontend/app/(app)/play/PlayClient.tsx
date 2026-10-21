@@ -70,19 +70,15 @@ export function PlayModeButton({
   children: ReactNode;
 }) {
   const exam = useContext(PlayExamContext);
-  const router = useRouter();
   return (
-    <button
-      type="button"
+    <Link
+      href={`/play/setup/${mode}?exam=${encodeURIComponent(exam)}`}
       className={className}
       data-ui-button="state"
       aria-label={label}
-      onClick={() =>
-        router.push(`/play/setup/${mode}?exam=${encodeURIComponent(exam)}`)
-      }
     >
       {children}
-    </button>
+    </Link>
   );
 }
 

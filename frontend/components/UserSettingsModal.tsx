@@ -456,7 +456,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
                         fontSize: '13px',
                         fontWeight: active ? 700 : 500,
                         cursor: 'pointer',
-                        transition: 'all 0.15s ease',
+                        transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease',
                       }}
                     >
                       {mins}m

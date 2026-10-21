@@ -63,7 +63,7 @@ export default function PageTransitionShell({ children }: { children: React.Reac
 
   return (
     <div className="page-transition-shell">
-      <div key={pathname.startsWith('/mock-test') ? '/mock-test' : pathname} className="page-transition-shell__page">
+      <div id="main-content" tabIndex={-1} key={pathname.startsWith('/mock-test') ? '/mock-test' : pathname} className="page-transition-shell__page">
         {children}
       </div>
       <div

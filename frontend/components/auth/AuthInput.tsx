@@ -21,6 +21,7 @@ export default function AuthInput({
   isPassword = false,
   type = 'text',
   className,
+  'aria-describedby': describedBy,
   ...props
 }: AuthInputProps) {
   const [showPassword, setShowPassword] = useState(false);
@@ -33,13 +34,16 @@ export default function AuthInput({
         {label}
       </label>
       <div className={styles.inputWrapper}>
-        {icon && <span className={styles.inputLeadingIcon}>{icon}</span>}
+        {icon && <span className={styles.inputLeadingIcon} aria-hidden="true">{icon}</span>}
         <input
           id={id}
           type={inputType}
           className={`${styles.inputField} ${isPassword ? styles.passwordInput : ''} ${error ? styles.inputError : ''} ${className || ''}`}
           style={!icon ? { paddingLeft: '14px' } : undefined}
           {...props}
+          aria-invalid={error ? true : props['aria-invalid']}
+          aria-describedby={[describedBy, error ? `${id}-error` : null].filter(Boolean).join(' ') || undefined}
+          spellCheck={props.spellCheck ?? (isPassword || type === 'email' ? false : undefined)}
         />
         {isPassword && (
           <button data-ui-button="state" data-ui-shape="icon"
@@ -47,13 +51,13 @@ export default function AuthInput({
             className={styles.passwordToggleBtn}
             onClick={() => setShowPassword((prev) => !prev)}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
-            tabIndex={-1}
+            aria-pressed={showPassword}
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         )}
       </div>
-      {error && <span className={styles.fieldErrorText}>{error}</span>}
+      {error && <span id={`${id}-error`} className={styles.fieldErrorText} role="alert">{error}</span>}
     </div>
   );
 }

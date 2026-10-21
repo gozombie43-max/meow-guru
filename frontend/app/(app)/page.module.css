@@ -287,7 +287,7 @@
   font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
-  transition: all 0.18s ease;
+  transition: color 0.18s ease, background-color 0.18s ease;
 }
 
 .railLink:hover {
@@ -541,7 +541,7 @@
   color: var(--mac-text-secondary);
   cursor: pointer;
   position: relative;
-  transition: all 0.18s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   flex-shrink: 0;
 }
 
@@ -1064,7 +1064,7 @@
   font-weight: 600;
   text-decoration: none;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-  transition: all 0.18s ease;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
   margin-top: 2px;
 }
 
@@ -1155,7 +1155,7 @@
   letter-spacing: 0.05em;
   text-decoration: none;
   border: 1.6px solid var(--light-accent);
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), color 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   cursor: pointer;
   flex-shrink: 0;
@@ -1324,7 +1324,7 @@
   color: var(--muted);
   padding: 6px;
   border-radius: 8px;
-  transition: all 0.18s ease;
+  transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
 }
 
 .sidebarCloseButton:hover {

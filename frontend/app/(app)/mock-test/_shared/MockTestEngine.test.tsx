@@ -197,8 +197,7 @@ describe('creation response handoff', () => {
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Start Mock Test' })); });
     expect(screen.getByRole('alert')).toHaveTextContent('Your session has expired');
     expect(screen.getByRole('button', { name: 'Start Mock Test' })).toBeEnabled();
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in again' }));
-    expect(push).toHaveBeenCalledWith('/login');
+    expect(screen.getByRole('link', { name: 'Sign in again' })).toHaveAttribute('href', '/login');
   });
 });
 

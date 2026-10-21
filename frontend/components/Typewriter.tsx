@@ -1,7 +1,7 @@
 "use client"
 import * as React from "react"
 import { useEffect, useState } from "react"
-import { motion, type Variants } from "framer-motion"
+import { motion, useReducedMotion, type Variants } from "framer-motion"
 
 const RenderTarget = {
     current: () => "preview",
@@ -30,7 +30,9 @@ function OriginkitBase_Typewriter(props: Props) {
     } = props
 
     const renderTarget = RenderTarget.current()
+    const reducedMotion = useReducedMotion()
     const isStatic =
+        reducedMotion ||
         renderTarget === RenderTarget.export ||
         renderTarget === RenderTarget.thumbnail
     const isCanvas = renderTarget === RenderTarget.canvas

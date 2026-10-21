@@ -265,7 +265,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
 .navBtn:hover:not(:disabled) {
@@ -330,7 +330,7 @@
   font-size: 12px;
   outline: none;
   font-family: inherit;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .searchInput::placeholder {
@@ -399,7 +399,7 @@
   font-size: 11.5px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
 .segmentedBtn:hover {
@@ -424,7 +424,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
 .actionBtn:hover {
@@ -489,7 +489,7 @@
   font-weight: 500;
   cursor: pointer;
   text-align: left;
-  transition: all 0.12s ease;
+  transition: border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
   width: 100%;
 }
 
@@ -619,7 +619,7 @@
   text-align: center;
   gap: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
   position: relative;
   text-decoration: none;
@@ -652,7 +652,7 @@
   justify-content: center;
   flex-shrink: 0;
   box-shadow: var(--mac-icon-box-shadow);
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .compactTileSelected .tileIconBox {
@@ -786,7 +786,7 @@
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .tableActionBtn:hover {
@@ -845,7 +845,7 @@
   display: flex;
   flex-direction: column;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .heroCardHeader {
@@ -942,7 +942,7 @@
   font-size: 11.5px;
   font-weight: 600;
   box-shadow: 0 3px 10px rgba(0, 113, 227, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
 }
 
@@ -1208,7 +1208,7 @@
   border: 1px solid var(--mac-card-border);
   text-decoration: none;
   color: var(--mac-text-primary);
-  transition: all 0.14s ease;
+  transition: background-color 0.14s ease, border-color 0.14s ease, color 0.14s ease, transform 0.14s ease;
 }
 
 .resourceCard:hover {
@@ -1409,7 +1409,7 @@
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .mobileSearchInput:focus {
@@ -1816,7 +1816,7 @@
   border: 1px solid rgb(var(--ios-system-blue-rgb) / 0.35);
   text-decoration: none;
   color: var(--mac-text-primary);
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), color 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 2px 8px rgb(var(--ios-system-blue-rgb) / 0.08);
   cursor: pointer;
 }

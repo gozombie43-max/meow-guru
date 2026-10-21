@@ -5,8 +5,9 @@ import { Compass, Home } from 'lucide-react';
 export default function NotFound() {
   return (
     <main
+      id="main-content" tabIndex={-1}
       style={{
-        minHeight: '80vh',
+        minHeight: '80dvh',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

@@ -63,6 +63,7 @@ export function AdminUsersTable({ view }: { view: AdminUsersView }) {
           <select
             className={s.filterSelect}
             value={roleFilter}
+            aria-label="Filter by role"
             onChange={(e) => {
               setRoleFilter(e.target.value as UserRole | '');
               setPage(1);
@@ -77,6 +78,7 @@ export function AdminUsersTable({ view }: { view: AdminUsersView }) {
           <select
             className={s.filterSelect}
             value={statusFilter}
+            aria-label="Filter by status"
             onChange={(e) => {
               setStatusFilter(e.target.value as UserStatus | '');
               setPage(1);
@@ -90,6 +92,7 @@ export function AdminUsersTable({ view }: { view: AdminUsersView }) {
           <select
             className={s.filterSelect}
             value={pushFilter}
+            aria-label="Filter by push notifications"
             onChange={(e) => {
               setPushFilter(e.target.value as 'android' | 'none' | '');
               setPage(1);
@@ -102,6 +105,7 @@ export function AdminUsersTable({ view }: { view: AdminUsersView }) {
           <select
             className={s.filterSelect}
             value={sort}
+            aria-label="Sort users"
             onChange={(e) => {
               setSort(e.target.value);
               setPage(1);
@@ -214,6 +218,7 @@ export function AdminUsersTable({ view }: { view: AdminUsersView }) {
                   <button data-ui-button="state" data-ui-shape="icon"
                     className={s.pageBtn}
                     disabled={page <= 1}
+            aria-label="Previous page"
                     onClick={() => setPage((p) => p - 1)}
                   >
                     <ChevronLeft size={16} />
@@ -236,6 +241,7 @@ export function AdminUsersTable({ view }: { view: AdminUsersView }) {
                   <button data-ui-button="state" data-ui-shape="icon"
                     className={s.pageBtn}
                     disabled={page >= totalPages}
+            aria-label="Next page"
                     onClick={() => setPage((p) => p + 1)}
                   >
                     <ChevronRight size={16} />

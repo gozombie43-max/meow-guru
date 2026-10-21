@@ -2184,7 +2184,7 @@
   font-weight: 500;
   cursor: pointer;
   text-align: left;
-  transition: all 0.12s ease;
+  transition: border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -2383,7 +2383,7 @@
   font-weight: 500;
   cursor: pointer;
   text-align: left;
-  transition: all 100ms ease;
+  transition: border-color 100ms ease, background-color 100ms ease, color 100ms ease;
 }
 
 .oledSortOption:hover {

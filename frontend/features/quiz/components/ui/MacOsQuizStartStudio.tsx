@@ -197,6 +197,7 @@ export function MacOsQuizStartStudio({
                 <Target size={14} className={styles.examSelectIcon} />
                 <select
                   value={examFilter || "all"}
+                  aria-label="Filter by exam"
                   onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
                   className={styles.examSelect}
                 >

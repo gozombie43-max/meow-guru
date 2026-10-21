@@ -41,7 +41,7 @@ for (const width of [320, 390]) for (const theme of ['light', 'dark']) {
     // Carousel controls inherit the app's neutral inset keyboard-focus style.
     await expect(dot(2)).toBeFocused();
     await expect(dot(2)).toHaveCSS('outline-style', 'solid');
-    await expect(dot(2)).toHaveCSS('outline-width', '1px');
+    await expect(dot(2)).toHaveCSS('outline-width', '2px');
     await expect(dot(2)).toHaveCSS('outline-offset', '-1px');
     const neutralFocusColor = await dot(2).evaluate(button => {
       const reference = document.createElement('span');

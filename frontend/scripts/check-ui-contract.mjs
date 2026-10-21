@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import postcss from 'postcss';
 
 // Scoped source guardrails complement computed geometry in check-interface.
@@ -7,6 +7,25 @@ import postcss from 'postcss';
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 const paths = ['app/(app)/play/play-hub.css', 'app/(app)/play/setup/[mode]/setup.css', 'components/SubjectHub.module.css'];
 const failures = [];
+
+async function interfaceFiles(directory) {
+  const entries = await readdir(new URL(`../${directory}/`, import.meta.url), { withFileTypes: true });
+  return (await Promise.all(entries.map(entry => {
+    const path = `${directory}/${entry.name}`;
+    if (entry.isDirectory()) return interfaceFiles(path);
+    return /\.(?:css|tsx)$/.test(entry.name) && !entry.name.includes('.test.') ? [path] : [];
+  }))).flat();
+}
+const interfaces = (await Promise.all(['app', 'components', 'features'].map(interfaceFiles))).flat();
+for (const path of interfaces) {
+  const source = await read(path);
+  for (const match of source.matchAll(/\btransition-all\b|\btransition(?:-property|Property)?\s*:\s*['"`]?all\b/g)) {
+    failures.push(`${path}:${source.slice(0, match.index).split('\n').length}: list the intended transition properties`);
+  }
+  if (/userScalable\s*:\s*false|maximumScale\s*:\s*1\b|user-scalable\s*=\s*(?:no|0)|maximum-scale\s*=\s*1\b/.test(source)) {
+    failures.push(`${path}: preserve browser zoom`);
+  }
+}
 for (const path of paths) {
   const css = postcss.parse(await read(path), { from: path });
   css.walkRules(rule => {
@@ -26,4 +45,4 @@ const setup = await read('app/(app)/play/setup/[mode]/page.tsx');
 assert.ok(!setup.includes('play-setup-mode-title'), 'ambiguous setup title returned');
 assert.ok(!/>\s*[✕×]\s*</u.test(setup), 'use a labeled close icon');
 assert.deepEqual(failures, []);
-console.log('Scoped UI source contract passed');
+console.log(`UI source contract passed, including motion and zoom checks across ${interfaces.length} interface files`);

@@ -89,7 +89,7 @@ function AuthCard({
         </aside>
 
         {/* Right Form Card Pane (Desktop & Mobile) */}
-        <section className={styles.authCard}>
+        <section className={styles.authCard} data-page-content>
           {/* Mobile Header (Shown only on mobile when showcase is hidden) */}
           <div data-ui-chrome="header" className={styles.mobileCardHeader}>
             <Link href="/" prefetch={false} className={styles.brandSquircle} aria-label="Return to home">
@@ -106,26 +106,24 @@ function AuthCard({
           </div>
 
           {/* iOS Segmented Switcher */}
-          {showNavigationTabs && <div className={styles.segmentedControl} role="tablist" aria-label="Authentication mode">
+          {showNavigationTabs && <nav className={styles.segmentedControl} aria-label="Authentication mode">
             <Link
               href="/login"
-              role="tab"
               prefetch={false}
-              aria-selected={activeTab === 'login'}
+              aria-current={activeTab === 'login' ? 'page' : undefined}
               className={`${styles.segmentedTab} ${activeTab === 'login' ? styles.segmentedTabActive : ''}`}
             >
               Sign In
             </Link>
             <Link
               href="/register"
-              role="tab"
               prefetch={false}
-              aria-selected={activeTab === 'register'}
+              aria-current={activeTab === 'register' ? 'page' : undefined}
               className={`${styles.segmentedTab} ${activeTab === 'register' ? styles.segmentedTabActive : ''}`}
             >
               Create Account
             </Link>
-          </div>}
+          </nav>}
 
           {/* Error Alert */}
           {error && (

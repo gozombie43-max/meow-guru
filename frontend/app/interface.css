@@ -4,9 +4,50 @@ input[type="search"] {
   caret-color: var(--ios-system-blue, #007aff);
 }
 
+/* Keyboard users can bypass the app's persistent navigation. */
+.skip-to-content {
+  position: fixed;
+  inset-block-start: calc(8px + var(--safe-top, 0px));
+  inset-inline-start: calc(8px + var(--safe-left, 0px));
+  z-index: 2147483647;
+  padding: 12px 16px;
+  border: 2px solid var(--ui-text);
+  border-radius: 8px;
+  background: var(--ui-surface);
+  color: var(--ui-text);
+  font-weight: 600;
+  transform: translateY(calc(-100% - 16px - var(--safe-top, 0px)));
+}
+.skip-to-content:focus { transform: none; }
+
+/* Leave room for fixed chrome when a field or anchored heading is scrolled to. */
+html {
+  scroll-padding-block-start: calc(var(--app-header-height, 56px) + var(--safe-top, 0px) + 12px);
+  scroll-padding-block-end: calc(var(--app-bottom-nav-height, 94px) + var(--safe-bottom, 0px) + 12px);
+}
+:is(h1, h2, h3, h4, h5, h6)[id], [data-page-content] {
+  scroll-margin-block-start: calc(var(--app-header-height, 56px) + var(--safe-top, 0px) + 12px);
+}
+
+/* Route styles own surfaces; native popups inherit the active app theme. */
+select { background-color: var(--ui-surface); color: var(--ui-text); }
+select option, select optgroup { background-color: var(--ui-surface); color: var(--ui-text); }
+
+/* Native controls without a visual variant still get predictable tap behavior. */
+:is(button, a, summary, [role="button"], [role="tab"], input[type="submit"], input[type="button"]) {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 767px), (pointer: coarse) {
+  html body :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="button"], [type="submit"], [type="reset"], [type="hidden"]), textarea, select) {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
 /* Quiet focus feedback throughout the app. Selection is shown inside its menu. */
 html body :is(button, a, input, select, textarea, summary, [tabindex]):focus-visible:not([data-custom-focus], .tfp-search-input, .selection-popover-list) {
-  outline: 1px solid var(--ui-secondary, #68686e) !important;
+  outline: 2px solid var(--ui-secondary, #68686e) !important;
   outline-offset: -1px !important;
   box-shadow: none !important;
 }
@@ -19,6 +60,7 @@ html body :is(select, [aria-haspopup="listbox"], [role="combobox"]):focus-visibl
   text-decoration: underline;
   text-decoration-color: var(--ui-secondary, #68686e);
   text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
 }
 
 :root {
@@ -305,6 +347,19 @@ html:is(.theme-light, .theme-dark) body :is(input[type="search"], input[placehol
 @media (hover: hover) and (pointer: fine) {
   :is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], [data-ui-button]):not(:disabled, [aria-disabled="true"], [aria-busy="true"], [data-ui-interaction="none"], [class*="backdrop" i], [class*="overlay" i], [class*="traffic" i]):hover {
     filter: brightness(0.94);
+  }
+}
+
+/* Cover route-owned CSS animations as well as shared controls. A short duration
+   preserves animationend/transitionend cleanup without persistent motion. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-delay: 0s !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

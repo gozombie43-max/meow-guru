@@ -76,7 +76,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
       </header>
 
       <div className={styles.scroller} id="admin-scroll-region">
-        <div key={mode} className={styles.content}>{children}</div>
+        <div id="main-content" tabIndex={-1} key={mode} className={styles.content}>{children}</div>
       </div>
     </div>
   );

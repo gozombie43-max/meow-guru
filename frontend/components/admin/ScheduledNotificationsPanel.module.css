@@ -61,7 +61,7 @@
   background: var(--btn-bg);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
 }
 
 .refreshBtn:hover:not(:disabled) {
@@ -99,7 +99,7 @@
   background: transparent;
   color: var(--color-text-tertiary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
   white-space: nowrap;
 }
 
@@ -263,7 +263,7 @@
   background: rgba(239, 68, 68, 0.06);
   color: #ef4444;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
 }
 
 .cancelActionBtn:hover:not(:disabled) {
@@ -283,7 +283,7 @@
   background: rgba(245, 158, 11, 0.08);
   color: #d97706;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
 }
 
 :global(.theme-dark) .retryActionBtn {
@@ -413,7 +413,7 @@
   background: var(--btn-bg);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
 }
 
 .modalCancelBtn:hover:not(:disabled) {
@@ -433,7 +433,7 @@
   color: #ffffff;
   border: none;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 }
 
 .modalConfirmRetryBtn:hover:not(:disabled) {

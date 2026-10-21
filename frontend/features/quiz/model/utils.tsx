@@ -359,7 +359,7 @@ export function getQuestionStatus({
 }
 
 export function statusClasses(status: QuestionStatus) {
-  const base = "qstatus border transition-all duration-200";
+  const base = "qstatus border transition-colors duration-200";
   if (status === "current") return `${base} qstatus--current`;
   if (status === "answered") return `${base} qstatus--answered`;
   if (status === "correct") return `${base} qstatus--correct`;

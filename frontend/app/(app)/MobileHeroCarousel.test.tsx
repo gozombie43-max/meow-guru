@@ -39,7 +39,7 @@ describe('mobile hero carousel', () => {
     advance(); expectCard(1);
   });
 
-  it('shows only three navigation dots and rotates from a manually selected card', () => {
+  it('shows three navigation dots and rotates from a manually selected card', () => {
     mount();
     expect(screen.getAllByRole('button')).toHaveLength(3);
     fireEvent.click(screen.getByRole('button', { name: /^Show card 3:/ })); expectCard(3);

@@ -13,7 +13,7 @@ export function AdminUserDetails({ view }: { view: AdminUsersView }) {
           <div className={s.drawer}>
             <div data-ui-chrome="header" className={s.drawerHeader}>
               <div className={s.drawerTitle}>User Details</div>
-              <button data-ui-button="icon" className={s.closeBtn} onClick={closeDrawer}>
+            <button data-ui-button="icon" className={s.closeBtn} onClick={closeDrawer} aria-label="Close user details">
                 <X size={18} />
               </button>
             </div>
@@ -50,6 +50,7 @@ export function AdminUserDetails({ view }: { view: AdminUsersView }) {
                     <span className={s.detailLabel}>Role</span>
                     <select
                       className={s.inlineSelect}
+                      aria-label="User role"
                       value={canonicalRole(selectedUser.role)}
                       onChange={(e) => handleRoleChange(e.target.value as UserRole)}
                       disabled={actionLoading}

@@ -184,17 +184,12 @@ function LoginContent() {
           <button data-ui-button="primary"
             type="submit"
             disabled={isSubmitting}
+            aria-busy={isSubmitting}
             className={styles.primaryBtn}
             aria-label="Sign in"
           >
-            {isSubmitting ? (
-              <span className={styles.spinner} aria-hidden="true" />
-            ) : (
-              <>
-                <span>Sign In</span>
-                <ArrowRight size={16} />
-              </>
-            )}
+            <span>Sign In</span>
+            {isSubmitting ? <span className={styles.spinner} aria-hidden="true" /> : <ArrowRight size={16} aria-hidden="true" />}
           </button>
         </form>
         )}

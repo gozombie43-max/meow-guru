@@ -37,6 +37,8 @@ const applyThemeToDom = (theme: ThemeMode) => {
   root.classList.toggle('theme-light', theme === 'light');
   body.dataset.theme = theme;
   root.dataset.theme = theme;
+  root.style.colorScheme = theme;
+  body.style.colorScheme = theme;
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch {}

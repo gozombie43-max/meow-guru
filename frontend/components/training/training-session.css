@@ -44,7 +44,7 @@
   background: transparent !important;
   color: var(--tr-text);
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .training-header-back:hover,
@@ -65,7 +65,7 @@
   border: 1px solid var(--tr-border);
   color: var(--tr-text);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   height: 38px;
   min-height: 38px;
   white-space: nowrap;
@@ -253,7 +253,7 @@
   flex-shrink: 0;
   height: 38px;
   min-height: 38px;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .training-clock svg {
@@ -483,7 +483,7 @@
   font-weight: 400;
   overflow-wrap: anywhere;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   width: 100%;
 }
 
@@ -516,7 +516,7 @@
   font-weight: 750;
   background: var(--tr-muted);
   color: var(--tr-secondary);
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
 .training-option-btn.selected .training-option-letter {
@@ -625,7 +625,7 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .training-conf-chip:hover:not(:disabled) {
@@ -746,7 +746,7 @@
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
   padding: 0;
   min-height: 38px;
 }
@@ -1250,7 +1250,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
   min-height: 38px;
   white-space: nowrap;
 }
@@ -1634,7 +1634,7 @@
   border: none;
   color: var(--tr-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .trade-filter-tab:hover {
@@ -2428,7 +2428,7 @@
     border: 1.5px solid var(--tr-border);
     background: var(--tr-surface);
     color: var(--tr-text);
-    transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: border-color 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.16s cubic-bezier(0.16, 1, 0.3, 1), color 0.16s cubic-bezier(0.16, 1, 0.3, 1), transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s cubic-bezier(0.16, 1, 0.3, 1);
     width: 100%;
     display: flex;
     align-items: center;

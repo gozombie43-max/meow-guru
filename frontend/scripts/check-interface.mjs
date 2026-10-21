@@ -162,6 +162,32 @@ try {
     assert.ok(palette.panelTop >= 60);
     console.log(`Palette ${safeBottom}px bottom safe area: Load more clearance and independent scrolling passed`);
   }
+  for (const width of [320, 390, 1366]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.setContent(`<style>${css}
+      .small-field { font-size: 12px; }
+      @keyframes probe-spin { to { transform: rotate(360deg); } }
+      .motion-probe { animation: probe-spin 2s linear infinite; transition: opacity 2s; }
+    </style><div data-theme="dark">
+      <label>Email<input class="small-field" type="email"></label>
+      <label>Search<input class="small-field" type="search"></label>
+      <label>Notes<textarea class="small-field"></textarea></label>
+      <label>Language<select class="small-field"><option>বাংলা</option></select></label>
+      <button data-ui-button="secondary">Continue</button><div class="motion-probe"></div>
+    </div>`);
+    const sizes = await page.locator('input, textarea, select').evaluateAll(fields => fields.map(field => parseFloat(getComputedStyle(field).fontSize)));
+    assert.ok(sizes.every(size => width < 768 ? size >= 16 : size === 12), 'Mobile fields prevent auto-zoom while desktop typography remains route-owned');
+    const button = page.getByRole('button', { name: 'Continue' });
+    await button.focus();
+    assert.equal(await button.evaluate(element => getComputedStyle(element).outlineWidth), '2px');
+  }
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const motion = await page.locator('.motion-probe').evaluate(element => {
+    const style = getComputedStyle(element);
+    return { duration: parseFloat(style.animationDuration), count: style.animationIterationCount, transition: parseFloat(style.transitionDuration) };
+  });
+  assert.ok(motion.duration <= 0.00001 && motion.count === '1' && motion.transition <= 0.00001, 'Route-owned animations respect reduced motion');
+  console.log('Mobile field sizing, keyboard focus, and reduced-motion styles passed');
 } finally {
   await browser.close();
 }

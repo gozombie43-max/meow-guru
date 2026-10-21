@@ -153,7 +153,7 @@ export default function QuizCard({
                 cursor: answered ? "default" : "pointer",
                 textAlign: "left",
                 fontSize: 13,
-                transition: "all 0.18s",
+                transition: "background-color 0.18s, border-color 0.18s, color 0.18s, transform 0.18s",
                 ...optionStyles[state],
               }}
             >

@@ -174,7 +174,7 @@
   letter-spacing: -0.01em;
   flex-shrink: 0;
   cursor: pointer;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), filter 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
   -webkit-user-select: none;
   box-sizing: border-box;
@@ -510,7 +510,7 @@
   flex-shrink: 0;
   max-width: 155px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, border-color 0.15s ease, transform 0.15s ease, filter 0.15s ease;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -562,7 +562,7 @@
   flex-shrink: 0 !important;
   cursor: pointer;
   box-sizing: border-box;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), filter 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .quiz-chatbot-shell .tutor-plus-btn:hover {
@@ -653,7 +653,7 @@
   padding: 0;
   margin-bottom: 1px;
   cursor: default;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), filter 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
 }
 

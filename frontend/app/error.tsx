@@ -19,6 +19,7 @@ export default function RootError({
 
   return (
     <main
+      id="main-content" tabIndex={-1}
       style={{
         minHeight: '80dvh',
         display: 'flex',

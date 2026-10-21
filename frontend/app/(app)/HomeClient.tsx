@@ -234,6 +234,7 @@ export default function HomeClient({
                       <button data-ui-button="icon"
                         type="button"
                         className={styles.searchCloseBtn}
+              aria-label="Close search"
                         onClick={() => {
                           setSearchQuery('');
                           setSearchOpen(false);

@@ -77,8 +77,7 @@ describe("PlayPage Hub", () => {
   it("uses the selected exam when a server-rendered mode card is activated", () => {
     searchParamsMock.set("exam", "cat");
     render(<PlayPage />);
-    fireEvent.click(screen.getByRole("button", { name: "Set up Adaptive" }));
-    expect(routerMock.push).toHaveBeenCalledWith("/play/setup/adaptive?exam=cat");
+    expect(screen.getByRole("link", { name: "Set up Adaptive" })).toHaveAttribute("href", "/play/setup/adaptive?exam=cat");
   });
 
   it("preserves URL-backed tab navigation and unrelated parameters", () => {

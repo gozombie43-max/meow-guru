@@ -111,7 +111,7 @@ test.describe('Core Web Vitals & Representative Performance Gates', () => {
     for (let run = 0; run < 3; run++) {
       await page.goto('/play', { waitUntil: 'domcontentloaded' });
       await expect(page.getByRole('heading', { name: 'Choose your training.' })).toBeVisible();
-      await expect(page.getByRole('button', { name: 'Set up Adaptive' })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Set up Adaptive' })).toBeVisible();
       const metrics = await collectWebVitals(page);
       observations.push({ run: run + 1, ...metrics });
       expect(metrics.ttfb).toBeLessThan(800);

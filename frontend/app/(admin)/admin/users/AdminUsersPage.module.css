@@ -103,7 +103,7 @@
   color: var(--color-text-secondary);
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
 .navLinkBtn:hover {
@@ -525,7 +525,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.12s;
+  transition: border-color 0.12s, background-color 0.12s, color 0.12s, opacity 0.12s;
 }
 
 .pageBtn:hover:not(:disabled) {
@@ -760,7 +760,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.12s;
+  transition: border-color 0.12s, background-color 0.12s, color 0.12s, opacity 0.12s;
 }
 
 .actionBtn:hover {
@@ -881,7 +881,7 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.12s;
+  transition: border-color 0.12s;
 }
 
 .modalBtnSecondary {

@@ -122,7 +122,7 @@ test('measure real local request flows through the Next rewrite', async ({ brows
       await page.getByRole('button', { name: 'Back to quiz' }).click();
       await measure('next_question', { selector: 'main', text: 'x + 2 = 4' }, () => page.getByRole('button', { name: 'Next', exact: true }).click());
       await measure('training_hub', { selector: '[aria-label="Set up Adaptive"]', enabled: true, newDocument: true }, () => page.goto('/play', { waitUntil: 'domcontentloaded' }));
-      await measure('training_setup', { selector: 'button', text: 'Begin training', enabled: true }, () => page.getByRole('button', { name: 'Set up Adaptive' }).click());
+      await measure('training_setup', { selector: 'button', text: 'Begin training', enabled: true }, () => page.getByRole('link', { name: 'Set up Adaptive' }).click());
       await measure('start_training', { selector: '.training-question-text' }, () => page.getByRole('button', { name: /Begin training/i }).click());
       await page.getByRole('radio').nth(1).click();
       const save = page.waitForResponse(r => r.url().includes('/actions') && r.ok());

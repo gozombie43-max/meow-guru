@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { QuizQuestion } from '@/features/quiz/model/types';
 import { getQuestionStatus, statusClasses } from '@/features/quiz/model/utils';
@@ -23,6 +23,7 @@ export function QuestionPaletteModal({
   onClose: () => void;
   onGoToQuestion: (questionNumber: number) => void;
 }) {
+  const reducedMotion = useReducedMotion();
   return (
     <AnimatePresence>
       {isOpen && (
@@ -31,15 +32,15 @@ export function QuestionPaletteModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: reducedMotion ? 0 : 0.2 }}
         >
           <motion.div
             className="flex flex-col h-full w-full overflow-hidden"
             style={{ background: "var(--quiz-surface)", color: "var(--quiz-text)" }}
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: reducedMotion ? 0 : 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 20, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            exit={{ y: reducedMotion ? 0 : 20, opacity: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.2 }}
           >
             {/* Fixed Sticky Header */}
             <div

@@ -88,6 +88,7 @@ export default function AdminPanel() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))", gap: 10, marginBottom: 10 }}>
           <select
             value={muSubject}
+            aria-label="Upload subject"
             onChange={(e) => {
               const next = e.target.value as SubjectKey | "";
               setMuSubject(next);
@@ -104,6 +105,7 @@ export default function AdminPanel() {
 
           <select
             value={muTopic}
+            aria-label="Upload topic"
             onChange={(e) => {
               setMuTopic(e.target.value);
               setMuQuiz("");
@@ -119,6 +121,7 @@ export default function AdminPanel() {
 
           <select
             value={muQuiz}
+            aria-label="Upload quiz"
             onChange={(e) => setMuQuiz(e.target.value)}
             disabled={!muTopic}
             style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 13, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
@@ -222,7 +225,7 @@ export default function AdminPanel() {
           <option value="">All quiz names</option>
           {quizNames.map((name) => <option key={name} value={name}>{name}</option>)}
         </select>
-        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+        <select aria-label="Sort questions" value={sortOrder} onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
           <option value="asc">Sort by ID ↑</option>
           <option value="desc">Sort by ID ↓</option>

@@ -2,6 +2,7 @@ import { useEffect,useRef } from 'react';
 import { QuizQuestion } from '@/features/quiz/model/types';
 import { getQuestionStatus,statusClasses } from '@/features/quiz/model/utils';
 import { QuestionPaletteModal } from '@/features/quiz/components/ui/QuestionPalette';
+import { preferredScrollBehavior } from '@/lib/motion';
 
 export function QuestionNavigator({
   total,
@@ -29,7 +30,7 @@ export function QuestionNavigator({
     const activeButton = quickButtonRefs.current[currentIndex];
     if (!activeButton) return;
     activeButton.scrollIntoView({
-      behavior: "smooth",
+      behavior: preferredScrollBehavior(),
       inline: "center",
       block: "nearest",
     });
@@ -110,7 +111,7 @@ export function QuestionQuickBar({
     const activeButton = quickButtonRefs.current[currentIndex];
     if (!activeButton) return;
     activeButton.scrollIntoView({
-      behavior: "smooth",
+      behavior: preferredScrollBehavior(),
       inline: "center",
       block: "nearest",
     });

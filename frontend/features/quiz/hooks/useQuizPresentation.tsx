@@ -7,6 +7,7 @@ import { useQuizPreferences } from "@/features/quiz/components/useQuizPreference
 import { MODE_LABELS } from "@/features/quiz/model/utils";
 import { useBackLayer } from "@/hooks/useAppNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { preferredScrollBehavior } from "@/lib/motion";
 import { useCallback,useEffect,useMemo,useRef,useState } from "react";
 
 export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: string = "default") {
@@ -64,7 +65,7 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
     if (activeRailBtnRef.current) {
       try {
         activeRailBtnRef.current.scrollIntoView({
-          behavior: "smooth",
+          behavior: preferredScrollBehavior(),
           block: "nearest",
           inline: "center",
         });
@@ -73,7 +74,7 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
     if (activeMacBtnRef.current) {
       try {
         activeMacBtnRef.current.scrollIntoView({
-          behavior: "smooth",
+          behavior: preferredScrollBehavior(),
           block: "nearest",
           inline: "center",
         });

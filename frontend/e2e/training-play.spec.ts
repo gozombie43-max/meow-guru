@@ -333,11 +333,11 @@ test("play exposes all modes and persists an adaptive session across reload", as
   });
 
   await page.goto("/play");
-  await expect(page.getByRole("button", { name: /^Set up / })).toHaveCount(8);
+  await expect(page.getByRole("link", { name: /^Set up / })).toHaveCount(8);
   const setupViewport = page.viewportSize()!;
   if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 320, height: 568 });
   for (const mode of modes) {
-    await page.getByRole("button", { name: `Set up ${mode.title}`, exact: true }).click();
+    await page.getByRole("link", { name: `Set up ${mode.title}`, exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/play/setup/${mode.id}`));
     await expect(page.getByRole("heading", { name: mode.title, exact: true })).toBeVisible();
     await expect(async () => {
@@ -352,7 +352,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
     await expect(page).toHaveURL(/\/play$/);
   }
   await page.setViewportSize(setupViewport);
-  await page.getByRole("button", { name: "Set up Adaptive" }).click();
+  await page.getByRole("link", { name: "Set up Adaptive" }).click();
   await expect(page).toHaveURL(/\/play\/setup\/adaptive/);
   await expect(page.getByRole("heading", { name: "Adaptive" })).toBeVisible();
   await page.getByRole("button", { name: /^Subject / }).click();

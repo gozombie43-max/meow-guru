@@ -73,7 +73,7 @@
   background: var(--btn-bg);
   cursor: pointer;
   color: var(--color-text-primary);
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
 .backBtn:hover {
@@ -107,7 +107,7 @@
   color: var(--color-text-secondary);
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
 .navLinkBtn:hover {
@@ -261,7 +261,7 @@
   color: var(--chip-text);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   font-family: monospace;
 }
 
@@ -319,7 +319,7 @@
   color: #ffffff;
   border: none;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
   box-shadow: 0 4px 12px rgb(var(--ios-system-blue-rgb) / 0.25);
 }
 
@@ -739,7 +739,7 @@
   background: var(--btn-bg);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
 
 .cancelBtn:hover:not(:disabled) {
@@ -759,7 +759,7 @@
   color: #ffffff;
   border: none;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
   box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
 }
 
@@ -862,7 +862,7 @@
   background: var(--btn-bg);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
 }
 
 .refreshBtn:hover:not(:disabled) {
@@ -1067,7 +1067,7 @@
   background: var(--btn-bg);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
 }
 
 .paginationBtn:hover:not(:disabled) {

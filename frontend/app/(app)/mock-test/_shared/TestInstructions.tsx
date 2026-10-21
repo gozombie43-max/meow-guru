@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { useEffect,useRef,useState } from 'react';
 import BackButton from '@/components/BackButton';
@@ -178,7 +179,7 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
 
           {startError && <div ref={errorRef} id="mock-start-error" className={styles.startError} role="alert">
             <p>{startError.message}</p>
-            {startError.signIn && <button data-ui-button="secondary" onClick={() => router.push('/login')}>Sign in again</button>}
+            {startError.signIn && <Link data-ui-button="secondary" href="/login">Sign in again</Link>}
           </div>}
         <div className={styles.footer} data-ui-chrome="footer">
           <button data-ui-button="primary"

@@ -182,7 +182,7 @@ export function ResultView({
                     </div>
                     <div className="h-1.5 w-full rounded-full bg-[var(--quiz-surface-muted)] overflow-hidden">
                       <div
-                        className="h-full rounded-full transition-all duration-700"
+            className="h-full rounded-full transition-[width] duration-700 motion-reduce:transition-none"
                         style={{
                           width: `${pct}%`,
                           background:

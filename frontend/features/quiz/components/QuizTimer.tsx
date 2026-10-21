@@ -161,7 +161,7 @@ export const TimerCircle = forwardRef<QuizTimerRef, { maxTime: number, mini?: bo
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          className={`transition-all duration-1000 linear ${
+          className={`transition-[stroke-dashoffset] duration-1000 ease-linear motion-reduce:transition-none motion-reduce:animate-none ${
             isLow ? "animate-pulse" : ""
           }`}
         />
