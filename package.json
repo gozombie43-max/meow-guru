@@ -39,6 +39,8 @@
       "shell-quote": "1.11.0"
     },
     "engine.io": "6.6.11",
+    "follow-redirects": "1.16.1",
+    "vite": "8.2.4",
     "dompurify": "3.4.16",
     "@grpc/grpc-js": "^1.14.5",
     "@firebase/firestore": {
