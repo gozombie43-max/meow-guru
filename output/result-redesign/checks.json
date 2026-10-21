@@ -1,0 +1,146 @@
+[
+  {
+    "width": 320,
+    "height": 740,
+    "theme": "light",
+    "kind": "negative"
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "kind": "normal"
+  },
+  {
+    "width": 767,
+    "height": 900,
+    "theme": "light",
+    "kind": "normal"
+  },
+  {
+    "width": 768,
+    "height": 900,
+    "theme": "light",
+    "kind": "normal"
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "theme": "light",
+    "kind": "normal"
+  },
+  {
+    "width": 1366,
+    "height": 900,
+    "theme": "light",
+    "kind": "negative"
+  },
+  {
+    "width": 1917,
+    "height": 862,
+    "theme": "light",
+    "kind": "normal"
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "kind": "six-sections"
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "kind": "confidential"
+  },
+  {
+    "width": 390,
+    "height": 740,
+    "theme": "light",
+    "kind": "unattempted"
+  },
+  {
+    "width": 1366,
+    "height": 900,
+    "theme": "light",
+    "kind": "perfect"
+  },
+  {
+    "width": 320,
+    "height": 740,
+    "theme": "light",
+    "kind": "no-sections"
+  },
+  {
+    "width": 320,
+    "height": 740,
+    "theme": "dark",
+    "kind": "negative"
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "theme": "dark",
+    "kind": "normal"
+  },
+  {
+    "width": 767,
+    "height": 900,
+    "theme": "dark",
+    "kind": "normal"
+  },
+  {
+    "width": 768,
+    "height": 900,
+    "theme": "dark",
+    "kind": "normal"
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "theme": "dark",
+    "kind": "normal"
+  },
+  {
+    "width": 1366,
+    "height": 900,
+    "theme": "dark",
+    "kind": "negative"
+  },
+  {
+    "width": 1917,
+    "height": 862,
+    "theme": "dark",
+    "kind": "normal"
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "theme": "dark",
+    "kind": "six-sections"
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "theme": "dark",
+    "kind": "confidential"
+  },
+  {
+    "width": 390,
+    "height": 740,
+    "theme": "dark",
+    "kind": "unattempted"
+  },
+  {
+    "width": 1366,
+    "height": 900,
+    "theme": "dark",
+    "kind": "perfect"
+  },
+  {
+    "width": 320,
+    "height": 740,
+    "theme": "dark",
+    "kind": "no-sections"
+  }
+]

@@ -565,7 +565,7 @@
 
   .macosWindow {
     width: 100%;
-    max-width: 1120px;
+    max-width: 1280px;
     height: min(800px, calc(100dvh - 64px));
     display: flex;
     flex-direction: row;
@@ -587,15 +587,28 @@
   /* Desktop Sidebar */
   .macosSidebar {
     display: flex;
-    width: 210px;
+    width: 232px;
     flex-shrink: 0;
     flex-direction: column;
     background: rgba(246, 246, 248, 0.6);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-right: 1px solid var(--border);
-    padding: 14px 10px;
+    padding: 20px 16px;
     overflow-y: auto;
+    min-height: 0;
+  }
+
+  .macosSidebar [data-ui-exam-switch] {
+    min-width: 0;
+    gap: 8px !important;
+    padding: 8px 6px !important;
+    font-size: 13px !important;
+    margin-bottom: 12px;
+  }
+
+  .macosSidebar [data-ui-exam-switch] > span {
+    flex-shrink: 0;
   }
 
   :global(body.theme-dark) .macosSidebar {
@@ -623,12 +636,16 @@
   .sidebarBackBtn {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 8px;
-    border-radius: 7px;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 44px;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    white-space: nowrap;
     background: transparent;
     border: 1px solid transparent;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--primary);
     cursor: pointer;
@@ -643,12 +660,12 @@
   .sidebarExamCard {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px;
+    gap: 10px;
+    padding: 12px;
     background: rgba(255, 255, 255, 0.6);
     border: 1px solid var(--border);
-    border-radius: 9px;
-    margin-bottom: 14px;
+    border-radius: 12px;
+    margin-bottom: 20px;
   }
 
   :global(body.theme-dark) .sidebarExamCard {
@@ -694,7 +711,7 @@
     font-size: 11px;
     font-weight: 700;
     color: var(--text-light);
-    margin: 0 0 6px 6px;
+    margin: 0 0 10px 10px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
   }
@@ -702,13 +719,13 @@
   .sidebarNav {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 6px;
   }
 
   .sidebarTab {
     text-align: left;
-    padding: 6px 8px;
-    border-radius: 7px;
+    padding: 10px 12px;
+    border-radius: 10px;
     background: transparent;
     border: none;
     font-size: 12.5px;
@@ -781,7 +798,9 @@
   /* Desktop Content Area */
   .macosContent {
     flex: 1;
-    overflow-y: auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
     background: transparent;
   }
 
@@ -789,6 +808,7 @@
     width: 100%;
     max-width: 100%;
     height: 100%;
+    min-height: 0;
     margin: 0;
     background: transparent;
     box-shadow: none;
@@ -796,8 +816,9 @@
 
   .homeContainer {
     height: 100%;
-    padding: 16px 20px 24px;
-    overflow-y: auto;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
   }
 
   /* Desktop Compact Header */
@@ -808,19 +829,36 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 12px 16px;
+    padding: 24px;
     margin: 0;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    border-radius: 12px;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
     background: var(--light-only-surface, rgba(255, 255, 255, 0.7));
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    box-shadow: none;
   }
 
   :global(body.theme-dark) .headerCard {
     background: rgba(44, 44, 46, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .headerTopRow {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .headerTitleGroup {
+    flex: 1 1 220px;
+    gap: 12px;
+  }
+
+  .headerControls {
+    margin-left: auto;
+    gap: 8px;
   }
 
   .mobileBackBtn {
@@ -835,19 +873,20 @@
   }
 
   .greeting {
-    font-size: 16.5px;
+    font-size: 20px;
     font-weight: 750;
   }
 
   .desktopSubtitle {
     display: block;
-    font-size: 11.5px;
+    font-size: 13px;
+    line-height: 1.45;
     color: var(--text-muted);
     margin: 2px 0 0 0;
   }
 
   .allExamsTopBtn {
-    display: inline-flex;
+    display: none;
     align-items: center;
     padding: 5px 12px;
     border-radius: 7px;
@@ -874,10 +913,18 @@
   }
 
   .contentBody {
-    flex: initial;
-    min-height: initial;
-    overflow-y: visible;
-    padding: 14px 0 0;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .placeholderTab {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
   /* Desktop Test Card Styles */
@@ -895,7 +942,7 @@
 
   .overviewTab {
     display: grid;
-    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
     gap: 14px;
   }
 
@@ -982,6 +1029,13 @@
 @media (max-width: 767px) {
   .page { display: block; width: 100%; min-height: 100dvh; }
   .app { max-width: 100%; }
+  .page .testLineCard,
+  :global(html.theme-dark) .page .testLineCard,
+  :global(body.theme-dark) .page .testLineCard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgb(24 28 36 / 5%);
+  }
   .headerCard {
     background: var(--bg);
     margin: 0;

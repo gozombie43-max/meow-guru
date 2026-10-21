@@ -15,6 +15,24 @@ const readSlotCatalog = (slots, examSlug) => slots.aggregate([
   { $project: { fixedQuestions: 0, sourcePaper: 0, _fixedCount: 0, _id: 0, _cosmosRid: 0 } },
 ]).toArray();
 
+// Inspect current links so older ZIP imports work without a metadata backfill,
+// and removing all imported images clears the status automatically.
+function hasZipImages(slot) {
+  const containsZipImage = value => {
+    if (!value) return false;
+    if (typeof value === 'object') return Object.values(value).some(containsZipImage);
+    if (typeof value !== 'string') return false;
+    return [...value.matchAll(/\/api\/upload\/image\/([A-Za-z0-9_-]+)/g)].some(([, encoded]) =>
+      Buffer.from(encoded, 'base64url').toString('utf8').startsWith('question-images/paper-imports/'));
+  };
+  const questions = slot.sourcePaper
+    ? Object.values(slot.sourcePaper.sections || {}).flatMap(section => section.questions || [])
+    : slot.fixedQuestions || [];
+  return questions.some(question => containsZipImage([
+    question.questionImage, question.image, question.options, question.optionImages,
+  ]));
+}
+
 export async function fetchSlotsForExam(examSlug) {
   try {
     const resources = await readSlotCatalog(getMockSlotsCollection(), examSlug);
@@ -88,6 +106,7 @@ export async function fetchAllAdminSlots(
             examDate: s.examDate || s.paperMetadata?.examDate || null,
             shift: s.shift || null,
             isFree: Boolean(s.isFree),
+            hasZipImages: hasZipImages(s),
             order: s.order || 1,
             questionCount:
               s.fixedQuestions?.length ||
@@ -126,6 +145,7 @@ export async function fetchAllAdminSlots(
               : 'mock'
           ),
         questionCount: 0,
+        hasZipImages: false,
       })
     );
   } catch (err) {
@@ -160,6 +180,7 @@ export async function fetchAllAdminSlots(
               : 'mock'
           ),
         questionCount: 0,
+        hasZipImages: false,
       })
     );
   }

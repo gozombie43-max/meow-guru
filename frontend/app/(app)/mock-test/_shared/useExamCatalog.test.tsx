@@ -91,3 +91,43 @@ it('defaults the first PYQ request to the latest published year and allows all y
   await waitFor(() => expect(result.current.effectiveYear).toBe(''));
   await waitFor(() => expect(mocks.fetch.mock.calls.some(([key]) => key.includes('kind=pyq') && !key.includes('year='))).toBe(true));
 });
+
+it('uses the filtered total across year changes and pagination rather than the exam total or loaded card count', async () => {
+  let release2024!: () => void;
+  mocks.fetch.mockImplementation(async (key: string) => {
+    const query = new URL(key, 'http://localhost').searchParams;
+    const metadata = { mockCount: 0, pyqCount: 56, tiers: ['Tier I'], years: [2025, 2024] };
+    if (query.get('limit') === '0') return { metadata, total: 0, slots: [], nextOffset: null };
+    const year = query.get('year') || '';
+    const total = year === '2025' ? 50 : year === '2024' ? 6 : year === '2023' ? 0 : 56;
+    const offset = Number(query.get('offset'));
+    const response = { metadata, total, nextOffset: offset + 20 < total ? offset + 20 : null,
+      slots: Array.from({ length: Math.min(20, total - offset) }, (_, i) => ({ id: `${year}-${offset + i}` })) };
+    if (year === '2024') return new Promise(resolve => { release2024 = () => resolve(response); });
+    return response;
+  });
+  const { result, rerender } = renderHook(({ year }: { year: string | undefined }) => useExamCatalog('ssc-chsl', 'prev', 'Tier I', false, year), {
+    initialProps: { year: undefined as string | undefined }, wrapper,
+  });
+  await waitFor(() => expect(result.current.total).toBe(50));
+  expect(result.current.metadata?.pyqCount).toBe(56);
+  expect(result.current.slots).toHaveLength(20);
+  await act(async () => { result.current.loadMore(); });
+  await waitFor(() => expect(result.current.slots).toHaveLength(40));
+  expect(result.current.total).toBe(50);
+
+  rerender({ year: '2024' });
+  expect(result.current.total).toBeUndefined();
+  await waitFor(() => expect(release2024).toBeTypeOf('function'));
+  await act(async () => { release2024(); });
+  await waitFor(() => expect(result.current.total).toBe(6));
+  expect(result.current.slots).toHaveLength(6);
+  expect(result.current.hasMore).toBe(false);
+
+  rerender({ year: '' });
+  await waitFor(() => expect(result.current.total).toBe(56));
+  expect(result.current.slots).toHaveLength(20);
+  rerender({ year: '2023' });
+  await waitFor(() => expect(result.current.total).toBe(0));
+  expect(result.current.slots).toHaveLength(0);
+});

@@ -52,5 +52,7 @@
 .root strong { font-weight: 600; }
 .root small { display: block; margin-top: 5px; }
 .badge { display: inline-flex; padding: 4px 8px; border-radius: 6px; background: var(--admin-blue-soft); color: var(--admin-blue); font-size: 12px; }
+.imageBadge { display: inline-flex; padding: 4px 8px; border: 1px solid var(--admin-border); border-radius: 6px; background: var(--admin-surface-muted); color: var(--admin-text-secondary); font-size: 12px; white-space: nowrap; }
+.imageBadge[data-added="true"] { border-color: var(--admin-success-border); background: var(--admin-success-soft); color: var(--admin-success); }
 .root .empty { padding: 40px 20px; text-align: center; }
 @media (max-width: 540px) { .filters, .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } .fields > label:first-child { grid-column: span 2; } .editor { padding: 16px; } }

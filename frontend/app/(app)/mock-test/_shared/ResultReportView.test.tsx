@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 import ResultReportView from './ResultReportView';
 import type { MockAttempt } from './api';
@@ -47,4 +47,21 @@ it('keeps confidential assessment review and retake unavailable', () => {
   expect(screen.queryByRole('button', { name: 'Review answers' })).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Retake' })).not.toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'All tests' })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Review Section 1' })).not.toBeInTheDocument();
+});
+
+it('distinguishes accuracy from score percentage and opens the selected section', () => {
+  const actions = callbacks();
+  render(<ResultReportView data={{ result: { totalScore: 3.5, maxScore: 8, percentage: 43.75, sections: [{ key: 'math', label: 'Math', total: 4, correct: 2, incorrect: 1, skipped: 1, score: 3.5, maxScore: 8 }] } }} {...actions} />);
+  expect(within(screen.getByRole('region', { name: 'Performance overview' })).getByText('66.7%')).toBeInTheDocument();
+  expect(screen.getByRole('img', { name: 'Score percentage: 43.8%' })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Review Math' }));
+  expect(actions.onReview).toHaveBeenCalledWith('math');
+});
+
+it('shows unavailable accuracy for an unattempted paper and keeps retake errors recoverable', () => {
+  render(<ResultReportView data={{ result: { totalScore: 0, maxScore: 200, sections: [{ key: 'math', correct: 0, incorrect: 0, skipped: 25, maxScore: 50 }] } }} {...callbacks()} retakePending actionError="Paper unavailable. Try again." />);
+  expect(within(screen.getByRole('region', { name: 'Performance overview' })).getByText('—')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Preparing…' })).toBeDisabled();
+  expect(screen.getByRole('alert')).toHaveTextContent('Paper unavailable. Try again.');
 });

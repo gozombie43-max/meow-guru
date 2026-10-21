@@ -1,0 +1,32 @@
+const fs = require('node:fs');
+const path = require('node:path');
+let source = fs.readFileSync(path.join(__dirname, '../result-redesign/verify.cjs'), 'utf8');
+const start = source.indexOf('  const cases =');
+const end = source.indexOf('  try {', start);
+source = source.slice(0, start) + `  const cases = ['light', 'dark'].flatMap(theme => [[320, 740, theme, 'normal'], [390, 844, theme, 'normal'], [1366, 900, theme, 'normal']]);\n` + source.slice(end);
+source = source.replace("[390, 1366, 1917].includes(width)", "[320, 390, 1366].includes(width)");
+source = source.replace("      const file =", `      const surfaces = await page.locator('[class*="scoreCard"], [class*="performanceCard"]').evaluateAll(elements => elements.map(element => {
+        const style = getComputedStyle(element);
+        return { shadow: style.boxShadow, blur: style.backdropFilter, backgroundImage: style.backgroundImage };
+      }));
+      for (const surface of surfaces) expect(surface).toEqual({ shadow: 'none', blur: 'none', backgroundImage: 'none' });
+      const file =`);
+const anchor = "        await expect(page.getByText('English review question 1', { exact: true })).toBeVisible();";
+source = source.replace(anchor, anchor + `
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await page.screenshot({ path: path.join(__dirname, file + '-review.png') });
+        await page.getByRole('button', { name: 'Next', exact: true }).click();
+        await expect(page.getByText('English review question 2', { exact: true })).toBeVisible();
+        await page.getByRole('button', { name: 'Previous', exact: true }).click();
+        await page.getByRole('combobox', { name: 'Show', exact: true }).selectOption('incorrect');
+        await expect(page.getByText('Your answer', { exact: true })).toBeVisible();
+        await page.screenshot({ path: path.join(__dirname, file + '-review-wrong.png') });
+        await page.getByRole('button', { name: /^Questions/ }).click();
+        await expect(page.getByRole('dialog', { name: 'Jump to question' })).toBeVisible();
+        await page.screenshot({ path: path.join(__dirname, file + '-review-navigator.png') });
+        await page.getByRole('button', { name: 'Close question navigator', exact: true }).click();
+        await page.getByRole('button', { name: 'বাংলা', exact: true }).click();
+        await expect(page.getByRole('button', { name: 'বাংলা', exact: true })).toHaveAttribute('aria-pressed', 'true');
+        await page.getByRole('button', { name: 'ENG', exact: true }).click();
+`);
+eval(source);

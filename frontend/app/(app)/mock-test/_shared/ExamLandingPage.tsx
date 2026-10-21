@@ -98,6 +98,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
   const [infoPaper, setInfoPaper] = useState<MockTestSlot | null>(null);
   const catalog = useExamCatalog(examSlug, activeTab, selectedTier, loadingOnly, selectedYear);
   const { metadata, effectiveTier, effectiveYear } = catalog;
+  const pyqCount = activeTab === 'prev' ? catalog.total : metadata?.pyqCount;
   const tiers = metadata?.tiers || [];
   const tierInfo = useMemo(() => getTierLabel(examSlug), [examSlug]);
   const loadingHistory = ready && !(historyState?.owner === owner && historyState?.exam === examSlug);
@@ -251,7 +252,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
             <div className={`${styles.trafficLight} ${styles.maximize}`}></div>
           </div>
 
-          <button data-ui-button="icon" onClick={() => router.back('/mock-test')} className={styles.sidebarBackBtn}>
+          <button data-ui-button="secondary" onClick={() => router.back('/mock-test')} className={styles.sidebarBackBtn}>
             <ChevronLeft size={15} />
             <span>All Exams</span>
           </button>
@@ -287,7 +288,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
               onClick={() => setActiveTab('prev')}
             >
               <Award size={14} />
-              <span>Previous Papers{metadata && ` ${metadata.pyqCount}`}</span>
+              <span>Previous Papers{pyqCount != null && ` ${pyqCount}`}</span>
             </button>
           </div>
 
@@ -390,7 +391,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                     aria-pressed={activeTab === 'prev'}
                     onClick={() => setActiveTab('prev')}
                   >
-                    PYQs{metadata && ` ${metadata.pyqCount}`}
+                    PYQs{pyqCount != null && ` ${pyqCount}`}
                   </button>
                 </div>
               </header>

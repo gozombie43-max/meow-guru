@@ -1,0 +1,38 @@
+[
+  {
+    "width": 320,
+    "height": 740,
+    "theme": "light",
+    "kind": "normal"
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "kind": "normal"
+  },
+  {
+    "width": 1366,
+    "height": 900,
+    "theme": "light",
+    "kind": "normal"
+  },
+  {
+    "width": 320,
+    "height": 740,
+    "theme": "dark",
+    "kind": "normal"
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "theme": "dark",
+    "kind": "normal"
+  },
+  {
+    "width": 1366,
+    "height": 900,
+    "theme": "dark",
+    "kind": "normal"
+  }
+]

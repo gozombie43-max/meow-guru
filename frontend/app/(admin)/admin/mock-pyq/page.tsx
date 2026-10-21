@@ -14,7 +14,7 @@ import { comparePaperDateAndShift, paperDateLabel } from "./paper-order";
 type Paper = {
   id: string; examSlug: string; title: string; tier?: string; type?: string;
   year?: number | null; shift?: string | number | null; order?: number; isFree?: boolean;
-  questionCount?: number; examDate?: string | null;
+  questionCount?: number; examDate?: string | null; hasZipImages?: boolean;
 };
 const kind = (paper: Paper) => paper.type || (paper.id.includes("pyq") ? "pyq" : "mock");
 const examName = (slug: string) => slug.replaceAll("-", " ").toUpperCase();
@@ -129,13 +129,18 @@ function PaperManager({ mode }: { mode: "ssc" | "iit-jam" }) {
     </form>}
     <div className={styles.tableWrap} aria-busy={loading}>
       {loading ? <p className={styles.empty} role="status">Loading papers…</p> : !visible.length ? <p className={styles.empty}>{papers.length ? "No papers match these filters." : "No papers available. Upload a paper to get started."}</p> :
-        <table><thead><tr>{["No.", "Paper", "Exam / tier", "Type", "Date / shift", "Questions", "Access", "Actions"].map(label => <th key={label} scope="col">{label}</th>)}</tr></thead>
+        <table><thead><tr>{["No.", "Paper", "Exam / tier", "Type", "Date / shift", "Questions", "ZIP images", "Access", "Actions"].map(label => <th key={label} scope="col">{label}</th>)}</tr></thead>
           <tbody>{visible.map((paper, index) => <tr key={`${paper.examSlug}:${paper.id}`}>
             <td className={styles.paperNumber}>{(currentPage - 1) * 25 + index + 1}</td>
             <td><strong>{paper.title}</strong><small>{paper.id}</small></td>
             <td>{examName(paper.examSlug)}<small>{paper.tier || "—"}</small></td>
             <td>{kind(paper) === "pyq" ? "PYQ" : "Mock"}</td><td>{paperDateLabel(paper)}<small>{paper.shift == null ? '—' : /^\d+$/.test(String(paper.shift)) ? `Shift ${paper.shift}` : paper.shift}</small></td>
-            <td>{paper.questionCount || "—"}</td><td><span className={styles.badge}>{paper.isFree ? "Free" : "Pro"}</span></td>
+            <td>{paper.questionCount || "—"}</td>
+            <td><span className={styles.imageBadge} data-added={paper.hasZipImages === true}
+              title={paper.hasZipImages === undefined ? "Refresh to load ZIP image status." : paper.hasZipImages ? "Images from a ZIP are linked to this paper." : "No images from a ZIP are linked to this paper."}>
+              {paper.hasZipImages === undefined ? "—" : paper.hasZipImages ? "Added" : "Not added"}
+            </span></td>
+            <td><span className={styles.badge}>{paper.isFree ? "Free" : "Pro"}</span></td>
             <td><div className={styles.actions}><button data-ui-button="secondary" disabled={saving} aria-label={`Edit ${paper.title}`} onClick={() => { setEditing({ ...paper }); setMessage(""); setError(""); }}>Edit</button>
               <button data-ui-button="secondary" disabled={saving} aria-label={`Edit questions in ${paper.title}`} onClick={() => { setEditing(null); setQuestionPaper(paper); }}>Edit questions</button></div></td>
           </tr>)}</tbody></table>}

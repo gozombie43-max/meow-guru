@@ -4,7 +4,8 @@ import { getAttempt, type MockAttempt } from './api';
 import ReviewEngine from './ReviewEngine';
 
 const router = vi.hoisted(() => ({ replace: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+const query = vi.hoisted(() => ({ section: '' }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, useSearchParams: () => new URLSearchParams(query.section ? { section: query.section } : {}) }));
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ token: 'test-token', user: { id: 'review-user' }, loading: false }) }));
 vi.mock('./api', () => ({ getAttempt: vi.fn() }));
 
@@ -18,7 +19,7 @@ const attempt: MockAttempt = {
   ] }, answers: {}, answerKey: { q1: '0', q2: '0', q3: '0' },
 };
 
-beforeEach(() => { vi.clearAllMocks(); vi.mocked(getAttempt).mockResolvedValue(attempt); });
+beforeEach(() => { vi.clearAllMocks(); query.section = ''; vi.mocked(getAttempt).mockResolvedValue(attempt); });
 async function mount() {
   render(<ReviewEngine examSlug="ssc-chsl" testId="test" attemptId="attempt" />);
   await screen.findByText('First question');
@@ -60,6 +61,19 @@ it('keeps confidential answers unavailable', async () => {
   render(<ReviewEngine examSlug="ssc-chsl" testId="test" attemptId="attempt" />);
   await waitFor(() => expect(screen.getByText('Answer review is disabled for this confidential assessment.')).toBeInTheDocument());
   expect(screen.queryByText('First question')).not.toBeInTheDocument();
+});
+
+it('opens the requested result section and falls back safely for an unknown section', async () => {
+  query.section = 'english';
+  const view = render(<ReviewEngine examSlug="ssc-chsl" testId="test" attemptId="attempt" />);
+  await screen.findByText('English question');
+  expect(screen.getByRole('combobox', { name: 'Section' })).toHaveValue('1');
+  expect(screen.queryByText('First question')).not.toBeInTheDocument();
+  view.unmount();
+  query.section = 'missing-section';
+  render(<ReviewEngine examSlug="ssc-chsl" testId="test" attemptId="attempt" />);
+  await screen.findByText('First question');
+  expect(screen.getByRole('combobox', { name: 'Section' })).toHaveValue('0');
 });
 
 it('typesets inline, display and multiline math in questions, options and translated explanations', async () => {

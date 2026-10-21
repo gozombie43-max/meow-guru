@@ -40,7 +40,7 @@ export function useExamCatalog(exam: string, tab: string, tier: string, loadingO
   const slots = Array.from(new Map((data || []).flatMap(page => page.slots).map(slot => [slot.id, slot])).values());
   const error = metadataRequest.error || pages.error;
   return {
-    metadata, effectiveTier, effectiveYear, slots,
+    metadata, effectiveTier, effectiveYear, slots, total: data?.[0]?.total,
     loading: !data && !error,
     error,
     hasMore: data?.at(-1)?.nextOffset != null,

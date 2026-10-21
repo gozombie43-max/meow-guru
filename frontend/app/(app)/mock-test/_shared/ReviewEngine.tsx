@@ -6,6 +6,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Grid2X2, X } from 'lucide-react';
 import QuestionImage from '@/components/QuestionImage';
 import RichContent from '@/components/RichContent';
 import { useAppNavigation } from '@/hooks/useAppNavigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect,useRef,useMemo,useState } from 'react';
 import {
 getAttempt,
@@ -44,6 +45,7 @@ const EMPTY_ANSWERS: Record<string, MockAnswer> = {};
 
 export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngineProps) {
   const router = useAppNavigation();
+  const requestedSection = useSearchParams().get('section');
   const { token, user, loading: authLoading } = useAuth();
   const owner = user?.id;
   const ready = !authLoading && !!token && !!owner;
@@ -79,6 +81,9 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
         if (res.assessmentMode === 'confidential') { setError('Answer review is disabled for this confidential assessment.'); setLoadedScope(scope); setLoading(false); return; }
         setError(null);
         setAttempt(res);
+        const sectionIndex = res.paper?.sections.findIndex(section => (section.key || section.id) === requestedSection) ?? -1;
+        setCurrentSectionIndex(Math.max(0, sectionIndex));
+        setCurrentQuestionIndex(0);
         setLanguage(res.language ?? 'en');
         setLoadedScope(scope);
         setLoading(false);
@@ -91,7 +96,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
         setLoading(false);
       });
     return () => controller.abort();
-  }, [attemptId, owner, ready, scope]);
+  }, [attemptId, owner, ready, scope, requestedSection]);
 
   const sections = attempt?.paper?.sections ?? EMPTY_SECTIONS;
   const currentSection = sections[currentSectionIndex];

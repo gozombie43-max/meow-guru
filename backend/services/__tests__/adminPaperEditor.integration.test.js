@@ -28,6 +28,15 @@ const call = (path, method = 'GET', body, admin = true) => fetch(`${base}/api/mo
 });
 const endpoint = id => `/admin/slots/${id}/questions?examSlug=ssc-cgl&examMode=ssc`;
 const load = async id => { const response = await call(endpoint(id)); expect(response.status).toBe(200); return response.json(); };
+const zipStatus = async id => {
+  const response = await call('/admin/all-slots?exam=all&examMode=ssc');
+  expect(response.status).toBe(200);
+  const { slots } = await response.json();
+  const slot = slots.find(slot => slot.id === id);
+  expect(slot).not.toHaveProperty('fixedQuestions');
+  expect(slot).not.toHaveProperty('sourcePaper');
+  return slot.hasZipImages;
+};
 const payload = q => { const { sectionKey: _section, questionType: _type, ...edit } = q; return edit; };
 
 beforeAll(async () => {
@@ -51,6 +60,7 @@ it('loads all 100 questions and updates question 100, its options, answer and im
   expect(stored.fixedQuestions.slice(0, 99)).toEqual(questions.slice(0, 99));
   expect(stored.fixedQuestions[99]).toMatchObject({ ...edit, questionUid: 'uid-99', sectionKey: 'english' });
   expect(stored).toMatchObject({ order: 3, isFree: true, questionCount: 100 });
+  expect(await zipStatus('paper100')).toBe(false);
   const built = await buildPaper({ examSlug: 'ssc-cgl', testId: 'paper100' });
   expect(built.clientPaper.sections.flatMap(s => s.questions).find(q => q.legacyId === 'q100')).toMatchObject({ question: 'Edited last question', questionImage: edit.questionImage });
   expect(built.answerKey['uid-99']).toBe('B');
@@ -146,6 +156,7 @@ it('validates a ZIP without writes, then uploads once and links question/option 
   expect(await preview.json()).toMatchObject({ valid: true, questionCount: 1, fileCount: 1 });
   expect(putObject).not.toHaveBeenCalled();
   expect((await db.collection('mockSlots').findOne({ id: 'paper100' })).updatedAt).toBe(stamp);
+  expect(await zipStatus('paper100')).toBe(false);
   const saved = await zipRequest(bytes, { action: 'apply' });
   expect(saved.status, await saved.clone().text()).toBe(200);
   expect(await saved.json()).toMatchObject({ savedQuestions: 1, fileCount: 1 });
@@ -161,6 +172,16 @@ it('validates a ZIP without writes, then uploads once and links question/option 
   expect(built.answerKey['uid-0']).toBe(0);
   expect((await zipRequest(bytes, { action: 'apply' })).status).toBe(409);
   expect(putObject).toHaveBeenCalledTimes(1);
+  expect(await zipStatus('paper100')).toBe(true);
+  const loaded = await load('paper100');
+  const edit = { ...payload(loaded.questions[0]), questionImage: null };
+  // An option image alone still counts after removing the question image.
+  expect((await call(endpoint('paper100'), 'PATCH', { examSlug: 'ssc-cgl', expectedUpdatedAt: loaded.updatedAt, edits: [edit] })).status).toBe(200);
+  expect(await zipStatus('paper100')).toBe(true);
+  const current = await load('paper100');
+  edit.options = ['One', 'Two', 'Three', 'Four'];
+  expect((await call(endpoint('paper100'), 'PATCH', { examSlug: 'ssc-cgl', expectedUpdatedAt: current.updatedAt, edits: [edit] })).status).toBe(200);
+  expect(await zipStatus('paper100')).toBe(false);
 });
 
 it('links bilingual option images only to the chosen language and preserves timers and answers', async () => {
@@ -175,6 +196,7 @@ it('links bilingual option images only to the chosen language and preserves time
   expect(stored.sourcePaper.sections.math.duration).toBe(15);
   const built = await buildPaper({ examSlug: 'ssc-cgl', testId: 'bilingual' });
   expect(built.clientPaper.sections[0].questions[0].translations.options.bn[2]).toContain('/api/upload/image/');
+  expect(await zipStatus('bilingual')).toBe(true);
 });
 
 it('replaces legacy object and parallel option images without retaining a second old image', async () => {

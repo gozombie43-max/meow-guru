@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import MockPyqPage from "./page";
 import { requestResponse } from "@/shared/api/request";
@@ -9,8 +9,8 @@ vi.mock("@/context/ExamModeContext", () => ({ useExamMode: () => ({ mode: state.
 vi.mock("@/shared/api/request", () => ({ requestResponse: vi.fn() }));
 vi.mock("@/lib/mock-catalog-revision", () => ({ invalidateMockCatalog: vi.fn() }));
 const papers = [
-  { id: "mock-1", examSlug: "ssc-cgl", title: "CGL Mock One", type: "mock", isFree: true, order: 1 },
-  { id: "pyq-1", examSlug: "ssc-chsl", title: "CHSL Official Paper", type: "pyq", year: 2024, shift: "Morning", isFree: false },
+  { id: "mock-1", examSlug: "ssc-cgl", title: "CGL Mock One", type: "mock", isFree: true, order: 1, hasZipImages: true },
+  { id: "pyq-1", examSlug: "ssc-chsl", title: "CHSL Official Paper", type: "pyq", year: 2024, shift: "Morning", isFree: false, hasZipImages: false },
   { id: "jam-1", examSlug: "iit-jam-physics", title: "JAM Paper", type: "pyq", year: 2025 },
 ];
 const response = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status });
@@ -37,6 +37,9 @@ describe("Mock & Pyq management", () => {
   it("combines filters and clears them without exposing the other exam mode", async () => {
     render(<MockPyqPage />);
     await screen.findByText("CGL Mock One");
+    expect(screen.getByRole('columnheader', { name: 'ZIP images' })).toBeInTheDocument();
+    expect(within(screen.getByRole('row', { name: /CGL Mock One/ })).getByText('Added')).toBeInTheDocument();
+    expect(within(screen.getByRole('row', { name: /CHSL Official Paper/ })).getByText('Not added')).toBeInTheDocument();
     expect(screen.queryByText("JAM Paper")).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Paper type"), { target: { value: "pyq" } });
     fireEvent.change(screen.getByLabelText("Year"), { target: { value: "2024" } });

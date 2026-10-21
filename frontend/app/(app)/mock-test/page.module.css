@@ -990,7 +990,7 @@
 
   .macosWindow {
     width: 100%;
-    max-width: 1120px;
+    max-width: 1280px;
     height: min(800px, calc(100dvh - 64px));
     display: flex;
     flex-direction: row;
@@ -1011,14 +1011,27 @@
 
   .macosSidebar {
     display: flex;
-    width: 195px;
+    width: 232px;
     flex-shrink: 0;
     flex-direction: column;
     background: rgba(246, 246, 248, 0.6);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-right: 1px solid var(--border);
-    padding: 14px 10px;
+    padding: 20px 16px;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  .macosSidebar [data-ui-exam-switch] {
+    min-width: 0;
+    gap: 8px !important;
+    padding: 8px 6px !important;
+    font-size: 13px !important;
+  }
+
+  .macosSidebar [data-ui-exam-switch] > span {
+    flex-shrink: 0;
   }
 
   :global(body.theme-dark) .macosSidebar {
@@ -1048,7 +1061,7 @@
     font-size: 11px;
     font-weight: 700;
     color: var(--text-light);
-    margin: 0 0 6px 8px;
+    margin: 20px 0 10px 10px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
   }
@@ -1056,13 +1069,13 @@
   .sidebarNav {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 6px;
   }
 
   .sidebarTab {
     text-align: left;
-    padding: 6px 10px;
-    border-radius: 7px;
+    padding: 10px 12px;
+    border-radius: 10px;
     background: transparent;
     border: none;
     font-size: 13px;
@@ -1096,26 +1109,48 @@
 
   .macosContent {
     flex: 1;
-    overflow-y: auto;
+    min-width: 0;
+    overflow: hidden;
     background: transparent;
-    display: block;
+    display: flex;
     height: 100%;
   }
 
-  .categoryScroll {
-    display: flex;
-    overflow-x: auto;
-    gap: 18px;
-    padding: 0 4px 4px;
+  .app {
+    flex: 1;
+    max-width: none;
+    min-width: 0;
     margin: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x pan-y;
-    overscroll-behavior-x: contain;
-    overscroll-behavior-y: auto;
+    box-shadow: none;
   }
-  .categoryScroll::-webkit-scrollbar { display: none; }
+
+  .homeContainer {
+    min-height: 0;
+  }
+
+  .header {
+    align-items: flex-start;
+    padding: 24px;
+    border-bottom: 1px solid var(--border) !important;
+  }
+
+  .headerTitleRow {
+    justify-content: flex-start;
+  }
+
+  .headerTitle {
+    font-size: 22px;
+    text-align: left;
+  }
+
+  .categoryScroll {
+    display: none;
+  }
+
+  .contentBody {
+    padding: 24px 24px calc(24px + var(--app-bottom-nav-occupied-height, 0px));
+    scrollbar-gutter: stable;
+  }
 
   .catChip {
     display: flex;
@@ -1169,17 +1204,17 @@
   }
 
 .examGrid {
-    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
   }
 
   .examCard {
-    padding: 10px 12px;
-    border-radius: 11px;
+    padding: 20px 16px 14px;
+    border-radius: 14px;
     background: var(--light-only-surface, rgba(255, 255, 255, 0.85));
     border: 1px solid rgba(0, 0, 0, 0.06);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-    min-height: auto;
+    min-height: 176px;
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   }
 
@@ -1195,18 +1230,18 @@
   }
 
   .examTop {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
 
   .examLogoBox {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
   }
 
   .examLogoBox img {
-    width: 22px;
-    height: 22px;
+    width: 34px;
+    height: 34px;
   }
 
   .badge {
@@ -1216,9 +1251,22 @@
   }
 
   .examName {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 700;
     margin: 0 0 2px 0;
+  }
+
+  .examSubtitle {
+    font-size: 12px;
+    -webkit-line-clamp: 2;
+  }
+
+  .examFooter {
+    padding-top: 10px;
+  }
+
+  .examCountPill {
+    font-size: 12px;
   }
 
   .examCount {
