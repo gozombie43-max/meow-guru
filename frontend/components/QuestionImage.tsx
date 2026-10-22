@@ -125,7 +125,7 @@ function QuestionImageContent({
       <span
         className={containerClasses}
         style={{
-          aspectRatio: `var(--paper-image-aspect, ${containerRatio})`,
+          aspectRatio: containerRatio,
           '--natural-img-ratio': rawRatio ?? 4 / 3,
           '--img-ratio': safeRatio,
         } as CSSProperties}
