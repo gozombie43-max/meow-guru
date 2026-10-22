@@ -1029,9 +1029,7 @@
 @media (max-width: 767px) {
   .page { display: block; width: 100%; min-height: 100dvh; }
   .app { max-width: 100%; }
-  .page .testLineCard,
-  :global(html.theme-dark) .page .testLineCard,
-  :global(body.theme-dark) .page .testLineCard {
+  .page .testLineCard {
     background: var(--card);
     border: 1px solid var(--border);
     box-shadow: 0 2px 8px rgb(24 28 36 / 5%);

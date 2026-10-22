@@ -126,6 +126,7 @@ function QuestionImageContent({
         className={containerClasses}
         style={{
           aspectRatio: containerRatio,
+          '--natural-img-ratio': rawRatio ?? 4 / 3,
           '--img-ratio': safeRatio,
         } as CSSProperties}
       >

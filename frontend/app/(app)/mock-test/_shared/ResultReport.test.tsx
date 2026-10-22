@@ -41,14 +41,14 @@ it('prepares a retake without starting it, then starts a fresh attempt after con
 });
 
 it('allows retrying a failed retake preparation while keeping the result visible', async () => {
-  vi.mocked(getSlotDetails).mockRejectedValueOnce(new Error('Paper unavailable. Try again.'));
+  vi.mocked(getSlotDetails).mockResolvedValueOnce({ slot }).mockRejectedValueOnce(new Error('Paper unavailable. Try again.'));
   mount();
   fireEvent.click(await screen.findByRole('button', { name: 'Retake' }));
   expect(await screen.findByRole('alert')).toHaveTextContent('Paper unavailable. Try again.');
   expect(screen.getByRole('region', { name: 'Score summary' })).toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: 'Retake' }));
   await screen.findByRole('dialog', { name: 'Paper info' });
-  expect(getSlotDetails).toHaveBeenCalledTimes(2);
+  expect(getSlotDetails).toHaveBeenCalledTimes(3);
 });
 
 it('retries a failed result read without leaving the page', async () => {
@@ -58,4 +58,22 @@ it('retries a failed result read without leaving the page', async () => {
   fireEvent.click(await screen.findByRole('button', { name: 'Try again' }));
   await screen.findByRole('region', { name: 'Score summary' });
   expect(getAttempt).toHaveBeenCalledTimes(2);
+});
+
+it('shows the saved paper title below the result heading', async () => {
+  mount();
+  expect(await screen.findByText('Official paper')).toHaveAttribute('title', 'Official paper');
+});
+
+it('keeps results available when paper metadata cannot be loaded', async () => {
+  vi.mocked(getSlotDetails).mockRejectedValueOnce(new Error('Unavailable'));
+  mount();
+  expect(await screen.findByRole('region', { name: 'Score summary' })).toBeInTheDocument();
+  expect(screen.getByText('SSC CHSL Tier I')).toBeInTheDocument();
+});
+
+it('includes the saved exam date in the result subtitle', async () => {
+  vi.mocked(getSlotDetails).mockResolvedValueOnce({ slot: { ...slot, title: 'SSC CHSL 2025 S2', examDate: '2025-11-12' } });
+  mount();
+  expect(await screen.findByText('SSC CHSL 2025 12 NOV S2')).toBeInTheDocument();
 });

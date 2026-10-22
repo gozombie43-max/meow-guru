@@ -15,3 +15,13 @@ export function paperDate(slot: MockTestSlot) {
   if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month || date.getUTCDate() !== day) return null;
   return { year, month: months[month], day, iso: date.toISOString().slice(0, 10) };
 }
+
+/** Keep result and review subtitles consistent with the published paper metadata. */
+export function paperDisplayTitle(slot: MockTestSlot): string {
+  const date = paperDate(slot);
+  const titleDate = paperDate({ ...slot, examDate: undefined, paperMetadata: undefined });
+  if (!date || titleDate?.iso === date.iso) return slot.title;
+  return slot.title.includes(String(date.year))
+    ? slot.title.replace(String(date.year), `${date.year} ${date.day} ${date.month}`)
+    : `${slot.title} · ${date.day} ${date.month} ${date.year}`;
+}

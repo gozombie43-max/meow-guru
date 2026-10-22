@@ -7,7 +7,7 @@ const router = vi.hoisted(() => ({ replace: vi.fn() }));
 const query = vi.hoisted(() => ({ section: '' }));
 vi.mock('next/navigation', () => ({ useRouter: () => router, useSearchParams: () => new URLSearchParams(query.section ? { section: query.section } : {}) }));
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ token: 'test-token', user: { id: 'review-user' }, loading: false }) }));
-vi.mock('./api', () => ({ getAttempt: vi.fn() }));
+vi.mock('./api', () => ({ getAttempt: vi.fn(), getSlotDetails: vi.fn().mockResolvedValue({ slot: { title: 'SSC CHSL 2025 S2', examDate: '2025-11-12' } }) }));
 
 const attempt: MockAttempt = {
   paper: { examName: 'SSC CHSL Tier I', schemaDriven: true, sections: [
@@ -103,4 +103,9 @@ x &= \pm 2
   await waitFor(() => expect(container.textContent).toContain('সমাধান'));
   await waitFor(() => expect(container.querySelectorAll('.katex')).toHaveLength(4));
   expect(container.querySelector('.katex-error')).toBeNull();
+});
+
+it('shows the dated paper name beneath the review heading', async () => {
+  await mount();
+  expect(screen.getByText('SSC CHSL 2025 12 NOV S2')).toBeInTheDocument();
 });
