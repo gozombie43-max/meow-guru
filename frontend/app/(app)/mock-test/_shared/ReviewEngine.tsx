@@ -10,6 +10,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect,useRef,useMemo,useState } from 'react';
 import {
 getAttempt,
+getSlotDetails,
 type MockAnswer,
 type MockAnswerKey,
 type MockAttempt,
@@ -17,6 +18,7 @@ type MockQuestion,
 type MockSection,
 } from './api';
 import styles from './ReviewEngine.module.css';
+import { paperDisplayTitle } from './paper-date';
 import MockTestLoading from './MockTestLoading';
 import { useNativeDialog } from '@/components/ui/Dialog';
 import type { QuizLanguage } from '@meow/contracts/exam-paper';
@@ -53,6 +55,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
   useEffect(() => { tokenRef.current = token; }, [token]);
 
   const [attempt, setAttempt] = useState<MockAttempt | null>(null);
+  const [paperTitle, setPaperTitle] = useState<string | undefined>();
   const [pending, setLoading] = useState(true);
   const [loadedScope, setLoadedScope] = useState('');
   const scope = `${owner}:${attemptId}`;
@@ -75,12 +78,16 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
   useEffect(() => {
     if (!ready) return;
     const controller = new AbortController();
-    getAttempt(attemptId, tokenRef.current!, controller.signal)
-      .then((res) => {
+    Promise.all([
+      getAttempt(attemptId, tokenRef.current!, controller.signal),
+      getSlotDetails(testId, examSlug, controller.signal).catch(() => null),
+    ])
+      .then(([res, details]) => {
         if (controller.signal.aborted) return;
         if (res.assessmentMode === 'confidential') { setError('Answer review is disabled for this confidential assessment.'); setLoadedScope(scope); setLoading(false); return; }
         setError(null);
         setAttempt(res);
+        setPaperTitle(details?.slot ? paperDisplayTitle(details.slot) : undefined);
         const sectionIndex = res.paper?.sections.findIndex(section => (section.key || section.id) === requestedSection) ?? -1;
         setCurrentSectionIndex(Math.max(0, sectionIndex));
         setCurrentQuestionIndex(0);
@@ -96,7 +103,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
         setLoading(false);
       });
     return () => controller.abort();
-  }, [attemptId, owner, ready, scope, requestedSection]);
+  }, [attemptId, examSlug, testId, owner, ready, scope, requestedSection]);
 
   const sections = attempt?.paper?.sections ?? EMPTY_SECTIONS;
   const currentSection = sections[currentSectionIndex];
@@ -181,7 +188,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
   };
 
   return (
-    <div className={styles.page}>
+    <div data-paper-images className={styles.page}>
       <header data-ui-chrome="header" className={styles.header}>
         <div className={styles.headerTop}>
           <div className={styles.headerLeft}>
@@ -190,8 +197,8 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
               <ArrowLeft size={20} />
             </button>
             <div className={styles.examTitleWrap}>
-              <h1 className={styles.examTitle}>{attempt.paper?.examName || 'Mock test'}</h1>
-              <span className={styles.examSub}>Answer review</span>
+              <h1 className={styles.examTitle}>Answer review</h1>
+              <span className={styles.examSub} title={paperTitle || attempt.paper?.examName}>{paperTitle || attempt.paper?.examName || 'Mock test'}</span>
             </div>
           </div>
           {attempt.paper?.schemaDriven && <div className={styles.languageSwitch} data-language={language} role="group" aria-label="Review language">
@@ -331,7 +338,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
           <Grid2X2 size={17} />
           <span>Questions<small>{currentItem ? `${currentQuestionIndex + 1} / ${filteredAnalysis.length}` : '0 questions'}</small></span>
         </button>
-        <button className={styles.navBtn} onClick={handleNext} disabled={!currentItem || currentQuestionIndex >= filteredAnalysis.length - 1}>
+        <button className={`${styles.navBtn} ${styles.nextBtn}`} onClick={handleNext} disabled={!currentItem || currentQuestionIndex >= filteredAnalysis.length - 1}>
           Next<ChevronRight size={18} />
         </button>
       </footer>

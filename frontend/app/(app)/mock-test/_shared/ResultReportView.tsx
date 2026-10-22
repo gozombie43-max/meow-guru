@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, type CSSProperties } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, ChartNoAxesColumnIncreasing, Check, ChevronLeft, ChevronRight, CircleCheck, ClipboardList, Layers, LockKeyhole, Minus, RotateCcw, Target, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, ChartNoAxesColumnIncreasing, Check, ChevronLeft, ChevronRight, ClipboardList, LockKeyhole, Minus, RotateCcw, Target, X } from 'lucide-react';
 import type { MockAttempt, MockResultSection } from './api';
 import styles from './ResultReport.module.css';
 
@@ -80,6 +79,7 @@ function FocusTopics({ areas }: { areas: string[] }) {
 }
 
 interface ResultReportViewProps {
+  paperTitle?: string;
   data: MockAttempt;
   onReview: (sectionKey?: string) => void;
   onRetake: () => void;
@@ -88,7 +88,7 @@ interface ResultReportViewProps {
   actionError?: string | null;
 }
 
-export default function ResultReportView({ data, onReview, onRetake, onBack, retakePending = false, actionError }: ResultReportViewProps) {
+export default function ResultReportView({ data, paperTitle, onReview, onRetake, onBack, retakePending = false, actionError }: ResultReportViewProps) {
   const result = data.result;
   const score = result?.totalScore ?? data.totalScore ?? 0;
   const maxScore = result?.maxScore ?? data.maxScore ?? 0;
@@ -110,14 +110,8 @@ export default function ResultReportView({ data, onReview, onRetake, onBack, ret
     <div className={styles.contentWrap}>
       <header className={styles.header}>
         <button type="button" data-ui-button="icon" className={styles.backButton} aria-label="Back to tests" onClick={onBack}><ArrowLeft size={20} aria-hidden="true" /></button>
-        <div><p className={styles.examLabel}>{data.paper?.examName || 'Mock test'}</p><h1>Test result</h1></div>
-        <span className={styles.completeBadge}><CircleCheck size={15} aria-hidden="true" />Submitted</span>
+        <div><h1>Test result</h1><p className={styles.examLabel} title={paperTitle || data.paper?.examName}>{paperTitle || data.paper?.examName || 'Mock test'}</p></div>
       </header>
-
-      <nav className={styles.jumpNav} aria-label="Result sections">
-        <Link href="#result-summary"><ChartNoAxesColumnIncreasing size={16} aria-hidden="true" />Overview</Link>
-        <Link href="#section-results"><Layers size={16} aria-hidden="true" />Section results</Link>
-      </nav>
 
       <div id="result-summary" className={styles.summaryGrid}>
         <section className={styles.scoreCard} aria-label="Score summary">
@@ -168,11 +162,11 @@ export default function ResultReportView({ data, onReview, onRetake, onBack, ret
       <footer className={styles.actionDock} role="region" aria-label="Result actions">
         {actionError && <p className={styles.actionError} role="alert">{actionError}</p>}
         <div className={styles.dockInner}>
-          <div className={styles.dockCaption}><BookOpen size={21} aria-hidden="true" /><div><strong>{confidential ? 'Assessment complete' : 'Turn this attempt into progress'}</strong><span>{confidential ? 'Your score and section results are saved.' : 'Review the solutions or start a fresh attempt.'}</span></div></div>
+          <div className={styles.dockCaption}><BookOpen size={21} aria-hidden="true" /><div><strong>{confidential ? 'Assessment complete' : 'Result saved'}</strong><span>{confidential ? 'Your score and section results are saved.' : 'Review your answers or try again.'}</span></div></div>
           <div className={styles.actions}>
-            {!confidential && <button type="button" data-ui-button="primary" className={styles.btnPrimary} onClick={() => onReview()}>Review answers<ArrowRight size={17} aria-hidden="true" /></button>}
+            <button type="button" data-ui-button="secondary" className={`${styles.btnOutline} ${styles.allTestsAction}`} onClick={onBack}><ClipboardList size={16} aria-hidden="true" />All tests</button>
             {!confidential && <button type="button" data-ui-button="secondary" className={styles.btnOutline} onClick={onRetake} disabled={retakePending}><RotateCcw size={16} aria-hidden="true" />{retakePending ? 'Preparing…' : 'Retake'}</button>}
-            <button type="button" data-ui-button="secondary" className={styles.btnOutline} onClick={onBack}><ClipboardList size={16} aria-hidden="true" />All tests</button>
+            {!confidential && <button type="button" data-ui-button="primary" className={styles.btnPrimary} onClick={() => onReview()}>Review answers<ArrowRight size={17} aria-hidden="true" /></button>}
           </div>
         </div>
       </footer>

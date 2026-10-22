@@ -9,6 +9,7 @@ import type { MockTestSlot } from './exam-config';
 import ResultReportView from './ResultReportView';
 import styles from './ResultReport.module.css';
 import PaperInfoDialog from './PaperInfoDialog';
+import { paperDisplayTitle } from './paper-date';
 
 interface ResultReportProps {
   examSlug: string;
@@ -38,6 +39,7 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
   const tokenRef = useRef(token);
   useEffect(() => { tokenRef.current = token; }, [token]);
   const [data, setData] = useState<MockAttempt | null>(null);
+  const [paperTitle, setPaperTitle] = useState<string | undefined>();
   const [pending, setLoading] = useState(true);
   const [loadedScope, setLoadedScope] = useState('');
   const scope = `${owner}:${attemptId}`;
@@ -54,11 +56,15 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
   useEffect(() => {
     if (!ready) return;
     const controller = new AbortController();
-    getAttempt(attemptId, tokenRef.current!, controller.signal)
-      .then((res) => {
+    Promise.all([
+      getAttempt(attemptId, tokenRef.current!, controller.signal),
+      getSlotDetails(testId, examSlug, controller.signal).catch(() => null),
+    ])
+      .then(([res, details]) => {
         if (controller.signal.aborted) return;
         setError(null);
         setData(res);
+        setPaperTitle(details?.slot ? paperDisplayTitle(details.slot) : undefined);
         setLoadedScope(scope);
         setLoading(false);
       })
@@ -70,7 +76,7 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
         setLoading(false);
       });
     return () => controller.abort();
-  }, [attemptId, owner, ready, scope, retryRevision]);
+  }, [attemptId, examSlug, testId, owner, ready, scope, retryRevision]);
 
   async function prepareRetake() {
     if (!ready || !data || data.assessmentMode === 'confidential' || retakeController.current) return;
@@ -114,6 +120,7 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
     <ResultReportView
       key={scope}
       data={data}
+      paperTitle={paperTitle}
       onReview={sectionKey => {
         if (data.assessmentMode !== 'confidential') router.push(`/mock-test/${examSlug}/${testId}/review/${attemptId}${sectionKey ? `?section=${encodeURIComponent(sectionKey)}` : ''}`);
       }}

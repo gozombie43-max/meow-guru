@@ -270,3 +270,26 @@
     animation: none;
   }
 }
+
+/* Exam figures fit their actual artwork, without a surrounding card or letterbox. */
+:global([data-paper-images]) .container {
+  --paper-image-aspect: var(--natural-img-ratio);
+  --max-img-height: 300px;
+  min-height: 0;
+  max-width: min(100%, 520px, calc(var(--max-img-height) * var(--natural-img-ratio)));
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 12px;
+  transition: none;
+}
+:global([data-paper-images]) .img { border-radius: inherit; }
+:global([data-paper-images]) .optionContainer {
+  --max-img-height: 110px;
+  max-width: min(100%, 180px, calc(var(--max-img-height) * var(--natural-img-ratio)));
+  border-radius: 8px;
+}
+@media (max-width: 767px) {
+  :global([data-paper-images]) .container { --max-img-height: min(220px, 30dvh); }
+  :global([data-paper-images]) .optionContainer { --max-img-height: 95px; }
+}
