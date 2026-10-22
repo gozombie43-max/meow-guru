@@ -10,7 +10,7 @@ export default function PalettePreviewPage() {
 
   // Status mapping matching user's exact specification & screenshot:
   // 1-8 Answered, 9 Current, 10 Not Visited, 11 Marked, 12-25 Not Visited
-  const [questionStatuses, setQuestionStatuses] = useState<Record<number, 'answered' | 'current' | 'marked' | 'not-visited'>>({
+  const [questionStatuses] = useState<Record<number, 'answered' | 'current' | 'marked' | 'not-visited'>>({
     1: 'answered',
     2: 'answered',
     3: 'answered',
@@ -118,7 +118,9 @@ export default function PalettePreviewPage() {
 
       {/* Backdrop */}
       {isOpen && (
-        <div
+        <button
+          type="button"
+          aria-label="Close Questions Palette"
           onClick={() => setIsOpen(false)}
           style={{
             position: 'fixed',
@@ -127,6 +129,9 @@ export default function PalettePreviewPage() {
             backdropFilter: 'blur(4px)',
             WebkitBackdropFilter: 'blur(4px)',
             zIndex: 90,
+            border: 'none',
+            padding: 0,
+            cursor: 'default',
           }}
         />
       )}
