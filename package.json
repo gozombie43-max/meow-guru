@@ -34,7 +34,7 @@
     },
     "fast-glob": "$fast-glob",
     "katex": "0.19.0",
-    "next": "16.4.0",
+    "next": "16.4.2",
     "concurrently": {
       "shell-quote": "1.11.0"
     },
@@ -42,6 +42,10 @@
     "follow-redirects": "1.16.1",
     "vite": "8.2.4",
     "dompurify": "3.4.16",
+    "vitest": "5.0.5",
+    "@vitest/coverage-v8": "5.0.5",
+    "@vitest/mocker": "5.0.5",
+    "@vitest/spy": "5.0.5",
     "@grpc/grpc-js": "^1.14.5",
     "@firebase/firestore": {
       "@grpc/grpc-js": "^1.14.5"
