@@ -1,5 +1,5 @@
 'use client';
-import { X } from "lucide-react";
+import { X, FileCheck2 } from "lucide-react";
 import RichContent from '@/components/RichContent';
 import { isUnanswered } from '@meow/contracts/mock-answer';
 import { useAuth } from '@/context/AuthContext';
@@ -500,6 +500,26 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
                 </div>
               ))}
             </div>
+
+            <div className={styles.paletteLegend} aria-label="Question status legend">
+              <div className={styles.legendItem}>
+                <span className={`${styles.legendDot} ${styles.legendDotAnswered}`} aria-hidden="true" />
+                <span>Answered</span>
+              </div>
+              <div className={styles.legendItem}>
+                <span className={`${styles.legendDot} ${styles.legendDotNotVisited}`} aria-hidden="true" />
+                <span>Not Visited</span>
+              </div>
+              <div className={styles.legendItem}>
+                <span className={`${styles.legendDot} ${styles.legendDotMarked}`} aria-hidden="true" />
+                <span>Marked for Review</span>
+              </div>
+              <div className={styles.legendItem}>
+                <span className={`${styles.legendDot} ${styles.legendDotCurrent}`} aria-hidden="true" />
+                <span>Current</span>
+              </div>
+            </div>
+
             <div className={styles.questionGrid}>
               {paper.sections[currentSection].questions.map((q: MockQuestion, idx: number) => {
                 const status = questionStatuses[q.id];
@@ -612,10 +632,24 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       {!isDesktop && showPalette && (
         <>
           <button type="button" className={`${styles.backdrop} ${showPalette ? styles.show : ''}`} onClick={() => setShowPalette(false)} aria-label="Close question palette" />
-          <div className={`${styles.bottomSheet} ${showPalette ? styles.show : ''}`}>
-            <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1rem'}}>
-              <h3 style={{margin: 0}}>Questions Palette</h3>
-              <button data-ui-button="state" data-ui-shape="icon" aria-label="Close" onClick={() => setShowPalette(false)} style={{background:'transparent', border:'none', fontSize:'1.25rem'}}><X aria-hidden="true" /></button>
+          <div
+            className={`${styles.bottomSheet} ${showPalette ? styles.show : ''}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Questions Palette"
+          >
+            <div className={styles.paletteHandle} aria-hidden="true" />
+            <div className={styles.paletteHeader}>
+              <h3 className={styles.paletteTitle}>Questions Palette</h3>
+              <button
+                type="button"
+                data-palette-close
+                aria-label="Close"
+                onClick={() => setShowPalette(false)}
+                className={styles.paletteCloseBtn}
+              >
+                <X aria-hidden="true" className={styles.paletteCloseIcon} />
+              </button>
             </div>
             <div className={styles.mobileSectionControl}>
               {paper.sections.map((sec: MockSection, idx: number) => (
@@ -639,8 +673,18 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
                 );
               })}
             </div>
-            <div style={{marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--border)'}}>
-               <button data-ui-button="primary" className={styles.submitBtn} style={{width: '100%'}} onClick={() => {setShowPalette(false); setShowSubmitModal(true);}}>Submit Test</button>
+            <div className={styles.paletteFooter}>
+              <button
+                data-ui-button="primary"
+                className={styles.paletteSubmitBtn}
+                onClick={() => {
+                  setShowPalette(false);
+                  setShowSubmitModal(true);
+                }}
+              >
+                <span>Submit Test</span>
+                <FileCheck2 aria-hidden="true" className={styles.submitIcon} />
+              </button>
             </div>
           </div>
         </>

@@ -1,8 +1,8 @@
 import { Dialog } from "@/components/ui/Dialog";
 import { getQuestionStatus } from "@/features/quiz/model/utils";
-import { X } from "lucide-react";
+import { X, FileCheck2 } from "lucide-react";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
 type Props = Pick<
@@ -30,6 +30,7 @@ export function MobileQuestionNavigator({ activeRailBtnRef, closePalette, curren
   "use no memo"; // Virtualizer methods read mutable scroll state and must not be compiler-memoized.
   const railRef = useRef<HTMLElement | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
+  const [activeSubject, setActiveSubject] = useState("GK");
   const large = questions.length > 100;
   // This component opts out of compilation above; virtualizer instances stay local.
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -78,9 +79,42 @@ export function MobileQuestionNavigator({ activeRailBtnRef, closePalette, curren
         <Dialog onClose={closePalette} className="ios-series-palette" role="dialog" aria-modal="true" aria-label="Question navigator">
           <button type="button" className="ios-series-palette-backdrop" onClick={closePalette} aria-label="Close navigator" />
           <div className="ios-series-palette-panel">
+            <div className="ios-series-palette-handle" aria-hidden="true" />
             <div className="ios-series-palette-title">
-              <span>Questions</span>
-              <button data-ui-button="state" data-ui-shape="icon" type="button" onClick={closePalette} aria-label="Close question navigator"><X /></button>
+              <span>Questions Palette</span>
+              <button type="button" data-palette-close onClick={closePalette} aria-label="Close question navigator"><X /></button>
+            </div>
+            <div className="ios-series-palette-tabs" role="tablist" aria-label="Subject filter">
+              {['Math', 'English', 'Reasoning', 'GK'].map((sub) => (
+                <button
+                  key={sub}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeSubject === sub}
+                  className={`ios-series-palette-tab ${activeSubject === sub ? 'is-active' : ''}`}
+                  onClick={() => setActiveSubject(sub)}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+            <div className="ios-series-palette-legend" aria-label="Question status legend">
+              <div className="ios-series-palette-legend-item">
+                <span className="ios-series-palette-legend-dot is-answered" aria-hidden="true" />
+                <span>Answered</span>
+              </div>
+              <div className="ios-series-palette-legend-item">
+                <span className="ios-series-palette-legend-dot is-not-visited" aria-hidden="true" />
+                <span>Not Visited</span>
+              </div>
+              <div className="ios-series-palette-legend-item">
+                <span className="ios-series-palette-legend-dot is-marked" aria-hidden="true" />
+                <span>Marked for Review</span>
+              </div>
+              <div className="ios-series-palette-legend-item">
+                <span className="ios-series-palette-legend-dot is-current" aria-hidden="true" />
+                <span>Current</span>
+              </div>
             </div>
             <div ref={gridRef} className="ios-series-palette-grid" style={large ? { display: 'block' } : undefined}>
               <div style={large ? { position: 'relative', height: grid.getTotalSize() } : { display: 'contents' }}>
@@ -108,6 +142,16 @@ export function MobileQuestionNavigator({ activeRailBtnRef, closePalette, curren
                 </button>
               </div>
             )}
+            </div>
+            <div className="ios-series-palette-footer">
+              <button
+                type="button"
+                className="ios-series-palette-submit"
+                onClick={closePalette}
+              >
+                <span>Submit Test</span>
+                <FileCheck2 className="ios-series-palette-submit-icon" aria-hidden="true" />
+              </button>
             </div>
           </div>
         </Dialog>

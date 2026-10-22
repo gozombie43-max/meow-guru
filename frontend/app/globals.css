@@ -419,8 +419,18 @@ button, .btn-like {
   -webkit-tap-highlight-color: transparent;
 }
 
-button:active:not(:disabled) {
+/* Tap-scale must NOT run on absolutely-positioned close buttons whose
+   layout already uses transform (translateY(-50%) centering). The animation
+   resets transform mid-press, shifting the hit-target and swallowing clicks. */
+button:active:not(:disabled, [data-palette-close]) {
   animation: tap-scale 200ms ease-out;
+}
+
+/* Icon-shape buttons (close / dismiss) opt-out entirely — they use transform
+   for positioning and the scale animation breaks their hit area. */
+[data-ui-shape="icon"]:active:not(:disabled) {
+  animation: none !important;
+  scale: 0.92;
 }
 
 /* iOS text selection styling */
