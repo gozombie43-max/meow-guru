@@ -22,13 +22,13 @@
     "./exam-paper": "./exam-paper.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && node scripts/publish-declarations.js",
-    "typecheck": "tsc -p tsconfig.json"
+    "build": "tsc6 -p tsconfig.build.json && node scripts/publish-declarations.js",
+    "typecheck": "tsc6 -p tsconfig.json"
   },
   "dependencies": {
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "typescript": "^7.0.2"
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
   }
 }
