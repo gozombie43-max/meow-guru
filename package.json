@@ -41,7 +41,7 @@
     "engine.io": "6.6.11",
     "follow-redirects": "1.16.1",
     "vite": "8.2.4",
-    "dompurify": "3.4.16",
+    "dompurify": "3.4.17",
     "vitest": "5.0.5",
     "@vitest/coverage-v8": "5.0.5",
     "@vitest/mocker": "5.0.5",
