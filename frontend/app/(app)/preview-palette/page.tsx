@@ -252,7 +252,7 @@ export default function PalettePreviewPage() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'all 0.15s ease',
+                    transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease',
                   }}
                 >
                   {sub}
@@ -316,7 +316,7 @@ export default function PalettePreviewPage() {
                   justifyContent: 'center',
                   cursor: 'pointer',
                   boxSizing: 'border-box',
-                  transition: 'all 0.15s ease',
+                  transition: 'background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease',
                   ...getQuestionStyle(num),
                 }}
               >
