@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { JAM_SECTIONS, JAM_SUBJECT } from '@/lib/exam-mode';
 import ExamModeSwitch from '@/components/ExamModeSwitch';
@@ -336,7 +336,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                     {activeTab === 'prev' && (
                       <div className={styles.tierDropdownWrap}>
                         <select
-                          className={styles.tierDropdown}
+                          data-custom-focus="" className={styles.tierDropdown}
                           value={effectiveYear}
                           onChange={(e) => setSelectedYear(e.target.value)}
                           aria-label="Select year"
@@ -351,7 +351,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                     {activeTab !== 'overview' && (
                       <div className={styles.tierDropdownWrap}>
                         <select
-                          className={styles.tierDropdown}
+                          data-custom-focus="" className={styles.tierDropdown}
                           value={effectiveTier}
                           onChange={(e) => setSelectedTier(e.target.value)}
                           aria-label={`Select ${tierInfo.singular || 'Stage'}`}

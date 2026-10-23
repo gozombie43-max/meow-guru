@@ -1,4 +1,4 @@
-.container {
+﻿.container {
   --bg: var(--light-canvas);
   --card: var(--light-surface);
   --text-dark: var(--light-text);
@@ -67,5 +67,5 @@
 }
 .languagePicker { position: relative; margin-left: auto; flex-shrink: 0; }
 .languagePicker select { appearance: none; min-height: 44px; max-width: 112px; padding: 10px 28px 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); color: var(--text-dark); font: inherit; font-size: 13px; cursor: pointer; }
-.languagePicker select:focus-visible { outline: 2px solid var(--ios-system-blue); outline-offset: 2px; }
+.languagePicker select:focus-visible { outline: none; text-decoration: none; }
 .languagePicker svg { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted); }

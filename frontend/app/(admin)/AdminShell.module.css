@@ -1,4 +1,4 @@
-.shell {
+﻿.shell {
   --color-text-primary: var(--admin-text);
   --color-text-secondary: var(--admin-text-secondary);
   --color-text-tertiary: var(--admin-text-tertiary);
@@ -181,7 +181,6 @@
 .shell a:focus-visible,
 .shell button:focus-visible,
 .shell input:focus-visible,
-.shell select:focus-visible,
 .shell textarea:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--admin-blue) 45%, transparent);
   outline-offset: 2px;
@@ -231,3 +230,7 @@
     transition: none;
   }
 }
+
+.shell select:focus,
+.shell select:focus-visible { outline: none; text-decoration: none; }
+

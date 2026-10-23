@@ -1,4 +1,4 @@
-.container {
+﻿.container {
   --result-bg: var(--light-canvas);
   --result-card: color-mix(in srgb, var(--light-canvas) 48%, var(--light-surface));
   --result-inset: color-mix(in srgb, var(--light-surface-muted) 65%, var(--light-surface));
@@ -134,7 +134,7 @@
 .container .btnOutline[data-ui-button] { color: var(--result-text) !important; background: transparent !important; border: 1px solid var(--result-border) !important; }
 .container .btnOutline:hover { background: var(--result-card) !important; }
 .container button:disabled { opacity: .5; cursor: default; }
-.container :is(button, a, select):focus-visible { outline: 2px solid var(--result-muted); outline-offset: 3px; }
+.container :is(button, a):focus-visible { outline: 2px solid var(--result-muted); outline-offset: 3px; }
 .container .stateCard { max-width: 560px; margin: 40px auto; padding: 32px; text-align: center; display: grid; justify-items: center; gap: 16px; background: var(--result-card); border: 1px solid var(--result-border); border-radius: 20px; }
 .stateCard h2 { margin: 0; font-size: 20px; }
 .stateCard p { color: var(--result-muted); font-size: 14px; line-height: 1.6; margin: 0; }

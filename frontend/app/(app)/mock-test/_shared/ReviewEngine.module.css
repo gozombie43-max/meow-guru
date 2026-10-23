@@ -1,4 +1,4 @@
-.page {
+﻿.page {
   --primary: var(--ios-system-blue, #007aff);
   --bg: var(--light-canvas, #f5f5f7);
   --card: color-mix(in srgb, var(--light-canvas, #f5f5f7) 48%, var(--light-surface, #ffffff));
@@ -115,7 +115,7 @@
 .emptyQuestions { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 32px 20px; text-align: center; }
 .emptyQuestions h2 { font-size: 16px; margin: 0; }
 .emptyQuestions p { font-size: 13px; line-height: 1.6; color: var(--text-muted); }
-.page button:focus-visible, .page select:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.page button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .loadingContainer { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: var(--text-secondary); }
 .loadingContainer p { font-size: 14px; }
 .loadingContainer .btnPrimary[data-ui-button] { background: transparent !important; color: var(--ios-system-blue) !important; border: 1px solid var(--ios-system-blue) !important; border-radius: 12px !important; }
