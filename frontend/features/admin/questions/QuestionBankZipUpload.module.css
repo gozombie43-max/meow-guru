@@ -1,0 +1,234 @@
+.root {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.1));
+  border-radius: 12px;
+  background: var(--color-background-primary, #ffffff);
+  color: var(--color-text-primary, #1d1d1f);
+  box-sizing: border-box;
+}
+
+.header h3 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1d1d1f);
+}
+
+.header p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary, #6e6e73);
+}
+
+.actionsBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.policyLink,
+.actionsBar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--color-border-secondary, rgba(0, 0, 0, 0.15));
+  border-radius: 8px;
+  background: var(--color-background-secondary, #f5f5f7);
+  color: var(--admin-blue, #0071e3);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.actionsBar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fileRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fileLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #6e6e73);
+}
+
+.fileRow input[type="file"] {
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-secondary, rgba(0, 0, 0, 0.15));
+  border-radius: 8px;
+  background: var(--color-background-secondary, #f5f5f7);
+  font-size: 13px;
+  color: var(--color-text-primary, #1d1d1f);
+  box-sizing: border-box;
+}
+
+.buttonRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.buttonRow button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid var(--color-border-secondary, rgba(0, 0, 0, 0.15));
+  border-radius: 8px;
+  background: var(--color-background-secondary, #f5f5f7);
+  color: var(--admin-blue, #0071e3);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.buttonRow .primary {
+  background: var(--admin-blue, #0071e3);
+  color: #ffffff;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.buttonRow button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.zipStatus {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.1));
+  border-radius: 10px;
+  background: var(--color-background-secondary, #f5f5f7);
+  overflow-wrap: anywhere;
+}
+
+.zipStatus[data-stage="validating"],
+.zipStatus[data-stage="uploading"],
+.zipStatus[data-stage="ready"] {
+  border-color: var(--admin-blue, #0071e3);
+}
+
+.zipStatus[data-stage="success"] {
+  border-color: #34c759;
+  background: #f0fdf4;
+}
+
+.zipStatus[data-stage="success"] .zipStatusHeading {
+  color: #16a34a;
+}
+
+.zipStatus[data-stage="error"] {
+  border-color: #ff3b30;
+  background: #fff2f2;
+}
+
+.zipStatus[data-stage="error"] .zipStatusHeading {
+  color: #dc2626;
+}
+
+.zipStatusHeading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--color-text-primary, #1d1d1f);
+}
+
+.zipFilename {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-primary, #1d1d1f);
+}
+
+.zipMessage {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary, #6e6e73);
+}
+
+.zipStatus[data-stage="error"] .zipMessage {
+  color: #dc2626;
+}
+
+.zipStatus progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--admin-blue, #0071e3);
+}
+
+.busyNotice {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary, #6e6e73);
+}
+
+.zipSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border-secondary, rgba(0, 0, 0, 0.15));
+  border-top-color: var(--admin-blue, #0071e3);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.previewSection {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-tertiary, rgba(0, 0, 0, 0.08));
+}
+
+.previewSummary {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1d1d1f);
+}
+
+.targetsList {
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+}
+
+.targetsList li {
+  margin-bottom: 6px;
+  color: var(--color-text-primary, #1d1d1f);
+}
+
+.targetStatusBadge {
+  display: block;
+  font-size: 12px;
+  color: var(--admin-blue, #0071e3);
+  margin-top: 2px;
+}

@@ -133,6 +133,36 @@ const addQuestion = async (req, res) => {
   }
 };
 
+// ── GET /api/questions/export ──────────────────────────
+const exportQuestions = async (req, res) => {
+  try {
+    const { count, questions } = await questionService.exportQuestions(req.query);
+    if (String(req.query.format || '').toLowerCase() === 'json') {
+      res.set('Cache-Control', 'no-store, max-age=0');
+      return res.json({ count, questions });
+    }
+    const parts = [
+      req.query.examMode || 'ssc',
+      req.query.subject || 'all-subjects',
+      req.query.topic || 'all-topics',
+      req.query.quizName,
+      req.query.difficulty,
+    ]
+      .filter(Boolean)
+      .map(part => String(part).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))
+      .filter(Boolean);
+    const filename = `${parts.join('-') || 'questions'}.ndjson`;
+    const body = questions.map(q => JSON.stringify(q)).join('\n') + (questions.length ? '\n' : '');
+    res.set('Cache-Control', 'no-store, max-age=0');
+    res.set('Content-Type', 'application/x-ndjson; charset=utf-8');
+    res.set('Content-Disposition', `attachment; filename="${filename}"`);
+    res.set('X-Question-Count', String(count));
+    return res.send(body);
+  } catch (err) {
+    return res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+  }
+};
+
 // ── GET /api/questions ─────────────────────────────────
 const getQuestions = async (req, res) => {
   try {
@@ -338,6 +368,7 @@ export default {
   deleteQuestion, 
   bulkDeleteQuestions,
   getQuestions, 
+  exportQuestions,
   getQuestionCounts,
   generatePracticeTest, 
   runAnalysis,

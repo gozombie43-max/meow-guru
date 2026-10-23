@@ -68,6 +68,7 @@ export function useAdminQuestionBank() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [imagePreview, setImagePreview] = useState<{
     src: string;
     title: string;
@@ -369,8 +370,82 @@ export function useAdminQuestionBank() {
     }
   };
 
+  const handleDownloadNdjson = async (overrides?: { subject?: string; topic?: string; quizName?: string; ids?: string[] }) => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const secret = getAdminToken();
+      const params = new URLSearchParams();
+      params.set("examMode", mode);
+      const subj = overrides?.subject !== undefined ? overrides.subject : filterSubject;
+      const top = overrides?.topic !== undefined ? overrides.topic : filterTopic;
+      const qName = overrides?.quizName !== undefined ? overrides.quizName : filterQuizName;
+      if (subj) params.set("subject", subj);
+      if (top) params.set("topic", top);
+      if (qName) params.set("quizName", qName);
+      if (!overrides) {
+        if (filterDifficulty) params.set("difficulty", filterDifficulty);
+        if (filterExam) params.set("exam", filterExam);
+        if (search) params.set("search", search);
+      }
+      params.set("sort", sortOrder);
+      if (overrides?.ids?.length) {
+        params.set("ids", overrides.ids.join(","));
+      }
+
+      const res = await fetchWithRetry(
+        `${API}/api/questions/export?${params.toString()}`,
+        { headers: { Authorization: `Bearer ${secret}` } },
+        { timeoutMs: 60000 }
+      );
+      if (!res.ok) {
+        let msg = `Export failed (${res.status})`;
+        try {
+          const errData = await res.json();
+          if (errData?.error) msg = errData.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
+      }
+
+      const text = await res.text();
+      const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
+      if (lines.length === 0) {
+        showMsg("No matching questions found to download", true);
+        return;
+      }
+
+      const slugParts = [
+        mode || "ssc",
+        subj || "all-subjects",
+        top || "all-topics",
+        qName,
+        !overrides ? filterDifficulty : "",
+      ]
+        .filter(Boolean)
+        .map((part) => String(part).trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""))
+        .filter(Boolean);
+      const filename = `${slugParts.join("-") || "questions"}.ndjson`;
+
+      const blob = new Blob([text], { type: "application/x-ndjson;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showMsg(`Downloaded ${lines.length} question${lines.length === 1 ? "" : "s"} (${filename}) ✓`);
+    } catch (e: unknown) {
+      showMsg(e instanceof Error ? e.message : "Download failed", true);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const diffColor = (d: string) =>
     d === "easy" ? "#16a34a" : d === "hard" ? "#dc2626" : "#d97706";
-  return { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject: handleSetFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor };
+  return { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject: handleSetFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, exporting, handleDownloadNdjson, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor, fetchQuestions };
 }

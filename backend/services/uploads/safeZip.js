@@ -34,9 +34,9 @@ export async function loadSafeZip(buffer, limits = ZIP_LIMITS) {
   const budget = { bytes: 0 };
   // Complete validation before callers can upload images or mutate questions.
   for (const entry of entries) {
-    if (entry.dir) continue;
     const rawName = entry.unsafeOriginalName || entry.name;
     if (rawName.includes('..') || rawName.startsWith('/') || rawName.includes('\\')) throw rejected('Unsafe ZIP entry path');
+    if (entry.dir) continue;
     const data = await readEntry(entry, budget, limits);
     entry.async = async type => {
       if (type === 'string' || type === 'text') return data.toString('utf8');

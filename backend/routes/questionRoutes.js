@@ -5,6 +5,7 @@ import { fetchPublicTopicCountSnapshot } from "../services/questions/topicCountS
 import multer from 'multer';
 import questionController from '../controllers/questionController.js';
 import adminAuth from "../middleware/auth.js";
+import { uploadLimiter } from "../middleware/rateLimiter.js";
 import { protect } from "../middleware/protect.js";
 import { quizAnswerCommandSchema } from '@meow/contracts/progress';
 import { submitQuizAnswer } from '../services/quizAnswerService.js';
@@ -36,6 +37,15 @@ const questionUpload = upload.fields([
 // Bulk imports already fence each row by import key/hash and return large,
 // per-row outcomes. Preserve that recovery protocol and its response budget.
 router.post('/bulk', adminAuth, questionController.bulkCreateQuestions);
+router.get('/export', adminAuth, questionController.exportQuestions);
+router.post(['/image-zip', '/admin/image-zip'], uploadLimiter, adminAuth, async (req, res, next) => {
+  try {
+    const { handleQuestionBankImageZip } = await import('../controllers/questionImageZipController.js');
+    await handleQuestionBankImageZip(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
 router.post('/bulk-delete', adminAuth, questionController.bulkDeleteQuestions);
 router.post('/check-duplicates', adminAuth, questionController.checkDuplicates);
 router.get('/topic-counts', async (req, res) => {
