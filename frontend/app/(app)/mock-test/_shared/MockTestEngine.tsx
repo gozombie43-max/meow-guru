@@ -631,9 +631,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       {/* Mobile Bottom Sheet Palette */}
       {!isDesktop && showPalette && (
         <>
-          <button type="button" className={`${styles.backdrop} ${showPalette ? styles.show : ''}`} onClick={() => setShowPalette(false)} aria-label="Close question palette" />
+          <button type="button" className={`${styles.backdrop} ${styles.show}`} onClick={() => setShowPalette(false)} aria-label="Close question palette" />
           <div
-            className={`${styles.bottomSheet} ${showPalette ? styles.show : ''}`}
+            className={`${styles.bottomSheet} ${styles.show}`}
             role="dialog"
             aria-modal="true"
             aria-label="Questions Palette"
