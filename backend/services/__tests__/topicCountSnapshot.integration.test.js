@@ -75,7 +75,7 @@ describe("saved mathematics topic totals", () => {
       { ...valid, generatedAt: new Date(Date.now() - 25 * 3600000).toISOString(), totals: { ...valid.totals, percentages: 99 } },
       wrongSubject,
     ]) {
-      await db.collection('questionMetadata').updateOne({ _id: `topic-counts:v2:mathematics:${process.env.QUESTIONS_NORMALIZED_KEYS === 'true'}` }, { $set: { data: invalid } });
+      await db.collection('questionMetadata').updateOne({ _id: `topic-counts:v3:mathematics:${process.env.QUESTIONS_NORMALIZED_KEYS === 'true'}` }, { $set: { data: invalid } });
       clearSharedLocalCaches();
       expect((await fetchPublicTopicCountSnapshot()).totals.percentages).toBe(1);
     }
@@ -84,7 +84,7 @@ describe("saved mathematics topic totals", () => {
   it('rebuilds an ancient same-revision snapshot after an external import', async () => {
     vi.stubEnv('QUESTIONS_NORMALIZED_KEYS', 'false');
     await db.collection('questionMetadata').insertOne({
-      _id: 'topic-counts:v2:mathematics:false', revision: 0,
+      _id: 'topic-counts:v3:mathematics:false', revision: 0,
       data: { revision: 0, totals: { percentages: 99 }, updatedAt: new Date(0).toISOString() },
     });
     await db.collection('questions').insertOne(question('external', 'PYQ'));

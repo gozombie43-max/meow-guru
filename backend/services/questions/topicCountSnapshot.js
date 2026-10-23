@@ -1,9 +1,11 @@
 import { JAM_SECTIONS, jamQuestionTopic } from '@meow/contracts/jam';
-import { findPersistedQuestionMetadata, saveTopicCountSnapshot } from '../../repositories/questionMetadataRepository.js';
+import { aggregateQuestionModeCounts, findPersistedQuestionMetadata, saveTopicCountSnapshot } from '../../repositories/questionMetadataRepository.js';
 import { createTieredCache } from '../../infrastructure/tieredCache.js';
 import { getQuestionRevision, isNormalizedQuestionKeysEnabled } from "./questionCache.js";
 import { fetchQuestionCounts, primeQuestionCountCaches } from "./questionMetadataService.js";
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
+import { caseInsensitiveExact, mongoString, questionModeFromAggregateKey } from "./questionQueryBuilder.js";
+import { normalizeSearchKey } from "./questionNormalizer.js";
 
 // Canonical hub topics per subject. Counts use the same mode resolver as topic pages.
 const SUBJECT_TOPICS = {
@@ -43,6 +45,63 @@ const SUBJECT_TOPICS = {
 const PUBLIC_CATALOG_SUBJECTS = ['mathematics', 'reasoning', 'english', 'general-awareness'];
 
 const MODES = ["concept", "formula", "mixed", "aiChallenge", "easy", "hard"];
+const COUNTED_MODES = new Set(MODES);
+
+// Subjects whose hub topics are groups of chapters (e.g. Geography -> Solar
+// System & Universe). Chapter pages read `totals[chapterSlug]`, so the snapshot
+// also carries one total per uploaded chapter and rolls them into the group.
+const CHAPTER_SUBJECTS = new Set(["general-awareness"]);
+const slugify = value => String(value || "").trim().toLowerCase()
+  .replace(/&/g, " ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+async function addChapterTotals(subject, groupTopics, totals) {
+  const normalized = isNormalizedQuestionKeysEnabled();
+  const match = normalized ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) };
+  const rows = await aggregateQuestionModeCounts([
+    { $match: match },
+    { $project: {
+      chapterSlug: mongoString("$chapterSlug"),
+      topicGroup: { $toLower: mongoString("$topicGroup") },
+      rawTopic: mongoString("$topic"),
+      modeKey: mongoString("$modeKey"),
+      quizName: { $toLower: mongoString("$quizName") },
+      quizId: { $toLower: mongoString("$quizId") },
+      source: { $toLower: mongoString("$source") },
+      questionType: { $toLower: mongoString("$questionType") },
+      topic: { $toLower: mongoString("$topic") },
+      hasLetter: { $ne: [mongoString("$letter"), ""] },
+      hasWord: { $ne: [mongoString("$word"), ""] },
+      hasMeanings: { $isArray: "$meanings" },
+    } },
+    { $group: {
+      _id: {
+        chapterSlug: "$chapterSlug", topicGroup: "$topicGroup", rawTopic: "$rawTopic", modeKey: "$modeKey",
+        quizName: "$quizName", quizId: "$quizId", source: "$source", questionType: "$questionType",
+        topic: "$topic", hasLetter: "$hasLetter", hasWord: "$hasWord", hasMeanings: "$hasMeanings",
+      },
+      count: { $sum: 1 },
+    } },
+  ]);
+  const groups = new Set(groupTopics);
+  const groupKeys = new Set(groupTopics.map(normalizeSearchKey));
+  const chapterTotals = new Map();
+  const groupTotals = new Map();
+  for (const row of rows) {
+    const key = row?._id || {};
+    const mode = normalized ? key.modeKey : questionModeFromAggregateKey(key);
+    if (!COUNTED_MODES.has(mode)) continue;
+    const count = Number(row.count) || 0;
+    // Questions tagged directly with a group name are already counted above.
+    if (groupKeys.has(normalizeSearchKey(key.rawTopic))) continue;
+    const chapter = slugify(key.chapterSlug) || slugify(key.rawTopic);
+    if (chapter && !groups.has(chapter) && chapter !== "__proto__") {
+      chapterTotals.set(chapter, (chapterTotals.get(chapter) || 0) + count);
+    }
+    if (groups.has(key.topicGroup)) groupTotals.set(key.topicGroup, (groupTotals.get(key.topicGroup) || 0) + count);
+  }
+  for (const [chapter, count] of chapterTotals) totals[chapter] = count;
+  for (const [group, count] of groupTotals) totals[group] = (totals[group] || 0) + count;
+}
 const MAX_SNAPSHOT_AGE_MS = 60 * 60 * 1000;
 const MAX_PUBLIC_AGE_MS = 24 * 60 * 60 * 1000;
 const validSnapshot = (data, subject, revision, maxAge) => {
@@ -79,6 +138,15 @@ function refreshPublicSnapshot(subject) {
   return work;
 }
 
+// Rebuild and persist every public catalog for the current bank revision.
+export async function refreshTopicCountSnapshots() {
+  for (const subject of PUBLIC_CATALOG_SUBJECTS) {
+    if (subject === 'mathematics') continue; // Refreshed synchronously by the write path.
+    try { await fetchTopicCountSnapshot(subject); }
+    catch (error) { runtimeLog.error(`Topic count refresh failed for ${subject}:`, error.message); }
+  }
+}
+
 let catalogRefresh;
 export function refreshPublicCatalogs() {
   if (catalogRefresh) return catalogRefresh;
@@ -92,7 +160,7 @@ export function refreshPublicCatalogs() {
 export async function initializePublicCatalogs({ fresh = false } = {}) {
   const results = [];
   for (const subject of PUBLIC_CATALOG_SUBJECTS) {
-    const id = `topic-counts:v2:${subject}:${isNormalizedQuestionKeysEnabled()}`;
+    const id = `topic-counts:v3:${subject}:${isNormalizedQuestionKeysEnabled()}`;
     const saved = await findPersistedQuestionMetadata(id);
     if (!fresh && validSnapshot(saved?.data, subject, saved?.revision, MAX_PUBLIC_AGE_MS)) {
       results.push({ subject, revision: saved.revision, rebuilt: false });
@@ -110,7 +178,7 @@ export async function fetchPublicTopicCountSnapshot(subject = 'mathematics') {
   const normalizedSubject = String(subject).toLowerCase();
   const topics = Object.hasOwn(SUBJECT_TOPICS, normalizedSubject) ? SUBJECT_TOPICS[normalizedSubject] : undefined;
   if (!topics) throw Object.assign(new Error(`Unsupported topic-count subject: ${subject}`), { statusCode: 400 });
-  const id = `topic-counts:v2:${normalizedSubject}:${isNormalizedQuestionKeysEnabled()}`;
+  const id = `topic-counts:v3:${normalizedSubject}:${isNormalizedQuestionKeysEnabled()}`;
   const data = await publicSnapshots.read(`public-catalog:v1:${id}`, async () => {
     const cached = await findPersistedQuestionMetadata(id);
     const value = cached?.data;
@@ -140,7 +208,7 @@ export async function fetchTopicCountSnapshot(subject = "mathematics") {
   const normalizedSubject = String(subject).toLowerCase();
   const topics = Object.hasOwn(SUBJECT_TOPICS, normalizedSubject) ? SUBJECT_TOPICS[normalizedSubject] : undefined;
   if (!topics) throw Object.assign(new Error(`Unsupported topic-count subject: ${subject}`), { statusCode: 400 });
-  const id = `topic-counts:v2:${normalizedSubject}:${isNormalizedQuestionKeysEnabled()}`;
+  const id = `topic-counts:v3:${normalizedSubject}:${isNormalizedQuestionKeysEnabled()}`;
   for (let attempt = 0; attempt < 3; attempt++) {
     const revision = await getQuestionRevision();
     const data = await snapshots.read(`topic-counts:v3:${id}:${revision}`, async () => {
@@ -154,6 +222,7 @@ export async function fetchTopicCountSnapshot(subject = "mathematics") {
           totals[topic] = MODES.reduce((sum, mode) => sum + (counts[mode] ?? 0), 0);
         }));
       }
+      if (CHAPTER_SUBJECTS.has(normalizedSubject)) await addChapterTotals(normalizedSubject, topics, totals);
       if (await getQuestionRevision() !== revision) return null;
       const generatedAt = new Date().toISOString();
       const result = { subject: normalizedSubject, revision, totals, generatedAt, updatedAt: generatedAt };
