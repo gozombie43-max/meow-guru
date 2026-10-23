@@ -111,6 +111,7 @@ export interface MockAttemptHistory {
   testId: string;
   status: 'in_progress' | 'submitting' | 'completed' | 'abandoned';
   result?: MockAttemptResult;
+  language?: QuizLanguage;
 }
 
 export interface AttemptProgress {

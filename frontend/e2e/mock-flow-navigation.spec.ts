@@ -134,11 +134,12 @@ for (const kind of ['mock', 'pyq']) {
     await page.getByRole('button', { name: 'Back to results' }).click();
     await expect(page).toHaveURL(resultUrl);
     await page.evaluate(() => history.back());
-    await expect(page).toHaveURL(catalogUrl);
     await card.getByRole('button', { name: 'View Result', exact: true }).click();
+    await expect(page).toHaveURL(resultUrl);
     await page.getByRole('button', { name: 'Retake', exact: true }).click();
-    await expect(page.getByRole('dialog', { name: 'Paper info', exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Restart test', exact: true }).click();
+    await expect(page.getByRole('combobox', { name: 'Test language' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start Mock Test', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Start Mock Test', exact: true }).click();
     await expect(page.getByRole('radio').first()).toBeVisible();
     expect(page.url()).not.toBe(firstAttemptUrl);
     await page.getByRole('button', { name: 'Leave mock test' }).click();

@@ -5,10 +5,8 @@ import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowLeft, ChartNoAxesColumnIncreasing } from 'lucide-react';
 import { getAttempt, getSlotDetails, type MockAttempt } from './api';
-import type { MockTestSlot } from './exam-config';
 import ResultReportView from './ResultReportView';
 import styles from './ResultReport.module.css';
-import PaperInfoDialog from './PaperInfoDialog';
 import { paperDisplayTitle } from './paper-date';
 
 interface ResultReportProps {
@@ -46,12 +44,7 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
   const loading = !ready || pending || loadedScope !== scope;
   const [error, setError] = useState<string | null>(null);
   const [retryRevision, setRetryRevision] = useState(0);
-  const [retakeState, setRetakeState] = useState<{ scope: string; pending: boolean; error: string | null; slot: MockTestSlot | null } | null>(null);
-  const retakeController = useRef<AbortController | null>(null);
-  const currentRetake = retakeState?.scope === scope ? retakeState : null;
   const backToTests = () => router.back(`/mock-test/${examSlug}`);
-
-  useEffect(() => () => { retakeController.current?.abort(); retakeController.current = null; }, [scope]);
 
   useEffect(() => {
     if (!ready) return;
@@ -78,22 +71,11 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
     return () => controller.abort();
   }, [attemptId, examSlug, testId, owner, ready, scope, retryRevision]);
 
-  async function prepareRetake() {
-    if (!ready || !data || data.assessmentMode === 'confidential' || retakeController.current) return;
-    const controller = new AbortController();
-    retakeController.current = controller;
-    setRetakeState({ scope, pending: true, error: null, slot: null });
-    try {
-      const { slot } = await getSlotDetails(testId, examSlug, controller.signal);
-      if (controller.signal.aborted) return;
-      if (slot.assessmentMode === 'confidential') throw new Error('Retakes are unavailable for this assessment.');
-      setRetakeState({ scope, pending: false, error: null, slot });
-    } catch (reason) {
-      if (!controller.signal.aborted) setRetakeState({ scope, pending: false, error: reason instanceof Error ? reason.message : 'Could not prepare a retake. Please try again.', slot: null });
-    } finally {
-      if (retakeController.current === controller) retakeController.current = null;
-    }
-  }
+  const handleRetake = () => {
+    if (data?.assessmentMode === 'confidential') return;
+    const langParam = data?.language ? `&lang=${encodeURIComponent(data.language)}` : '';
+    router.push(`/mock-test/${examSlug}/${testId}?retake=true${langParam}`);
+  };
 
   if (!authLoading && !ready) return (
     <ResultState title="Sign in to view your results" onBack={backToTests}>
@@ -116,7 +98,6 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
   }
 
   return (
-    <>
     <ResultReportView
       key={scope}
       data={data}
@@ -124,12 +105,8 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
       onReview={sectionKey => {
         if (data.assessmentMode !== 'confidential') router.push(`/mock-test/${examSlug}/${testId}/review/${attemptId}${sectionKey ? `?section=${encodeURIComponent(sectionKey)}` : ''}`);
       }}
-      onRetake={prepareRetake}
-      retakePending={currentRetake?.pending}
-      actionError={currentRetake?.error}
+      onRetake={handleRetake}
       onBack={backToTests}
     />
-    {currentRetake?.slot && <PaperInfoDialog slot={currentRetake.slot} canRestart onClose={() => setRetakeState(null)} />}
-    </>
   );
 }

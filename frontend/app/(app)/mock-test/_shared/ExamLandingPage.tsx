@@ -35,7 +35,6 @@ type MockTestSlot,
 import styles from './ExamLandingPage.module.css';
 import ExamLandingLoader from './ExamLandingLoader';
 import { useExamCatalog } from './useExamCatalog';
-import PaperInfoDialog from './PaperInfoDialog';
 
 interface ExamLandingPageProps {
   examSlug: string;
@@ -95,7 +94,6 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
   const setSelectedTier = (tier: string) => updateFilter('tier', tier);
   const selectedYear = searchParams.get('year') ?? undefined;
   const setSelectedYear = (year: string) => updateFilter('year', year);
-  const [infoPaper, setInfoPaper] = useState<MockTestSlot | null>(null);
   const catalog = useExamCatalog(examSlug, activeTab, selectedTier, loadingOnly, selectedYear);
   const { metadata, effectiveTier, effectiveYear } = catalog;
   const pyqCount = activeTab === 'prev' ? catalog.total : metadata?.pyqCount;
@@ -153,6 +151,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
         score: completed.result?.totalScore ?? 0,
         maxScore: completed.result?.maxScore ?? 100,
         attemptId: completed.id,
+        language: completed.language,
       };
     }
     if (!slot.isFree) {
@@ -163,6 +162,11 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
 
   const handleStart = (slotId: string) => {
     router.push(`/mock-test/${examSlug}/${slotId}`);
+  };
+
+  const handleRetake = (slotId: string, prevLanguage?: string) => {
+    const langParam = prevLanguage ? `&lang=${encodeURIComponent(prevLanguage)}` : '';
+    router.push(`/mock-test/${examSlug}/${slotId}?retake=true${langParam}`);
   };
 
   const handleResume = (slotId: string, attemptId: string) => {
@@ -224,7 +228,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
               </div>
               <div className={styles.testLineAction}>
                 {completed && slot.assessmentMode !== 'confidential' && (
-                  <button type="button" data-ui-button="secondary" aria-label="Retake" className={`${styles.paperAction} ${styles.actionOutline}`} onClick={() => setInfoPaper(slot)}>
+                  <button type="button" data-ui-button="secondary" aria-label="Retake" className={`${styles.paperAction} ${styles.actionOutline}`} onClick={() => handleRetake(slot.id, state.language)}>
                     <span className={styles.actionFace}><RotateCcw size={14} aria-hidden="true" /><span>Retake</span></span>
                   </button>
                 )}
@@ -242,7 +246,6 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
 
   return (
     <main className={`${styles.page} ${styles.loadedPage}`}>
-      {infoPaper && <PaperInfoDialog key={`${examSlug}:${infoPaper.id}`} slot={infoPaper} canRestart={['in_progress', 'completed'].includes(getSlotState(infoPaper).status)} onClose={() => setInfoPaper(null)} />}
       <div className={styles.macosWindow}>
         {/* Desktop macOS Sidebar */}
         <aside className={styles.macosSidebar}>

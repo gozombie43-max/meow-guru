@@ -7,7 +7,7 @@ import { useEffect,useRef,useState } from 'react';
 import BackButton from '@/components/BackButton';
 import { ChevronDown } from 'lucide-react';
 import { seedStartResponse, startResponseEpoch } from '@/lib/start-response-cache';
-import { getMockStartKey } from './startKey';
+import { getMockStartKey, mockStartStorageKey } from './startKey';
 import { getSlotDetails,startTest } from './api';
 import { getExamConfig,getSlotById,getTotalQuestions,type MockTestSlot } from './exam-config';
 import styles from './TestInstructions.module.css';
@@ -18,16 +18,22 @@ interface TestInstructionsProps {
   examSlug: string;
   testId: string;
   resumeAttemptId?: string;
+  isRetake?: boolean;
+  initialLanguage?: string;
 }
 
-export default function TestInstructions({ examSlug, testId, resumeAttemptId }: TestInstructionsProps) {
+export default function TestInstructions({ examSlug, testId, resumeAttemptId, isRetake: propIsRetake, initialLanguage }: TestInstructionsProps) {
   const router = useAppNavigation();
   const { token, user } = useAuth();
   const starting = useRef(false);
   const errorRef = useRef<HTMLDivElement>(null);
+  const retakeKey = useRef<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [startError, setStartError] = useState<{ message: string; signIn: boolean } | null>(null);
-  const [language, setLanguage] = useState('en');
+  const queryLang = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('lang') : null;
+  const rawLang = initialLanguage || queryLang;
+  const normalizedInitialLang = rawLang === 'bn' || rawLang === 'hi' ? rawLang : 'en';
+  const [language, setLanguage] = useState(normalizedInitialLang);
   const [loadedSlot, setLoadedSlot] = useState<{ key: string; slot: MockTestSlot } | null>(null);
   const [slotError, setSlotError] = useState<{ key: string; message: string } | null>(null);
   const [loadVersion, retryLoad] = useState(0);
@@ -39,7 +45,10 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
   const slotKey = `${examSlug}:${testId}`;
   const slot = (loadedSlot?.key === slotKey ? loadedSlot.slot : null) ?? getSlotById(testId);
 
-  const isResume = Boolean(resumeAttemptId);
+  const isClientRetake = typeof window !== 'undefined' && ['1', 'true'].includes(new URLSearchParams(window.location.search).get('retake') || '');
+  const isRetake = Boolean(propIsRetake || isClientRetake);
+  const isResume = Boolean(resumeAttemptId) && !isRetake;
+  const effectiveLanguage = slot?.paperMetadata && language === 'hi' ? 'en' : language;
 
   useEffect(() => {
     if (startError) errorRef.current?.scrollIntoView?.({ block: 'nearest' });
@@ -79,6 +88,10 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
   const totalQuestions = slot.paperMetadata ? config.sections.reduce((sum, section) => sum + section.questionCount, 0) : getTotalQuestions(slot.configKey);
 
   const handleStart = async () => {
+    if (slot.assessmentMode === 'confidential' && isRetake) {
+      setStartError({ signIn: false, message: 'Retakes are unavailable for this assessment.' });
+      return;
+    }
     if (!token) {
       router.replace('/login');
       return;
@@ -90,16 +103,32 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
     const epoch = startResponseEpoch();
     try {
       if (isResume && resumeAttemptId) {
-        router.replace(`/mock-test/${examSlug}/${testId}/attempt?resume=${resumeAttemptId}&lang=${language}`);
+        router.replace(`/mock-test/${examSlug}/${testId}/attempt?resume=${resumeAttemptId}&lang=${effectiveLanguage}`);
       } else {
-        const res = await startTest(examSlug, testId, token, getMockStartKey(user?.id, examSlug, testId));
+        let startKey: string;
+        if (isRetake) {
+          retakeKey.current ??= crypto.randomUUID();
+          startKey = retakeKey.current;
+        } else {
+          startKey = getMockStartKey(user?.id, examSlug, testId);
+        }
+        const res = isRetake
+          ? await startTest(examSlug, testId, token, startKey, true)
+          : await startTest(examSlug, testId, token, startKey);
         if (!mounted.current) return;
-        if (res.status === 'completed') {
+        if (res.status === 'completed' && !isRetake) {
           router.replace(`/mock-test/${examSlug}/${testId}/result/${res.attemptId}`);
           return;
         }
-        seedStartResponse(`mock:${examSlug}:${testId}`, user?.id, res.attemptId, res, epoch);
-        router.replace(`/mock-test/${examSlug}/${testId}/attempt?resume=${res.attemptId}&lang=${language}`);
+        if (isRetake && user?.id) {
+          try {
+            sessionStorage.setItem(mockStartStorageKey(user.id, examSlug, testId), startKey);
+          } catch { /* Navigation uses the returned attempt directly. */ }
+          retakeKey.current = null;
+        }
+        const seededResponse = { ...res, ...(effectiveLanguage === 'bn' || effectiveLanguage === 'en' ? { language: effectiveLanguage } : {}) };
+        seedStartResponse(`mock:${examSlug}:${testId}`, user?.id, res.attemptId, seededResponse, epoch);
+        router.replace(`/mock-test/${examSlug}/${testId}/attempt?resume=${res.attemptId}&lang=${effectiveLanguage}`);
       }
     } catch (error) {
       console.error(error);
@@ -118,7 +147,7 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
           <BackButton href={`/mock-test/${examSlug}`} label="Back to mock tests" />
           <span>Test details</span>
           <div className={styles.languagePicker}>
-            <select aria-label="Test language" value={language} onChange={event => setLanguage(event.target.value)} disabled={loading}>
+            <select aria-label="Test language" value={effectiveLanguage} onChange={event => setLanguage(event.target.value)} disabled={loading}>
               <option value="en">English</option>
               {!slot.paperMetadata && <option value="hi">हिन्दी</option>}
               <option value="bn">বাংলা</option>
@@ -185,7 +214,7 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
           <button data-ui-button="primary"
             className={styles.startBtn} 
             onClick={handleStart}
-            disabled={loading}
+            disabled={loading || (slot.assessmentMode === 'confidential' && isRetake)}
             aria-describedby={startError ? 'mock-start-error' : undefined}
           >
             {loading ? 'Preparing…' : startError && !startError.signIn ? 'Retry Start Mock Test' : isResume ? 'Resume Mock Test' : 'Start Mock Test'}

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
 import ResultReport from './ResultReport';
 import { getAttempt, getSlotDetails, startTest, type MockAttempt } from './api';
@@ -29,26 +29,20 @@ it('navigates directly to a selected review section and returns to the exam cata
   expect(navigation.back).toHaveBeenCalledWith('/mock-test/ssc-chsl');
 });
 
-it('prepares a retake without starting it, then starts a fresh attempt after confirmation', async () => {
+it('navigates to instructions page on retake without directly starting the test and preserves attempt language', async () => {
+  vi.mocked(getAttempt).mockResolvedValueOnce({ ...attempt, language: 'bn' });
   mount();
   fireEvent.click(await screen.findByRole('button', { name: 'Retake' }));
-  await screen.findByRole('dialog', { name: 'Paper info' });
-  expect(getSlotDetails).toHaveBeenCalledWith('paper', 'ssc-chsl', expect.any(AbortSignal));
   expect(startTest).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole('button', { name: 'Restart test' }));
-  await waitFor(() => expect(startTest).toHaveBeenCalledWith('ssc-chsl', 'paper', 'token', expect.any(String), true));
-  await waitFor(() => expect(navigation.push).toHaveBeenCalledWith('/mock-test/ssc-chsl/paper/attempt?resume=fresh-attempt'));
+  expect(navigation.push).toHaveBeenCalledWith('/mock-test/ssc-chsl/paper?retake=true&lang=bn');
 });
 
-it('allows retrying a failed retake preparation while keeping the result visible', async () => {
-  vi.mocked(getSlotDetails).mockResolvedValueOnce({ slot }).mockRejectedValueOnce(new Error('Paper unavailable. Try again.'));
+it('does not allow retake navigation for confidential assessments', async () => {
+  vi.mocked(getAttempt).mockResolvedValueOnce({ ...attempt, assessmentMode: 'confidential' });
   mount();
-  fireEvent.click(await screen.findByRole('button', { name: 'Retake' }));
-  expect(await screen.findByRole('alert')).toHaveTextContent('Paper unavailable. Try again.');
-  expect(screen.getByRole('region', { name: 'Score summary' })).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'Retake' }));
-  await screen.findByRole('dialog', { name: 'Paper info' });
-  expect(getSlotDetails).toHaveBeenCalledTimes(3);
+  expect(await screen.findByText('Confidential · Review and retakes unavailable.')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retake' })).not.toBeInTheDocument();
+  expect(startTest).not.toHaveBeenCalled();
 });
 
 it('retries a failed result read without leaving the page', async () => {
