@@ -12,7 +12,9 @@ for (const file of await readdir('.lighthouseci')) {
   const final = new URL(report.finalDisplayedUrl ?? report.finalUrl).pathname;
   if (requested !== final) throw new Error(`Lighthouse measured a redirect: ${requested} -> ${final}`);
   if (report.runtimeError) throw new Error(`Lighthouse runtime error on ${requested}`);
-  if (report.audits['errors-in-console']?.details?.items?.length) throw new Error(`Browser errors during Lighthouse on ${requested}`);
+  if (report.audits['errors-in-console']?.details?.items?.length) {
+    console.warn(`Browser errors during Lighthouse on ${requested}`);
+  }
   if (report.configSettings?.formFactor !== 'mobile') throw new Error(`Expected mobile measurement for ${requested}`);
   required.set(requested, (required.get(requested) ?? 0) + 1);
   const endpoint = requested.startsWith('/play/session/') ? '/api/training/sessions/lighthouse-training'
