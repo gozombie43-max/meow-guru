@@ -1,4 +1,4 @@
-﻿.shell {
+.shell {
   --color-text-primary: var(--admin-text);
   --color-text-secondary: var(--admin-text-secondary);
   --color-text-tertiary: var(--admin-text-tertiary);

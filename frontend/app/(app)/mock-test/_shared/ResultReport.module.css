@@ -1,4 +1,4 @@
-﻿.container {
+.container {
   --result-bg: var(--light-canvas);
   --result-card: color-mix(in srgb, var(--light-canvas) 48%, var(--light-surface));
   --result-inset: color-mix(in srgb, var(--light-surface-muted) 65%, var(--light-surface));

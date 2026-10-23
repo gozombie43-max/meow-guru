@@ -1,4 +1,4 @@
-﻿.page {
+.page {
   --primary: var(--ios-system-blue, #007aff);
   --bg: var(--light-canvas, #f5f5f7);
   --card: color-mix(in srgb, var(--light-canvas, #f5f5f7) 48%, var(--light-surface, #ffffff));

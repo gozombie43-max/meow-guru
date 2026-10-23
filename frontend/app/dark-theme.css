@@ -1,4 +1,4 @@
-﻿/* Shared dark constants stay separate from the light exam palette. */
+/* Shared dark constants stay separate from the light exam palette. */
 :root {
   /* Quiet OLED surfaces shared by Home, Mock Tests and Play. */
   --oled-canvas: #000000;

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { JAM_SECTIONS, JAM_SUBJECT } from '@/lib/exam-mode';
 import ExamModeSwitch from '@/components/ExamModeSwitch';

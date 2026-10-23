@@ -1,4 +1,4 @@
-﻿.container {
+.container {
   --bg: var(--light-canvas);
   --card: var(--light-surface);
   --text-dark: var(--light-text);
