@@ -2039,3 +2039,255 @@
 }
 .ios-series-quiz .ios-series-option:active,
 .ios-series-quiz .ios-series-dock button:active { transform: none !important; }
+
+
+.ios-series-palette-panel {
+  position: relative;
+  width: min(430px, 100%);
+  max-height: min(85dvh, calc(100dvh - var(--safe-top) - 16px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 8px 16px calc(var(--safe-bottom) + 16px);
+  border: 1px solid #3E4047;
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+  background: #1E1F22 !important;
+  box-shadow: 0 -16px 44px rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+}
+
+.ios-series-palette-handle {
+  width: 44px;
+  height: 5px;
+  border-radius: 9999px;
+  background: #55585D;
+  margin: 4px auto 10px;
+  flex-shrink: 0;
+}
+
+/* Header uses 3-col grid so title stays centred and the close button
+   lives in its own column — no position:absolute + transform needed,
+   eliminating the conflict with the global tap-scale keyframe animation. */
+.ios-series-palette-title {
+  flex: none;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  padding: 4px 0 10px;
+  border-bottom: none;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 600;
+  background: transparent;
+}
+
+.ios-series-palette-title span {
+  grid-column: 2;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* 44×44 tap target — no transform needed, so tap-scale can't knock
+   the button off-centre mid-press and swallow the click. */
+.ios-series-palette-title button {
+  grid-column: 3;
+  grid-row: 1;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #9EA2A8;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  animation: none !important;
+  transition: color 0.15s ease, background-color 0.15s ease, scale 0.1s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.ios-series-palette-title button:active:not(:disabled) {
+  scale: 0.88;
+  color: #ffffff;
+}
+
+.ios-series-palette-title button:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ios-series-palette-title svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.ios-series-palette-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.ios-series-palette-tab {
+  height: 38px;
+  border-radius: 9999px;
+  border: 1px solid #3E4047;
+  background: rgba(42, 43, 48, 0.45);
+  color: #9EA2A8;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ios-series-palette-tab.is-active {
+  background: #0E2849 !important;
+  border-color: #1D85F6 !important;
+  color: #3898EC !important;
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(29, 133, 246, 0.4);
+}
+
+.ios-series-palette-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 2px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 12px;
+  font-size: 11px;
+  color: #A5A9B0;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.ios-series-palette-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ios-series-palette-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.ios-series-palette-legend-dot.is-answered {
+  background-color: #2E7D32;
+}
+
+.ios-series-palette-legend-dot.is-not-visited {
+  background-color: #4A4D54;
+}
+
+.ios-series-palette-legend-dot.is-marked {
+  background-color: #7B1FA2;
+}
+
+.ios-series-palette-legend-dot.is-current {
+  background-color: #1976D2;
+}
+
+.ios-series-palette-grid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 0 14px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-content: flex-start;
+  gap: 10px;
+}
+
+.ios-series-palette-grid button {
+  height: 48px;
+  border: 1px solid #4A4D52 !important;
+  border-radius: 10px !important;
+  background: #35383F !important;
+  color: #B0B4BC !important;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform 0.1s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ios-series-palette-grid button:active {
+  transform: scale(0.96);
+}
+
+.ios-series-palette-grid button.is-current {
+  border: 2px solid #1D85F6 !important;
+  background: #1565C0 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 14px rgba(29, 133, 246, 0.65) !important;
+  font-weight: 700;
+}
+
+.ios-series-palette-grid button.is-correct,
+.ios-series-palette-grid button.is-answered,
+.ios-series-palette-grid button.is-unsubmitted {
+  border: 1px solid #388E3C !important;
+  background: #2E7D32 !important;
+  color: #ffffff !important;
+}
+
+.ios-series-palette-grid button.is-marked {
+  border: 1px solid #8E24AA !important;
+  background: #7B1FA2 !important;
+  color: #ffffff !important;
+}
+
+.ios-series-palette-footer {
+  padding-top: 12px;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.ios-series-palette-submit {
+  width: 100%;
+  height: 50px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #1982FC 0%, #0D6EFD 100%) !important;
+  color: #ffffff !important;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(17, 123, 245, 0.35);
+  cursor: pointer;
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+
+.ios-series-palette-submit:hover {
+  filter: brightness(1.08);
+}
+
+.ios-series-palette-submit:active {
+  transform: scale(0.98);
+}
+
+.ios-series-palette-submit-icon {
+  width: 18px;
+  height: 18px;
+  color: #ffffff;
+}

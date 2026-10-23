@@ -15,6 +15,9 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    // Disable CSS processing so tests do not require PostCSS / Tailwind native
+    // binaries (@tailwindcss/oxide-linux-x64-gnu) that may be absent on CI.
+    css: false,
     setupFiles: ["./test/setup.ts"],
     include: ["**/*.test.{ts,tsx}"],
     coverage: {

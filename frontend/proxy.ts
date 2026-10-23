@@ -21,6 +21,7 @@ export function proxy(request: NextRequest) {
     pathname === '/monitoring' ||             // Sentry tunnel must also work before login
     pathname.startsWith('/monitoring/') ||
     pathname === '/access-code' ||
+    pathname === '/preview-palette' ||
     pathname.startsWith('/access-code/') ||
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/auth/') ||

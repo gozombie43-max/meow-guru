@@ -541,3 +541,311 @@
   }
   .bottomSheet .questionGrid { min-height: 0; }
 }
+
+
+/* ==========================================================================
+   Mobile Questions Palette Redesign
+   ========================================================================== */
+
+.container .backdrop {
+  position: fixed;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.65) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 40;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
+}
+
+.container .backdrop.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.container .bottomSheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #1E1F22 !important;
+  border-top-left-radius: 24px !important;
+  border-top-right-radius: 24px !important;
+  border-top: 1px solid #3E4047 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  padding: 12px 16px calc(16px + var(--safe-bottom)) !important;
+  z-index: 50;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: min(85dvh, calc(100dvh - var(--safe-top, 0px) - 16px));
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.6) !important;
+  color: #ffffff;
+}
+
+.container .bottomSheet.show {
+  transform: translateY(0);
+}
+
+.paletteHandle {
+  width: 44px;
+  height: 5px;
+  border-radius: 9999px;
+  background: #55585D;
+  margin: 0 auto 12px;
+  flex-shrink: 0;
+}
+
+/* Palette header: 3-column grid so the title stays truly centred
+   and the close button sits in its own right column — no absolute
+   positioning needed, so no transform conflict with tap animations. */
+.paletteHeader {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.paletteTitle {
+  margin: 0;
+  grid-column: 2;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #ffffff !important;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+/* Close button lives in the 3rd column — no transform needed for
+   positioning, so the global tap-scale animation can't break its
+   hit area. Minimum 44×44px touch target per WCAG 2.5.5. */
+.paletteCloseBtn {
+  grid-column: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 44px tap target – visual footprint stays 36px via padding */
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+  border-radius: 50%;
+  background: transparent !important;
+  border: none !important;
+  color: #9EA2A8 !important;
+  cursor: pointer;
+  /* Prevents 300 ms iOS delay and double-tap zoom */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  /* Opt out of the global tap-scale keyframe animation — this
+     button has no layout transform to clobber, but belt-and-braces. */
+  animation: none !important;
+  /* Use scale() instead so it's independent of any future transforms */
+  transition: color 0.15s ease, background-color 0.15s ease, scale 0.1s ease;
+  /* Guarantee the button is always on top of the backdrop/overlay */
+  position: relative;
+  z-index: 1;
+}
+
+.paletteCloseBtn:active:not(:disabled) {
+  scale: 0.88;
+  color: #ffffff !important;
+}
+
+.paletteCloseBtn:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.paletteCloseIcon {
+  width: 20px;
+  height: 20px;
+  /* Prevent SVG from absorbing pointer events away from the button */
+  pointer-events: none;
+}
+
+.container .bottomSheet .mobileSectionControl {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 0;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.container .bottomSheet .mobileTab {
+  height: 38px;
+  min-height: 38px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border: 1px solid #3E4047 !important;
+  border-radius: 9999px !important;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  background: rgba(42, 43, 48, 0.45) !important;
+  color: #9EA2A8 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.container .bottomSheet .mobileTab.active {
+  background: #0E2849 !important;
+  border-color: #1D85F6 !important;
+  color: #3898EC !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 12px rgba(29, 133, 246, 0.4) !important;
+}
+
+.paletteLegend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 2px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 12px;
+  font-size: 11px;
+  color: #A5A9B0;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.legendDotAnswered {
+  background-color: #2E7D32;
+}
+
+.legendDotNotVisited {
+  background-color: #4A4D54;
+}
+
+.legendDotMarked {
+  background-color: #7B1FA2;
+}
+
+.legendDotCurrent {
+  background-color: #1976D2;
+}
+
+.container .bottomSheet .questionGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  padding: 4px 0 16px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+
+.container .bottomSheet .qBubble {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  border-radius: 10px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: transform 0.1s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.container .bottomSheet .qBubble:active {
+  transform: scale(0.96);
+}
+
+.container .bottomSheet .qBubble.notVisited,
+.container .bottomSheet .qBubble.notAnswered {
+  background: #35383F !important;
+  border: 1px solid #4A4D52 !important;
+  color: #B0B4BC !important;
+}
+
+.container .bottomSheet .qBubble.answered {
+  background: #2E7D32 !important;
+  border: 1px solid #388E3C !important;
+  color: #ffffff !important;
+}
+
+.container .bottomSheet .qBubble.marked,
+.container .bottomSheet .qBubble.answeredMarked {
+  background: #7B1FA2 !important;
+  border: 1px solid #8E24AA !important;
+  color: #ffffff !important;
+}
+
+.container .bottomSheet .qBubble.current {
+  background: #1565C0 !important;
+  border: 2px solid #1D85F6 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 14px rgba(29, 133, 246, 0.65) !important;
+  font-weight: 700 !important;
+  outline: none !important;
+}
+
+.paletteFooter {
+  padding-top: 12px;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.paletteSubmitBtn {
+  width: 100%;
+  height: 50px;
+  border-radius: 9999px !important;
+  background: linear-gradient(135deg, #1982FC 0%, #0D6EFD 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(17, 123, 245, 0.35) !important;
+  cursor: pointer;
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+
+.paletteSubmitBtn:hover {
+  filter: brightness(1.08);
+}
+
+.paletteSubmitBtn:active {
+  transform: scale(0.98);
+}
+
+.submitIcon {
+  width: 18px;
+  height: 18px;
+  color: #ffffff;
+}
