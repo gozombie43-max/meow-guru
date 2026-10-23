@@ -1064,3 +1064,20 @@
   .testLineCard { padding: 12px; }
   .testLineMeta > span + span::before { margin: 0 7px; }
 }
+
+/* Keep dropdowns visually normal after selection (no focus outline/underline) */
+.page .tierDropdown:focus,
+.page .tierDropdown:focus-visible,
+.page .tierDropdown:active,
+:global(html.theme-dark) .page .tierDropdown:focus,
+:global(html.theme-dark) .page .tierDropdown:focus-visible,
+:global(body.theme-dark) .page .tierDropdown:focus,
+:global(body.theme-dark) .page .tierDropdown:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  text-decoration: none !important;
+  text-decoration-line: none !important;
+  background: var(--catalog-control);
+}

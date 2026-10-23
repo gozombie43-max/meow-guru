@@ -96,7 +96,7 @@ html.theme-light :is(input, textarea):not(:where(.theme-dark, [data-theme="dark"
   opacity: 1;
 }
 
-html.theme-light :is(button, a, input, select, textarea):focus-visible:not(.tfp-search-input, [data-custom-focus]) {
+html.theme-light :is(button, a, input, select, textarea):focus-visible:not(select, .tfp-search-input, [data-custom-focus]) {
   outline: 3px solid var(--light-accent);
   outline-offset: 3px;
 }

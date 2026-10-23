@@ -444,7 +444,7 @@ html.theme-dark .battle-invite button,
 html.theme-dark .battle-primary-button { color: #fff; background: var(--ios-system-blue); box-shadow: none; }
 html.theme-dark .battle-primary-button:not(:disabled):hover { background: var(--ios-system-blue); box-shadow: none; }
 html.theme-dark .battle-icon-button:hover { background: var(--dark-surface-muted); }
-html.theme-dark .battle-route-shell :is(button, a, input, select):focus-visible { outline: 2px solid var(--dark-accent); outline-offset: 3px; }
+html.theme-dark .battle-route-shell :is(button, a, input):focus-visible { outline: 2px solid var(--dark-accent); outline-offset: 3px; }
 html.theme-dark .battle-notice { color: #ffd980; background: #332b1b; border-color: #705c32; }
 html.theme-dark .battle-notice.is-error { color: #ffaaa5; background: #351e20; border-color: #784347; }
 html.theme-dark .battle-versus-row > div > span,
