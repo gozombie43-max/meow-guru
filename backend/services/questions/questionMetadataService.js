@@ -228,6 +228,11 @@ export async function refreshUploadedQuestionMetadata(questions) {
     for (let offset = 0; offset < pending.length; offset += 4) {
       await Promise.all(pending.slice(offset, offset + 4).map(params => fetchQuestionsMeta(params)));
     }
+    const uploadedSubjects = new Set(questions.map(q => String(q?.subject || '').trim().toLowerCase()).filter(Boolean));
+    if (uploadedSubjects.size) {
+      const { refreshTopicCountSnapshots } = await import("./topicCountSnapshot.js");
+      await refreshTopicCountSnapshots(uploadedSubjects);
+    }
   } catch (error) {
     // The revision was already advanced. A failed warmup is retried on the next
     // metadata read and must not report an already saved upload as failed.

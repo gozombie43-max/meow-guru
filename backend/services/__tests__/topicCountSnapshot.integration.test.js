@@ -75,7 +75,7 @@ describe("saved mathematics topic totals", () => {
       { ...valid, generatedAt: new Date(Date.now() - 25 * 3600000).toISOString(), totals: { ...valid.totals, percentages: 99 } },
       wrongSubject,
     ]) {
-      await db.collection('questionMetadata').updateOne({ _id: `topic-counts:v2:mathematics:${process.env.QUESTIONS_NORMALIZED_KEYS === 'true'}` }, { $set: { data: invalid } });
+      await db.collection('questionMetadata').updateOne({ _id: `topic-counts:v3:mathematics:${process.env.QUESTIONS_NORMALIZED_KEYS === 'true'}` }, { $set: { data: invalid } });
       clearSharedLocalCaches();
       expect((await fetchPublicTopicCountSnapshot()).totals.percentages).toBe(1);
     }
@@ -84,7 +84,7 @@ describe("saved mathematics topic totals", () => {
   it('rebuilds an ancient same-revision snapshot after an external import', async () => {
     vi.stubEnv('QUESTIONS_NORMALIZED_KEYS', 'false');
     await db.collection('questionMetadata').insertOne({
-      _id: 'topic-counts:v2:mathematics:false', revision: 0,
+      _id: 'topic-counts:v3:mathematics:false', revision: 0,
       data: { revision: 0, totals: { percentages: 99 }, updatedAt: new Date(0).toISOString() },
     });
     await db.collection('questions').insertOne(question('external', 'PYQ'));
@@ -155,5 +155,28 @@ describe("saved mathematics topic totals", () => {
     await db.collection("questions").insertOne(question("legacy", "PYQ"));
     expect((await fetchTopicCountSnapshot()).totals.percentages).toBe(1);
     await expect(fetchTopicCountSnapshot("arbitrary")).rejects.toMatchObject({ statusCode: 400 });
+  });
+  it("includes chapter totals and group rollups for General Awareness uploads", async () => {
+    vi.stubEnv("QUESTIONS_NORMALIZED_KEYS", "true");
+    await createQuestionsBulk([
+      {
+        id: "ga-1",
+        subject: "general-awareness",
+        topicGroup: "geography",
+        topic: "Solar System & Universe",
+        chapterSlug: "solar-system-universe",
+        quizName: "PYQ",
+      },
+      {
+        id: "ga-2",
+        subject: "general-awareness",
+        topicGroup: "geography",
+        topic: "Solar System & Universe",
+        quizName: "CareerWill",
+      },
+    ]);
+    const publicSnapshot = await fetchPublicTopicCountSnapshot("general-awareness");
+    expect(publicSnapshot.totals["solar-system-universe"]).toBe(2);
+    expect(publicSnapshot.totals.geography).toBe(2);
   });
 });

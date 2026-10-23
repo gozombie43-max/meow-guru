@@ -94,7 +94,7 @@ it('refreshes catalogs for external bank mutations and retains usable prior snap
   await initializePublicCatalogs();
   await mutateQuestionBank(db, () => db.collection('questions').insertOne({ id: 'word', subject: 'english', topic: 'tenses', quizName: 'PYQ' }));
   clearSharedLocalCaches(); await refreshPublicCatalogs();
-  const saved = await db.collection('questionMetadata').findOne({ _id: 'topic-counts:v2:english:false' });
+  const saved = await db.collection('questionMetadata').findOne({ _id: 'topic-counts:v3:english:false' });
   expect(saved.data.totals.tenses).toBe(1);
   await db.collection('questionMetadata').updateMany({ kind: 'topic-counts' }, { $set: { 'data.generatedAt': new Date(Date.now() - 2 * 3600000).toISOString() } });
   clearSharedLocalCaches();

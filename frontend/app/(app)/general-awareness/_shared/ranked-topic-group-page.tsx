@@ -42,6 +42,9 @@ import styles from "./RankedTopicGroupPage.module.css";
 
 type PriorityFilter = RankedTopicPriority | "All";
 
+const slugifyTitle = (title: string) =>
+  title.trim().toLowerCase().replace(/&/g, " ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
 const PRIORITY_CLASS: Record<RankedTopicPriority, string> = {
   "Very High": styles.veryHigh,
   Core: styles.veryHigh,
@@ -58,6 +61,9 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
   backLabel?: string;
 }) {
   const { data } = useTopicQuestionTotals(subject);
+  // Uploads are keyed by chapter slug; fall back to the slugified chapter title.
+  const questionTotal = (topic: { slug: string; title: string }) =>
+    data?.totals?.[topic.slug] ?? data?.totals?.[slugifyTitle(topic.title)] ?? 0;
   const [query, setQuery] = useState("");
   const [priority, setPriority] = useState<PriorityFilter>("All");
   const [filterOpen, setFilterOpen] = useState(false);
@@ -262,7 +268,7 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                   <span className={styles.rank}>{topic.rank}</span>
                   <span className={styles.chapterCell}>
                     <span className={styles.chapterPhoto} aria-hidden="true"><TopicThumbnail src={chapterImage(topic.slug, group.slug)} size={48} /></span>
-                    <span className={styles.chapter}>{topic.title}<span className={styles.chapterQuestionCount}>{data?.totals?.[topic.slug] ?? 0} Questions</span></span>
+                    <span className={styles.chapter}>{topic.title}<span className={styles.chapterQuestionCount}>{questionTotal(topic)} Questions</span></span>
                   </span>
                   <span className={styles.weightage} hidden={!group.filters.length}>
                     <span
@@ -365,7 +371,7 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                       <span className={styles.chapterText}>
                         <span className={styles.mobileTopicName}>{topic.title}</span>
                         <span className={styles.chapterQuestionCount}>
-                          {data?.totals?.[topic.slug] ?? 0} Questions
+                          {questionTotal(topic)} Questions
                         </span>
                       </span>
                       <ChevronRight className={styles.chapterChevron} size={20} aria-hidden="true" />
