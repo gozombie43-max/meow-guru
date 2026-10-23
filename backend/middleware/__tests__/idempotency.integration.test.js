@@ -12,10 +12,12 @@ beforeAll(async () => {
   vi.stubEnv('MONGODB_URI', mongo.getUri());
   vi.stubEnv('MONGODB_DB', 'idempotency_tests');
   db = await connectMongoDB();
+  let resolveConflict;
+  const conflictObserved = new Promise(resolve => { resolveConflict = resolve; });
   const start = async () => {
     const app = express();
-    app.use(express.json(), (req, _res, next) => { req.user = { id: req.get('Test-User') || 'one' }; next(); });
-    app.post('/write', idempotency('test.write'), async (_req, res) => { mutations++; await new Promise(resolve => setTimeout(resolve, 30)); res.status(201).json({ mutation: mutations }); });
+    app.use(express.json(), (req, res, next) => { req.user = { id: req.get('Test-User') || 'one' }; res.once('finish', () => { if (res.statusCode === 409) resolveConflict(); }); next(); });
+    app.post('/write', idempotency('test.write'), async (_req, res) => { mutations++; if (mutations === 1) await conflictObserved; res.status(201).json({ mutation: mutations }); });
     const server = app.listen(0, '127.0.0.1');
     servers.push(server);
     await new Promise(resolve => server.once('listening', resolve));
