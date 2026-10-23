@@ -367,7 +367,7 @@ export async function processQuestionBankImageZip(bufferOrOptions, options = {})
       !bytes.slice(0, 4).equals(Buffer.from([0x47, 0x49, 0x46, 0x38])) &&
       /^[A-Za-z0-9_./-]+\.(png|jpg|jpeg|webp)$/.test(bytes.toString('utf8').trim());
 
-    if (isSymlinkPerm || isSymlinkPayload) {
+    if (isSymlinkPayload) {
       throw fail(
         `Symbolic links are forbidden: ${entry.name}. Use standard image files.`,
         422

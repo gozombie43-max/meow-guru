@@ -20,7 +20,6 @@ import { processQuestionBankImageZip } from '../questionImageZip.js';
 import { assertQuestionExamMode } from '../questionExamMode.js';
 
 let mongo;
-let db;
 
 const STAMP_T0 = '2026-10-23T00:00:00.000Z';
 const STAMP_T1 = '2026-10-23T01:30:00.000Z';
@@ -162,7 +161,7 @@ beforeAll(async () => {
   mongo = await MongoMemoryServer.create();
   vi.stubEnv('MONGODB_URI', mongo.getUri());
   vi.stubEnv('MONGODB_DB', 'test_qb_adversarial');
-  db = await connectMongoDB();
+  await connectMongoDB();
 }, 120000);
 
 beforeEach(async () => {

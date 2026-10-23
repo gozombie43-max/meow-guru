@@ -17,10 +17,9 @@ vi.mock('../../../infrastructure/objectStorage.js', () => ({
 
 import { connectMongoDB, disconnectMongoDB, getQuestionsCollection } from '../../../config/mongodb.js';
 import { processQuestionBankImageZip } from '../questionImageZip.js';
-import { loadSafeZip, ZIP_LIMITS } from '../../uploads/safeZip.js';
+import { loadSafeZip } from '../../uploads/safeZip.js';
 
 let mongo;
-let db;
 
 const STAMP_T0 = '2026-10-23T00:00:00.000Z';
 
@@ -102,7 +101,7 @@ beforeAll(async () => {
   mongo = await MongoMemoryServer.create();
   vi.stubEnv('MONGODB_URI', mongo.getUri());
   vi.stubEnv('MONGODB_DB', 'test_qb_challenger');
-  db = await connectMongoDB();
+  await connectMongoDB();
 }, 120000);
 
 beforeEach(async () => {

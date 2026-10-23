@@ -29,7 +29,6 @@ vi.mock('../../../middleware/auth.js', () => ({
 import { connectMongoDB, disconnectMongoDB, getQuestionsCollection } from '../../../config/mongodb.js';
 
 let mongo;
-let db;
 let serviceModule = null;
 let controllerModule = null;
 
@@ -172,7 +171,7 @@ beforeAll(async () => {
   mongo = await MongoMemoryServer.create();
   vi.stubEnv('MONGODB_URI', mongo.getUri());
   vi.stubEnv('MONGODB_DB', 'test_qb_import');
-  db = await connectMongoDB();
+  await connectMongoDB();
 
   try {
     serviceModule = await import('../questionImageZip.js');
@@ -942,8 +941,7 @@ describe.skipIf(!controllerExists)('Question Bank Image ZIP Import - Controller 
     };
 
     // Spy on service to make the first request block
-    const importZip = getService();
-    const origFn = serviceModule.importQuestionBankImageZip || serviceModule.importQuestionImageZip;
+    getService();
     vi.spyOn(serviceModule, 'importQuestionBankImageZip' in serviceModule ? 'importQuestionBankImageZip' : 'importQuestionImageZip')
       .mockImplementationOnce(async () => {
         await blockingPromise;
@@ -979,9 +977,9 @@ describe.skipIf(!controllerExists)('Question Bank Image ZIP Import - Controller 
     } catch {
       // Fallback: test controller with mock middleware
       const handleZip = getController();
-      app.post('/api/questions/admin/image-zip', (req, res, next) => {
+      app.post('/api/questions/admin/image-zip', (req, res) => {
         if (req.headers['x-test-admin'] !== '1') return res.status(403).json({ error: 'Admin access required' });
-        return handleZip(req, res, next);
+        return handleZip(req, res);
       });
     }
 

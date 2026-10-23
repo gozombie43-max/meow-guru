@@ -14,8 +14,8 @@ const router = express.Router();
  */
 router.post(
   ['/image-zip', '/admin/image-zip'],
-  adminAuth,
   uploadLimiter,
+  adminAuth,
   uploadZip,
   handleQuestionBankImageZip
 );

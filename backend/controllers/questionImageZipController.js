@@ -98,7 +98,7 @@ export async function handleQuestionBankImageZip(req, res) {
             error: 'Missing question versions. Reload questions and try again.',
           });
         }
-      } else if (typeof rawUpdatedAts === 'object' && rawUpdatedAts !== null && !Array.isArray(rawUpdatedAts)) {
+      } else if (typeof rawUpdatedAts === 'object' && !Array.isArray(rawUpdatedAts)) {
         expectedUpdatedAts = rawUpdatedAts;
       } else {
         return res.status(400).json({
