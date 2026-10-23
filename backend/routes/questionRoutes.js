@@ -36,6 +36,7 @@ const questionUpload = upload.fields([
 // Bulk imports already fence each row by import key/hash and return large,
 // per-row outcomes. Preserve that recovery protocol and its response budget.
 router.post('/bulk', adminAuth, questionController.bulkCreateQuestions);
+router.get('/export', adminAuth, questionController.exportQuestions);
 router.post('/bulk-delete', adminAuth, questionController.bulkDeleteQuestions);
 router.post('/check-duplicates', adminAuth, questionController.checkDuplicates);
 router.get('/topic-counts', async (req, res) => {

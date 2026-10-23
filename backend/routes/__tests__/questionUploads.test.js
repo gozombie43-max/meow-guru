@@ -1,9 +1,9 @@
 import { beforeAll, afterAll, beforeEach, expect, it, vi } from 'vitest';
 import express from 'express';
 
-const { putObject, deleteObject, createQuestion } = vi.hoisted(() => ({ putObject: vi.fn(), deleteObject: vi.fn(), createQuestion: vi.fn() }));
+const { putObject, deleteObject, createQuestion, exportQuestions } = vi.hoisted(() => ({ putObject: vi.fn(), deleteObject: vi.fn(), createQuestion: vi.fn(), exportQuestions: vi.fn() }));
 vi.mock('../../infrastructure/objectStorage.js', () => ({ putObject, deleteObject, stableImageUrl: key => `/api/upload/image/${Buffer.from(key).toString('base64url')}` }));
-vi.mock('../../services/questionService.js', () => ({ createQuestion }));
+vi.mock('../../services/questionService.js', () => ({ createQuestion, exportQuestions }));
 vi.mock('../../middleware/auth.js', () => ({ default: (_req, _res, next) => next() }));
 import router from '../questionRoutes.js';
 
@@ -51,4 +51,30 @@ it('cleans completed uploads after a partial storage failure', async () => {
   expect(response.status).toBeGreaterThanOrEqual(400);
   expect(deleteObject).toHaveBeenCalledTimes(1);
   expect(createQuestion).not.toHaveBeenCalled();
+});
+
+it('exports filtered questions as NDJSON with Content-Disposition filename', async () => {
+  exportQuestions.mockResolvedValueOnce({
+    count: 2,
+    questions: [
+      { id: 'algebra_001', subject: 'mathematics', topic: 'algebra', question: 'Q1' },
+      { id: 'algebra_002', subject: 'mathematics', topic: 'algebra', question: 'Q2' },
+    ],
+  });
+  const response = await fetch(`${base}/export?examMode=ssc&subject=mathematics&topic=algebra&quizName=Concept%20Drill`);
+  expect(response.status).toBe(200);
+  expect(response.headers.get('content-type')).toContain('application/x-ndjson');
+  expect(response.headers.get('content-disposition')).toContain('ssc-mathematics-algebra-concept-drill.ndjson');
+  expect(response.headers.get('x-question-count')).toBe('2');
+  const body = await response.text();
+  const lines = body.trim().split('\n').map(line => JSON.parse(line));
+  expect(lines).toHaveLength(2);
+  expect(lines[0].id).toBe('algebra_001');
+  expect(lines[1].id).toBe('algebra_002');
+  expect(exportQuestions).toHaveBeenCalledWith(expect.objectContaining({
+    examMode: 'ssc',
+    subject: 'mathematics',
+    topic: 'algebra',
+    quizName: 'Concept Drill',
+  }));
 });

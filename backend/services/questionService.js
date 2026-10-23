@@ -3,7 +3,7 @@ import { canonicalQuestionUid } from './questions/questionIdentity.js';
 export { buildQuestionsCacheKey, questionCountsCache, questionsQueryCache, invalidateQuestionCacheRevision, getQuestionRevision } from './questions/questionCache.js';
 export { fetchQuestionCounts,fetchQuestionsMeta } from './questions/questionMetadataService.js';
 export { isStudyModeRecord,matchesNormalizedTopic,normalizeQuizKey,normalizeSearchKey } from './questions/questionNormalizer.js';
-export { analyzeAnswers,fetchAllQueryResults,fetchImageQuestions,fetchPracticeTest,fetchQuestionById,fetchQuestions } from './questions/questionReadService.js';
+export { analyzeAnswers,exportQuestions,fetchAllQueryResults,fetchImageQuestions,fetchPracticeTest,fetchQuestionById,fetchQuestions } from './questions/questionReadService.js';
 export { fetchQuestionsSession } from './questions/questionSessionService.js';
 export { checkDuplicates,createQuestion,createQuestionsBulk,modifyQuestion,removeQuestion,removeQuestionsBulk } from './questions/questionWriteService.js';
 

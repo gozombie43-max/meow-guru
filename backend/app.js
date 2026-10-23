@@ -146,6 +146,12 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   });
 
   // Quiz-essential routes. These remain available on the Azure Free F1 runtime.
+  // Admin Question Bank Image ZIP Import (lazy loaded to keep B2 off boot path)
+  app.use(
+    '/api/questions',
+    lazyRouter(() => import('./routes/questionImageZipRoutes.js')),
+  );
+
   app.use('/api/questions', questionRoutes);
   app.use('/api/mocktest', mocktestRoutes);
   app.use('/api/progress', progressRoutes);

@@ -1,5 +1,5 @@
 import { resolveQuestion } from './questionIdentity.js';
-import { questionExamModeCondition } from './questionExamMode.js';
+import { parseQuestionExamMode, questionExamModeCondition } from './questionExamMode.js';
 import { canonicalQuestionQuery } from './questionQueryIdentity.js';
 import { createSingleFlight } from '../../infrastructure/singleFlight.js';
 import { fetchQuestionCursorPage } from "./questionCursorService.js";
@@ -445,4 +445,207 @@ export async function fetchQuestionById(id, topic = undefined, examMode = undefi
   const { _id, ...question } = row;
 
   return question;
+}
+
+
+export async function exportQuestions(params = {}) {
+  parseQuestionExamMode(params.examMode);
+  const collection = getQuestionsCollection();
+  const {
+    topic,
+    subject,
+    chapter,
+    concept,
+    difficulty,
+    quizName,
+    questionType,
+    exam,
+    search,
+    sort = "asc",
+    ids,
+  } = params;
+  const useNormalizedKeys = isNormalizedQuestionKeysEnabled();
+  const normalizedTopic = topic ? normalizeSearchKey(topic) : null;
+  const normalizedQuizName = quizName ? normalizeQuizKey(quizName) : null;
+  const normalizedQuestionType = questionType
+    ? String(questionType).trim().toLowerCase()
+    : null;
+  const isStudyModeRequested =
+    normalizedQuestionType === "study-mode" ||
+    normalizedQuestionType === "studymode";
+  const isAllRequested = normalizedQuestionType === "all";
+  const queryMode = topic ? "topic" : subject ? "subject" : "global";
+
+  const conditions = [questionExamModeCondition(params.examMode)];
+
+  if (ids) {
+    const idList = (Array.isArray(ids) ? ids : String(ids).split(","))
+      .map((val) => String(val).trim())
+      .filter(Boolean);
+    if (idList.length > 0) {
+      conditions.push({ id: { $in: idList } });
+    }
+  }
+
+  if (subject && (!topic || normalizeSearchKey(subject) === "iitjamphysics")) {
+    const subKey = normalizeSearchKey(subject);
+    conditions.push(
+      useNormalizedKeys
+        ? { subjectKey: subKey }
+        : subKey === "reasoning"
+          ? { subject: { $in: [/^reasoning$/i, /^logical reasoning$/i] } }
+          : subKey === "generalawareness"
+            ? { subject: { $in: [/^general awareness$/i, /^general-awareness$/i] } }
+            : { subject: caseInsensitiveExact(subject) }
+    );
+  }
+  if (chapter) {
+    conditions.push(useNormalizedKeys ? { chapter } : { chapter: caseInsensitiveExact(chapter) });
+  }
+  if (concept) {
+    conditions.push(useNormalizedKeys ? { concept } : { concept: caseInsensitiveExact(concept) });
+  }
+  if (difficulty) {
+    conditions.push(
+      useNormalizedKeys
+        ? { difficulty: String(difficulty).toLowerCase() }
+        : { difficulty: caseInsensitiveExact(difficulty) }
+    );
+  }
+  if (exam) {
+    conditions.push(useNormalizedKeys ? { exam } : { exam: caseInsensitiveExact(exam) });
+  }
+  if (search) {
+    const escaped = String(search)
+      .slice(0, 200)
+      .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    conditions.push({
+      $or: ["question", "id", "chapter"].map((field) => ({
+        [field]: new RegExp(escaped, "i"),
+      })),
+    });
+  }
+
+  const isSynonymAntonymTopic =
+    normalizedTopic === "synonymsantonyms" || normalizedTopic === "antosynopyq";
+
+  if (topic) {
+    if (useNormalizedKeys) {
+      conditions.push({
+        topicKey: isSynonymAntonymTopic
+          ? { $in: ["synonymsantonyms", "antosynopyq"] }
+          : normalizedTopic,
+      });
+    } else if (isSynonymAntonymTopic) {
+      conditions.push({
+        topic: { $in: [topic, "antosynopyq", "synonyms-antonyms"] },
+      });
+    } else {
+      conditions.push({ topic });
+    }
+  }
+
+  if (normalizedQuizName) {
+    const quizNameRegex = caseInsensitiveExact(quizName);
+    if (normalizedQuizName === "pyq") {
+      conditions.push({
+        $or: [
+          { quizName: quizNameRegex },
+          { quizId: quizNameRegex },
+          { source: quizNameRegex },
+          { quizName: { $in: [null, ""] } },
+          { quizName: { $exists: false } },
+        ],
+      });
+    } else {
+      conditions.push({
+        $or: [
+          { quizName: quizNameRegex },
+          { quizId: quizNameRegex },
+          { source: quizNameRegex },
+        ],
+      });
+    }
+  }
+
+  if (isStudyModeRequested) {
+    conditions.push(
+      useNormalizedKeys ? { modeKey: "studyMode" } : buildStudyModeMatchCondition()
+    );
+  } else if (!isAllRequested) {
+    if (normalizedQuestionType) {
+      conditions.push({ questionType: caseInsensitiveExact(questionType) });
+    } else {
+      conditions.push(
+        useNormalizedKeys
+          ? { modeKey: { $ne: "studyMode" } }
+          : buildExcludeStudyModeCondition()
+      );
+    }
+  }
+
+  const direction = sort === "desc" ? -1 : 1;
+  const collation = { locale: "en", numericOrdering: true, strength: 2 };
+
+  const runQuery = (filter) => {
+    let cursor = collection.find(filter).project({ _id: 0 });
+    if (typeof cursor.collation === "function") {
+      cursor = cursor.collation(collation);
+    }
+    if (typeof cursor.sort === "function") {
+      cursor = cursor.sort({ id: direction, _id: direction });
+    }
+    return cursor.toArray();
+  };
+
+  let resources = await runQuery(combineMongoConditions(conditions));
+
+  if (
+    topic &&
+    !useNormalizedKeys &&
+    !isSynonymAntonymTopic &&
+    resources.length === 0
+  ) {
+    const topicRegex = caseInsensitiveExact(topic);
+    const fallbackConditions = conditions.filter((c) => !c.topic);
+    fallbackConditions.push({
+      $or: [
+        { topic: topicRegex },
+        { chapter: topicRegex },
+        { subject: topicRegex },
+        { quizTopic: topicRegex },
+        { quizName: topicRegex },
+        { source: topicRegex },
+      ],
+    });
+    resources = await runQuery(combineMongoConditions(fallbackConditions));
+  }
+
+  if (normalizedTopic && queryMode === "topic") {
+    resources = resources.filter((q) =>
+      matchesNormalizedTopic(q, normalizedTopic)
+    );
+  }
+  if (normalizedQuizName) {
+    resources = resources.filter((q) =>
+      matchesQuizNameFilter(q, normalizedQuizName)
+    );
+  }
+  if (isStudyModeRequested) {
+    resources = resources.filter((q) => isStudyModeRecord(q));
+  } else if (!isAllRequested) {
+    if (normalizedQuestionType) {
+      resources = resources.filter(
+        (q) =>
+          String(q.questionType ?? "")
+            .trim()
+            .toLowerCase() === normalizedQuestionType
+      );
+    } else {
+      resources = resources.filter((q) => !isStudyModeRecord(q));
+    }
+  }
+
+  const cleaned = resources.map(({ _id, ...rest }) => rest);
+  return { count: cleaned.length, questions: cleaned };
 }

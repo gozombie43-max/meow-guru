@@ -92,3 +92,49 @@ it('filters out reasoning and english topics when subject is mathematics, and re
   });
 });
 
+
+it('downloads matching questions as NDJSON using active subject, topic, quizName and examMode filters', async () => {
+  const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+  fetch.mockImplementation(async (url: string) => {
+    if (String(url || '').includes('/api/questions/export')) {
+      return {
+        ok: true,
+        text: async () =>
+          '{"id":"algebra_001","subject":"mathematics","topic":"algebra"}\n{"id":"algebra_002","subject":"mathematics","topic":"algebra"}\n',
+      };
+    }
+    return {
+      ok: true,
+      json: async () => ({
+        questions: [{ id: 'algebra_001', subject: 'mathematics', topic: 'algebra' }],
+        count: 2,
+        total: 2,
+        facets: { topics: ['algebra'], exams: ['SSC CGL'], quizNames: ['Concept Drill'] },
+      }),
+    };
+  });
+
+  const { result } = renderHook(useAdminQuestionBank);
+  await waitFor(() => expect(result.current.questions[0]?.id).toBe('algebra_001'));
+
+  act(() => {
+    result.current.setFilterSubject('mathematics');
+    result.current.setFilterTopic('algebra');
+    result.current.setFilterQuizName('Concept Drill');
+  });
+
+  await act(async () => {
+    await result.current.handleDownloadNdjson();
+  });
+
+  const exportCall = fetch.mock.calls.find((call) => String(call[0] || '').includes('/api/questions/export'))?.[0];
+  expect(exportCall).toBeDefined();
+  const exportQuery = new URL(exportCall, 'http://localhost').searchParams;
+  expect(exportQuery.get('examMode')).toBe('ssc');
+  expect(exportQuery.get('subject')).toBe('mathematics');
+  expect(exportQuery.get('topic')).toBe('algebra');
+  expect(exportQuery.get('quizName')).toBe('Concept Drill');
+  expect(result.current.success).toContain('Downloaded 2 questions');
+  expect(clickSpy).toHaveBeenCalledTimes(1);
+  clickSpy.mockRestore();
+});

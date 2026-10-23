@@ -2,11 +2,10 @@
 import AdminDisclosure from "@/components/admin/AdminDisclosure";
 import layout from "@/components/admin/AdminLayout.module.css";
 import styles from "./QuestionBank.module.css";
-import MassSolutionUpload from "@/components/admin/MassSolutionUpload";
+import QuestionBankZipUpload from "@/features/admin/questions/QuestionBankZipUpload";
 import RichContent from "@/components/RichContent";
 import { useAdminQuestionBank } from '@/features/admin/questions/useAdminQuestionBank';
 import { ChevronLeft,ChevronRight,ChevronsLeft,ChevronsRight } from "lucide-react";
-import MassImageUpload from "../../../components/admin/MassImageUpload";
 import {
 DIFFICULTIES,
 type SubjectKey
@@ -20,7 +19,7 @@ import { adminTopicLabel, getAdminExamCatalog } from '@/lib/admin-exam-mode';
 export default function AdminPanel() {
   const { mode, isJam } = useExamMode();
   const { subjectOptions: SUBJECT_OPTIONS } = getAdminExamCatalog(mode);
-  const { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor } = useAdminQuestionBank();
+  const { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, exporting, handleDownloadNdjson, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor, fetchQuestions } = useAdminQuestionBank();
 
 
   return (
@@ -40,6 +39,9 @@ export default function AdminPanel() {
             <>
               <button data-ui-button="state" onClick={clearSelection} style={{ padding: "8px 14px", background: "transparent", color: "var(--color-text-secondary)", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, cursor: "pointer", fontSize: 13 }}>
                 Clear
+              </button>
+              <button data-ui-button="state" onClick={() => void handleDownloadNdjson({ ids: Array.from(selected) })} disabled={exporting} style={{ padding: "8px 14px", background: "transparent", color: "var(--admin-blue)", border: "0.5px solid var(--admin-blue)", borderRadius: 8, cursor: exporting ? "wait" : "pointer", fontSize: 13, fontWeight: 500 }}>
+                {exporting ? "Downloading..." : `Download ${selected.size} selected (.ndjson)`}
               </button>
               <button data-ui-button="state" onClick={() => setBulkDeleteConfirm(true)} style={{ padding: "8px 14px", background: "#dc2626", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
                 Delete {selected.size} selected
@@ -72,7 +74,7 @@ export default function AdminPanel() {
       )}
 
       {/* ── Mass Upload ── */}
-      <AdminDisclosure title="Import questions and images">
+      <AdminDisclosure title="Import questions (NDJSON/JSONL)">
       <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
           <div>
@@ -81,6 +83,9 @@ export default function AdminPanel() {
               Upload NDJSON/JSONL or a JSON array. Select subject, topic, and quiz.
             </p>
           </div>
+          <button data-ui-button="state" onClick={() => void handleDownloadNdjson({ subject: muSubject, topic: muTopic, quizName: muQuiz })} disabled={exporting} style={{ padding: "6px 12px", borderRadius: 8, border: "0.5px solid var(--admin-blue)", background: "transparent", cursor: exporting ? "wait" : "pointer", fontSize: 12, color: "var(--admin-blue)", fontWeight: 500 }}>
+            {exporting ? "Downloading..." : "Download existing NDJSON"}
+          </button>
           <button data-ui-button="state" onClick={handleMuClear} style={{ padding: "6px 12px", borderRadius: 8, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-secondary)" }}>
             Clear
           </button>
@@ -162,27 +167,15 @@ export default function AdminPanel() {
           <span>Ready: {muStats.ready}</span>
           <span>Errors: {muStats.errors}</span>
         </div>
-
-        <div style={{ marginTop: 16 }}>
-          <MassImageUpload
-            subjectId={selectedSubjectId}
-            topicId={selectedTopicId}
-            quizId={selectedQuizId}
-            subjectName={selectedSubjectName}
-            topicName={selectedTopicName}
-            quizName={selectedQuizName}
-          />
-        </div>
       </div>
 
       </AdminDisclosure>
 
-      {/* ── Mass Solution Upload ── */}
-      <AdminDisclosure title="Upload solution images">
-      <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
-        <MassSolutionUpload />
-      </div>
-
+      {/* ── Question Bank Image ZIP Import ── */}
+      <AdminDisclosure title="Question Bank image ZIP import">
+        <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
+          <QuestionBankZipUpload examMode={mode} onComplete={fetchQuestions} />
+        </div>
       </AdminDisclosure>
 
       <BulkImageQuestionUpload
@@ -230,6 +223,26 @@ export default function AdminPanel() {
           <option value="asc">Sort by ID ↑</option>
           <option value="desc">Sort by ID ↓</option>
         </select>
+        <button
+          data-ui-button="state"
+          type="button"
+          onClick={() => void handleDownloadNdjson()}
+          disabled={exporting || loading || totalCount === 0}
+          style={{
+            padding: "8px 14px",
+            borderRadius: 8,
+            border: "0.5px solid var(--admin-blue)",
+            background: "var(--admin-blue-soft)",
+            color: "var(--admin-blue)",
+            cursor: exporting || loading || totalCount === 0 ? "default" : "pointer",
+            fontSize: 13,
+            fontWeight: 600,
+            opacity: exporting || loading || totalCount === 0 ? 0.6 : 1,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {exporting ? "Downloading..." : `Download NDJSON (${totalCount})`}
+        </button>
       </div>
 
       {/* Select all banner */}
