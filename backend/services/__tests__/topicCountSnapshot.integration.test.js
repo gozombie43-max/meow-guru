@@ -156,4 +156,27 @@ describe("saved mathematics topic totals", () => {
     expect((await fetchTopicCountSnapshot()).totals.percentages).toBe(1);
     await expect(fetchTopicCountSnapshot("arbitrary")).rejects.toMatchObject({ statusCode: 400 });
   });
+  it("includes chapter totals and group rollups for General Awareness uploads", async () => {
+    vi.stubEnv("QUESTIONS_NORMALIZED_KEYS", "true");
+    await createQuestionsBulk([
+      {
+        id: "ga-1",
+        subject: "general-awareness",
+        topicGroup: "geography",
+        topic: "Solar System & Universe",
+        chapterSlug: "solar-system-universe",
+        quizName: "PYQ",
+      },
+      {
+        id: "ga-2",
+        subject: "general-awareness",
+        topicGroup: "geography",
+        topic: "Solar System & Universe",
+        quizName: "CareerWill",
+      },
+    ]);
+    const publicSnapshot = await fetchPublicTopicCountSnapshot("general-awareness");
+    expect(publicSnapshot.totals["solar-system-universe"]).toBe(2);
+    expect(publicSnapshot.totals.geography).toBe(2);
+  });
 });

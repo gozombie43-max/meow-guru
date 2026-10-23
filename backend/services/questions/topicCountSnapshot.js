@@ -138,10 +138,11 @@ function refreshPublicSnapshot(subject) {
   return work;
 }
 
-// Rebuild and persist every public catalog for the current bank revision.
-export async function refreshTopicCountSnapshots() {
-  for (const subject of PUBLIC_CATALOG_SUBJECTS) {
-    if (subject === 'mathematics') continue; // Refreshed synchronously by the write path.
+// Rebuild and persist topic count snapshots for specific uploaded subjects.
+export async function refreshTopicCountSnapshots(subjects = PUBLIC_CATALOG_SUBJECTS) {
+  for (const raw of subjects) {
+    const subject = String(raw || '').trim().toLowerCase();
+    if (!subject || subject === 'mathematics' || !Object.hasOwn(SUBJECT_TOPICS, subject)) continue;
     try { await fetchTopicCountSnapshot(subject); }
     catch (error) { runtimeLog.error(`Topic count refresh failed for ${subject}:`, error.message); }
   }
@@ -227,6 +228,7 @@ export async function fetchTopicCountSnapshot(subject = "mathematics") {
       const generatedAt = new Date().toISOString();
       const result = { subject: normalizedSubject, revision, totals, generatedAt, updatedAt: generatedAt };
       await saveTopicCountSnapshot({ _id: id, revision, data: result, kind: "topic-counts" });
+      publicSnapshots.prime(`public-catalog:v1:${id}`, result);
       return result;
     }, { allowStale: false });
     if (data && await getQuestionRevision() === data.revision) return data;

@@ -21,11 +21,8 @@ export async function invalidateQuestionMetadata() {
   await advanceQuestionRevision();
   await publishCacheInvalidation();
   try {
-    const { fetchTopicCountSnapshot, refreshTopicCountSnapshots } = await import("./topicCountSnapshot.js");
+    const { fetchTopicCountSnapshot } = await import("./topicCountSnapshot.js");
     await fetchTopicCountSnapshot();
-    // Rebuild the other public catalogs (e.g. General Awareness chapter totals)
-    // right after an upload so new chapters show their counts immediately.
-    void refreshTopicCountSnapshots().catch(error => runtimeLog.error("Topic count snapshot refresh failed:", error.message));
   } catch (error) {
     // The write succeeded. A failed refresh is retried by the next metadata read.
     runtimeLog.error("Topic count snapshot refresh failed:", error.message);
