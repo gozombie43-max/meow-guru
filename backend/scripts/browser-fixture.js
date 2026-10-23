@@ -38,6 +38,7 @@ const { default: passport } = await import('../auth/passport.js');
 const { default: auth } = await import('../routes/auth.routes.js');
 const { default: mocktest } = await import('../routes/mocktest.js');
 const { default: progress } = await import('../routes/progress.routes.js');
+const { default: questionImageZipRouter } = await import('../routes/questionImageZipRoutes.js');
 const { default: questionsRouter } = await import('../routes/questionRoutes.js');
 const { protect } = await import('../middleware/protect.js');
 const { getMe, getRecentQuiz, updateRecentQuizzes, getAiChats, getAiChat, appendAiMessages, updateAiChat, deleteAiChat } = await import('../controllers/userController.js');
@@ -119,6 +120,7 @@ app.get('/api/questions', async (req, res) => res.json(await fetchQuestions(req.
 app.get('/api/questions/session', async (req, res) => res.json(await fetchQuestionsSession(req.query)));
 app.get('/api/questions/meta', async (req, res) => res.json(await fetchQuestionsMeta(req.query)));
 app.get('/api/questions/counts', async (req, res) => res.json(await fetchQuestionCounts(req.query)));
+app.use('/api/questions', questionImageZipRouter);
 app.use('/api/questions', questionsRouter);
 app.get('/api/questions/topic-counts', async (req, res) => {
   try {
