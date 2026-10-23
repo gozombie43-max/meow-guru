@@ -5,6 +5,7 @@ name: Build and deploy Node.js app to Azure Web App - quizguru-backend
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 concurrency:
   group: quizguru-backend-production

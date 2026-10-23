@@ -377,7 +377,7 @@ jobs:
   deploy-backend:
     name: Deploy verified backend
     needs: [policy, quality-gate]
-    if: needs.policy.outputs.deploy_backend == 'true'
+    if: always() && needs.policy.result == 'success' && needs['quality-gate'].result == 'success' && needs.policy.outputs.deploy_backend == 'true'
     permissions:
       contents: read
       id-token: write
