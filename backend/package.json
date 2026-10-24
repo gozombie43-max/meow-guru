@@ -38,7 +38,7 @@
     "lru-cache": "^11.5.3",
     "luxon": "^3.7.2",
     "mongodb": "^7.6.0",
-    "multer": "^2.4.0",
+    "multer": "^2.5.0",
     "openai": "^7.23.0",
     "p-limit": "^7.3.3",
     "passport": "^0.7.0",
@@ -53,7 +53,7 @@
     "socket.io": "^4.8.4",
     "tesseract.js": "^7.0.0",
     "uuid": "^14.0.2",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "scripts": {
     "start": "node --import ./instrumentation.js index.js",

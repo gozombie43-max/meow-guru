@@ -29,19 +29,22 @@ describe("QuizSettingsModal", () => {
   it("changes text boldness", () => {
     const onTextWeightChange = vi.fn();
     render(<QuizSettingsModal {...defaultProps} textWeight="medium" onTextWeightChange={onTextWeightChange} />);
-    expect(screen.getByRole("button", { name: "medium text boldness" })).toHaveAttribute("aria-pressed", "true");
-    fireEvent.click(screen.getByRole("button", { name: "high text boldness" }));
+    const select = screen.getByRole("combobox", { name: "Text boldness" });
+    expect(select).toHaveValue("medium");
+    fireEvent.change(select, { target: { value: "high" } });
     expect(onTextWeightChange).toHaveBeenCalledWith("high");
   });
 
   it("renders when isOpen is true", () => {
     render(<QuizSettingsModal {...defaultProps} />);
     expect(screen.getByText("Quiz Settings")).toBeInTheDocument();
-    expect(screen.getByText("Reading Comfort")).toBeInTheDocument();
-    expect(screen.getByText("Text Size")).toBeInTheDocument();
+    expect(screen.getByText("Text size")).toBeInTheDocument();
+    expect(screen.getByText("Custom size")).toBeInTheDocument();
+    expect(screen.getByText("Boldness")).toBeInTheDocument();
     expect(screen.getByText("Spacing")).toBeInTheDocument();
-    expect(screen.getByText("Dark Theme")).toBeInTheDocument();
-    expect(screen.getByText("Hide Question Strip")).toBeInTheDocument();
+    expect(screen.getByText("Dark theme")).toBeInTheDocument();
+    expect(screen.getByText("Hide question strip")).toBeInTheDocument();
+    expect(screen.getByText("Hide Tools")).toBeInTheDocument();
     expect(screen.getByText("Solution")).toBeInTheDocument();
     expect(screen.getByText("AI tutor")).toBeInTheDocument();
     expect(screen.getByText("Both")).toBeInTheDocument();
@@ -68,52 +71,51 @@ describe("QuizSettingsModal", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("calls onTextSizeChange when size buttons are clicked", () => {
+  it("calls onTextSizeChange when text size dropdown changes", () => {
     const onTextSizeChange = vi.fn();
     render(<QuizSettingsModal {...defaultProps} onTextSizeChange={onTextSizeChange} />);
-    const smallBtn = screen.getByRole("button", { name: "S" });
-    fireEvent.click(smallBtn);
+    const select = screen.getByRole("combobox", { name: "Text size" });
+    fireEvent.change(select, { target: { value: "sm" } });
     expect(onTextSizeChange).toHaveBeenCalledWith("sm");
 
-    const largeBtn = screen.getByRole("button", { name: "L" });
-    fireEvent.click(largeBtn);
+    fireEvent.change(select, { target: { value: "lg" } });
     expect(onTextSizeChange).toHaveBeenCalledWith("lg");
   });
 
-  it("calls onSpacingChange when spacing buttons are clicked", () => {
+  it("calls onSpacingChange when spacing dropdown changes", () => {
     const onSpacingChange = vi.fn();
     render(<QuizSettingsModal {...defaultProps} onSpacingChange={onSpacingChange} />);
-    const compactBtn = screen.getByRole("button", { name: "Compact" });
-    fireEvent.click(compactBtn);
+    const select = screen.getByRole("combobox", { name: "Spacing" });
+    fireEvent.change(select, { target: { value: "compact" } });
     expect(onSpacingChange).toHaveBeenCalledWith("compact");
 
-    const comfortBtn = screen.getByRole("button", { name: "Comfort" });
-    fireEvent.click(comfortBtn);
+    fireEvent.change(select, { target: { value: "comfortable" } });
     expect(onSpacingChange).toHaveBeenCalledWith("comfortable");
   });
 
-  it("steps the custom size from the current preset and displays pixels", () => {
+  it("changes custom size via dropdown and updates preset selection", () => {
     const onTextSizeChange = vi.fn();
     const { rerender } = render(<QuizSettingsModal {...defaultProps} onTextSizeChange={onTextSizeChange} />);
-    expect(screen.getByLabelText("Current text size")).toHaveTextContent("20px");
-    fireEvent.click(screen.getByRole("button", { name: "Increase text size" }));
+    const customSelect = screen.getByRole("combobox", { name: "Custom text size" });
+    expect(customSelect).toHaveValue("20");
+    fireEvent.change(customSelect, { target: { value: "21" } });
     expect(onTextSizeChange).toHaveBeenLastCalledWith(21);
+
     rerender(<QuizSettingsModal {...defaultProps} textSize={21} onTextSizeChange={onTextSizeChange} />);
-    expect(screen.getByLabelText("Current text size")).toHaveTextContent("21px");
-    expect(screen.getByRole("button", { name: "M" })).toHaveAttribute("aria-pressed", "false");
-    fireEvent.click(screen.getByRole("button", { name: "Decrease text size" }));
-    expect(onTextSizeChange).toHaveBeenLastCalledWith(20);
-    fireEvent.click(screen.getByRole("button", { name: "M" }));
+    expect(customSelect).toHaveValue("21");
+    const presetSelect = screen.getByRole("combobox", { name: "Text size" });
+    expect(presetSelect).toHaveValue("custom");
+
+    fireEvent.change(presetSelect, { target: { value: "md" } });
     expect(onTextSizeChange).toHaveBeenLastCalledWith("md");
   });
 
-  it("disables stepping past either size limit", () => {
-    const { rerender } = render(<QuizSettingsModal {...defaultProps} textSize={16} />);
-    expect(screen.getByRole("button", { name: "Decrease text size" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Increase text size" })).toBeEnabled();
-    rerender(<QuizSettingsModal {...defaultProps} textSize={24} />);
-    expect(screen.getByRole("button", { name: "Increase text size" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Decrease text size" })).toBeEnabled();
+  it("supports custom size limits in dropdown options", () => {
+    render(<QuizSettingsModal {...defaultProps} textSize={16} />);
+    const customSelect = screen.getByRole("combobox", { name: "Custom text size" }) as HTMLSelectElement;
+    const optionValues = Array.from(customSelect.options).map((opt) => opt.value);
+    expect(optionValues[0]).toBe("16");
+    expect(optionValues[optionValues.length - 1]).toBe("24");
   });
 
   it("calls onToggleTheme when theme switch is clicked", () => {
