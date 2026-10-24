@@ -279,7 +279,7 @@ export function SolutionBottomSheet({
                 box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
                 border: 1px solid rgba(255, 255, 255, 0.12);
                 border-bottom: none;
-                padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+                padding-bottom: env(safe-area-inset-bottom, 0px);
                 touch-action: pan-y;
               }
               .ios-solution-drag-zone {
@@ -365,7 +365,7 @@ export function SolutionBottomSheet({
               .ios-solution-body {
                 flex: 1;
                 overflow-y: auto;
-                padding: 24px 22px 48px 22px;
+                padding: 18px 22px 16px 22px;
                 overscroll-behavior: contain;
               }
               .ios-solution-container {
@@ -397,6 +397,10 @@ export function SolutionBottomSheet({
               }
               .ios-solution-step:first-of-type {
                 margin-top: 0;
+              }
+              .ios-solution-step:last-of-type,
+              .ios-solution-step.is-equation:last-of-type {
+                margin-bottom: 0;
               }
               .ios-solution-step.is-equation {
                 text-align: center;
@@ -463,7 +467,7 @@ export function SolutionBottomSheet({
                   padding: 12px 28px 16px;
                 }
                 .ios-solution-body {
-                  padding: 28px 32px 52px 32px;
+                  padding: 22px 28px 20px 28px;
                 }
               }
               .ios-solution-backdrop[data-theme="dark"] { backdrop-filter: none; }

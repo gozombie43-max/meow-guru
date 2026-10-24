@@ -1,0 +1,946 @@
+/* ==========================================================================
+   Quiz Engine — Session Complete / ResultView
+   Matches Quiz Engine OLED Subtle Grey Surface System (mobile-quiz-view.css)
+   ========================================================================== */
+
+.resultRoot {
+  /* Dark Theme: Pure OLED Canvas + Subtle Grey Cards (#1c1c1e / #29292c) */
+  --rv-canvas: var(--oled-canvas, #000000);
+  --rv-surface: var(--oled-surface, #1c1c1e);
+  --rv-surface-muted: var(--oled-inset, #29292c);
+  --rv-surface-elevated: var(--oled-hover, #252527);
+  --rv-header-bg: rgba(0, 0, 0, 0.88);
+  --rv-footer-bg: var(--oled-canvas, #000000);
+  --rv-border: transparent;
+  --rv-border-subtle: rgba(255, 255, 255, 0.05);
+  --rv-border-strong: rgba(255, 255, 255, 0.10);
+  --rv-text: var(--oled-text, #e5eaf0);
+  --rv-text-secondary: var(--oled-secondary, #a2a9b4);
+  --rv-text-muted: #7d8592;
+  --rv-accent: var(--oled-selected, var(--ios-system-blue, #0a84ff));
+  --rv-accent-soft: var(--oled-selected-soft, rgba(10, 132, 255, 0.16));
+  --rv-accent-border: transparent;
+  --rv-accent-text: #79a7ef;
+
+  /* Refined semantic colors matching mobile-quiz-view.css */
+  --rv-correct-solid: #62c48a;
+  --rv-correct-text: #62c48a;
+  --rv-correct-bg: color-mix(in srgb, #62c48a 14%, var(--rv-surface));
+  --rv-correct-border: color-mix(in srgb, #62c48a 28%, transparent);
+
+  --rv-wrong-solid: #e07a80;
+  --rv-wrong-text: #e07a80;
+  --rv-wrong-bg: color-mix(in srgb, #e07a80 14%, var(--rv-surface));
+  --rv-wrong-border: color-mix(in srgb, #e07a80 28%, transparent);
+
+  --rv-amber-solid: #e2a952;
+  --rv-amber-text: #e2a952;
+  --rv-amber-bg: color-mix(in srgb, #e2a952 14%, var(--rv-surface));
+  --rv-amber-border: color-mix(in srgb, #e2a952 28%, transparent);
+
+  --rv-card-shadow: none;
+  --rv-ring-track: var(--oled-inset, #29292c);
+
+  /* Sync shared UI chrome tokens */
+  --ui-header-surface: var(--rv-header-bg);
+  --ui-surface: var(--rv-surface);
+  --ui-action: var(--rv-accent);
+  --ui-border: transparent;
+  --ui-text: var(--rv-text);
+
+  color-scheme: dark;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  background: var(--rv-canvas);
+  color: var(--rv-text);
+  font-family:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    var(--font-noto-bengali), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+}
+
+.resultRoot[data-theme="light"] {
+  /* Light Theme: Subtle Grey Cards (#edf1f6) matching mobile-quiz-view.css */
+  --rv-canvas: var(--light-canvas, #f5f7fa);
+  --rv-surface: var(--light-surface-muted, #edf1f6);
+  --rv-surface-muted: #e2e7f0;
+  --rv-surface-elevated: #dce3ee;
+  --rv-header-bg: rgba(245, 247, 250, 0.90);
+  --rv-footer-bg: var(--light-canvas, #f5f7fa);
+  --rv-border: transparent;
+  --rv-border-subtle: rgba(24, 36, 56, 0.06);
+  --rv-border-strong: rgba(24, 36, 56, 0.12);
+  --rv-text: var(--light-text, #182438);
+  --rv-text-secondary: var(--light-text-secondary, #526176);
+  --rv-text-muted: var(--light-text-muted, #66758a);
+  --rv-accent: var(--light-accent, #007aff);
+  --rv-accent-soft: var(--light-accent-soft, rgba(0, 122, 255, 0.12));
+  --rv-accent-border: transparent;
+  --rv-accent-text: var(--light-accent, #007aff);
+
+  --rv-correct-solid: #1a8f51;
+  --rv-correct-text: #18743b;
+  --rv-correct-bg: color-mix(in srgb, #1a8f51 12%, var(--rv-surface));
+  --rv-correct-border: color-mix(in srgb, #1a8f51 26%, transparent);
+
+  --rv-wrong-solid: #c73644;
+  --rv-wrong-text: #b42332;
+  --rv-wrong-bg: color-mix(in srgb, #c73644 12%, var(--rv-surface));
+  --rv-wrong-border: color-mix(in srgb, #c73644 26%, transparent);
+
+  --rv-amber-solid: #b87414;
+  --rv-amber-text: #8a5b12;
+  --rv-amber-bg: color-mix(in srgb, #b87414 12%, var(--rv-surface));
+  --rv-amber-border: color-mix(in srgb, #b87414 26%, transparent);
+
+  --rv-card-shadow: none;
+  --rv-ring-track: #dce3ee;
+
+  --ui-header-surface: var(--rv-header-bg);
+  --ui-surface: var(--rv-surface);
+  --ui-action: var(--rv-accent);
+  --ui-border: transparent;
+  --ui-text: var(--rv-text);
+
+  color-scheme: light;
+}
+
+/* ==========================================================================
+   Fixed Sticky Top Chrome Header
+   ========================================================================== */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  flex-shrink: 0;
+  width: 100%;
+  height: calc(56px + var(--safe-top, 0px));
+  background: var(--rv-header-bg) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-bottom: none !important;
+  padding: var(--safe-top, 0px) max(14px, var(--safe-right, 0px)) 0 max(14px, var(--safe-left, 0px));
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.headerInner {
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 8px;
+}
+
+.headerIconBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50% !important;
+  border: 0 !important;
+  background: var(--rv-surface) !important;
+  color: var(--rv-text) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.12s ease;
+}
+
+.headerIconBtn:hover {
+  background: var(--rv-surface-elevated) !important;
+}
+
+.headerCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  text-align: center;
+}
+
+.headerTitle {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--rv-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.headerSubtitle {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--rv-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+.headerSpacer {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Main Scrollable Content Area (Scrolls Between Fixed Header & Fixed Footer)
+   ========================================================================== */
+.main {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding:
+    calc(56px + var(--safe-top, 0px) + 12px)
+    max(16px, var(--safe-right, 0px))
+    calc(96px + var(--safe-bottom, 0px))
+    max(16px, var(--safe-left, 0px));
+  box-sizing: border-box;
+}
+
+.mainInner {
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .main {
+    padding-top: calc(56px + var(--safe-top, 0px) + 20px);
+    padding-bottom: calc(100px + var(--safe-bottom, 0px));
+  }
+
+  .mainInner {
+    gap: 14px;
+  }
+}
+
+/* ==========================================================================
+   1. Hero Session Summary Card (Subtle Grey Surface)
+   ========================================================================== */
+.heroCard {
+  position: relative;
+  border-radius: 18px;
+  background: var(--rv-surface);
+  border: 0;
+  box-shadow: none;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .heroCard {
+    padding: 22px 24px;
+    gap: 18px;
+  }
+}
+
+.heroTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.heroCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.modeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: var(--rv-surface-muted);
+  color: var(--rv-text-secondary);
+  border: 0;
+}
+
+.tierBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.tierExcellent {
+  background: var(--rv-correct-bg);
+  color: var(--rv-correct-text);
+}
+
+.tierGood {
+  background: var(--rv-accent-soft);
+  color: var(--rv-accent-text);
+}
+
+.tierPractice {
+  background: var(--rv-amber-bg);
+  color: var(--rv-amber-text);
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--rv-text);
+}
+
+@media (min-width: 640px) {
+  .heroTitle {
+    font-size: 26px;
+  }
+}
+
+.heroTitleAccent {
+  color: var(--rv-accent-text);
+}
+
+.heroDescription {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--rv-text-secondary);
+}
+
+/* Precision Circular Gauge */
+.gaugeWrap {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  flex: 0 0 84px;
+  display: grid;
+  place-items: center;
+}
+
+@media (min-width: 640px) {
+  .gaugeWrap {
+    width: 92px;
+    height: 92px;
+    flex: 0 0 92px;
+  }
+}
+
+.gaugeSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.gaugeTrack {
+  fill: none;
+  stroke: var(--rv-ring-track);
+  stroke-width: 7;
+}
+
+.gaugeFill {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gaugeCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.gaugeValue {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--rv-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.gaugeLabel {
+  font-size: 9.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--rv-text-secondary);
+  margin-top: 2px;
+}
+
+/* Segmented Distribution Bar */
+.distributionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rv-border-subtle);
+}
+
+.segmentedBar {
+  height: 7px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--rv-surface-muted);
+  overflow: hidden;
+  display: flex;
+  gap: 2px;
+}
+
+.segmentCorrect {
+  height: 100%;
+  background: var(--rv-correct-solid);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.segmentWrong {
+  height: 100%;
+  background: var(--rv-wrong-solid);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.segmentSkipped {
+  height: 100%;
+  background: transparent;
+  transition: width 0.5s ease;
+}
+
+.distributionLegend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: 12px;
+  color: var(--rv-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.legendItems {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.legendDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendCompletion {
+  font-weight: 600;
+  color: var(--rv-text);
+}
+
+/* ==========================================================================
+   2. Redesigned Metrics Bento Grid (Subtle Grey Borderless Cards)
+   ========================================================================== */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (min-width: 640px) {
+  .metricsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+.metricCard {
+  border-radius: 18px;
+  background: var(--rv-surface);
+  border: 0;
+  padding: 15px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: none;
+  min-width: 0;
+}
+
+.metricHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.metricLabel {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--rv-text-secondary);
+}
+
+.metricIconBox {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--rv-surface-muted);
+  color: var(--rv-text-secondary);
+}
+
+.iconCorrect {
+  background: var(--rv-correct-bg);
+  color: var(--rv-correct-text);
+}
+
+.iconWrong {
+  background: var(--rv-wrong-bg);
+  color: var(--rv-wrong-text);
+}
+
+.iconAccent {
+  background: var(--rv-surface-muted);
+  color: var(--rv-accent-text);
+}
+
+.iconAmber {
+  background: var(--rv-amber-bg);
+  color: var(--rv-amber-text);
+}
+
+.metricBody {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.metricValue {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--rv-text);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.valueCorrect {
+  color: var(--rv-correct-text);
+}
+
+.valueWrong {
+  color: var(--rv-wrong-text);
+}
+
+.valueAccent {
+  color: var(--rv-text);
+}
+
+.valueAmber {
+  color: var(--rv-amber-text);
+}
+
+.metricDenominator {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--rv-text-secondary);
+}
+
+.metricSub {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--rv-text-secondary);
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   3. Section Cards (Subtle Grey Surface, Inset Rows)
+   ========================================================================== */
+.sectionCard {
+  border-radius: 18px;
+  background: var(--rv-surface);
+  border: 0;
+  padding: 18px;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 640px) {
+  .sectionCard {
+    padding: 20px 22px;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.sectionTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.sectionIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--rv-text);
+  letter-spacing: -0.01em;
+}
+
+.sectionCountPill {
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--rv-surface-muted);
+  color: var(--rv-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Interactive Question Review Map (Matches Quiz Engine Palette) */
+.questionMapGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.questionTile {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  cursor: pointer;
+  border: 0;
+  background: var(--rv-surface-muted);
+  color: var(--rv-text-secondary);
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.questionTileCorrect {
+  background: var(--rv-correct-bg);
+  box-shadow: inset 0 0 0 1px var(--rv-correct-border);
+  color: var(--rv-correct-text);
+}
+
+.questionTileWrong {
+  background: var(--rv-wrong-bg);
+  box-shadow: inset 0 0 0 1px var(--rv-wrong-border);
+  color: var(--rv-wrong-text);
+}
+
+.questionTileTime {
+  font-size: 9.5px;
+  font-weight: 500;
+  opacity: 0.82;
+  line-height: 1;
+}
+
+/* Concept Breakdown Rows */
+.conceptList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.conceptItem {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--rv-surface-muted);
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.conceptItemTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.conceptName {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--rv-text);
+  line-height: 1.35;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.conceptMetaRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.conceptFraction {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--rv-text-secondary);
+}
+
+.conceptPctPill {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.pctHigh {
+  background: var(--rv-correct-bg);
+  color: var(--rv-correct-text);
+}
+
+.pctMid {
+  background: var(--rv-amber-bg);
+  color: var(--rv-amber-text);
+}
+
+.pctLow {
+  background: var(--rv-wrong-bg);
+  color: var(--rv-wrong-text);
+}
+
+.conceptBarTrack {
+  height: 5px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--rv-surface);
+  overflow: hidden;
+}
+
+.conceptBarFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Weak Areas List */
+.weakList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weakItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--rv-wrong-bg);
+  box-shadow: inset 0 0 0 1px var(--rv-wrong-border);
+}
+
+.weakConceptName {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--rv-text);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.weakAccuracyBadge {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--rv-wrong-text);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   4. Fixed Sticky Bottom Capsule Dock (Matches MobileQuizView .ios-series-dock)
+   ========================================================================== */
+.footerDock {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  flex-shrink: 0;
+  width: 100%;
+  background: var(--rv-footer-bg) !important;
+  border-top: none !important;
+  padding: 10px max(12px, var(--safe-right, 0px)) calc(12px + var(--safe-bottom, 0px)) max(12px, var(--safe-left, 0px));
+  box-sizing: border-box;
+}
+
+.footerInner {
+  max-width: 768px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr);
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 28px;
+  background: var(--rv-surface);
+  box-sizing: border-box;
+}
+
+.secondaryActionBtn {
+  width: 100%;
+  min-width: 0;
+  height: 52px;
+  min-height: 52px !important;
+  padding: 4px 6px !important;
+  border-radius: 20px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--rv-text) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.secondaryActionBtn svg {
+  color: var(--rv-text-secondary);
+}
+
+@media (hover: hover) {
+  .secondaryActionBtn:hover {
+    background: var(--rv-surface-elevated) !important;
+  }
+}
+
+.primaryActionBtn {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  min-height: 48px !important;
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+  border: 0 !important;
+  background: var(--rv-accent) !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .secondaryActionBtn {
+    flex-direction: row;
+    height: 48px;
+    min-height: 48px !important;
+    font-size: 13.5px !important;
+    gap: 8px;
+  }
+
+  .primaryActionBtn {
+    font-size: 14px !important;
+    gap: 8px;
+  }
+}
