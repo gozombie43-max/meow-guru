@@ -42,7 +42,7 @@ function ExitModal({ confirmation }: { confirmation: ExitConfirmation }) {
       onCancel={event => { event.preventDefault(); cancel(); }}
 
     >
-      <div className={styles.icon}><LogOut size={23} aria-hidden="true" /></div>
+      <div className={styles.icon}><LogOut size={18} aria-hidden="true" /></div>
       <h2 id="quiz-exit-title">Exit quiz?</h2>
       <p id="quiz-exit-description">{confirmation.message}</p>
       <div className={styles.actions}>

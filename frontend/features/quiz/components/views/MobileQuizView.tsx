@@ -10,7 +10,7 @@ import { MobileQuizMetadata } from "./MobileQuizMetadata";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
-const QuizSettingsModal = dynamic(() => import("@/features/quiz/components/ui/QuizSettingsModal").then(module => module.QuizSettingsModal));
+import { QuizSettingsModal } from "@/features/quiz/components/ui/QuizSettingsModal";
 
 const SolutionBottomSheet = dynamic(
   () => import("@/features/quiz/components/ui/SolutionViews").then(module => module.SolutionBottomSheet),
@@ -146,7 +146,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           setIsSettingsOpen={setIsSettingsOpen}
         />
 
-        {isSettingsOpen && <QuizSettingsModal
+        <QuizSettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
           onLeaveQuiz={() => {
@@ -168,7 +168,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           onSpacingChange={handleSetSpacing}
           textWeight={textWeight}
           onTextWeightChange={handleSetTextWeight}
-        />}
+        />
 
         <MobileQuestionNavigator
           hasMore={navigation.hasMore}

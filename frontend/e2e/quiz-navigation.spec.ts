@@ -34,7 +34,7 @@ for (const [parent, width] of [
       if (!toggle) throw new Error('Language toggle is missing');
       expect(Math.abs(toggle.x + toggle.width / 2 - width / 2)).toBeLessThan(2);
       await page.getByRole('button', { name: 'Open quiz settings', exact: true }).click();
-      await page.getByRole('button', { name: 'high text boldness', exact: true }).click();
+      await page.getByRole('combobox', { name: 'Text boldness', exact: true }).selectOption('high');
       await page.getByRole('button', { name: 'Close settings', exact: true }).click();
       await expect(page.locator('.ios-series-prompt')).toHaveCSS('font-weight', '600');
     }

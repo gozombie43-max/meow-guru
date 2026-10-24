@@ -113,6 +113,12 @@
   padding: 10px 0;
 }
 .chapterSearchInput::placeholder { color: var(--geo-tertiary); }
+.chapterSearchInput::-webkit-search-cancel-button,
+.chapterSearchInput::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
 .chapterSearch:focus-within { outline: 2px solid var(--ios-system-blue); outline-offset: 2px; }
 .chapterSearchActions { display: flex; align-items: center; flex: none; gap: 2px; }
 .searchAction { border: 0; background: transparent; color: inherit; padding: 0; }

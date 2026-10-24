@@ -3,6 +3,12 @@
 input[type="search"] {
   caret-color: var(--ios-system-blue, #007aff);
 }
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
 
 /* Keyboard users can bypass the app's persistent navigation. */
 .skip-to-content {

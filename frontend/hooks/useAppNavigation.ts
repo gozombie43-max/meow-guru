@@ -10,7 +10,7 @@ export function useBackLayer(open: boolean, onClose: () => void) {
   }, [open]);
 }
 
-export function useQuizLeaveGuard(active: boolean, fallback: string, message = "Leave this quiz? Your current session will close. Any unsaved progress may be lost.") {
+export function useQuizLeaveGuard(active: boolean, fallback: string, message = "Leave this quiz? Unsaved progress may be lost.") {
   useEffect(() => {
     if (active) return navigationController().addGuard(message, fallback);
   }, [active, fallback, message]);
