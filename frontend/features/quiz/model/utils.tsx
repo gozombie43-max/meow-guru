@@ -411,6 +411,6 @@ export function formatMathBookSolutionLines(solution: string): string[] {
   return solution
     .split(/\r?\n/)
     .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+    .filter((line) => line.length > 0 && !/^[.,;]+$/.test(line));
 }
 

@@ -1,29 +1,26 @@
 "use client";
-import { ThemeToggle } from "@/features/quiz/components/ui/SharedUI";
+
+import styles from "./ResultView.module.css";
 import {
-  DEFAULT_CONCEPT_COLOUR,
-  MathFraction,
-} from "@/features/quiz/model/utils";
-import { Flame, RotateCcw, Target } from "lucide-react";
+  AlertTriangle,
+  CheckCheck,
+  ChevronLeft,
+  CircleCheck,
+  Clock,
+  Flame,
+  Layers,
+  LayoutGrid,
+  ListChecks,
+  RotateCcw,
+  SlidersHorizontal,
+  Sparkles,
+  Target,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
-export function ResultView({
-  subjectConfig,
-  theme,
-  themeStyles,
-  modeLabels,
-  mode,
-  stats,
-  bestStreak,
-  results,
-  questions,
-  conceptOptions,
-  conceptColours,
-  weakConcepts,
-  handleRestart,
-  routeBase,
-  slug,
-}: Pick<
+
+export type ResultViewProps = Pick<
   QuizController,
   | "subjectConfig"
   | "theme"
@@ -40,157 +37,488 @@ export function ResultView({
   | "handleRestart"
   | "routeBase"
   | "slug"
->) {
+> &
+  Partial<
+    Pick<
+      QuizController,
+      "title" | "toggleTheme" | "showQuestion" | "availableCount"
+    >
+  >;
+
+export function ResultView({
+  subjectConfig,
+  title,
+  theme,
+  themeStyles,
+  modeLabels,
+  mode,
+  stats,
+  bestStreak,
+  results,
+  questions,
+  availableCount,
+  conceptOptions,
+  weakConcepts,
+  handleRestart,
+  showQuestion,
+  routeBase,
+  slug,
+}: ResultViewProps) {
+  const parentHref = routeBase ?? `/${subjectConfig.subjectId}/${slug}`;
+  const allTopicsHref = `/${subjectConfig.subjectId}`;
+  const modeLabel = modeLabels[mode] || "PYQ";
+  const displayTitle = title || subjectConfig.subjectLabel || "Quiz Session";
+
+  const attempted = results.length;
+  const totalQuestions = Math.max(
+    questions.length,
+    availableCount ?? 0,
+    attempted,
+  );
+  const unattempted = Math.max(0, totalQuestions - attempted);
+  const completionPct =
+    totalQuestions > 0 ? Math.round((attempted / totalQuestions) * 100) : 0;
+  const totalTimeSeconds = results.reduce(
+    (sum, item) => sum + (item.timeTaken || 0),
+    0,
+  );
+
+  // Circular gauge geometry
+  const radius = 38;
+  const circumference = 2 * Math.PI * radius;
+  const clampedAccuracy = Math.max(0, Math.min(100, stats.accuracy));
+  const strokeDashoffset =
+    circumference - (clampedAccuracy / 100) * circumference;
+
+  const gaugeStrokeColor =
+    attempted === 0
+      ? "var(--rv-accent)"
+      : stats.accuracy >= 70
+        ? "var(--rv-correct-solid)"
+        : stats.accuracy >= 40
+          ? "var(--rv-amber-solid)"
+          : "var(--rv-wrong-solid)";
+
+  const performanceTier =
+    attempted === 0
+      ? { label: "Session Ended", className: styles.tierGood }
+      : stats.accuracy >= 75
+        ? { label: "Excellent Mastery", className: styles.tierExcellent }
+        : stats.accuracy >= 45
+          ? { label: "Solid Progress", className: styles.tierGood }
+          : { label: "Needs Practice", className: styles.tierPractice };
+
+  // Build Concept Breakdown from actual session results so it never renders empty
+  const conceptStatsMap = new Map<
+    string,
+    { concept: string; correct: number; total: number; pct: number }
+  >();
+
+  for (const option of conceptOptions) {
+    const matching = results.filter((r) => r.concept === option);
+    if (matching.length > 0) {
+      const correctCount = matching.filter((r) => r.isCorrect).length;
+      conceptStatsMap.set(option, {
+        concept: option,
+        correct: correctCount,
+        total: matching.length,
+        pct: Math.round((correctCount / matching.length) * 100),
+      });
+    }
+  }
+
+  for (const r of results) {
+    const key = r.concept?.trim() || "General";
+    if (!conceptStatsMap.has(key)) {
+      const matching = results.filter(
+        (item) => (item.concept?.trim() || "General") === key,
+      );
+      const correctCount = matching.filter((item) => item.isCorrect).length;
+      conceptStatsMap.set(key, {
+        concept: key,
+        correct: correctCount,
+        total: matching.length,
+        pct: Math.round((correctCount / matching.length) * 100),
+      });
+    }
+  }
+
+  const conceptBreakdownItems = Array.from(conceptStatsMap.values());
+  const orderedResults = [...results].sort(
+    (a, b) => a.questionIndex - b.questionIndex,
+  );
+
+  const correctBarWidth =
+    totalQuestions > 0 ? (stats.correct / totalQuestions) * 100 : 0;
+  const wrongBarWidth =
+    totalQuestions > 0 ? (stats.wrong / totalQuestions) * 100 : 0;
+
   return (
     <div
-      className={`${subjectConfig.cssClassName} min-h-dvh relative overflow-hidden`}
+      className={`${subjectConfig.cssClassName} ${styles.resultRoot}`}
       data-theme={theme}
-      style={{ background: "var(--quiz-bg)", color: "var(--quiz-text)" }}
     >
       {themeStyles}
-      <div className="pt-28 pb-20 px-6 max-w-3xl mx-auto relative">
-        <div className="mb-6 flex justify-end">
-          <ThemeToggle />
-        </div>
-        <h1
-          className="animate-fade-in-up text-3xl font-bold mb-2 text-[var(--text-primary)]"
-          style={{
-            fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif",
-          }}
-        >
-          Session{" "}
-          <span
-            style={{
-              background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Complete
-          </span>
-        </h1>
-        <p
-          className="animate-fade-in-up text-[color:var(--quiz-text-muted)] mb-10"
-          style={{ animationDelay: "100ms" }}
-        >
-          Here is how you performed in this {modeLabels[mode]} session.
-        </p>
 
-        <div
-          className="animate-fade-in-up grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10"
-          style={{ animationDelay: "200ms" }}
-        >
-          {[
-            {
-              label: "Correct",
-              value: stats.correct,
-              color: "text-emerald-600",
-            },
-            { label: "Wrong", value: stats.wrong, color: "text-red-500" },
-            {
-              label: "Accuracy",
-              value: `${stats.accuracy}%`,
-              color: "text-violet-600",
-            },
-            {
-              label: "Avg Time",
-              value: `${stats.avgTime}s`,
-              color: "text-amber-600",
-            },
-          ].map((s) => (
+      {/* ── Top Chrome Header (Matches Quiz Engine Header) ── */}
+      <header data-ui-chrome="header" className={styles.header}>
+        <div className={styles.headerInner}>
+          <Link
+            replace
+            href={parentHref}
+            data-ui-button="icon"
+            className={styles.headerIconBtn}
+            aria-label="Back to topic"
+          >
+            <ChevronLeft aria-hidden="true" />
+          </Link>
+
+          <div className={styles.headerCenter}>
+            <p className={styles.headerTitle}>{displayTitle}</p>
+            <span className={styles.headerSubtitle}>
+              {modeLabel} • Session Summary
+            </span>
+          </div>
+
+          <span className={styles.headerSpacer} aria-hidden="true" />
+        </div>
+      </header>
+
+      {/* ── Main Scrollable Content Body ── */}
+      <main className={styles.main}>
+        <div className={styles.mainInner}>
+          {/* 1. Hero Performance Summary Card */}
+        <section className={styles.heroCard} aria-label="Session overview">
+          <div className={styles.heroTop}>
+            <div className={styles.heroCopy}>
+              <div className={styles.badgeRow}>
+                <span className={styles.modeBadge}>
+                  <Sparkles size={12} aria-hidden="true" />
+                  <span>{modeLabel} Mode</span>
+                </span>
+                <span
+                  className={`${styles.tierBadge} ${performanceTier.className}`}
+                >
+                  {performanceTier.label}
+                </span>
+              </div>
+
+              <h1 className={styles.heroTitle}>
+                Session{" "}
+                <span className={styles.heroTitleAccent}>Complete</span>
+              </h1>
+              <p className={styles.heroDescription}>
+                Here is how you performed in this {modeLabel} session.
+              </p>
+            </div>
+
+            {/* Precision Accuracy Ring */}
             <div
-              key={s.label}
-              className="glass-card rounded-xl p-5 text-center"
+              className={styles.gaugeWrap}
+              role="img"
+              aria-label={`Accuracy ${stats.accuracy}%`}
             >
-              <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
-              <div className="text-xs text-[color:var(--quiz-text-soft)] mt-1">
-                {s.label}
+              <svg
+                className={styles.gaugeSvg}
+                viewBox="0 0 92 92"
+                aria-hidden="true"
+              >
+                <circle
+                  className={styles.gaugeTrack}
+                  cx="46"
+                  cy="46"
+                  r={radius}
+                />
+                <circle
+                  className={styles.gaugeFill}
+                  cx="46"
+                  cy="46"
+                  r={radius}
+                  stroke={gaugeStrokeColor}
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                />
+              </svg>
+              <div className={styles.gaugeCenter}>
+                <span className={styles.gaugeValue}>{stats.accuracy}%</span>
+                <span className={styles.gaugeLabel}>Accuracy</span>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-        <div
-          className="animate-fade-in-up grid grid-cols-2 gap-4 mb-10"
-          style={{ animationDelay: "250ms" }}
-        >
-          <div className="glass-card rounded-xl p-5">
-            <div className="text-sm text-[color:var(--quiz-text-soft)] mb-1">
-              Best Streak
+          {/* Segmented Session Progress Bar */}
+          <div className={styles.distributionBlock}>
+            <div className={styles.segmentedBar} aria-hidden="true">
+              {stats.correct > 0 && (
+                <div
+                  className={styles.segmentCorrect}
+                  style={{ width: `${Math.max(3, correctBarWidth)}%` }}
+                />
+              )}
+              {stats.wrong > 0 && (
+                <div
+                  className={styles.segmentWrong}
+                  style={{ width: `${Math.max(3, wrongBarWidth)}%` }}
+                />
+              )}
+              <div className={styles.segmentSkipped} style={{ flex: 1 }} />
             </div>
-            <div className="text-xl font-bold text-violet-600 flex items-center gap-2">
-              <Flame className="w-5 h-5" /> {bestStreak}
+
+            <div className={styles.distributionLegend}>
+              <div className={styles.legendItems}>
+                <span className={styles.legendItem}>
+                  <span
+                    className={styles.legendDot}
+                    style={{ background: "var(--rv-correct-solid)" }}
+                  />
+                  {stats.correct} Correct
+                </span>
+                <span className={styles.legendItem}>
+                  <span
+                    className={styles.legendDot}
+                    style={{ background: "var(--rv-wrong-solid)" }}
+                  />
+                  {stats.wrong} Wrong
+                </span>
+                {unattempted > 0 && (
+                  <span className={styles.legendItem}>
+                    <span
+                      className={styles.legendDot}
+                      style={{ background: "var(--rv-text-muted)" }}
+                    />
+                    {unattempted} Remaining
+                  </span>
+                )}
+              </div>
+              <span className={styles.legendCompletion}>
+                {attempted} / {totalQuestions} Done ({completionPct}%)
+              </span>
             </div>
           </div>
-          <div className="glass-card rounded-xl p-5">
-            <div className="text-sm text-[color:var(--quiz-text-soft)] mb-1">
-              Questions Done
+        </section>
+
+        {/* 2. Redesigned 6-Card Metrics Grid */}
+        <section className={styles.metricsGrid} aria-label="Performance metrics">
+          {/* Correct */}
+          <div className={styles.metricCard}>
+            <div className={styles.metricHeader}>
+              <span className={styles.metricLabel}>Correct</span>
+              <span className={`${styles.metricIconBox} ${styles.iconCorrect}`}>
+                <CircleCheck size={16} aria-hidden="true" />
+              </span>
             </div>
-            <div className="text-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2">
-              <MathFraction
-                numerator={results.length}
-                denominator={questions.length}
-              />
+            <div className={styles.metricBody}>
+              <div className={`${styles.metricValue} ${styles.valueCorrect}`}>
+                {stats.correct}
+              </div>
+              <span className={styles.metricSub}>
+                {attempted > 0
+                  ? `${stats.correct} of ${attempted} answered`
+                  : "No answers yet"}
+              </span>
             </div>
           </div>
-        </div>
 
-        {results.length > 0 && (
-          <div
-            className="animate-fade-in-up glass-card rounded-xl p-6 mb-6"
-            style={{ animationDelay: "300ms" }}
+          {/* Wrong */}
+          <div className={styles.metricCard}>
+            <div className={styles.metricHeader}>
+              <span className={styles.metricLabel}>Wrong</span>
+              <span className={`${styles.metricIconBox} ${styles.iconWrong}`}>
+                <XCircle size={16} aria-hidden="true" />
+              </span>
+            </div>
+            <div className={styles.metricBody}>
+              <div className={`${styles.metricValue} ${styles.valueWrong}`}>
+                {stats.wrong}
+              </div>
+              <span className={styles.metricSub}>
+                {stats.wrong === 0 && attempted > 0
+                  ? "Zero mistakes"
+                  : `${stats.wrong} incorrect`}
+              </span>
+            </div>
+          </div>
+
+          {/* Accuracy */}
+          <div className={styles.metricCard}>
+            <div className={styles.metricHeader}>
+              <span className={styles.metricLabel}>Accuracy</span>
+              <span className={`${styles.metricIconBox} ${styles.iconAccent}`}>
+                <Target size={16} aria-hidden="true" />
+              </span>
+            </div>
+            <div className={styles.metricBody}>
+              <div className={`${styles.metricValue} ${styles.valueAccent}`}>
+                {stats.accuracy}%
+              </div>
+              <span className={styles.metricSub}>Overall precision</span>
+            </div>
+          </div>
+
+          {/* Avg Time */}
+          <div className={styles.metricCard}>
+            <div className={styles.metricHeader}>
+              <span className={styles.metricLabel}>Avg Time</span>
+              <span className={`${styles.metricIconBox} ${styles.iconAmber}`}>
+                <Clock size={16} aria-hidden="true" />
+              </span>
+            </div>
+            <div className={styles.metricBody}>
+              <div className={`${styles.metricValue} ${styles.valueAmber}`}>
+                {stats.avgTime}s
+              </div>
+              <span className={styles.metricSub}>
+                {totalTimeSeconds}s total time
+              </span>
+            </div>
+          </div>
+
+          {/* Best Streak */}
+          <div className={styles.metricCard}>
+            <div className={styles.metricHeader}>
+              <span className={styles.metricLabel}>Best Streak</span>
+              <span className={`${styles.metricIconBox} ${styles.iconAmber}`}>
+                <Flame size={16} aria-hidden="true" />
+              </span>
+            </div>
+            <div className={styles.metricBody}>
+              <div className={styles.metricValue}>{bestStreak}</div>
+              <span className={styles.metricSub}>Consecutive correct</span>
+            </div>
+          </div>
+
+          {/* Questions Done */}
+          <div className={styles.metricCard}>
+            <div className={styles.metricHeader}>
+              <span className={styles.metricLabel}>Questions Done</span>
+              <span className={`${styles.metricIconBox} ${styles.iconAccent}`}>
+                <CheckCheck size={16} aria-hidden="true" />
+              </span>
+            </div>
+            <div className={styles.metricBody}>
+              <div className={styles.metricValue}>
+                <span>{attempted}</span>
+                <span className={styles.metricDenominator}>
+                  / {totalQuestions}
+                </span>
+              </div>
+              <span className={styles.metricSub}>
+                {completionPct}% of set completed
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. Interactive Session Question Map (Jump back to review any question) */}
+        {orderedResults.length > 0 && (
+          <section
+            className={styles.sectionCard}
+            aria-label="Attempted questions map"
           >
-            <h3 className="font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
-              <span
-                style={{
-                  display: "inline-block",
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: "#7c3aed",
-                }}
-              />
-              Concept Breakdown
-            </h3>
-            <div className="space-y-3">
-              {conceptOptions.map((concept) => {
-                const conceptResults = results.filter(
-                  (r) => r.concept === concept,
-                );
-                if (conceptResults.length === 0) return null;
-                const correct = conceptResults.filter(
-                  (r) => r.isCorrect,
-                ).length;
-                const pct = Math.round((correct / conceptResults.length) * 100);
-                const col = conceptColours[concept] ?? DEFAULT_CONCEPT_COLOUR;
+            <div className={styles.sectionHeader}>
+              <div className={styles.sectionTitleGroup}>
+                <span
+                  className={`${styles.sectionIcon} ${styles.iconAccent}`}
+                  aria-hidden="true"
+                >
+                  <ListChecks size={15} />
+                </span>
+                <h2 className={styles.sectionTitle}>Question Review Map</h2>
+              </div>
+              <span className={styles.sectionCountPill}>
+                {orderedResults.length}{" "}
+                {orderedResults.length === 1 ? "Question" : "Questions"}
+              </span>
+            </div>
+
+            <div className={styles.questionMapGrid}>
+              {orderedResults.map((item) => {
+                const qNum = item.questionIndex + 1;
                 return (
-                  <div key={concept}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-[color:var(--quiz-text-muted)]">
-                        {concept}
-                      </span>
-                      <span
-                        className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                        style={{
-                          background: col.bg,
-                          color: col.text,
-                          border: `1px solid ${col.border}`,
-                        }}
-                      >
-                        {pct}%
-                      </span>
+                  <button
+                    key={`result-q-${item.questionIndex}`}
+                    type="button"
+                    data-ui-button="state"
+                    onClick={() => showQuestion?.(item.questionIndex)}
+                    className={`${styles.questionTile} ${
+                      item.isCorrect
+                        ? styles.questionTileCorrect
+                        : styles.questionTileWrong
+                    }`}
+                    aria-label={`Review question ${qNum}, ${
+                      item.isCorrect ? "correct" : "wrong"
+                    }, ${item.timeTaken} seconds`}
+                    title={`Question ${qNum} • ${
+                      item.isCorrect ? "Correct" : "Wrong"
+                    } (${item.timeTaken}s)`}
+                  >
+                    <span>{qNum}</span>
+                    <span className={styles.questionTileTime}>
+                      {item.timeTaken}s
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* 4. Redesigned Concept Breakdown */}
+        {conceptBreakdownItems.length > 0 && (
+          <section
+            className={styles.sectionCard}
+            aria-label="Concept breakdown"
+          >
+            <div className={styles.sectionHeader}>
+              <div className={styles.sectionTitleGroup}>
+                <span
+                  className={`${styles.sectionIcon} ${styles.iconAccent}`}
+                  aria-hidden="true"
+                >
+                  <Layers size={15} />
+                </span>
+                <h2 className={styles.sectionTitle}>Concept Breakdown</h2>
+              </div>
+              <span className={styles.sectionCountPill}>
+                {conceptBreakdownItems.length}{" "}
+                {conceptBreakdownItems.length === 1 ? "Concept" : "Concepts"}
+              </span>
+            </div>
+
+            <div className={styles.conceptList}>
+              {conceptBreakdownItems.map((item) => {
+                const pctClass =
+                  item.pct >= 70
+                    ? styles.pctHigh
+                    : item.pct >= 40
+                      ? styles.pctMid
+                      : styles.pctLow;
+                const fillColor =
+                  item.pct >= 70
+                    ? "var(--rv-correct-solid)"
+                    : item.pct >= 40
+                      ? "var(--rv-amber-solid)"
+                      : "var(--rv-wrong-solid)";
+
+                return (
+                  <div key={item.concept} className={styles.conceptItem}>
+                    <div className={styles.conceptItemTop}>
+                      <span className={styles.conceptName}>{item.concept}</span>
+                      <div className={styles.conceptMetaRight}>
+                        <span className={styles.conceptFraction}>
+                          {item.correct}/{item.total} correct
+                        </span>
+                        <span className={`${styles.conceptPctPill} ${pctClass}`}>
+                          {item.pct}%
+                        </span>
+                      </div>
                     </div>
-                    <div className="h-1.5 w-full rounded-full bg-[var(--quiz-surface-muted)] overflow-hidden">
+                    <div className={styles.conceptBarTrack}>
                       <div
-            className="h-full rounded-full transition-[width] duration-700 motion-reduce:transition-none"
+                        className={styles.conceptBarFill}
                         style={{
-                          width: `${pct}%`,
-                          background:
-                            pct >= 70
-                              ? "#059669"
-                              : pct >= 40
-                                ? "#D97706"
-                                : "#DC2626",
+                          width: `${Math.max(item.pct, 4)}%`,
+                          background: fillColor,
                         }}
                       />
                     </div>
@@ -198,65 +526,81 @@ export function ResultView({
                 );
               })}
             </div>
-          </div>
+          </section>
         )}
 
+        {/* 5. Redesigned Weak Areas — Needs Practice */}
         {weakConcepts.length > 0 && (
-          <div
-            className="animate-fade-in-up glass-card rounded-xl p-6 mb-10"
-            style={{ animationDelay: "350ms" }}
+          <section
+            className={styles.sectionCard}
+            aria-label="Weak areas needing practice"
           >
-            <h3 className="font-semibold mb-4 flex items-center gap-2 text-[var(--text-primary)]">
-              <Target className="w-4 h-4 text-red-500" />
-              Weak Areas - Needs Practice
-            </h3>
-            <div className="space-y-3">
-              {weakConcepts.map((wc) => (
-                <div
-                  key={wc.concept}
-                  className="flex items-center justify-between"
+            <div className={styles.sectionHeader}>
+              <div className={styles.sectionTitleGroup}>
+                <span
+                  className={`${styles.sectionIcon} ${styles.iconWrong}`}
+                  aria-hidden="true"
                 >
-                  <span className="text-sm text-[color:var(--quiz-text-muted)]">
-                    {wc.concept}
-                  </span>
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 border border-red-500/25">
+                  <AlertTriangle size={15} />
+                </span>
+                <h2 className={styles.sectionTitle}>
+                  Weak Areas - Needs Practice
+                </h2>
+              </div>
+              <span className={styles.sectionCountPill}>
+                {weakConcepts.length} Flagged
+              </span>
+            </div>
+
+            <div className={styles.weakList}>
+              {weakConcepts.map((wc) => (
+                <div key={wc.concept} className={styles.weakItem}>
+                  <span className={styles.weakConceptName}>{wc.concept}</span>
+                  <span className={styles.weakAccuracyBadge}>
                     {wc.accuracy}% accuracy
                   </span>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
-
-        <div
-          className="animate-fade-in-up flex flex-col sm:flex-row gap-4"
-          style={{ animationDelay: "450ms" }}
-        >
-          <button data-ui-button="state"
-            onClick={handleRestart}
-            className="btn-glow px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer"
-            style={{
-              background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
-              color: "#fff",
-              border: "none",
-            }}
-          >
-            <RotateCcw className="w-4 h-4" /> Practice Again
-          </button>
-          <Link replace data-ui-button="secondary"
-            href={routeBase ?? `/${subjectConfig.subjectId}/${slug}`}
-            className="btn-outline px-6 py-3 rounded-xl font-medium text-center cursor-pointer"
-          >
-            Change Mode
-          </Link>
-          <Link replace data-ui-button="secondary"
-            href={`/${subjectConfig.subjectId}`}
-            className="btn-outline px-6 py-3 rounded-xl font-medium text-center cursor-pointer"
-          >
-            All Topics
-          </Link>
         </div>
-      </div>
+      </main>
+
+      {/* ── Fixed Sticky Bottom Action Dock (Matches Quiz Engine .ios-series-dock) ── */}
+      <footer data-ui-chrome="footer" className={styles.footerDock}>
+        <div className={styles.footerInner}>
+          <Link
+            replace
+            data-ui-button="secondary"
+            href={parentHref}
+            className={styles.secondaryActionBtn}
+          >
+            <SlidersHorizontal aria-hidden="true" />
+            <span>Change Mode</span>
+          </Link>
+
+          <Link
+            replace
+            data-ui-button="secondary"
+            href={allTopicsHref}
+            className={styles.secondaryActionBtn}
+          >
+            <LayoutGrid aria-hidden="true" />
+            <span>All Topics</span>
+          </Link>
+
+          <button
+            type="button"
+            data-ui-button="primary"
+            onClick={handleRestart}
+            className={styles.primaryActionBtn}
+          >
+            <RotateCcw aria-hidden="true" />
+            <span>Practice Again</span>
+          </button>
+        </div>
+      </footer>
     </div>
   );
 }
