@@ -139,6 +139,10 @@ const exportQuestions = async (req, res) => {
     const { count, questions } = await questionService.exportQuestions(req.query);
     if (String(req.query.format || '').toLowerCase() === 'json') {
       res.set('Cache-Control', 'no-store, max-age=0');
+      if (String(req.query.fields || '').toLowerCase() === 'id') {
+        const ids = questions.map(q => q.id).filter(Boolean);
+        return res.json({ count: ids.length, ids, questions: ids.map(id => ({ id })) });
+      }
       return res.json({ count, questions });
     }
     const parts = [

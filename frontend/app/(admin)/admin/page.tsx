@@ -19,7 +19,7 @@ import { adminTopicLabel, getAdminExamCatalog } from '@/lib/admin-exam-mode';
 export default function AdminPanel() {
   const { mode, isJam } = useExamMode();
   const { subjectOptions: SUBJECT_OPTIONS } = getAdminExamCatalog(mode);
-  const { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, exporting, handleDownloadNdjson, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor, fetchQuestions } = useAdminQuestionBank();
+  const { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, selectingAll, allMatchingSelected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, exporting, handleDownloadNdjson, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, selectAllMatching, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor, fetchQuestions } = useAdminQuestionBank();
 
 
   return (
@@ -226,6 +226,32 @@ export default function AdminPanel() {
         <button
           data-ui-button="state"
           type="button"
+          onClick={() => void (allMatchingSelected ? clearSelection() : selectAllMatching())}
+          disabled={selectingAll || loading || totalCount === 0}
+          style={{
+            padding: "8px 14px",
+            borderRadius: 8,
+            border: "0.5px solid var(--admin-blue)",
+            background: allMatchingSelected ? "var(--admin-blue)" : "transparent",
+            color: allMatchingSelected ? "#fff" : "var(--admin-blue)",
+            cursor: selectingAll || loading || totalCount === 0 ? "default" : "pointer",
+            fontSize: 13,
+            fontWeight: 600,
+            opacity: selectingAll || loading || totalCount === 0 ? 0.6 : 1,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {selectingAll
+            ? `Selecting (${totalCount})...`
+            : allMatchingSelected
+              ? `All ${selected.size} selected`
+              : filterTopic
+                ? `Select all topic (${totalCount})`
+                : `Select all (${totalCount})`}
+        </button>
+        <button
+          data-ui-button="state"
+          type="button"
           onClick={() => void handleDownloadNdjson()}
           disabled={exporting || loading || totalCount === 0}
           style={{
@@ -247,14 +273,29 @@ export default function AdminPanel() {
 
       {/* Select all banner */}
       {selected.size > 0 && (
-        <div style={{ padding: "8px 14px", background: "var(--admin-blue-soft)", borderRadius: 8, marginBottom: 10, fontSize: 13, color: "var(--admin-blue)", display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ padding: "8px 14px", background: "var(--admin-blue-soft)", borderRadius: 8, marginBottom: 10, fontSize: 13, color: "var(--admin-blue)", display: "flex", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <span>{selected.size} question{selected.size > 1 ? "s" : ""} selected</span>
-          {selected.size < filtered.length && (
-            <button data-ui-button="state" onClick={selectAll} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontWeight: 500, fontSize: 13, padding: 0 }}>
+          {!allPageSelected && filtered.length > 0 && (
+            <button data-ui-button="state" type="button" onClick={selectAll} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontWeight: 500, fontSize: 13, padding: 0, textDecoration: "underline" }}>
               Select all {filtered.length} on this page
             </button>
           )}
-          <button data-ui-button="state" onClick={clearSelection} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontSize: 13, padding: 0, marginLeft: "auto" }}>
+          {selected.size < totalCount && (
+            <button
+              data-ui-button="state"
+              type="button"
+              onClick={() => void selectAllMatching()}
+              disabled={selectingAll}
+              style={{ background: "none", border: "none", cursor: selectingAll ? "wait" : "pointer", color: "var(--admin-blue)", fontWeight: 600, fontSize: 13, padding: 0, textDecoration: "underline" }}
+            >
+              {selectingAll
+                ? `Selecting all ${totalCount} questions...`
+                : filterTopic
+                  ? `Select all ${totalCount} questions in ${adminTopicLabel(filterTopic)}`
+                  : `Select all ${totalCount} matching questions`}
+            </button>
+          )}
+          <button data-ui-button="state" type="button" onClick={clearSelection} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontSize: 13, padding: 0, marginLeft: "auto" }}>
             Clear selection
           </button>
         </div>

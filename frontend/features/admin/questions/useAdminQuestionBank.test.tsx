@@ -138,3 +138,59 @@ it('downloads matching questions as NDJSON using active subject, topic, quizName
   expect(clickSpy).toHaveBeenCalledTimes(1);
   clickSpy.mockRestore();
 });
+
+it('selects all matching topic questions across pages and deletes them in batches', async () => {
+  const allTopicIds = Array.from({ length: 120 }, (_, i) => `econ_${i + 1}`);
+  fetch.mockImplementation(async (url: string, init?: RequestInit) => {
+    if (String(url || '').includes('/api/questions/export')) {
+      return {
+        ok: true,
+        json: async () => ({
+          count: allTopicIds.length,
+          ids: allTopicIds,
+          questions: allTopicIds.map((id) => ({ id })),
+        }),
+      };
+    }
+    if (String(url || '').includes('/api/questions/bulk-delete')) {
+      const body = JSON.parse(String(init?.body || '{}'));
+      return {
+        ok: true,
+        json: async () => ({ deleted: body.ids?.length || 0, failed: 0 }),
+      };
+    }
+    return {
+      ok: true,
+      json: async () => ({
+        questions: allTopicIds.slice(0, 50).map((id) => ({ id, subject: 'general-awareness', topic: 'basics-of-economics' })),
+        count: 50,
+        total: 120,
+        facets: { topics: ['basics-of-economics'], exams: ['SSC CGL'], quizNames: ['PYQ'] },
+      }),
+    };
+  });
+
+  const { result } = renderHook(useAdminQuestionBank);
+  await waitFor(() => expect(result.current.questions).toHaveLength(50));
+
+  act(() => {
+    result.current.setFilterSubject('general-awareness');
+    result.current.setFilterTopic('basics-of-economics');
+  });
+
+  await act(async () => {
+    await result.current.selectAllMatching();
+  });
+
+  expect(result.current.selected.size).toBe(120);
+  expect(result.current.allMatchingSelected).toBe(true);
+
+  await act(async () => {
+    await result.current.handleBulkDelete();
+  });
+
+  const bulkDeleteCalls = fetch.mock.calls.filter((call) => String(call[0] || '').includes('/api/questions/bulk-delete'));
+  expect(bulkDeleteCalls).toHaveLength(2);
+  expect(result.current.selected.size).toBe(0);
+  expect(result.current.success).toContain('Deleted 120 questions');
+});

@@ -53,11 +53,6 @@ export function useAdminQuestionBank() {
   const PAGE_SIZE = 50;
   const filterKey = JSON.stringify([mode, filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName, search, sortOrder]);
   const [previousFilterKey, setPreviousFilterKey] = useState(filterKey);
-  if (previousFilterKey !== filterKey) {
-    setPreviousFilterKey(filterKey);
-    setPage(1);
-  }
-
   // Modal
   const [editing, setEditing] = useState<Question | null>(null);
   const [isNew, setIsNew] = useState(false);
@@ -66,9 +61,16 @@ export function useAdminQuestionBank() {
 
   // Multi-select
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selectingAll, setSelectingAll] = useState(false);
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
+
+  if (previousFilterKey !== filterKey) {
+    setPreviousFilterKey(filterKey);
+    setPage(1);
+    setSelected(new Set());
+  }
   const [imagePreview, setImagePreview] = useState<{
     src: string;
     title: string;
@@ -208,6 +210,7 @@ export function useAdminQuestionBank() {
   const paginated = filtered;
   const paginatedIds = paginated.map((q) => q.id);
   const allPageSelected = paginatedIds.length > 0 && paginatedIds.every((id) => selected.has(id));
+  const allMatchingSelected = totalCount > 0 && selected.size >= totalCount;
 
   const togglePage = () => {
     setSelected((prev) => {
@@ -225,6 +228,87 @@ export function useAdminQuestionBank() {
     setSelected(new Set(filtered.map((q) => q.id)));
   };
 
+  const selectAllMatching = async () => {
+    if (selectingAll) return;
+    if (totalCount > 0 && filtered.length >= totalCount) {
+      const ids = filtered.map((q) => q.id).filter(Boolean);
+      setSelected(new Set(ids));
+      showMsg(`Selected all ${ids.length} question${ids.length === 1 ? "" : "s"} ✓`);
+      return;
+    }
+    setSelectingAll(true);
+    try {
+      const secret = getAdminToken();
+      const params = new URLSearchParams();
+      params.set("examMode", mode);
+      params.set("format", "json");
+      params.set("fields", "id");
+      if (filterSubject) params.set("subject", filterSubject);
+      if (filterTopic) params.set("topic", filterTopic);
+      if (filterQuizName) params.set("quizName", filterQuizName);
+      if (filterDifficulty) params.set("difficulty", filterDifficulty);
+      if (filterExam) params.set("exam", filterExam);
+      if (search) params.set("search", search);
+      params.set("sort", sortOrder);
+
+      const res = await fetchWithRetry(
+        `${API}/api/questions/export?${params.toString()}`,
+        { headers: { Authorization: `Bearer ${secret}` } },
+        { timeoutMs: 60000 }
+      );
+      if (!res.ok) {
+        let msg = `Failed to select all questions (${res.status})`;
+        try {
+          const errData = await res.json();
+          if (errData?.error) msg = errData.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
+      }
+
+      let ids: string[] = [];
+      if (typeof res.json === "function") {
+        try {
+          const data = await res.json();
+          if (Array.isArray(data?.ids)) {
+            ids = data.ids.map((id: unknown) => String(id || "").trim()).filter(Boolean);
+          } else {
+            const list = Array.isArray(data) ? data : data?.questions || [];
+            ids = list.map((q: { id?: string }) => String(q?.id || "").trim()).filter(Boolean);
+          }
+        } catch {
+          // fallback if response was NDJSON text
+        }
+      }
+      if (ids.length === 0 && typeof res.text === "function") {
+        const text = await res.text();
+        ids = text
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((line) => {
+            try {
+              return String(JSON.parse(line)?.id || "").trim();
+            } catch {
+              return "";
+            }
+          })
+          .filter(Boolean);
+      }
+
+      if (ids.length === 0) {
+        showMsg("No matching questions found to select", true);
+        return;
+      }
+
+      setSelected(new Set(ids));
+      showMsg(`Selected all ${ids.length} question${ids.length === 1 ? "" : "s"} ✓`);
+    } catch (e: unknown) {
+      showMsg(e instanceof Error ? e.message : "Failed to select all matching questions", true);
+    } finally {
+      setSelectingAll(false);
+    }
+  };
+
   const clearSelection = () => setSelected(new Set());
 
   // ── Bulk delete ───────────────────────────────────────
@@ -236,34 +320,42 @@ export function useAdminQuestionBank() {
     let failed = 0;
 
     try {
-      // 1. Try fast batch bulk delete endpoint first
-      const res = await fetchWithRetry(scopedUrl(`${API}/api/questions/bulk-delete`), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${secret}`,
-        },
-        body: JSON.stringify({ ids: idsToDelete }),
-      });
-
-      if (res.ok) {
-        const data = await res.json().catch(() => ({}));
-        deleted = Number.isFinite(data?.deleted) ? data.deleted : idsToDelete.length;
-        failed = Number.isFinite(data?.failed) ? data.failed : 0;
-      } else {
-        // 2. Fallback to concurrent chunked single deletes if bulk-delete endpoint is unavailable
-        const results = await Promise.allSettled(
-          idsToDelete.map((id) =>
-            fetchWithRetry(scopedUrl(`${API}/api/questions/${encodeURIComponent(id)}`), {
-              method: "DELETE",
-              headers: { Authorization: `Bearer ${secret}` },
-            })
-          )
+      const BATCH_SIZE = 100;
+      for (let i = 0; i < idsToDelete.length; i += BATCH_SIZE) {
+        const batchIds = idsToDelete.slice(i, i + BATCH_SIZE);
+        // 1. Try fast batch bulk delete endpoint first
+        const res = await fetchWithRetry(
+          scopedUrl(`${API}/api/questions/bulk-delete`),
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${secret}`,
+            },
+            body: JSON.stringify({ ids: batchIds }),
+          },
+          { timeoutMs: 60000 }
         );
-        results.forEach((r) => {
-          if (r.status === "fulfilled" && r.value.ok) deleted++;
-          else failed++;
-        });
+
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          deleted += Number.isFinite(data?.deleted) ? data.deleted : batchIds.length;
+          failed += Number.isFinite(data?.failed) ? data.failed : 0;
+        } else {
+          // 2. Fallback to concurrent chunked single deletes if bulk-delete endpoint is unavailable
+          const results = await Promise.allSettled(
+            batchIds.map((id) =>
+              fetchWithRetry(scopedUrl(`${API}/api/questions/${encodeURIComponent(id)}`), {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${secret}` },
+              })
+            )
+          );
+          results.forEach((r) => {
+            if (r.status === "fulfilled" && r.value.ok) deleted++;
+            else failed++;
+          });
+        }
       }
 
       // Optimistically remove deleted questions from local state
@@ -383,13 +475,13 @@ export function useAdminQuestionBank() {
       if (subj) params.set("subject", subj);
       if (top) params.set("topic", top);
       if (qName) params.set("quizName", qName);
-      if (!overrides) {
+      if (!overrides || overrides.ids) {
         if (filterDifficulty) params.set("difficulty", filterDifficulty);
         if (filterExam) params.set("exam", filterExam);
         if (search) params.set("search", search);
       }
       params.set("sort", sortOrder);
-      if (overrides?.ids?.length) {
+      if (overrides?.ids?.length && !(totalCount > 0 && overrides.ids.length >= totalCount)) {
         params.set("ids", overrides.ids.join(","));
       }
 
@@ -447,5 +539,5 @@ export function useAdminQuestionBank() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const diffColor = (d: string) =>
     d === "easy" ? "#16a34a" : d === "hard" ? "#dc2626" : "#d97706";
-  return { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject: handleSetFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, exporting, handleDownloadNdjson, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor, fetchQuestions };
+  return { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject: handleSetFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, selectingAll, allMatchingSelected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, exporting, handleDownloadNdjson, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, selectAllMatching, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor, fetchQuestions };
 }
