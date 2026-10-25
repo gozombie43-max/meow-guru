@@ -233,4 +233,5 @@
 
 .shell select:focus,
 .shell select:focus-visible { outline: none; text-decoration: none; }
+.content:has([data-upload-wide="true"]) { max-width: min(1720px, calc(100vw - 24px)); }
 
