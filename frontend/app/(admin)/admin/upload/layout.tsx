@@ -8,7 +8,7 @@ import styles from "./macos.module.css";
 const tabs = [
   { href: "/admin/upload", label: "Overview", icon: "🧭", exact: true },
   { href: "/admin/upload/question", label: "Single MCQ", icon: "✍️" },
-  { href: "/admin/upload/bulk", label: "Mass Upload", icon: "📑" },
+  { href: "/admin/upload/bulk", label: "Bulk Upload", icon: "⬆️" },
   { href: "/admin/upload/mock-tests", label: "Mock & PYQs", icon: "🎯" },
   { href: "/admin/upload/assets", label: "Assets (ZIP)", icon: "🗂️" },
 ];
@@ -17,7 +17,7 @@ export default function AdminUploadLayout({ children }: { children: ReactNode })
   const pathname = usePathname();
 
   return (
-    <div className={styles.desktop}>
+    <div className={styles.desktop} data-upload-wide="true">
       <div className={styles.window}>
         {/* Scrollable upload navigation */}
         <div className={styles.navBar}>

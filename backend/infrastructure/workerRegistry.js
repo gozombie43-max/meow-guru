@@ -1,4 +1,5 @@
 import { startBattleAnalyticsWorker, stopBattleAnalyticsWorker, waitForBattleAnalyticsIdle } from '../battle/battleAnalyticsWorker.js';
+import { processQuestionImportJob, startQuestionImportWorker, stopQuestionImportWorker, waitForQuestionImportWorkerIdle } from '../services/questionImport/questionImportWorker.js';
 import {
   startScheduledNotificationWorker,
   stopScheduledNotificationWorker,
@@ -54,13 +55,14 @@ import { processConceptGroupingJob } from '../services/conceptGroupingWorker.js'
 import { cleanupNoteImages, startNoteImageCleanup, stopNoteImageCleanup, waitForNoteImageCleanupIdle } from '../services/notes/noteImageCleanup.js';
 
 let queuedWorkers;
-const scheduledNames = new Set(['ConceptGrouping', 'ScheduledNotification', 'DailyPracticeReminder', 'StreakProtection', 'BattleSeason', 'NoteImageCleanup']);
+const scheduledNames = new Set(['ConceptGrouping', 'QuestionImport', 'ScheduledNotification', 'DailyPracticeReminder', 'StreakProtection', 'BattleSeason', 'NoteImageCleanup']);
 const pollInterval = (name, fallback) => { const value = Number(process.env[name]); return Number.isFinite(value) && value > 0 ? value : fallback; };
 
 const workers = [
   { name: 'BattleAnalytics', start: startBattleAnalyticsWorker, stop: stopBattleAnalyticsWorker, idle: waitForBattleAnalyticsIdle },
   { name: 'NoteImageCleanup', start: startNoteImageCleanup, stop: stopNoteImageCleanup, idle: waitForNoteImageCleanupIdle },
   { name: "ConceptGrouping", start: startConceptGroupingWorker, stop: stopConceptGroupingWorker, idle: waitForConceptGroupingWorkerIdle },
+  { name: "QuestionImport", start: startQuestionImportWorker, stop: stopQuestionImportWorker, idle: waitForQuestionImportWorkerIdle },
   { name: "ScheduledNotification", start: startScheduledNotificationWorker, stop: stopScheduledNotificationWorker, idle: waitForScheduledNotificationWorkerIdle },
   { name: "DailyPracticeReminder", start: startDailyPracticeReminderWorker, stop: stopDailyPracticeReminderWorker, idle: waitForDailyPracticeReminderWorkerIdle },
   { name: "StreakProtection", start: startStreakProtectionWorker, stop: stopStreakProtectionWorker, idle: waitForStreakProtectionWorkerIdle },
@@ -76,6 +78,7 @@ export async function startWorkers() {
   const tasks = [
     { name: 'NoteImageCleanup', intervalMs: 60_000, run: cleanupNoteImages },
     { name: 'ConceptGrouping', intervalMs: 5000, run: processConceptGroupingJob },
+    { name: 'QuestionImport', intervalMs: 3000, run: processQuestionImportJob },
     { name: 'ScheduledNotification', intervalMs: pollInterval('NOTIFICATION_WORKER_POLL_MS', 30000), run: runScheduledNotificationWorkerOnce },
     { name: 'DailyPracticeReminder', intervalMs: pollInterval('DAILY_REMINDER_WORKER_POLL_MS', 60000), run: runDailyPracticeReminderWorkerOnce },
     { name: 'StreakProtection', intervalMs: pollInterval('STREAK_PROTECTION_WORKER_POLL_MS', 60000), run: runStreakProtectionWorkerOnce },

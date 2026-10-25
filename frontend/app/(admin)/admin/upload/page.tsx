@@ -12,9 +12,9 @@ const tools = [
   },
   { 
     href: "/admin/upload/bulk", 
-    title: "Mass NDJSON Uploader", 
-    detail: "High-throughput batch parser for JSON/JSONL with pre-upload DB duplication checking, data table filters, and live logs.",
-    icon: "📑",
+    title: "Bulk Topic Import Manager", 
+    detail: "Configure up to 10 NDJSON/JSON files per batch with independent Subject → Topic → Quiz mappings, streaming validation, and confirmed idempotent import.",
+    icon: "⬆️",
     gradient: "linear-gradient(135deg, #30d158, #0a84ff)",
     badge: "Batch Engine"
   },

@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { validateEnvironment } from './config/environment.js';
-import { assertProcessRole, embeddedWorkersEnabled, standaloneConceptGroupingEnabled } from './config/processRole.js';
+import { assertProcessRole, embeddedWorkersEnabled, standaloneConceptGroupingEnabled, standaloneQuestionImportEnabled } from './config/processRole.js';
 import { createServer } from 'node:http';
 import { createApp } from './app.js';
 import { initPassport } from './auth/passport.js';
@@ -220,6 +220,17 @@ async function initWithRetry() {
         const worker = await import('./services/conceptGroupingWorker.js');
         worker.stopConceptGroupingWorker();
         if (!await worker.waitForConceptGroupingWorkerIdle(12000)) throw new Error('Concept grouping worker failed to drain');
+      },
+    });
+    await startOptionalService('questionImport', async () => {
+      const worker = await import('./services/questionImport/questionImportWorker.js');
+      worker.startQuestionImportWorker();
+    }, {
+      enabled: standaloneQuestionImportEnabled(),
+      cleanup: async () => {
+        const worker = await import('./services/questionImport/questionImportWorker.js');
+        worker.stopQuestionImportWorker();
+        if (!await worker.waitForQuestionImportWorkerIdle(12000)) throw new Error('Question import worker failed to drain');
       },
     });
     let stopCatalogPrewarm;

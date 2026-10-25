@@ -19,3 +19,9 @@ export function standaloneConceptGroupingEnabled(env = process.env) {
   return !embeddedWorkersEnabled(env) && (env.RUN_CONCEPT_GROUPING_WORKER === 'true'
     || (env.RUN_CONCEPT_GROUPING_WORKER !== 'false' && env.NODE_ENV === 'development'));
 }
+
+/** Bulk question imports must also run in local dev and quiz-only single-process deployments. @param {NodeJS.ProcessEnv | Record<string, string>} env */
+export function standaloneQuestionImportEnabled(env = process.env) {
+  return !embeddedWorkersEnabled(env) && (env.RUN_QUESTION_IMPORT_WORKER === 'true'
+    || (env.RUN_QUESTION_IMPORT_WORKER !== 'false' && (env.NODE_ENV === 'development' || env.QUIZ_ONLY_MODE === 'true')));
+}
