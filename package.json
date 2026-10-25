@@ -5,6 +5,11 @@
   "engines": {
     "node": ">=22.22.2 <23"
   },
+  "config": {
+    "mongodbMemoryServer": {
+      "version": "9.0.4"
+    }
+  },
   "description": "Meow Guru — Smart Quiz Platform (Monorepo)",
   "workspaces": [
     "frontend",
