@@ -25,7 +25,7 @@ for (const width of [320, 390]) for (const theme of ['light', 'dark']) {
     await expect(header.getByRole('link', { name: 'Your profile', exact: true })).toHaveCount(0);
     const you = page.getByRole('navigation', { name: 'Primary', exact: true }).getByRole('link', { name: 'You', exact: true });
     await expect(you).toHaveAttribute('href', '/profile');
-    await expect(you.locator('svg path')).toHaveCount(4);
+    await expect(you.locator('svg path')).toHaveCount(0);
     const carousel = page.getByRole('region', { name: 'Daily study inspiration' });
     const dot = (index: number) => carousel.getByRole('button', { name: new RegExp(`^Show card ${index}:`) });
     await expect(dot(1)).toHaveAttribute('aria-current', 'true');
