@@ -132,12 +132,38 @@ html.theme-dark .bottom-nav-label {
     max-width: 100%;
     border-radius: 20px 20px 0 0;
     border-bottom: 0;
-    background: rgba(20, 20, 22, 0.88);
+    background: #0F0F0F;
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     border-top: 1px solid rgba(255, 255, 255, 0.12);
-    padding: 8px max(8px, var(--safe-right)) calc(8px + var(--safe-bottom)) max(8px, var(--safe-left));
+    padding: 4px max(8px, var(--safe-right)) calc(4px + var(--safe-bottom)) max(8px, var(--safe-left));
     box-shadow: 0 -4px 28px rgba(0, 0, 0, 0.55);
+  }
+
+  /* Compact mobile dock: shorter items, near-black surface, white active state. */
+  html.theme-dark .bottom-pill-nav .bottom-nav-item {
+    min-height: 46px;
+    padding: 4px 2px;
+    gap: 2px;
+    border-radius: 12px;
+  }
+
+  html.theme-dark .bottom-pill-nav .bottom-nav-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  html.theme-dark .bottom-nav-label {
+    font-size: 10px;
+  }
+
+  html.theme-dark .bottom-pill-nav .bottom-nav-item.is-active {
+    background: transparent;
+    color: #FFFFFF !important;
+  }
+
+  html.theme-dark .bottom-pill-nav .bottom-nav-item.is-active .bottom-nav-icon {
+    stroke: #FFFFFF !important;
   }
 }
 

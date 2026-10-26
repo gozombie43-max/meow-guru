@@ -282,6 +282,69 @@ html body :is(select, [aria-haspopup="listbox"], [role="combobox"]):focus-visibl
 
 [data-ui-chrome="footer"]:not(nav) { padding-top: 12px; }
 
+/*
+ * Primary mobile tab bar. Opts out of the generic footer chrome above and uses a
+ * translucent, blurred surface with a hairline divider (native iOS/Android style).
+ */
+html .bottom-pill-nav[data-ui-chrome="footer"] {
+  --tabbar-bg: rgba(15, 15, 15, 0.86);
+  --tabbar-divider: rgba(255, 255, 255, 0.07);
+  --tabbar-inactive: rgba(255, 255, 255, 0.52);
+  --tabbar-active: #ffffff;
+  background: var(--tabbar-bg) !important;
+  /* Unprefixed only: Lightning CSS emits the -webkit- form and drops this one if both are listed. */
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 0 !important;
+  border-top: 0.5px solid var(--tabbar-divider) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+html.theme-light .bottom-pill-nav[data-ui-chrome="footer"] {
+  --tabbar-bg: rgba(255, 255, 255, 0.88);
+  --tabbar-divider: rgba(0, 0, 0, 0.08);
+  --tabbar-inactive: #8a8a8e;
+  --tabbar-active: #0f0f0f;
+}
+@supports not (backdrop-filter: blur(1px)) {
+  html .bottom-pill-nav[data-ui-chrome="footer"] { --tabbar-bg: #0f0f0f; }
+  html.theme-light .bottom-pill-nav[data-ui-chrome="footer"] { --tabbar-bg: #ffffff; }
+}
+html .bottom-pill-nav[data-ui-chrome="footer"] .bottom-nav-item {
+  color: var(--tabbar-inactive) !important;
+  background: transparent !important;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 160ms ease;
+}
+html .bottom-pill-nav[data-ui-chrome="footer"] .bottom-nav-item.is-active {
+  color: var(--tabbar-active) !important;
+}
+html .bottom-pill-nav[data-ui-chrome="footer"] .bottom-nav-item.is-active .bottom-nav-icon {
+  stroke: none !important;
+}
+html .bottom-pill-nav[data-ui-chrome="footer"] .bottom-nav-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+html .bottom-pill-nav[data-ui-chrome="footer"] .bottom-nav-item.is-active .bottom-nav-label {
+  font-weight: 600;
+}
+html .bottom-pill-nav[data-ui-chrome="footer"] .bottom-nav-icon {
+  transition: transform 120ms ease;
+}
+html .bottom-pill-nav[data-ui-chrome="footer"] .bottom-nav-item:active .bottom-nav-icon {
+  transform: scale(0.9);
+}
+@media (hover: hover) {
+  html .bottom-pill-nav[data-ui-chrome="footer"] .bottom-nav-item:not(.is-active):hover {
+    color: var(--tabbar-active) !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html .bottom-pill-nav[data-ui-chrome="footer"] .bottom-nav-icon { transition: none; }
+  html .bottom-pill-nav[data-ui-chrome="footer"] .bottom-nav-item:active .bottom-nav-icon { transform: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-ui-button] { transition: none !important; }
 }

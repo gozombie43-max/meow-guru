@@ -1,11 +1,3 @@
-/** Only topic catalogs and chapter lists collapse navigation while scrolling. */
-export function hidesPrimaryNavigationOnScroll(pathname: string): boolean {
-  const path = pathname.replace(/\/+$/, '') || '/';
-  return /^\/(mathematics|reasoning|english|general-awareness)$/.test(path)
-    || /^\/general-awareness\/[^/]+$/.test(path)
-    || /^\/subjects\/iit-jam-physics\/[^/]+$/.test(path);
-}
-
 /** Fullscreen tools own their navigation and safe-area clearance. */
 export function hidesPrimaryNavigation(pathname: string): boolean {
   const path = pathname.replace(/\/+$/, "") || "/";
