@@ -113,32 +113,7 @@ describe('BottomNav Component', () => {
     expect(screen.getByLabelText('AI Assistant')).toBeDefined();
   });
 
-  it.each(['/mathematics', '/reasoning', '/english', '/general-awareness', '/general-awareness/ancient-history', '/subjects/iit-jam-physics/electricity-magnetism'])('hides downward and restores upward or for keyboard navigation on %s', (path) => {
-    mockPathname = path;
-    render(<><div data-testid="chapters" /><BottomNav /></>);
-    const list = screen.getByTestId('chapters');
-    Object.defineProperties(list, { scrollHeight: { value: 1000 }, clientHeight: { value: 300 } });
-    const nav = screen.getByRole('navigation');
-    const scroll = (top: number) => { list.scrollTop = top; fireEvent.scroll(list); };
-    scroll(5);
-    expect(nav).not.toHaveClass('is-hidden');
-    scroll(60);
-    expect(nav).toHaveClass('is-hidden');
-    expect(nav).toHaveAttribute('inert');
-    expect(document.body).not.toHaveClass('has-bottom-nav');
-    expect(document.documentElement.style.getPropertyValue('--app-bottom-nav-occupied-height')).toBe('0px');
-    scroll(57);
-    expect(nav).toHaveClass('is-hidden');
-    scroll(40);
-    expect(nav).not.toHaveClass('is-hidden');
-    expect(document.body).toHaveClass('has-bottom-nav');
-    scroll(100);
-    fireEvent.keyDown(document, { key: 'Tab' });
-    expect(nav).not.toHaveAttribute('inert');
-    expect(nav).not.toHaveClass('is-hidden');
-  });
-
-  it.each(['/', '/mock-test', '/play', '/profile', '/settings', '/mathematics/arithmetic/percentages', '/general-awareness/ancient-history/jainism-buddhism'])('keeps navigation and its clearance visible when scrolling %s', (path) => {
+  it.each(['/', '/mock-test', '/play', '/profile', '/settings', '/mathematics', '/reasoning', '/english', '/general-awareness', '/general-awareness/ancient-history', '/subjects/iit-jam-physics/electricity-magnetism', '/mathematics/arithmetic/percentages', '/general-awareness/ancient-history/jainism-buddhism'])('keeps navigation and its clearance visible when scrolling %s', (path) => {
     mockPathname = path;
     render(<><div data-testid="home-content" /><BottomNav /></>);
     const content = screen.getByTestId('home-content');
@@ -150,52 +125,6 @@ describe('BottomNav Component', () => {
     expect(nav).not.toHaveClass('is-hidden');
     expect(nav).not.toHaveAttribute('inert');
     expect(document.body).toHaveClass('has-bottom-nav');
-  });
-
-  it('handles document scrolling and resets visibility when navigating away and back', () => {
-    mockPathname = '/mathematics';
-    const root = document.documentElement;
-    Object.defineProperties(root, {
-      scrollHeight: { configurable: true, value: 1200 },
-      clientHeight: { configurable: true, value: 600 },
-    });
-    const { rerender } = render(<BottomNav />);
-    try {
-      root.scrollTop = 120;
-      fireEvent.scroll(document);
-      expect(screen.queryByRole('navigation')).toBeNull();
-      mockPathname = '/profile';
-      rerender(<BottomNav />);
-      expect(screen.getByRole('navigation')).not.toHaveClass('is-hidden');
-      mockPathname = '/mathematics';
-      rerender(<BottomNav />);
-      expect(screen.getByRole('navigation')).not.toHaveClass('is-hidden');
-    } finally {
-      root.scrollTop = 0;
-      Reflect.deleteProperty(root, 'scrollHeight');
-      Reflect.deleteProperty(root, 'clientHeight');
-    }
-  });
-
-  it('does not reopen when reclaiming navigation space clamps the list at its bottom', () => {
-    mockPathname = '/general-awareness/ancient-history';
-    render(<><div data-testid="chapters" /><BottomNav /></>);
-    const list = screen.getByTestId('chapters');
-    Object.defineProperties(list, {
-      scrollHeight: { value: 1000 },
-      clientHeight: { configurable: true, value: 300 },
-    });
-    const nav = screen.getByRole('navigation');
-    list.scrollTop = 700;
-    fireEvent.scroll(list);
-    expect(nav).toHaveClass('is-hidden');
-    Object.defineProperty(list, 'clientHeight', { configurable: true, value: 380 });
-    list.scrollTop = 620;
-    fireEvent.scroll(list);
-    expect(nav).toHaveClass('is-hidden');
-    list.scrollTop = 600;
-    fireEvent.scroll(list);
-    expect(nav).not.toHaveClass('is-hidden');
   });
 
   it('uses the current profile photo and updates when the account changes', () => {
