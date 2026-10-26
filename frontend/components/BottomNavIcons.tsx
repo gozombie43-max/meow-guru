@@ -7,7 +7,7 @@ import React from 'react';
  */
 type IconProps = React.SVGProps<SVGSVGElement> & { size?: number | string };
 
-function NavSvg({ viewBox, size = 24, children, ...props }: IconProps & { viewBox: string }) {
+function NavSvg({ viewBox, size = 28, children, ...props }: IconProps & { viewBox: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

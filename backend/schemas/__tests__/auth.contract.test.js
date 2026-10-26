@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { verifyEmailSchema, resendVerificationSchema, forgotPasswordSchema, resetPasswordSchema } from '@meow/contracts/auth';
+import { verifyEmailSchema, resendVerificationSchema, forgotPasswordSchema, resetPasswordSchema, profilePatchSchema } from '@meow/contracts/auth';
 import { requestEmailOtpSchema, verifyEmailOtpSchema } from '@meow/contracts/auth';
 
 it('normalizes OTP email, strips client privileges, and keeps codes as six-digit strings', () => {
@@ -39,4 +39,10 @@ it.each([undefined, null, 123, '', 'short', 'a'.repeat(129), 'a'.repeat(73), 'ðŸ
 
 it.each(['abcdef', 'a'.repeat(72), 'ðŸ˜€'.repeat(18), ' with spaces '])('preserves supported passwords unchanged', password => {
   expect(resetPasswordSchema.parse({ token: 'token', password }).password).toBe(password);
+});
+
+it('accepts local image data URLs in profilePatchSchema and rejects oversized payloads', () => {
+  const dataUrl = 'data:image/webp;base64,' + 'A'.repeat(12000);
+  expect(profilePatchSchema.safeParse({ name: 'Alex', avatar: dataUrl }).success).toBe(true);
+  expect(profilePatchSchema.safeParse({ name: 'Alex', avatar: 'A'.repeat(150001) }).success).toBe(false);
 });

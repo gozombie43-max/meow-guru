@@ -96,8 +96,8 @@ html.theme-dark .bottom-pill-nav .bottom-nav-item {
 }
 
 html.theme-dark .bottom-pill-nav .bottom-nav-icon {
-  width: 23px;
-  height: 23px;
+  width: 28px;
+  height: 28px;
   stroke-width: 1.8;
   stroke: currentColor;
 }
@@ -136,25 +136,25 @@ html.theme-dark .bottom-nav-label {
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     border-top: 1px solid rgba(255, 255, 255, 0.12);
-    padding: 4px max(8px, var(--safe-right)) calc(4px + var(--safe-bottom)) max(8px, var(--safe-left));
+    padding: 8px max(8px, var(--safe-right)) calc(8px + var(--safe-bottom)) max(8px, var(--safe-left));
     box-shadow: 0 -4px 28px rgba(0, 0, 0, 0.55);
   }
 
   /* Compact mobile dock: shorter items, near-black surface, white active state. */
   html.theme-dark .bottom-pill-nav .bottom-nav-item {
-    min-height: 46px;
-    padding: 4px 2px;
-    gap: 2px;
+    min-height: 56px;
+    padding: 6px 2px;
+    gap: 4px;
     border-radius: 12px;
   }
 
   html.theme-dark .bottom-pill-nav .bottom-nav-icon {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
   }
 
   html.theme-dark .bottom-nav-label {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   html.theme-dark .bottom-pill-nav .bottom-nav-item.is-active {

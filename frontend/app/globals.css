@@ -1055,8 +1055,8 @@ body.has-bottom-nav {
 }
 
 .bottom-nav-icon {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   stroke-width: 1.6;
   opacity: 0.95;
   transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
@@ -1325,8 +1325,8 @@ body.theme-dark .theme-switch {
   }
 
   .bottom-nav-icon {
-    width: 20px;
-    height: 20px;
+    width: 28px;
+    height: 28px;
   }
 }
 
@@ -1469,7 +1469,7 @@ nextjs-portal,
     transform: none;
     width: 100vw;
     max-width: 100vw;
-    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
     grid-template-columns: repeat(5, minmax(0, 1fr));
     overflow: visible;
     border-radius: 0;
@@ -1514,8 +1514,8 @@ nextjs-portal,
   }
 
   .bottom-nav-icon {
-    width: 21px;
-    height: 21px;
+    width: 28px;
+    height: 28px;
   }
 
   .bottom-nav-center-btn {

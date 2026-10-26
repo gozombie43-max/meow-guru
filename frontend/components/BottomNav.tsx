@@ -113,7 +113,7 @@ export default function BottomNav() {
         className={`bottom-nav-item${isProfile ? ' is-active' : ''}`}
         aria-current={isProfile ? 'page' : undefined}
       >
-        <GoogleAvatarRing size={26} initial={user?.name?.trim().charAt(0).toUpperCase() || 'U'} avatarUrl={user?.avatar || undefined} />
+        <GoogleAvatarRing size={28} initial={user?.name?.trim().charAt(0).toUpperCase() || 'U'} avatarUrl={user?.avatar || undefined} />
         <span className="bottom-nav-label">You</span>
       </Link>
     </nav>
