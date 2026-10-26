@@ -45,6 +45,6 @@ export const accessCodeVerifySchema = z.object({
 
 export const profilePatchSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(80).optional(),
-  avatar: z.string().trim().max(2000).optional().nullable(),
+  avatar: z.string().trim().max(150000).optional().nullable(),
   phone: z.string().trim().max(20).optional().nullable(),
 });

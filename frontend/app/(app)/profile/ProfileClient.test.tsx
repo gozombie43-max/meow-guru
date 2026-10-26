@@ -50,6 +50,25 @@ describe('Profile page', () => {
     await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ name: 'Updated Student', avatar: null }));
     expect(await screen.findByText('Profile updated successfully.')).toBeInTheDocument();
   });
+  it('allows uploading a local image file as profile picture', async () => {
+    updateProfile.mockResolvedValue({ ...user, avatar: 'data:image/png;base64,aGVsbG8=' });
+    render(<ProfileClient />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit profile' }));
+    const fileInput = await screen.findByLabelText('Upload profile image');
+    const file = new File(['hello'], 'avatar.png', { type: 'image/png' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    await waitFor(() => {
+      const dialog = screen.getByRole('dialog');
+      expect(dialog.querySelector('[style*="data:image/png;base64"]')).not.toBeNull();
+    });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+    await waitFor(() =>
+      expect(updateProfile).toHaveBeenCalledWith({
+        name: user.name,
+        avatar: expect.stringMatching(/^data:image\/png;base64,/),
+      })
+    );
+  });
   it('opens the existing preferences dialog', async () => {
     render(<ProfileClient />);
     fireEvent.click(screen.getByRole('button', { name: 'Preferences & reminders' }));

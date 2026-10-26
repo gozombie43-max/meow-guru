@@ -129,8 +129,8 @@ html.theme-light .bottom-pill-nav.is-light .bottom-nav-item {
 }
 
 html.theme-light .bottom-pill-nav.is-light .bottom-nav-icon {
-  width: 23px;
-  height: 23px;
+  width: 28px;
+  height: 28px;
   stroke-width: 1.8;
 }
 
@@ -164,25 +164,25 @@ html.theme-light .bottom-nav-label {
     max-width: 100%;
     border-radius: 20px 20px 0 0;
     border-bottom: 0;
-    padding: 4px max(8px, var(--safe-right)) calc(4px + var(--safe-bottom)) max(8px, var(--safe-left));
+    padding: 8px max(8px, var(--safe-right)) calc(8px + var(--safe-bottom)) max(8px, var(--safe-left));
     box-shadow: 0 -4px 24px rgb(24 36 56 / 5%);
   }
 
   /* Compact mobile dock height (matches dark theme). */
   html.theme-light .bottom-pill-nav.is-light .bottom-nav-item {
-    min-height: 46px;
-    padding: 4px 2px;
-    gap: 2px;
+    min-height: 56px;
+    padding: 6px 2px;
+    gap: 4px;
     border-radius: 12px;
   }
 
   html.theme-light .bottom-pill-nav.is-light .bottom-nav-icon {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
   }
 
   html.theme-light .bottom-nav-label {
-    font-size: 10px;
+    font-size: 11px;
   }
 }
 

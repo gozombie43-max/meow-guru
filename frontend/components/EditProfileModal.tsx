@@ -1,8 +1,8 @@
 'use client';
 
 import { Dialog } from "@/components/ui/Dialog";
-import React, { useState, useEffect } from 'react';
-import { X, Check, User as UserIcon, Image as ImageIcon, Sparkles, Loader2, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Check, User as UserIcon, Image as ImageIcon, Sparkles, Loader2, RotateCcw, Upload } from 'lucide-react';
 import GoogleAvatarRing from './GoogleAvatarRing';
 import { useAuth } from '@/context/AuthContext';
 import styles from './UserProfileMenu.module.css';
@@ -12,6 +12,10 @@ interface EditProfileModalProps {
   onClose: () => void;
   onSuccess?: () => void;
 }
+
+const MAX_AVATAR_FILE_BYTES = 5 * 1024 * 1024;
+const DIRECT_DATA_URL_MAX_BYTES = 64 * 1024;
+const AVATAR_CANVAS_SIZE = 160;
 
 // Curated high-quality avatar presets
 const PRESET_AVATARS = [
@@ -27,8 +31,63 @@ const PRESET_AVATARS = [
   { id: 'panda', label: 'Zen Panda 🐼', url: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Panda&backgroundColor=ffdfbf' },
 ];
 
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else {
+        reject(new Error('Unable to read image file.'));
+      }
+    };
+    reader.onerror = () => reject(new Error('Unable to read image file.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function readLocalAvatarFile(file: File): Promise<string> {
+  const dataUrl = await readFileAsDataUrl(file);
+  if (file.size <= DIRECT_DATA_URL_MAX_BYTES || typeof document === 'undefined') {
+    return dataUrl;
+  }
+
+  let ctx: CanvasRenderingContext2D | null = null;
+  let canvas: HTMLCanvasElement | null = null;
+  try {
+    canvas = document.createElement('canvas');
+    ctx = canvas.getContext('2d');
+  } catch {
+    ctx = null;
+  }
+  if (!canvas || !ctx) {
+    return dataUrl;
+  }
+
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const minSide = Math.min(img.width || AVATAR_CANVAS_SIZE, img.height || AVATAR_CANVAS_SIZE);
+        const sx = Math.max(0, ((img.width || minSide) - minSide) / 2);
+        const sy = Math.max(0, ((img.height || minSide) - minSide) / 2);
+        canvas.width = AVATAR_CANVAS_SIZE;
+        canvas.height = AVATAR_CANVAS_SIZE;
+        ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, AVATAR_CANVAS_SIZE, AVATAR_CANVAS_SIZE);
+        const webp = canvas.toDataURL('image/webp', 0.85);
+        resolve(webp.startsWith('data:image/webp') ? webp : canvas.toDataURL('image/jpeg', 0.85));
+      } catch {
+        resolve(dataUrl);
+      }
+    };
+    img.onerror = () => reject(new Error('Invalid image file.'));
+    img.src = dataUrl;
+  });
+}
+
 export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditProfileModalProps) {
   const { user, updateProfile } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState<string | null>(null);
   const [customUrl, setCustomUrl] = useState('');
@@ -40,13 +99,13 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     if (user) {
       const timer = window.setTimeout(() => {
         setName(user.name || '');
-        setAvatar(user.avatar || null);
-        setCustomUrl(user.avatar || '');
+        const existingAvatar = user.avatar || null;
+        setAvatar(existingAvatar);
+        setCustomUrl(existingAvatar && !existingAvatar.startsWith('data:') ? existingAvatar : '');
       }, 0);
       return () => window.clearTimeout(timer);
     }
   }, [user, isOpen]);
-
 
   if (!isOpen) return null;
 
@@ -60,6 +119,9 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     setAvatar(null);
     setCustomUrl('');
     setError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleCustomUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,6 +129,29 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     setCustomUrl(val);
     setAvatar(val.trim() ? val.trim() : null);
     setError(null);
+  };
+
+  const handleLocalFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file.');
+      return;
+    }
+    if (file.size > MAX_AVATAR_FILE_BYTES) {
+      setError('Image must be smaller than 5 MB.');
+      return;
+    }
+
+    try {
+      const processedDataUrl = await readLocalAvatarFile(file);
+      setAvatar(processedDataUrl);
+      setCustomUrl('');
+      setError(null);
+    } catch {
+      setError('Unable to load the selected image. Please try another file.');
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -136,7 +221,25 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
                 size={76}
               />
             </div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={handleLocalFileChange}
+              style={{ display: 'none' }}
+              aria-label="Upload profile image"
+            />
+            <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <button data-ui-button="secondary"
+                type="button"
+                className={styles.cancelBtn}
+                style={{ padding: '4px 10px', fontSize: '11.5px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                onClick={() => fileInputRef.current?.click()}
+                title="Upload image from your device"
+              >
+                <Upload size={12} />
+                <span>Upload Photo</span>
+              </button>
               <button data-ui-button="secondary"
                 type="button"
                 className={styles.cancelBtn}
@@ -212,7 +315,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
               placeholder="https://example.com/my-photo.jpg"
               className={styles.formInput}
              aria-label="https://example.com/my-photo.jpg"/>
-            <span className={styles.formHelp}>Paste any direct image link or choose a preset above.</span>
+            <span className={styles.formHelp}>Upload a local image, choose a preset, or paste a direct image link.</span>
           </div>
         </form>
 
