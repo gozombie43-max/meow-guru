@@ -212,8 +212,9 @@ export async function checkDuplicates(questions, examMode = undefined) {
   parseQuestionExamMode(examMode);
   const collection = getQuestionsCollection();
 
+  const questionIdentifier = q => String(q.id || q._id || q.questionId || "").trim();
   const ids = questions
-    .map((q) => String(q.id || q._id || q.questionId || ""))
+    .map(questionIdentifier)
     .filter(Boolean);
 
   const normalizeContentText = value => String(value ?? "").replace(/\s+/g, " ").trim().toLowerCase();
@@ -249,7 +250,9 @@ export async function checkDuplicates(questions, examMode = undefined) {
     const options = contentOptions(q).map(normalizeContentText);
     return text && options.length && options.every(Boolean) ? `${contentScope(q)}\u0000${text}\u0000${options.join("\u0000")}` : "";
   };
-  const incomingTexts = questions.map(getQuestionText).filter(Boolean);
+  // A supplied source ID is the record identity. Content matching remains a
+  // safe fallback for legacy rows that do not carry one.
+  const incomingTexts = questions.filter(q => !questionIdentifier(q)).map(getQuestionText).filter(Boolean);
   const uniqueIds = Array.from(new Set(ids));
   const uniqueTexts = Array.from(new Set(incomingTexts));
 
@@ -312,13 +315,13 @@ export async function checkDuplicates(questions, examMode = undefined) {
 
   const duplicates = [];
   questions.forEach((q, index) => {
-    const qId = String(q.id || q._id || q.questionId || "");
+    const qId = questionIdentifier(q);
     const qText = getQuestionText(q);
     const fingerprint = contentFingerprint(q);
 
     if (qId && existingMap.has(qId)) {
       duplicates.push({ index, id: qId, reason: "Duplicate ID" });
-    } else if (qText && fingerprint && existingContentMap.has(fingerprint)) {
+    } else if (!qId && qText && fingerprint && existingContentMap.has(fingerprint)) {
       duplicates.push({
         index,
         id: qId,
