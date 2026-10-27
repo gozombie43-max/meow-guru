@@ -1,79 +1,20 @@
-import { hasSlashOutsideUrls, splitContentUrls } from './content-urls';
+import { hasSlashOutsideUrls } from './content-urls';
 import React from "react";
 import MathRenderer from "@/components/MathRenderer";
 import { containsMathSyntax } from "@/components/math-syntax";
 
 type Props = { text: string; className?: string };
 
-const fracRegex = /(\([^)]+\)|[^\s/()]+)\s*\/\s*(\([^)]+\)|[^\s/()]+)/g;
-
 const MathText = React.memo(function MathText({ text, className = "" }: Props) {
   if (!text) return <span className={className} />;
 
-  // Parse complete math expressions before the legacy slash-fraction layout;
-  // otherwise a slash inside an exponent or LaTeX group splits the expression.
-  if (containsMathSyntax(text)) {
-    return <MathRenderer text={text} className={className} />;
-  }
-
-  // Fast path: no fractions or math syntax — render as plain text
-  if (!hasSlashOutsideUrls(text)) {
+  // Keep prose, alternatives, URLs, and dates synchronous. Real math and
+  // standalone numeric fractions use MathRenderer so both components share
+  // KaTeX's stable inline layout instead of a separate stacked-span layout.
+  if (!containsMathSyntax(text) && !hasSlashOutsideUrls(text)) {
     return <span className={className}>{text}</span>;
   }
-  const segments = splitContentUrls(text);
-
-  const parts: Array<
-    | { type: "text"; value: string }
-    | { type: "frac"; num: string; den: string }
-  > = [];
-
-  segments.forEach(segment => {
-    if (segment.isUrl) {
-      parts.push({ type: "text", value: segment.text });
-      return;
-    }
-    let lastIndex = 0;
-    let match: RegExpExecArray | null;
-    fracRegex.lastIndex = 0;
-    while ((match = fracRegex.exec(segment.text)) !== null) {
-      const idx = match.index;
-      if (idx > lastIndex) parts.push({ type: "text", value: segment.text.slice(lastIndex, idx) });
-      parts.push({ type: "frac", num: match[1], den: match[2] });
-      lastIndex = fracRegex.lastIndex;
-    }
-    if (lastIndex < segment.text.length) parts.push({ type: "text", value: segment.text.slice(lastIndex) });
-  });
-
-  return (
-    <span className={className}>
-      {parts.map((p, i) => {
-        if (p.type === "text") return <MathRenderer key={i} text={p.value} />;
-        const num = p.num.replace(/^\(|\)$/g, "");
-        let den = p.den.replace(/^\(|\)$/g, "");
-        const percentSuffix = den.endsWith("%") ? "%" : "";
-        if (percentSuffix) den = den.slice(0, -1).trim();
-
-        return (
-          <span key={i} className="inline-flex items-center gap-0.5 align-middle">
-            <span className="inline-flex flex-col items-center leading-none" role="math">
-              <span className="text-[var(--text-primary,inherit)] font-bold" style={{ fontSize: "0.85em", color: "inherit" }}>
-                <MathRenderer text={num} />
-              </span>
-              <span className="w-full border-t border-slate-400 my-[2px]" style={{ minWidth: "1.2em" }} />
-              <span className="text-slate-500 font-semibold" style={{ fontSize: "0.85em" }}>
-                <MathRenderer text={den} />
-              </span>
-            </span>
-            {percentSuffix && (
-              <span className="text-[var(--text-primary,inherit)] font-semibold" style={{ fontSize: "0.95em", color: "inherit" }}>
-                %
-              </span>
-            )}
-          </span>
-        );
-      })}
-    </span>
-  );
+  return <MathRenderer text={text} className={className} />;
 });
 
 export default MathText;

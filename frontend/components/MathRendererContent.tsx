@@ -1,6 +1,6 @@
 "use client";
 
-import { splitContentUrls } from './content-urls';
+import { createStandaloneNumericFracRegex, hasSlashOutsideUrls, splitContentUrls } from './content-urls';
 import React from "react";
 import katex from "katex";
 import "katex/dist/katex.min.css";
@@ -125,8 +125,8 @@ const MathRenderer = React.memo(function MathRenderer({
 }: MathRendererProps) {
   if (!text) return null;
 
-  // Fast path: no math delimiters and no fraction patterns — render as plain text
-  if (!containsMathSyntax(text) && !text.includes("/")) {
+  // Prose slashes and dates do not need KaTeX.
+  if (!containsMathSyntax(text) && !hasSlashOutsideUrls(text)) {
     return (
       <span
         className={`math-text inline leading-relaxed ${className}`}
@@ -141,36 +141,27 @@ const MathRenderer = React.memo(function MathRenderer({
 
   const rendered = parts.map((part, i) => {
     if (part.type === "text") {
-      if (!part.content.includes('/')) {
+      if (!hasSlashOutsideUrls(part.content)) {
         return <span key={i}>{part.content}</span>;
       }
-      // Protect URLs and image paths so path slashes are never turned into fractions
+      // Protect URLs and image paths; only format standalone numeric fractions.
       const textSegments = splitContentUrls(part.content);
-
-      const fracRegex = /\(?[^\s\/=()]+\)?\s*\/\s*\(?[^\s\/=()]+\)?/g;
       const nodes: React.ReactNode[] = [];
 
       textSegments.forEach((segment, segIdx) => {
-        if (segment.isUrl) {
-          nodes.push(<span key={`${i}-url-${segIdx}`}>{segment.text}</span>);
-          return;
-        }
-        if (!segment.text.includes('/')) {
+        if (segment.isUrl || !hasSlashOutsideUrls(segment.text)) {
           nodes.push(<span key={`${i}-seg-${segIdx}`}>{segment.text}</span>);
           return;
         }
+        const fracRegex = createStandaloneNumericFracRegex();
         let lastIndex = 0;
         let match: RegExpExecArray | null;
-        fracRegex.lastIndex = 0;
         while ((match = fracRegex.exec(segment.text)) !== null) {
           const idx = match.index;
           if (idx > lastIndex) nodes.push(<span key={`${i}-${segIdx}-t-${lastIndex}`}>{segment.text.slice(lastIndex, idx)}</span>);
-          const frac = match[0];
-          const partsFrac = frac.split('/');
-          const rawNum = partsFrac[0].trim().replace(/^\(|\)$/g, '');
-          let rawDen = partsFrac.slice(1).join('/').trim().replace(/^\(|\)$/g, '');
-          const hasPercent = rawDen.endsWith('%');
-          if (hasPercent) rawDen = rawDen.slice(0, -1).trim();
+          const rawNum = match[1].trim().replace(/^\(|\)$/g, '');
+          const rawDen = match[2].trim().replace(/^\(|\)$/g, '');
+          const hasPercent = match[0].endsWith('%');
           const html = renderKatexSafe(`\\tfrac{${rawNum}}{${rawDen}}`, false);
           nodes.push(
             <span key={`${i}-${segIdx}-f-${idx}`} dangerouslySetInnerHTML={{ __html: html }} />
@@ -184,7 +175,8 @@ const MathRenderer = React.memo(function MathRenderer({
       return <span key={i}>{nodes}</span>;
     }
 
-    const mathContent = part.content.replace(/(\d+)\s*\/\s*(\d+)/g, "\\tfrac{$1}{$2}");
+    // Do not split chained slashes or dates even inside explicit math.
+    const mathContent = part.content.replace(/(?<!\/\s*)(?<![/\d])(\d+)\s*\/\s*(\d+)(?!\s*\/)(?![/\d])/g, "\\tfrac{$1}{$2}");
     const html = renderKatexSafe(mathContent, part.type === "display");
 
     return (

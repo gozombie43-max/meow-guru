@@ -90,7 +90,28 @@ x &= \pm 2
   });
 
   it('handles percentage in fraction denominators', async () => {
-    render(<MathRenderer text="Growth rate is 1/5%" />);
+    const { container } = render(<MathRenderer text="Growth rate is 1/5%" />);
     expect(await screen.findByText('%')).toBeDefined();
+    expect(container.querySelector('.katex')).not.toBeNull();
+  });
+
+  it.each([
+    'রাজ্য / নগরগুলির',
+    'ভুট্টা, শসা, ডুমুর এবং তরমুজ/খরমুজ',
+    'পতঙ্গ/আর্থ্রোপোড',
+    'and/or',
+    'state / city',
+    'true / false',
+    'is/are',
+    '15/08/1947',
+    'SSC CHSL 11/07/2024',
+    '25/10/2026',
+    '১৫/০৮/১৯৪৭',
+    'COVID-19/20',
+    'Ratio is 3:4 or ৩:৪',
+  ])('keeps prose slashes and dates out of KaTeX fractions: %s', (text) => {
+    const { container } = render(<MathRendererContent text={text} />);
+    expect(container.textContent).toBe(text);
+    expect(container.querySelector('.katex, mfrac')).toBeNull();
   });
 });
