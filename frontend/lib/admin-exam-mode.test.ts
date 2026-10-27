@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { adminScopedUrl, getAdminExamCatalog, prepareAdminQuestion } from './admin-exam-mode';
+import { adminQuestionChapterLabel, adminQuestionTopicLabel, adminScopedUrl, getAdminExamCatalog, prepareAdminQuestion } from './admin-exam-mode';
 
 it('provides only Physics and its seven sections for JAM, and only SSC categories otherwise', () => {
   const jam = getAdminExamCatalog('iit-jam');
@@ -26,4 +26,37 @@ it('rejects cross-bank imports instead of silently reassigning them', () => {
 it('preserves URL queries while replacing any previous exam scope', () => {
   expect(adminScopedUrl('/backend-api/api/questions?limit=50&examMode=ssc', 'iit-jam')).toBe('/backend-api/api/questions?limit=50&examMode=iit-jam');
   expect(adminScopedUrl('https://api.example.test/api/questions?limit=1', 'ssc')).toBe('https://api.example.test/api/questions?limit=1&examMode=ssc');
+});
+
+it('assigns topicGroup, chapter, and chapter-level topic for General Awareness questions', () => {
+  const prepared = prepareAdminQuestion(
+    { question: 'Which acid is present in vinegar?' },
+    'ssc',
+    'general-awareness',
+    'chemistry',
+    'Acids, Bases and Salts'
+  );
+  expect(prepared).toMatchObject({
+    subject: 'general-awareness',
+    topic: 'Acids, Bases and Salts',
+    quizTopic: 'Acids, Bases and Salts',
+    topicGroup: 'chemistry',
+    chapter: 'Acids, Bases and Salts',
+    chapterSlug: 'acids-bases-and-salts',
+  });
+
+  expect(
+    adminQuestionTopicLabel({
+      subject: 'general-awareness',
+      topic: 'Acids, Bases and Salts',
+      chapter: 'Acids, Bases and Salts',
+    })
+  ).toBe('Chemistry');
+  expect(
+    adminQuestionChapterLabel({
+      subject: 'general-awareness',
+      topic: 'Acids, Bases and Salts',
+      chapter: '',
+    })
+  ).toBe('Acids, Bases and Salts');
 });

@@ -3,7 +3,9 @@ import {
   QUIZ_OPTIONS_BY_TOPIC,
   SUBJECT_TOPIC_OPTIONS,
   filterTopicsForSubject,
+  getGeneralAwarenessChaptersForTopic,
   isTopicAllowedForSubject,
+  resolveGeneralAwarenessQuestionTaxonomy,
 } from "./admin-question-bank-model";
 
 describe("admin question-bank model", () => {
@@ -56,5 +58,45 @@ describe("admin question-bank model", () => {
     ];
     const filtered = filterTopicsForSubject(mixed, "mathematics");
     expect(filtered).toEqual(["algebra", "geometry", "mensuration"]);
+  });
+
+  it("exposes the 11 canonical General Awareness topics and their ranked chapters", () => {
+    expect(SUBJECT_TOPIC_OPTIONS["general-awareness"].map((t) => t.value)).toEqual([
+      "ancient-history",
+      "medieval-history",
+      "modern-history",
+      "polity",
+      "geography",
+      "physics",
+      "chemistry",
+      "biology",
+      "economy",
+      "current-affairs",
+      "static-gk",
+    ]);
+
+    const chemistryChapters = getGeneralAwarenessChaptersForTopic("chemistry");
+    expect(chemistryChapters.map((c) => c.value)).toContain("Acids, Bases and Salts");
+    expect(chemistryChapters[0]).toMatchObject({
+      value: "Matter and Its Properties",
+      label: "Matter and Its Properties",
+      rank: 1,
+    });
+
+    // GA chapter names must not leak into top-level topics for any subject
+    expect(isTopicAllowedForSubject("Acids, Bases and Salts", "general-awareness")).toBe(false);
+    expect(isTopicAllowedForSubject("chemistry", "general-awareness")).toBe(true);
+    expect(isTopicAllowedForSubject("Acids, Bases and Salts", "mathematics")).toBe(false);
+
+    expect(
+      resolveGeneralAwarenessQuestionTaxonomy({
+        topic: "Acids, Bases and Salts",
+        chapter: "Acids, Bases and Salts",
+      })
+    ).toEqual({
+      topicSlug: "chemistry",
+      topicLabel: "Chemistry",
+      chapterTitle: "Acids, Bases and Salts",
+    });
   });
 });

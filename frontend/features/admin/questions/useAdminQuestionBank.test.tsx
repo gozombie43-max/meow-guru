@@ -194,3 +194,70 @@ it('selects all matching topic questions across pages and deletes them in batche
   expect(result.current.selected.size).toBe(0);
   expect(result.current.success).toContain('Deleted 120 questions');
 });
+
+it('shows canonical GA topics and topic-specific chapters when General Awareness is selected', async () => {
+  fetch.mockImplementation(async (url: string) => {
+    const params = new URL(url, 'http://localhost').searchParams;
+    return {
+      ok: true,
+      json: async () => ({
+        questions: [
+          {
+            id: 'ga_chem_1',
+            subject: 'general-awareness',
+            topic: params.get('chapter') || 'Acids, Bases and Salts',
+            chapter: params.get('chapter') || 'Acids, Bases and Salts',
+          },
+        ],
+        count: 1,
+        total: 1,
+        facets: {
+          topics: ['Acids, Bases and Salts', 'Advent of Europeans', 'Animal Kingdom'],
+          exams: ['SSC CGL'],
+          quizNames: ['PYQ'],
+        },
+      }),
+    };
+  });
+
+  const { result } = renderHook(useAdminQuestionBank);
+  await waitFor(() => expect(result.current.questions[0]?.id).toBe('ga_chem_1'));
+
+  act(() => {
+    result.current.setFilterSubject('general-awareness');
+  });
+
+  // Top-level topics should be the 11 canonical GA topics, not the 192 chapter names
+  expect(result.current.topics).toContain('chemistry');
+  expect(result.current.topics).toContain('modern-history');
+  expect(result.current.topics).not.toContain('Acids, Bases and Salts');
+  expect(result.current.chapters).toEqual([]);
+
+  // Select Chemistry topic -> chapters for Chemistry populate
+  act(() => {
+    result.current.setFilterTopic('chemistry');
+  });
+
+  expect(result.current.filterChapter).toBe('');
+  expect(result.current.chapters.map((c) => c.value)).toContain('Acids, Bases and Salts');
+
+  // Select a specific chapter -> fetchQuestions passes both topic=chemistry and chapter=Acids, Bases and Salts
+  act(() => {
+    result.current.setFilterChapter('Acids, Bases and Salts');
+  });
+
+  await waitFor(() => {
+    const latestCall = fetch.mock.calls.at(-1)?.[0];
+    const query = new URL(latestCall, 'http://localhost').searchParams;
+    expect(query.get('subject')).toBe('general-awareness');
+    expect(query.get('topic')).toBe('chemistry');
+    expect(query.get('chapter')).toBe('Acids, Bases and Salts');
+  });
+
+  // Changing topic resets filterChapter
+  act(() => {
+    result.current.setFilterTopic('biology');
+  });
+  expect(result.current.filterChapter).toBe('');
+  expect(result.current.chapters.map((c) => c.value)).toContain('Animal Kingdom');
+});

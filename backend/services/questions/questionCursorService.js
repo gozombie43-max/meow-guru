@@ -6,6 +6,11 @@ import { createHash } from 'node:crypto';
 import { readQuestionFacets } from './questionFacets.js';
 import { getQuestionsCollection } from '../../config/mongodb.js';
 import { normalizeSearchKey } from './questionNormalizer.js';
+import {
+  buildGeneralAwarenessChapterCondition,
+  buildGeneralAwarenessTopicCondition,
+  resolveGeneralAwarenessTopicGroupSlug,
+} from './generalAwarenessTopics.js';
 import { caseInsensitiveExact, combineMongoConditions, buildStudyModeMatchCondition, buildExcludeStudyModeCondition } from './questionQueryBuilder.js';
 import { isNormalizedQuestionKeysEnabled } from './questionCache.js';
 
@@ -33,10 +38,17 @@ async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
     const escaped = String(params.search).slice(0, 200).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     conditions.push({ $or: ['question', 'id', 'chapter'].map(field => ({ [field]: new RegExp(escaped, 'i') })) });
   }
+  const gaGroupSlug = resolveGeneralAwarenessTopicGroupSlug(params.topic);
+  const isGaQuery = Boolean(gaGroupSlug) || normalizeSearchKey(params.subject) === 'generalawareness';
   if (params.topic) {
-    const key = normalizeSearchKey(params.topic);
-    const aliases = ['synonymsantonyms', 'antosynopyq'].includes(key);
-    conditions.push(normalized ? { topicKey: aliases ? { $in: ['synonymsantonyms', 'antosynopyq'] } : key } : { topic: aliases ? { $in: [params.topic, 'synonyms-antonyms', 'antosynopyq'] } : params.topic });
+    const gaTopicCondition = gaGroupSlug ? buildGeneralAwarenessTopicCondition(gaGroupSlug, normalized) : null;
+    if (gaTopicCondition) {
+      conditions.push(gaTopicCondition);
+    } else {
+      const key = normalizeSearchKey(params.topic);
+      const aliases = ['synonymsantonyms', 'antosynopyq'].includes(key);
+      conditions.push(normalized ? { topicKey: aliases ? { $in: ['synonymsantonyms', 'antosynopyq'] } : key } : { topic: aliases ? { $in: [params.topic, 'synonyms-antonyms', 'antosynopyq'] } : params.topic });
+    }
   }
   if (params.subject && (!params.topic || normalizeSearchKey(params.subject) === 'iitjamphysics')) {
     const subKey = normalizeSearchKey(params.subject);
@@ -48,7 +60,11 @@ async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
           : { subject: caseInsensitiveExact(params.subject) }
     ));
   }
-  for (const field of ['chapter', 'concept', 'difficulty']) if (params[field]) conditions.push(normalized ? { [field]: field === 'difficulty' ? String(params[field]).toLowerCase() : params[field] } : { [field]: caseInsensitiveExact(params[field]) });
+  if (params.chapter) {
+    const gaChapterCondition = isGaQuery ? buildGeneralAwarenessChapterCondition(params.chapter, normalized) : null;
+    conditions.push(gaChapterCondition || (normalized ? { chapter: params.chapter } : { chapter: caseInsensitiveExact(params.chapter) }));
+  }
+  for (const field of ['concept', 'difficulty']) if (params[field]) conditions.push(normalized ? { [field]: field === 'difficulty' ? String(params[field]).toLowerCase() : params[field] } : { [field]: caseInsensitiveExact(params[field]) });
   if (params.quizName) {
     const regex = caseInsensitiveExact(params.quizName);
     const alternatives = ['quizName', 'quizId', 'source'].map(field => ({ [field]: regex }));

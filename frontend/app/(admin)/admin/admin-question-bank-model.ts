@@ -1,8 +1,14 @@
 import { JAM_SECTIONS, jamQuestionTopic } from '@meow/contracts/jam';
+import {
+  GENERAL_AWARENESS_TOPIC_GROUPS,
+  getGeneralAwarenessTopicGroup,
+} from '@/lib/general-awareness-topic-groups';
 
 export type Question = {
   id: string;
   topic: string;
+  topicGroup?: string;
+  chapterSlug?: string;
   subject: string;
   chapter: string;
   subtopic: string;
@@ -34,6 +40,7 @@ export const SUBJECTS = ["mathematics", "reasoning", "english", "general awarene
 
 export type SubjectKey = "mathematics" | "reasoning" | "english" | "general-awareness" | "iit-jam-physics";
 export type TopicOption = { value: string; label: string };
+export type ChapterOption = { value: string; label: string; slug: string; rank: number };
 export type BulkStats = { total: number; ready: number; errors: number };
 export type BulkImageItem = {
   id: string;
@@ -208,13 +215,17 @@ const ENGLISH_TOPICS = [
   "tenses",
 ];
 
-const GA_TOPICS = [
-  "current-affairs",
-  "economics",
-  "general-science",
-  "geography",
-  "history",
+export const GA_TOPICS = [
+  "ancient-history",
+  "medieval-history",
+  "modern-history",
   "polity",
+  "geography",
+  "physics",
+  "chemistry",
+  "biology",
+  "economy",
+  "current-affairs",
   "static-gk",
 ];
 
@@ -232,12 +243,103 @@ export const normalizeTopicKey = (t: string) =>
 export const normalizeSubjectKey = (s: string) =>
   String(s || "").toLowerCase().replace(/[-_\s]/g, "");
 
+const normalizeGaChapterLookupKey = (value: string) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "");
+
+type GaChapterMeta = {
+  topicSlug: string;
+  topicLabel: string;
+  chapterTitle: string;
+  chapterSlug: string;
+  rank: number;
+};
+
+const GA_CHAPTER_LOOKUP = new Map<string, GaChapterMeta>();
+const ALL_GA_CHAPTER_TITLES_AND_SLUGS: string[] = [];
+
+for (const [groupSlug, group] of Object.entries(GENERAL_AWARENESS_TOPIC_GROUPS)) {
+  const topicLabel = toTopicLabel(groupSlug);
+  for (const ch of group.topics) {
+    const meta: GaChapterMeta = {
+      topicSlug: groupSlug,
+      topicLabel,
+      chapterTitle: ch.title,
+      chapterSlug: ch.slug,
+      rank: ch.rank,
+    };
+    ALL_GA_CHAPTER_TITLES_AND_SLUGS.push(ch.title, ch.slug);
+    GA_CHAPTER_LOOKUP.set(normalizeGaChapterLookupKey(ch.title), meta);
+    GA_CHAPTER_LOOKUP.set(normalizeGaChapterLookupKey(ch.slug), meta);
+    GA_CHAPTER_LOOKUP.set(normalizeTopicKey(ch.title), meta);
+    GA_CHAPTER_LOOKUP.set(normalizeTopicKey(ch.slug), meta);
+  }
+}
+
+export function getGeneralAwarenessChaptersForTopic(topic: string): ChapterOption[] {
+  if (!topic) return [];
+  const normalized = normalizeTopicKey(topic);
+  const matchedSlug = GA_TOPICS.find((slug) => normalizeTopicKey(slug) === normalized) || topic;
+  const group = getGeneralAwarenessTopicGroup(matchedSlug);
+  if (!group) return [];
+  return group.topics.map((ch) => ({
+    value: ch.title,
+    label: ch.title,
+    slug: ch.slug,
+    rank: ch.rank,
+  }));
+}
+
+export function findGeneralAwarenessChapterMeta(value: string): GaChapterMeta | null {
+  if (!value) return null;
+  return (
+    GA_CHAPTER_LOOKUP.get(normalizeGaChapterLookupKey(value)) ||
+    GA_CHAPTER_LOOKUP.get(normalizeTopicKey(value)) ||
+    null
+  );
+}
+
+export function resolveGeneralAwarenessQuestionTaxonomy(
+  q: { subject?: string; topic?: string; chapter?: string; topicGroup?: string; chapterSlug?: string }
+): { topicSlug: string; topicLabel: string; chapterTitle: string } | null {
+  const subKey = normalizeSubjectKey(q.subject || "");
+  const fromChapter =
+    findGeneralAwarenessChapterMeta(q.chapterSlug || "") ||
+    findGeneralAwarenessChapterMeta(q.chapter || "") ||
+    findGeneralAwarenessChapterMeta(q.topic || "");
+
+  if (fromChapter) {
+    return {
+      topicSlug: fromChapter.topicSlug,
+      topicLabel: fromChapter.topicLabel,
+      chapterTitle: q.chapter || fromChapter.chapterTitle,
+    };
+  }
+
+  if (subKey === "generalawareness" || q.topicGroup) {
+    const rawTopic = q.topicGroup || q.topic || "";
+    const matchedTopic = GA_TOPICS.find((t) => normalizeTopicKey(t) === normalizeTopicKey(rawTopic));
+    if (matchedTopic) {
+      return {
+        topicSlug: matchedTopic,
+        topicLabel: toTopicLabel(matchedTopic),
+        chapterTitle: q.chapter && normalizeTopicKey(q.chapter) !== normalizeTopicKey(matchedTopic) ? q.chapter : "",
+      };
+    }
+  }
+
+  return null;
+}
+
 const ALL_SUBJECT_TOPICS: Record<string, string[]> = {
   iitjamphysics: JAM_SECTIONS.map(section => jamQuestionTopic(section.slug)),
   mathematics: [...MATH_TOPICS, "mathematical-symbolic-operations"],
   reasoning: REASONING_TOPICS,
   english: ENGLISH_TOPICS,
-  generalawareness: GA_TOPICS,
+  generalawareness: [...GA_TOPICS, ...ALL_GA_CHAPTER_TITLES_AND_SLUGS],
 };
 
 export function isTopicAllowedForSubject(topic: string, subject: string): boolean {
@@ -247,6 +349,10 @@ export function isTopicAllowedForSubject(topic: string, subject: string): boolea
 
   const topKey = normalizeTopicKey(topic);
   if (!topKey) return false;
+
+  if (subKey === "generalawareness") {
+    return GA_TOPICS.some((t) => normalizeTopicKey(t) === topKey);
+  }
 
   const currentSubjectTopics = ALL_SUBJECT_TOPICS[subKey];
   if (currentSubjectTopics?.some((t) => normalizeTopicKey(t) === topKey)) {
@@ -267,6 +373,19 @@ export function isTopicAllowedForSubject(topic: string, subject: string): boolea
 
 export function filterTopicsForSubject(topics: string[], subject: string): string[] {
   if (!subject) return topics;
+  if (normalizeSubjectKey(subject) === "generalawareness") {
+    const result = new Set<string>();
+    for (const t of topics) {
+      if (isTopicAllowedForSubject(t, subject)) {
+        const canonical = GA_TOPICS.find((ga) => normalizeTopicKey(ga) === normalizeTopicKey(t)) || t;
+        result.add(canonical);
+      } else {
+        const meta = findGeneralAwarenessChapterMeta(t);
+        if (meta) result.add(meta.topicSlug);
+      }
+    }
+    return Array.from(result);
+  }
   return topics.filter((t) => isTopicAllowedForSubject(t, subject));
 }
 

@@ -1,6 +1,7 @@
 "use client";
 import {
   DEFAULT_QUIZ_OPTIONS,
+  getGeneralAwarenessChaptersForTopic,
   MAX_BULK_IMAGES,
   QUIZ_OPTIONS_BY_TOPIC,
   type BulkImageItem,
@@ -24,6 +25,7 @@ export function useQuestionUploads(showMsg: (message: string, isError?: boolean)
   // Mass upload
   const [muSubject, setMuSubject] = useState<SubjectKey | "">(isJam ? JAM_SUBJECT : "");
   const [muTopic, setMuTopic] = useState("");
+  const [muChapter, setMuChapter] = useState("");
   const [muQuiz, setMuQuiz] = useState("");
   const [muFileName, setMuFileName] = useState("");
   const [muStats, setMuStats] = useState<BulkStats>({ total: 0, ready: 0, errors: 0 });
@@ -39,6 +41,7 @@ export function useQuestionUploads(showMsg: (message: string, isError?: boolean)
   const bulkImageRef = useRef<HTMLInputElement | null>(null);
 
   const muTopicOptions = muSubject ? SUBJECT_TOPIC_OPTIONS[muSubject as SubjectKey] : [];
+  const muChapterOptions = muSubject === "general-awareness" && muTopic ? getGeneralAwarenessChaptersForTopic(muTopic) : [];
   const selectedSubjectId = muSubject;
   const selectedTopicId = muTopic;
   const selectedQuizId = muQuiz;
@@ -124,8 +127,13 @@ export function useQuestionUploads(showMsg: (message: string, isError?: boolean)
   };
 
   const handleMuUpload = async () => {
-    if (!muSubject || !muTopic || !muQuiz) {
-      showMsg("Select subject, topic, and quiz before uploading", true);
+    if (!muSubject || !muTopic || (muSubject === "general-awareness" && muChapterOptions.length > 0 && !muChapter) || !muQuiz) {
+      showMsg(
+        muSubject === "general-awareness" && muChapterOptions.length > 0
+          ? "Select subject, topic, chapter, and quiz before uploading"
+          : "Select subject, topic, and quiz before uploading",
+        true
+      );
       return;
     }
     if (!muQuestions.length) {
@@ -136,7 +144,7 @@ export function useQuestionUploads(showMsg: (message: string, isError?: boolean)
     setMuUploading(true);
     try {
       const payload = muQuestions.map((q) => ({
-        ...prepareAdminQuestion(q, mode, muSubject, muTopic),
+        ...prepareAdminQuestion(q, mode, muSubject, muTopic, muChapter || undefined),
         quizName: muQuiz,
       }));
 
@@ -211,7 +219,14 @@ export function useQuestionUploads(showMsg: (message: string, isError?: boolean)
   };
 
   const handleBulkImageUpload = async () => {
-    if (!muSubject || !muTopic) { setBulkImageNotice('Select a subject and topic before uploading images.'); return; }
+    if (!muSubject || !muTopic || (muSubject === "general-awareness" && muChapterOptions.length > 0 && !muChapter)) {
+      setBulkImageNotice(
+        muSubject === "general-awareness" && muChapterOptions.length > 0
+          ? "Select a subject, topic, and chapter before uploading images."
+          : "Select a subject and topic before uploading images."
+      );
+      return;
+    }
     if (!bulkImages.length) {
       setBulkImageNotice("Select images before uploading.");
       return;
@@ -223,7 +238,11 @@ export function useQuestionUploads(showMsg: (message: string, isError?: boolean)
       const secret = getAdminToken();
       const formData = new FormData();
       formData.set('subject', muSubject);
-      formData.set('topic', muTopic);
+      formData.set('topic', muSubject === "general-awareness" && muChapter ? muChapter : muTopic);
+      if (muSubject === "general-awareness" && muChapter) {
+        formData.set('chapter', muChapter);
+        formData.set('topicGroup', muTopic);
+      }
       formData.set('quizName', muQuiz);
       bulkImages.forEach((item) => formData.append("images", item.file));
 
@@ -253,5 +272,5 @@ export function useQuestionUploads(showMsg: (message: string, isError?: boolean)
     }
   };
 
-  return { muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload };
+  return { muSubject, setMuSubject, muTopic, setMuTopic, muChapter, setMuChapter, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, muTopicOptions, muChapterOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload };
 }
