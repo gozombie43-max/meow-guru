@@ -398,8 +398,8 @@ describe('MongoDB-backed question reads', () => {
   it('keeps ID conflicts separate and compares normalized question content, including options', async () => {
     const idCursor = createCursor([{ id: 'existing-id', question: 'Stored by id' }]);
     const textCursor = createCursor([
-      { id: 'different-options', question: 'Same question', options: ['A', 'B'] },
-      { id: 'matched-content-id', question: '  Same question ', options: ['One', 'Two'] },
+      { id: 'different-options', subject: 'Biology', topic: 'Hormones', question: 'Same question', options: ['A', 'B'] },
+      { id: 'matched-content-id', subject: 'Biology', topic: 'Hormones', question: '  Same question ', options: ['One', 'Two'] },
     ]);
     const collection = {
       find: vi.fn()
@@ -412,19 +412,30 @@ describe('MongoDB-backed question reads', () => {
       { id: 'existing-id', question: 'Same question' },
       {
         id: 'new-id',
+        subject: 'biology',
+        topic: 'hormones',
         question: { en: 'Same question', bn: 'একই প্রশ্ন' },
         options: { en: ['One', 'Two'], bn: ['এক', 'দুই'] },
       },
       {
         id: 'same-stem-new-options',
+        subject: 'biology',
+        topic: 'hormones',
         question: { en: 'Same question', bn: 'একই প্রশ্ন' },
         options: { en: ['Three', 'Four'], bn: ['তিন', 'চার'] },
+      },
+      {
+        id: 'same-content-other-topic',
+        subject: 'biology',
+        topic: 'nervous-system',
+        question: { en: 'Same question', bn: 'একই প্রশ্ন' },
+        options: { en: ['One', 'Two'], bn: ['এক', 'দুই'] },
       },
       { id: 'unique-id', question: 'Unique question' },
     ]);
 
     expect(collection.find).toHaveBeenNthCalledWith(1, {
-      id: { $in: ['existing-id', 'new-id', 'same-stem-new-options', 'unique-id'] },
+      id: { $in: ['existing-id', 'new-id', 'same-stem-new-options', 'same-content-other-topic', 'unique-id'] },
     });
     expect(collection.find).toHaveBeenNthCalledWith(2, {
       $or: [
