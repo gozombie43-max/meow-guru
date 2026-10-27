@@ -64,11 +64,23 @@ export function validateRecord(q) {
   return issues;
 }
 
-/** Stable content fingerprint used for in-file and cross-file duplicate detection. */
+/**
+ * Stable import identity used for in-file and cross-file duplicate detection.
+ *
+ * A source-supplied ID is authoritative: datasets can intentionally contain
+ * the same prompt and options under different IDs (for example, questions
+ * sourced from separate exams with their own solutions). Fall back to content
+ * only when a row has no stable source ID.
+ */
 export function recordFingerprint(q) {
   const normalize = value => value.toLowerCase().replace(/\s+/g, ' ').trim();
   const scope = `${normalize(String(q.subject ?? q.quizSubject ?? ''))}|${normalize(String(q.topic ?? q.chapter ?? q.quizTopic ?? ''))}`;
-  const body = isStudyModeRecord(q) ? `s:${scope}|w:${normalize(String(q.word))}` : `s:${scope}|${normalize(questionText(q))}|${optionTexts(q).map(normalize).join('|')}`;
+  const sourceId = normalize(String(q.id ?? q.questionId ?? ''));
+  const body = sourceId
+    ? `s:${scope}|i:${sourceId}`
+    : isStudyModeRecord(q)
+      ? `s:${scope}|w:${normalize(String(q.word))}`
+      : `s:${scope}|${normalize(questionText(q))}|${optionTexts(q).map(normalize).join('|')}`;
   return createHash('sha256').update(body).digest('hex');
 }
 

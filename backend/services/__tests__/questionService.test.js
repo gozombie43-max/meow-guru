@@ -395,7 +395,7 @@ describe('MongoDB-backed question reads', () => {
     expect(collection.find).toHaveBeenCalledWith({ id: { $in: ['q457'] }, topic: 'algebra' });
   });
 
-  it('keeps ID conflicts separate and compares normalized question content, including options', async () => {
+  it('uses supplied IDs as question identity and falls back to normalized content for anonymous rows', async () => {
     const idCursor = createCursor([{ id: 'existing-id', question: 'Stored by id' }]);
     const textCursor = createCursor([
       { id: 'different-options', subject: 'Biology', topic: 'Hormones', question: 'Same question', options: ['A', 'B'] },
@@ -431,6 +431,12 @@ describe('MongoDB-backed question reads', () => {
         question: { en: 'Same question', bn: 'একই প্রশ্ন' },
         options: { en: ['One', 'Two'], bn: ['এক', 'দুই'] },
       },
+      {
+        subject: 'biology',
+        topic: 'hormones',
+        question: { en: 'Same question', bn: 'একই প্রশ্ন' },
+        options: { en: ['One', 'Two'], bn: ['এক', 'দুই'] },
+      },
       { id: 'unique-id', question: 'Unique question' },
     ]);
 
@@ -439,15 +445,15 @@ describe('MongoDB-backed question reads', () => {
     });
     expect(collection.find).toHaveBeenNthCalledWith(2, {
       $or: [
-        { question: { $in: ['Same question', 'Unique question'] } },
-        { questionText: { $in: ['Same question', 'Unique question'] } },
+        { question: { $in: ['Same question'] } },
+        { questionText: { $in: ['Same question'] } },
       ],
     });
     expect(result).toEqual([
       { index: 0, id: 'existing-id', reason: 'Duplicate ID' },
       {
-        index: 1,
-        id: 'new-id',
+        index: 4,
+        id: '',
         matchedId: 'matched-content-id',
         reason: 'Duplicate Question Content',
       },

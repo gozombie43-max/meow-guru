@@ -91,6 +91,40 @@ describe('Bulk Topic Import pipeline', () => {
     expect(recordFingerprint({ ...first, subject: 'biology', topic: 'hormones' })).not.toBe(
       recordFingerprint({ ...first, subject: 'biology', topic: 'nervous-system' }),
     );
+    expect(recordFingerprint({ ...first, id: 'sports_edu_004' })).not.toBe(
+      recordFingerprint({ ...first, id: 'sports_edu_026' }),
+    );
+    expect(recordFingerprint({ ...first, id: 'sports_edu_004' })).toBe(
+      recordFingerprint({ ...first, id: 'sports_edu_004' }),
+    );
+  });
+
+  it('imports separately identified source questions with the same prompt and options', async () => {
+    const job = await importService.createJob({ examMode: 'ssc', createdBy: 'admin_1' });
+    const question = {
+      question: 'Which sport is Manish Narwal associated with?',
+      options: ['Wrestling', 'Badminton', 'Cycling', 'Shooting'],
+      correctAnswer: 'Shooting',
+    };
+    const { job: withFile } = await importService.addFiles(
+      job._id,
+      'admin_1',
+      [uploadBuf('separately-identified.ndjson', [
+        JSON.stringify({ ...question, id: 'sports_edu_004', solution: 'First source solution.' }),
+        JSON.stringify({ ...question, id: 'sports_edu_026', solution: 'Second source solution.' }),
+      ].join('\n'))],
+      [{ subject: 'general-awareness', topic: 'sports', quizName: 'Sports PYQ' }],
+    );
+
+    await importService.startValidation(job._id, 'admin_1');
+    await expect(processQuestionImportJob()).resolves.toEqual({ id: job._id, status: 'validated' });
+
+    const validated = await importService.getJob(job._id, 'admin_1');
+    expect(validated.files[0].counts).toMatchObject({ total: 2, valid: 2, invalid: 0, duplicate: 0 });
+    await importService.startImport(job._id, 'admin_1', { confirm: true, fingerprint: validated.fingerprint });
+    await expect(processQuestionImportJob()).resolves.toEqual({ id: job._id, status: 'completed' });
+    expect(await getQuestionsCollection().countDocuments({})).toBe(2);
+    expect(withFile.files[0].status).toBe('pending');
   });
 
   it('stages up to 10 files, validates batch duplicates/DB collisions, streams CSV reports, and imports idempotently after confirmation', async () => {
