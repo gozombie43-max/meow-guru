@@ -234,6 +234,12 @@ export async function checkDuplicates(questions, examMode = undefined) {
     }
     return [];
   };
+  const contentScope = q => {
+    const normalized = normalizeLocalizedQuestion(q || {});
+    return [normalized.subject ?? normalized.quizSubject, normalized.topic ?? normalized.chapter ?? normalized.quizTopic]
+      .map(normalizeContentText)
+      .join("\u0000");
+  };
   const getQuestionText = (q) => {
     const normalized = normalizeLocalizedQuestion(q || {});
     return contentText(normalized.question ?? normalized.questionText ?? normalized.q);
@@ -241,7 +247,7 @@ export async function checkDuplicates(questions, examMode = undefined) {
   const contentFingerprint = q => {
     const text = normalizeContentText(getQuestionText(q));
     const options = contentOptions(q).map(normalizeContentText);
-    return text && options.length && options.every(Boolean) ? `${text}\u0000${options.join("\u0000")}` : "";
+    return text && options.length && options.every(Boolean) ? `${contentScope(q)}\u0000${text}\u0000${options.join("\u0000")}` : "";
   };
   const incomingTexts = questions.map(getQuestionText).filter(Boolean);
   const uniqueIds = Array.from(new Set(ids));
@@ -262,6 +268,11 @@ export async function checkDuplicates(questions, examMode = undefined) {
         question: 1,
         questionText: 1,
         options: 1,
+        subject: 1,
+        quizSubject: 1,
+        topic: 1,
+        chapter: 1,
+        quizTopic: 1,
       })
       .toArray();
 
@@ -285,6 +296,11 @@ export async function checkDuplicates(questions, examMode = undefined) {
         question: 1,
         questionText: 1,
         options: 1,
+        subject: 1,
+        quizSubject: 1,
+        topic: 1,
+        chapter: 1,
+        quizTopic: 1,
       })
       .toArray();
 

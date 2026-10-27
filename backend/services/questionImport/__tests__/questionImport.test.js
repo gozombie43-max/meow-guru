@@ -72,7 +72,7 @@ describe('Bulk Topic Import pipeline', () => {
     ]);
   });
 
-  it('uses English bilingual options for validation and fingerprints', () => {
+  it('uses English bilingual options for validation and topic-scoped fingerprints', () => {
     const first = {
       question: { en: 'Which hormone regulates blood sugar?', bn: 'কোন হরমোন রক্তে শর্করা নিয়ন্ত্রণ করে?' },
       options: { en: ['Insulin', 'Thyroxine', 'Adrenaline', 'Melatonin'], bn: ['ইনসুলিন', 'থাইরক্সিন', 'অ্যাড্রেনালিন', 'মেলাটোনিন'] },
@@ -88,6 +88,9 @@ describe('Bulk Topic Import pipeline', () => {
       expect.objectContaining({ code: 'EMPTY_OPTION' }),
     ]));
     expect(recordFingerprint(first)).not.toBe(recordFingerprint(differentOptions));
+    expect(recordFingerprint({ ...first, subject: 'biology', topic: 'hormones' })).not.toBe(
+      recordFingerprint({ ...first, subject: 'biology', topic: 'nervous-system' }),
+    );
   });
 
   it('stages up to 10 files, validates batch duplicates/DB collisions, streams CSV reports, and imports idempotently after confirmation', async () => {
@@ -110,7 +113,7 @@ describe('Bulk Topic Import pipeline', () => {
     ].join('\n');
     const jsonArr = JSON.stringify([
       { question: 'Ratio of 2 to 4?', options: ['1:2', '2:1'], answer: 'A' },
-      { question: 'What is 10% of 200?', options: ['10', '20', '30', '40'], answer: '20' }, // cross-file dup
+      { question: 'What is 10% of 200?', options: ['10', '20', '30', '40'], answer: '20' }, // same content, different target topic
     ]);
 
     const { job: withFiles, warnings } = await importService.addFiles(
@@ -143,7 +146,7 @@ describe('Bulk Topic Import pipeline', () => {
     expect(validated.status).toBe('validated');
     expect(validated.files[0].counts).toMatchObject({ total: 5, valid: 1, invalid: 2, duplicate: 2 });
     expect(validated.files[0].status).toBe('needs_review');
-    expect(validated.files[1].counts).toMatchObject({ total: 2, valid: 1, invalid: 0, duplicate: 1 });
+    expect(validated.files[1].counts).toMatchObject({ total: 2, valid: 2, invalid: 0, duplicate: 0 });
 
     // Stream CSV error report
     let csv = '';
@@ -161,8 +164,8 @@ describe('Bulk Topic Import pipeline', () => {
 
     const completed = await importService.getJob(job._id, 'admin_1');
     expect(completed.files[0].counts.imported).toBe(1);
-    expect(completed.files[1].counts.imported).toBe(1);
-    expect(await getQuestionsCollection().countDocuments({})).toBe(3); // 1 pre-existing + 2 newly imported
+    expect(completed.files[1].counts.imported).toBe(2);
+    expect(await getQuestionsCollection().countDocuments({})).toBe(4); // 1 pre-existing + 3 newly imported
 
     // Simulate crash-resume replay from checkpoint 0 with same job/file IDs -> idempotent upsert writes 0 duplicates
     await getMongoDB().collection('questionImportJobs').updateOne(
@@ -170,6 +173,6 @@ describe('Bulk Topic Import pipeline', () => {
       { $set: { status: 'importing', phase: 'import', lease: null, 'files.0.status': 'queued_import', 'files.0.checkpoint.nextRow': 0 } },
     );
     await processQuestionImportJob();
-    expect(await getQuestionsCollection().countDocuments({})).toBe(3);
+    expect(await getQuestionsCollection().countDocuments({})).toBe(4);
   });
 });

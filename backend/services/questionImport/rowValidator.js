@@ -67,7 +67,8 @@ export function validateRecord(q) {
 /** Stable content fingerprint used for in-file and cross-file duplicate detection. */
 export function recordFingerprint(q) {
   const normalize = value => value.toLowerCase().replace(/\s+/g, ' ').trim();
-  const body = isStudyModeRecord(q) ? `w:${normalize(String(q.word))}` : `${normalize(questionText(q))}|${optionTexts(q).map(normalize).join('|')}`;
+  const scope = `${normalize(String(q.subject ?? q.quizSubject ?? ''))}|${normalize(String(q.topic ?? q.chapter ?? q.quizTopic ?? ''))}`;
+  const body = isStudyModeRecord(q) ? `s:${scope}|w:${normalize(String(q.word))}` : `s:${scope}|${normalize(questionText(q))}|${optionTexts(q).map(normalize).join('|')}`;
   return createHash('sha256').update(body).digest('hex');
 }
 

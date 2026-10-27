@@ -91,7 +91,8 @@ async function validateFile(job, file, batchSeen, ensureOwned) {
       if (errors.length) { counts.invalid++; continue; }
       if (mapErrors.length) continue; // unmapped: shape is OK but nothing is importable
       if (rowIssues.length) counts.warning++;
-      const fingerprint = recordFingerprint(record);
+      // The mapping is part of identity: the same question in another target topic is importable.
+      const fingerprint = recordFingerprint(mapped);
       if (fileSeen.has(fingerprint) || batchSeen.has(fingerprint)) {
         counts.duplicate++;
         const code = fileSeen.has(fingerprint) ? 'IN_FILE_DUPLICATE' : 'BATCH_DUPLICATE';
