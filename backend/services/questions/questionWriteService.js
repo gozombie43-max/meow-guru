@@ -216,9 +216,32 @@ export async function checkDuplicates(questions, examMode = undefined) {
     .map((q) => String(q.id || q._id || q.questionId || ""))
     .filter(Boolean);
 
+  const normalizeContentText = value => String(value ?? "").replace(/\s+/g, " ").trim().toLowerCase();
+  const contentText = value => {
+    if (value == null) return "";
+    if (typeof value === "string" || typeof value === "number") return String(value).trim();
+    if (typeof value === "object" && !Array.isArray(value)) return contentText(value.en ?? value.text ?? value.bn ?? value.hi ?? value.value);
+    return "";
+  };
+  const contentOptions = (q) => {
+    const normalized = normalizeLocalizedQuestion(q || {});
+    const raw = normalized.options ?? normalized.choices ?? normalized.answers;
+    if (Array.isArray(raw)) return raw.map(contentText);
+    if (raw && typeof raw === "object") {
+      if (Array.isArray(raw.en)) return raw.en.map(contentText);
+      if (Array.isArray(raw.bn)) return raw.bn.map(contentText);
+      return Object.values(raw).map(contentText);
+    }
+    return [];
+  };
   const getQuestionText = (q) => {
     const normalized = normalizeLocalizedQuestion(q || {});
-    return String(normalized?.question ?? normalized?.questionText ?? normalized?.q ?? "").trim();
+    return contentText(normalized.question ?? normalized.questionText ?? normalized.q);
+  };
+  const contentFingerprint = q => {
+    const text = normalizeContentText(getQuestionText(q));
+    const options = contentOptions(q).map(normalizeContentText);
+    return text && options.length && options.every(Boolean) ? `${text}\u0000${options.join("\u0000")}` : "";
   };
   const incomingTexts = questions.map(getQuestionText).filter(Boolean);
   const uniqueIds = Array.from(new Set(ids));
@@ -238,6 +261,7 @@ export async function checkDuplicates(questions, examMode = undefined) {
         id: 1,
         question: 1,
         questionText: 1,
+        options: 1,
       })
       .toArray();
 
@@ -247,7 +271,7 @@ export async function checkDuplicates(questions, examMode = undefined) {
   }
 
   const textBatchSize = 50;
-  const existingTextMap = new Map();
+  const existingContentMap = new Map();
 
   for (let i = 0; i < uniqueTexts.length; i += textBatchSize) {
     const batch = uniqueTexts.slice(i, i + textBatchSize);
@@ -260,12 +284,13 @@ export async function checkDuplicates(questions, examMode = undefined) {
         id: 1,
         question: 1,
         questionText: 1,
+        options: 1,
       })
       .toArray();
 
     for (const r of existingByText) {
-      const dbText = String(r.question || r.questionText || "").trim();
-      if (dbText) existingTextMap.set(dbText, r.id);
+      const fingerprint = contentFingerprint(r);
+      if (fingerprint) existingContentMap.set(fingerprint, r.id);
     }
   }
 
@@ -273,15 +298,16 @@ export async function checkDuplicates(questions, examMode = undefined) {
   questions.forEach((q, index) => {
     const qId = String(q.id || q._id || q.questionId || "");
     const qText = getQuestionText(q);
+    const fingerprint = contentFingerprint(q);
 
     if (qId && existingMap.has(qId)) {
       duplicates.push({ index, id: qId, reason: "Duplicate ID" });
-    } else if (qText && existingTextMap.has(qText)) {
+    } else if (qText && fingerprint && existingContentMap.has(fingerprint)) {
       duplicates.push({
         index,
         id: qId,
-        matchedId: existingTextMap.get(qText),
-        reason: "Duplicate Question Text",
+        matchedId: existingContentMap.get(fingerprint),
+        reason: "Duplicate Question Content",
       });
     }
   });

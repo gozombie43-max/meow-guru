@@ -395,9 +395,12 @@ describe('MongoDB-backed question reads', () => {
     expect(collection.find).toHaveBeenCalledWith({ id: { $in: ['q457'] }, topic: 'algebra' });
   });
 
-  it('detects duplicate ids before duplicate question text using MongoDB', async () => {
+  it('keeps ID conflicts separate and compares normalized question content, including options', async () => {
     const idCursor = createCursor([{ id: 'existing-id', question: 'Stored by id' }]);
-    const textCursor = createCursor([{ id: 'matched-text-id', question: 'Same question' }]);
+    const textCursor = createCursor([
+      { id: 'different-options', question: 'Same question', options: ['A', 'B'] },
+      { id: 'matched-content-id', question: '  Same question ', options: ['One', 'Two'] },
+    ]);
     const collection = {
       find: vi.fn()
         .mockReturnValueOnce(idCursor)
@@ -407,12 +410,21 @@ describe('MongoDB-backed question reads', () => {
 
     const result = await checkDuplicates([
       { id: 'existing-id', question: 'Same question' },
-      { id: 'new-id', questionText: 'Same question' },
+      {
+        id: 'new-id',
+        question: { en: 'Same question', bn: 'একই প্রশ্ন' },
+        options: { en: ['One', 'Two'], bn: ['এক', 'দুই'] },
+      },
+      {
+        id: 'same-stem-new-options',
+        question: { en: 'Same question', bn: 'একই প্রশ্ন' },
+        options: { en: ['Three', 'Four'], bn: ['তিন', 'চার'] },
+      },
       { id: 'unique-id', question: 'Unique question' },
     ]);
 
     expect(collection.find).toHaveBeenNthCalledWith(1, {
-      id: { $in: ['existing-id', 'new-id', 'unique-id'] },
+      id: { $in: ['existing-id', 'new-id', 'same-stem-new-options', 'unique-id'] },
     });
     expect(collection.find).toHaveBeenNthCalledWith(2, {
       $or: [
@@ -425,8 +437,8 @@ describe('MongoDB-backed question reads', () => {
       {
         index: 1,
         id: 'new-id',
-        matchedId: 'matched-text-id',
-        reason: 'Duplicate Question Text',
+        matchedId: 'matched-content-id',
+        reason: 'Duplicate Question Content',
       },
     ]);
   });

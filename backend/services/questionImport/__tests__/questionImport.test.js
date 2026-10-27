@@ -4,7 +4,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connectMongoDB, disconnectMongoDB, getMongoDB, getQuestionsCollection } from '../../../config/mongodb.js';
 import { up as upImportMigration } from '../../../migrations/025-question-import-jobs.js';
 import { detectFormat, ImportFormatError, parseRecords } from '../streamParser.js';
-import { applyMapping, validateMappedRecord, validateRecord } from '../rowValidator.js';
+import { applyMapping, recordFingerprint, validateMappedRecord, validateRecord } from '../rowValidator.js';
 import * as importService from '../questionImportService.js';
 import { processQuestionImportJob } from '../questionImportWorker.js';
 
@@ -70,6 +70,24 @@ describe('Bulk Topic Import pipeline', () => {
     expect(validateMappedRecord(mapped, mapped, { subject: 'english', topic: 'vocab', quizName: 'Study Mode' }, 'ssc')).toEqual([
       expect.objectContaining({ code: 'STUDY_MODE_TARGET' }),
     ]);
+  });
+
+  it('uses English bilingual options for validation and fingerprints', () => {
+    const first = {
+      question: { en: 'Which hormone regulates blood sugar?', bn: 'কোন হরমোন রক্তে শর্করা নিয়ন্ত্রণ করে?' },
+      options: { en: ['Insulin', 'Thyroxine', 'Adrenaline', 'Melatonin'], bn: ['ইনসুলিন', 'থাইরক্সিন', 'অ্যাড্রেনালিন', 'মেলাটোনিন'] },
+      answer: 'Insulin',
+    };
+    const differentOptions = {
+      ...first,
+      options: { ...first.options, en: ['Glucagon', 'Cortisol', 'Oxytocin', 'Prolactin'] },
+      answer: 'Glucagon',
+    };
+
+    expect(validateRecord(first)).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'EMPTY_OPTION' }),
+    ]));
+    expect(recordFingerprint(first)).not.toBe(recordFingerprint(differentOptions));
   });
 
   it('stages up to 10 files, validates batch duplicates/DB collisions, streams CSV reports, and imports idempotently after confirmation', async () => {
