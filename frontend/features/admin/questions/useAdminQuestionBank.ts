@@ -2,7 +2,11 @@
 import {
   EMPTY_Q,
   filterTopicsForSubject,
+  getGeneralAwarenessChaptersForTopic,
   isTopicAllowedForSubject,
+  normalizeSubjectKey,
+  resolveGeneralAwarenessQuestionTaxonomy,
+  SUBJECT_TOPIC_OPTIONS,
   type Question
 } from '@/app/(admin)/admin/admin-question-bank-model';
 import { questionWriteResponse as fetchWithRetry } from "@/features/quiz/api/questionWrites";
@@ -31,7 +35,8 @@ export function useAdminQuestionBank() {
 
   // Filters
   const [search, setSearch] = useState("");
-  const [filterTopic, setFilterTopic] = useState("");
+  const [filterTopic, setFilterTopicState] = useState("");
+  const [filterChapter, setFilterChapter] = useState("");
   const [filterSubject, setFilterSubject] = useState(isJam ? JAM_SUBJECT : "");
   const [filterDifficulty, setFilterDifficulty] = useState("");
   const [filterExam, setFilterExam] = useState("");
@@ -40,18 +45,24 @@ export function useAdminQuestionBank() {
 
   const handleSetFilterSubject = useCallback((next: string) => {
     setFilterSubject(next);
-    setFilterTopic((topic) => isTopicAllowedForSubject(topic, next) ? topic : "");
+    setFilterTopicState((topic) => isTopicAllowedForSubject(topic, next) ? topic : "");
+    setFilterChapter("");
     const cached = subjectFacets[next || "all"];
     if (cached) {
       setFacets(cached);
     }
   }, [subjectFacets]);
 
+  const setFilterTopic = useCallback((next: string) => {
+    setFilterTopicState(next);
+    setFilterChapter("");
+  }, []);
+
   // Pagination
   const [page, setPage] = useState(1);
   const cursorsRef = useRef<{ filter: string; pages: Map<number, { cursor: string; before?: boolean }> }>({ filter: '', pages: new Map() });
   const PAGE_SIZE = 50;
-  const filterKey = JSON.stringify([mode, filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName, search, sortOrder]);
+  const filterKey = JSON.stringify([mode, filterTopic, filterChapter, filterSubject, filterDifficulty, filterExam, filterQuizName, search, sortOrder]);
   const [previousFilterKey, setPreviousFilterKey] = useState(filterKey);
   // Modal
   const [editing, setEditing] = useState<Question | null>(null);
@@ -80,7 +91,13 @@ export function useAdminQuestionBank() {
 
 
 
-  const topics = isJam ? getAdminExamCatalog(mode).subjectTopics[JAM_SUBJECT].map(topic => topic.value) : filterTopicsForSubject(facets.topics.filter(Boolean), filterSubject).slice().sort();
+  const isGeneralAwarenessFilter = !isJam && normalizeSubjectKey(filterSubject) === "generalawareness";
+  const topics = isJam
+    ? getAdminExamCatalog(mode).subjectTopics[JAM_SUBJECT].map(topic => topic.value)
+    : isGeneralAwarenessFilter
+      ? SUBJECT_TOPIC_OPTIONS["general-awareness"].map((topic) => topic.value)
+      : filterTopicsForSubject(facets.topics.filter(Boolean), filterSubject).slice().sort();
+  const chapters = isGeneralAwarenessFilter && filterTopic ? getGeneralAwarenessChaptersForTopic(filterTopic) : [];
   const exams = facets.exams.filter(Boolean).slice().sort();
   const quizNames = facets.quizNames.filter(Boolean).slice().sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
   const fetchQuestions = useCallback(async () => {
@@ -94,6 +111,7 @@ export function useAdminQuestionBank() {
       const params = new URLSearchParams();
       params.set('examMode', mode);
       if (filterTopic) params.set("topic", filterTopic);
+      if (filterChapter) params.set("chapter", filterChapter);
       if (filterSubject) params.set("subject", filterSubject);
       if (filterDifficulty) params.set("difficulty", filterDifficulty);
       if (filterExam) params.set("exam", filterExam);
@@ -142,7 +160,7 @@ export function useAdminQuestionBank() {
         setLoading(false);
       }
     }
-  }, [mode, filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName, page, search, sortOrder, filterKey]);
+  }, [mode, filterTopic, filterChapter, filterSubject, filterDifficulty, filterExam, filterQuizName, page, search, sortOrder, filterKey]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => void fetchQuestions(), 200);
@@ -159,7 +177,7 @@ export function useAdminQuestionBank() {
     setTimeout(() => { setError(""); setSuccess(""); }, 3000);
   };
 
-  const { muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload } = useQuestionUploads(showMsg);
+  const { muSubject, setMuSubject, muTopic, setMuTopic, muChapter, setMuChapter, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, muTopicOptions, muChapterOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload } = useQuestionUploads(showMsg);
 
   const handleSolutionImageUpload = async (questionId: string, file: File) => {
     setSolImgUploading(questionId);
@@ -245,6 +263,7 @@ export function useAdminQuestionBank() {
       params.set("fields", "id");
       if (filterSubject) params.set("subject", filterSubject);
       if (filterTopic) params.set("topic", filterTopic);
+      if (filterChapter) params.set("chapter", filterChapter);
       if (filterQuizName) params.set("quizName", filterQuizName);
       if (filterDifficulty) params.set("difficulty", filterDifficulty);
       if (filterExam) params.set("exam", filterExam);
@@ -378,7 +397,15 @@ export function useAdminQuestionBank() {
       return normalized === 'logicalreasoning' ? 'reasoning' : ['math', 'quant'].includes(normalized) ? 'mathematics' : normalized;
     };
     const subject = getAdminExamCatalog(mode).subjectOptions.find(option => key(option.value) === key(q.subject))?.value || q.subject;
-    setEditing(q); setIsNew(false); setFormData({ ...q, subject });
+    const gaTaxonomy = normalizeSubjectKey(subject) === "generalawareness" ? resolveGeneralAwarenessQuestionTaxonomy(q) : null;
+    setEditing(q);
+    setIsNew(false);
+    setFormData({
+      ...q,
+      subject,
+      ...(gaTaxonomy?.topicSlug ? { topic: gaTaxonomy.topicSlug } : {}),
+      ...(gaTaxonomy?.chapterTitle ? { chapter: gaTaxonomy.chapterTitle } : {}),
+    });
   };
   const openNew = () => { setEditing({ id: "" } as Question); setIsNew(true); setFormData({ ...EMPTY_Q, ...(isJam ? { subject: JAM_SUBJECT, exam: 'IIT JAM Physics' } : {}) }); };
   const closeModal = () => { setEditing(null); setIsNew(false); };
@@ -386,7 +413,7 @@ export function useAdminQuestionBank() {
   const handleSave = async () => {
     try {
       const secret = getAdminToken();
-      const payload = prepareAdminQuestion(formData, mode, formData.subject, formData.topic);
+      const payload = prepareAdminQuestion(formData, mode, formData.subject, formData.topic, formData.chapter);
       if (isNew) {
         const res = await fetchWithRetry(scopedUrl(`${API}/api/questions`), {
           method: "POST",
@@ -462,7 +489,7 @@ export function useAdminQuestionBank() {
     }
   };
 
-  const handleDownloadNdjson = async (overrides?: { subject?: string; topic?: string; quizName?: string; ids?: string[] }) => {
+  const handleDownloadNdjson = async (overrides?: { subject?: string; topic?: string; chapter?: string; quizName?: string; ids?: string[] }) => {
     if (exporting) return;
     setExporting(true);
     try {
@@ -471,9 +498,11 @@ export function useAdminQuestionBank() {
       params.set("examMode", mode);
       const subj = overrides?.subject !== undefined ? overrides.subject : filterSubject;
       const top = overrides?.topic !== undefined ? overrides.topic : filterTopic;
+      const chap = overrides?.chapter !== undefined ? overrides.chapter : filterChapter;
       const qName = overrides?.quizName !== undefined ? overrides.quizName : filterQuizName;
       if (subj) params.set("subject", subj);
       if (top) params.set("topic", top);
+      if (chap) params.set("chapter", chap);
       if (qName) params.set("quizName", qName);
       if (!overrides || overrides.ids) {
         if (filterDifficulty) params.set("difficulty", filterDifficulty);
@@ -510,6 +539,7 @@ export function useAdminQuestionBank() {
         mode || "ssc",
         subj || "all-subjects",
         top || "all-topics",
+        chap,
         qName,
         !overrides ? filterDifficulty : "",
       ]
@@ -539,5 +569,5 @@ export function useAdminQuestionBank() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const diffColor = (d: string) =>
     d === "easy" ? "#16a34a" : d === "hard" ? "#dc2626" : "#d97706";
-  return { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject: handleSetFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, selectingAll, allMatchingSelected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, exporting, handleDownloadNdjson, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, selectAllMatching, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor, fetchQuestions };
+  return { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterChapter, setFilterChapter, filterSubject, setFilterSubject: handleSetFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muChapter, setMuChapter, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, selectingAll, allMatchingSelected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, exporting, handleDownloadNdjson, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, chapters, exams, quizNames, muTopicOptions, muChapterOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, selectAllMatching, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor, fetchQuestions };
 }

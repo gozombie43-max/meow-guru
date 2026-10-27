@@ -13,13 +13,13 @@ type SubjectKey
 import { ConfirmDialog,ImagePreviewDialog,QuestionEditorDialog } from "./AdminQuestionDialogs";
 import BulkImageQuestionUpload from "./BulkImageQuestionUpload";
 import { useExamMode } from '@/context/ExamModeContext';
-import { adminTopicLabel, getAdminExamCatalog } from '@/lib/admin-exam-mode';
+import { adminQuestionChapterLabel, adminQuestionTopicLabel, adminTopicLabel, getAdminExamCatalog } from '@/lib/admin-exam-mode';
 
 
 export default function AdminPanel() {
   const { mode, isJam } = useExamMode();
   const { subjectOptions: SUBJECT_OPTIONS } = getAdminExamCatalog(mode);
-  const { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, selectingAll, allMatchingSelected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, exporting, handleDownloadNdjson, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, selectAllMatching, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor, fetchQuestions } = useAdminQuestionBank();
+  const { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterChapter, setFilterChapter, filterSubject, setFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muChapter, setMuChapter, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, selectingAll, allMatchingSelected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, exporting, handleDownloadNdjson, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, chapters, exams, quizNames, muTopicOptions, muChapterOptions, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, selectAllMatching, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor, fetchQuestions } = useAdminQuestionBank();
 
 
   return (
@@ -83,7 +83,7 @@ export default function AdminPanel() {
               Upload NDJSON/JSONL or a JSON array. Select subject, topic, and quiz.
             </p>
           </div>
-          <button data-ui-button="state" onClick={() => void handleDownloadNdjson({ subject: muSubject, topic: muTopic, quizName: muQuiz })} disabled={exporting} style={{ padding: "6px 12px", borderRadius: 8, border: "0.5px solid var(--admin-blue)", background: "transparent", cursor: exporting ? "wait" : "pointer", fontSize: 12, color: "var(--admin-blue)", fontWeight: 500 }}>
+          <button data-ui-button="state" onClick={() => void handleDownloadNdjson({ subject: muSubject, topic: muTopic, chapter: muChapter, quizName: muQuiz })} disabled={exporting} style={{ padding: "6px 12px", borderRadius: 8, border: "0.5px solid var(--admin-blue)", background: "transparent", cursor: exporting ? "wait" : "pointer", fontSize: 12, color: "var(--admin-blue)", fontWeight: 500 }}>
             {exporting ? "Downloading..." : "Download existing NDJSON"}
           </button>
           <button data-ui-button="state" onClick={handleMuClear} style={{ padding: "6px 12px", borderRadius: 8, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-secondary)" }}>
@@ -98,6 +98,7 @@ export default function AdminPanel() {
               const next = e.target.value as SubjectKey | "";
               setMuSubject(next);
               setMuTopic("");
+              setMuChapter("");
               setMuQuiz("");
             }}
             style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 13, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
@@ -113,6 +114,7 @@ export default function AdminPanel() {
             aria-label="Upload topic"
             onChange={(e) => {
               setMuTopic(e.target.value);
+              setMuChapter("");
               setMuQuiz("");
             }}
             disabled={!muSubject}
@@ -124,11 +126,26 @@ export default function AdminPanel() {
             ))}
           </select>
 
+          {muSubject === "general-awareness" && (
+            <select
+              value={muChapter}
+              aria-label="Upload chapter"
+              onChange={(e) => setMuChapter(e.target.value)}
+              disabled={!muTopic || muChapterOptions.length === 0}
+              style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 13, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
+            >
+              <option value="">{!muTopic ? "Select chapter" : muChapterOptions.length === 0 ? "No chapters for this topic" : "Select chapter"}</option>
+              {muChapterOptions.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+          )}
+
           <select
             value={muQuiz}
             aria-label="Upload quiz"
             onChange={(e) => setMuQuiz(e.target.value)}
-            disabled={!muTopic}
+            disabled={!muTopic || (muSubject === "general-awareness" && muChapterOptions.length > 0 && !muChapter)}
             style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 13, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
           >
             <option value="">Select quiz</option>
@@ -154,7 +171,7 @@ export default function AdminPanel() {
            aria-label="Bulk API URL"/>
           <button data-ui-button="state"
             onClick={handleMuUpload}
-            disabled={muUploading || !muApiUrl || !muSubject || !muTopic || !muQuiz || muQuestions.length === 0}
+            disabled={muUploading || !muApiUrl || !muSubject || !muTopic || (muSubject === "general-awareness" && muChapterOptions.length > 0 && !muChapter) || !muQuiz || muQuestions.length === 0}
             style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: muUploading ? "#a855f7" : "var(--admin-blue)", color: "#fff", cursor: muUploading ? "wait" : "pointer", fontSize: 13, fontWeight: 500, opacity: muUploading ? 0.8 : 1 }}
           >
             {muUploading ? "Uploading..." : "Upload"}
@@ -203,6 +220,13 @@ export default function AdminPanel() {
           <option value="">All topics</option>
           {topics.map((t) => <option key={t} value={t}>{adminTopicLabel(t)}</option>)}
         </select>
+        {filterSubject === "general-awareness" && (
+          <select aria-label="Filter by chapter" value={filterChapter} onChange={(e) => setFilterChapter(e.target.value)} disabled={!filterTopic || chapters.length === 0}
+            style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
+            <option value="">All chapters</option>
+            {chapters.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
+        )}
         <select aria-label="Filter by difficulty" value={filterDifficulty} onChange={(e) => setFilterDifficulty(e.target.value)}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
           <option value="">All difficulties</option>
@@ -334,9 +358,9 @@ export default function AdminPanel() {
                 </td>
                 <td data-label="ID" title={q.id} style={{ padding: "10px 14px", color: "var(--color-text-secondary)", fontFamily: "monospace", fontSize: 11 }}>{q.id}</td>
                 <td data-label="Topic" style={{ padding: "10px 14px" }}>
-                  <span style={{ background: "var(--admin-blue-soft)", color: "var(--admin-blue)", padding: "2px 8px", borderRadius: 6, fontSize: 12 }}>{adminTopicLabel(q.topic)}</span>
+                  <span style={{ background: "var(--admin-blue-soft)", color: "var(--admin-blue)", padding: "2px 8px", borderRadius: 6, fontSize: 12 }}>{adminQuestionTopicLabel(q)}</span>
                 </td>
-                <td data-label="Chapter" style={{ padding: "10px 14px", color: "var(--color-text-secondary)", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{q.chapter}</td>
+                <td data-label="Chapter" style={{ padding: "10px 14px", color: "var(--color-text-secondary)", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{adminQuestionChapterLabel(q)}</td>
                 <td data-label="Difficulty" style={{ padding: "10px 14px" }}>
                   <span style={{ color: diffColor(q.difficulty), fontWeight: 500, fontSize: 12 }}>{q.difficulty}</span>
                 </td>
@@ -354,11 +378,11 @@ export default function AdminPanel() {
                 </td>
                 <td className={styles.mobileDetails} aria-label="Question details">
                   <details>
-                    <summary>Details<span>{adminTopicLabel(q.topic) || "Question metadata"}</span></summary>
+                    <summary>Details<span>{adminQuestionTopicLabel(q) || "Question metadata"}</span></summary>
                     <dl>
                       <div><dt>ID</dt><dd>{q.id}</dd></div>
-                      <div><dt>Topic</dt><dd>{adminTopicLabel(q.topic) || "—"}</dd></div>
-                      <div><dt>Chapter</dt><dd>{q.chapter || "—"}</dd></div>
+                      <div><dt>Topic</dt><dd>{adminQuestionTopicLabel(q) || "—"}</dd></div>
+                      <div><dt>Chapter</dt><dd>{adminQuestionChapterLabel(q) || "—"}</dd></div>
                       <div><dt>Exam</dt><dd>{q.exam || "—"}</dd></div>
                     </dl>
                   </details>

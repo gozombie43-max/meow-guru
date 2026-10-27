@@ -4,6 +4,7 @@ import { questionWriteResponse } from "@/features/quiz/api/questionWrites";
 
 import { type ReactNode, useState, Fragment } from "react";
 import styles from "./AdminTool.module.css";
+import { getGeneralAwarenessChaptersForTopic } from "@/app/(admin)/admin/admin-question-bank-model";
 import { useExamMode } from '@/context/ExamModeContext';
 import { adminScopedUrl, adminTopicLabel, getAdminExamCatalog, prepareAdminQuestion } from '@/lib/admin-exam-mode';
 import { JAM_SUBJECT } from '@/lib/exam-mode';
@@ -57,6 +58,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
   const updateOption = (index: number, value: string) => setForm((old) => ({ ...old, options: old.options.map((option, i) => i === index ? value : option) }));
 
   const availableQuizTopics = form.quizSubject && QUIZ_TREE[form.quizSubject] ? Object.keys(QUIZ_TREE[form.quizSubject].topics) : [];
+  const availableQuizChapters = form.quizSubject === "general-awareness" && form.quizTopic ? getGeneralAwarenessChaptersForTopic(form.quizTopic) : [];
   const availableQuizNames = form.quizSubject && form.quizTopic && QUIZ_TREE[form.quizSubject]?.topics[form.quizTopic] ? QUIZ_TREE[form.quizSubject].topics[form.quizTopic].quizzes : [];
   const availableChapters = form.subject && SUBJECT_TOPICS[form.subject] ? SUBJECT_TOPICS[form.subject] : [];
 
@@ -65,12 +67,13 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
     const adminToken = getAccessToken();
     if (!adminToken) return setStatus({ text: "Your admin session has expired. Please sign in again.", error: true });
     if (!form.quizSubject || !form.quizTopic || !form.quizName) return setStatus({ text: "Please select a target quiz category.", error: true });
+    if (form.quizSubject === "general-awareness" && availableQuizChapters.length > 0 && !form.chapter) return setStatus({ text: "Please select a target chapter for General Awareness.", error: true });
     if (!form.question.trim() && !images.questionImage && !imageUrls.questionImage?.trim()) return setStatus({ text: "Add question text or attach a question image.", error: true });
     if (form.options.some((option, index) => !option.trim() && !images[fields[index + 1] as ImageField] && !imageUrls[fields[index + 1]]?.trim())) return setStatus({ text: "Provide all four options as text or images.", error: true });
     setSaving(true); setStatus(null);
     try {
       const body = new FormData();
-      const payload = prepareAdminQuestion(form, mode, form.quizSubject, form.quizTopic);
+      const payload = prepareAdminQuestion(form, mode, form.quizSubject, form.quizTopic, form.chapter);
       Object.entries(payload).forEach(([key, value]) => {
         if (key !== "options" && key !== "question" && key !== "solution") {
            body.append(key, typeof value === "string" ? value : JSON.stringify(value));
@@ -118,7 +121,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
               Quiz Subject
               <select 
                 value={form.quizSubject} 
-                onChange={(e) => { change("quizSubject", e.target.value); change("quizTopic", ""); change("quizName", ""); }} 
+                onChange={(e) => { change("quizSubject", e.target.value); change("quizTopic", ""); change("chapter", ""); change("quizName", ""); }} 
                 className={styles.macSelect}
               >
                 <option value="">Select subject</option>
@@ -129,7 +132,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
               Quiz Topic
               <select 
                 value={form.quizTopic} 
-                onChange={(e) => { change("quizTopic", e.target.value); change("quizName", ""); }} 
+                onChange={(e) => { change("quizTopic", e.target.value); if (form.quizSubject === "general-awareness") change("chapter", ""); change("quizName", ""); }} 
                 disabled={!form.quizSubject} 
                 className={styles.macSelect}
               >
@@ -137,12 +140,26 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
                 {availableQuizTopics.map(k => <option key={k} value={k}>{QUIZ_TREE[form.quizSubject!].topics[k].label}</option>)}
               </select>
             </label>
+            {form.quizSubject === "general-awareness" && (
+              <label className={styles.fieldLabel}>
+                Quiz Chapter
+                <select
+                  value={form.chapter}
+                  onChange={(e) => change("chapter", e.target.value)}
+                  disabled={!form.quizTopic || availableQuizChapters.length === 0}
+                  className={styles.macSelect}
+                >
+                  <option value="">Select chapter</option>
+                  {availableQuizChapters.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                </select>
+              </label>
+            )}
             <label className={styles.fieldLabel}>
               Target Quiz
               <select 
                 value={form.quizName} 
                 onChange={(e) => change("quizName", e.target.value)} 
-                disabled={!form.quizTopic} 
+                disabled={!form.quizTopic || (form.quizSubject === "general-awareness" && availableQuizChapters.length > 0 && !form.chapter)} 
                 className={styles.macSelect}
               >
                 <option value="">Select quiz</option>

@@ -13,6 +13,11 @@ import {
   normalizeQuizKey,
   normalizeSearchKey,
 } from "./questionNormalizer.js";
+import {
+  buildGeneralAwarenessChapterCondition,
+  buildGeneralAwarenessTopicCondition,
+  resolveGeneralAwarenessTopicGroupSlug,
+} from "./generalAwarenessTopics.js";
 import { isNormalizedQuestionKeysEnabled } from "./questionCache.js";
 import {
   buildExcludeStudyModeCondition,
@@ -133,6 +138,8 @@ export async function fetchQuestions(params) {
 
     // ── Build MongoDB filter ─────────────────────────────
     const conditions = [questionExamModeCondition(params.examMode)];
+    const gaGroupSlug = resolveGeneralAwarenessTopicGroupSlug(topic);
+    const isGaQuery = Boolean(gaGroupSlug) || normalizeSearchKey(subject) === 'generalawareness';
 
     if (subject && (!topic || normalizeSearchKey(subject) === 'iitjamphysics')) {
       const subKey = normalizeSearchKey(subject);
@@ -145,7 +152,8 @@ export async function fetchQuestions(params) {
       ));
     }
     if (chapter) {
-      conditions.push(useNormalizedKeys ? { chapter } : { chapter: caseInsensitiveExact(chapter) });
+      const gaChapterCondition = isGaQuery ? buildGeneralAwarenessChapterCondition(chapter, useNormalizedKeys) : null;
+      conditions.push(gaChapterCondition || (useNormalizedKeys ? { chapter } : { chapter: caseInsensitiveExact(chapter) }));
     }
     if (concept) {
       conditions.push(useNormalizedKeys ? { concept } : { concept: caseInsensitiveExact(concept) });
@@ -163,7 +171,10 @@ export async function fetchQuestions(params) {
       normalizedTopic === "synonymsantonyms" || normalizedTopic === "antosynopyq";
 
     if (topic) {
-      if (useNormalizedKeys) {
+      const gaTopicCondition = gaGroupSlug ? buildGeneralAwarenessTopicCondition(gaGroupSlug, useNormalizedKeys) : null;
+      if (gaTopicCondition) {
+        conditions.push(gaTopicCondition);
+      } else if (useNormalizedKeys) {
         conditions.push({ topicKey: isSynonymAntonymTopic ? { $in: ['synonymsantonyms', 'antosynopyq'] } : normalizedTopic });
       } else if (isSynonymAntonymTopic) {
         conditions.push({
@@ -487,6 +498,9 @@ export async function exportQuestions(params = {}) {
     }
   }
 
+  const gaGroupSlug = resolveGeneralAwarenessTopicGroupSlug(topic);
+  const isGaQuery = Boolean(gaGroupSlug) || normalizeSearchKey(subject) === "generalawareness";
+
   if (subject && (!topic || normalizeSearchKey(subject) === "iitjamphysics")) {
     const subKey = normalizeSearchKey(subject);
     conditions.push(
@@ -500,7 +514,12 @@ export async function exportQuestions(params = {}) {
     );
   }
   if (chapter) {
-    conditions.push(useNormalizedKeys ? { chapter } : { chapter: caseInsensitiveExact(chapter) });
+    const gaChapterCondition = isGaQuery
+      ? buildGeneralAwarenessChapterCondition(chapter, useNormalizedKeys)
+      : null;
+    conditions.push(
+      gaChapterCondition || (useNormalizedKeys ? { chapter } : { chapter: caseInsensitiveExact(chapter) })
+    );
   }
   if (concept) {
     conditions.push(useNormalizedKeys ? { concept } : { concept: caseInsensitiveExact(concept) });
@@ -530,7 +549,12 @@ export async function exportQuestions(params = {}) {
     normalizedTopic === "synonymsantonyms" || normalizedTopic === "antosynopyq";
 
   if (topic) {
-    if (useNormalizedKeys) {
+    const gaTopicCondition = gaGroupSlug
+      ? buildGeneralAwarenessTopicCondition(gaGroupSlug, useNormalizedKeys)
+      : null;
+    if (gaTopicCondition) {
+      conditions.push(gaTopicCondition);
+    } else if (useNormalizedKeys) {
       conditions.push({
         topicKey: isSynonymAntonymTopic
           ? { $in: ["synonymsantonyms", "antosynopyq"] }

@@ -1,3 +1,5 @@
+import { getGeneralAwarenessGroupTopicKeys } from "./generalAwarenessTopics.js";
+
 export function normalizeSearchKey(value) {
   return String(value || "")
     .trim()
@@ -16,11 +18,20 @@ export function matchesNormalizedTopic(question, normalizedTopic) {
   const candidates = [
     question.topic,
     question.chapter,
+    question.chapterSlug,
+    question.topicGroup,
     question.subject,
     question.quizTopic,
     question.quizName,
     question.source,
   ];
+  const gaGroupKeys = getGeneralAwarenessGroupTopicKeys(normalizedTopic);
+  if (gaGroupKeys.length > 0) {
+    const gaKeySet = new Set(gaGroupKeys);
+    if (candidates.some((field) => gaKeySet.has(normalizeSearchKey(field)))) {
+      return true;
+    }
+  }
   if (
     normalizedTopic === "synonymsantonyms" ||
     normalizedTopic === "antosynopyq"
