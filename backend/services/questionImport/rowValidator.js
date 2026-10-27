@@ -21,8 +21,9 @@ export function questionText(q) {
 export function optionTexts(q) {
   const raw = q.options ?? q.choices ?? q.answers;
   if (Array.isArray(raw)) return raw.map(textOf);
-  if (isObject(raw) && !('en' in raw && typeof raw.en === 'string')) return Object.values(raw).map(textOf);
   if (isObject(raw) && Array.isArray(raw.en)) return raw.en.map(textOf);
+  if (isObject(raw) && Array.isArray(raw.bn)) return raw.bn.map(textOf);
+  if (isObject(raw)) return Object.values(raw).map(textOf);
   return ['A', 'B', 'C', 'D', 'E', 'F'].map(letter => textOf(q[`option${letter}`] ?? q[`option${letter}Text`])).filter(Boolean);
 }
 
