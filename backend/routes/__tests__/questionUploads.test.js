@@ -78,3 +78,25 @@ it('exports filtered questions as NDJSON with Content-Disposition filename', asy
     quizName: 'Concept Drill',
   }));
 });
+
+it('exports canonical question identities for admin bulk operations', async () => {
+  exportQuestions.mockResolvedValueOnce({
+    count: 2,
+    questions: [
+      { id: 'reused-id', questionUid: 'q_11111111111111111111111111111111' },
+      { id: 'reused-id', questionUid: 'q_22222222222222222222222222222222' },
+    ],
+  });
+
+  const response = await fetch(`${base}/export?format=json&fields=identity`);
+
+  expect(response.status).toBe(200);
+  await expect(response.json()).resolves.toEqual({
+    count: 2,
+    ids: ['q_11111111111111111111111111111111', 'q_22222222222222222222222222222222'],
+    questions: [
+      { id: 'reused-id', questionUid: 'q_11111111111111111111111111111111' },
+      { id: 'reused-id', questionUid: 'q_22222222222222222222222222222222' },
+    ],
+  });
+});

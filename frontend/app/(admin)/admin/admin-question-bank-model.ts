@@ -6,6 +6,8 @@ import {
 
 export type Question = {
   id: string;
+  /** Stable API identity. `id` is a human-facing legacy value and may repeat. */
+  questionUid?: string;
   topic: string;
   topicGroup?: string;
   chapterSlug?: string;
@@ -26,6 +28,9 @@ export type Question = {
   questionType?: string;
   questionImage?: string;
 };
+
+export const questionReference = (question: Pick<Question, "id" | "questionUid">) =>
+  question.questionUid || question.id;
 
 export const EMPTY_Q: Omit<Question, "id"> = {
   topic: "", subject: "", chapter: "", subtopic: "",

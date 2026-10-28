@@ -139,9 +139,13 @@ const exportQuestions = async (req, res) => {
     const { count, questions } = await questionService.exportQuestions(req.query);
     if (String(req.query.format || '').toLowerCase() === 'json') {
       res.set('Cache-Control', 'no-store, max-age=0');
-      if (String(req.query.fields || '').toLowerCase() === 'id') {
-        const ids = questions.map(q => q.id).filter(Boolean);
-        return res.json({ count: ids.length, ids, questions: ids.map(id => ({ id })) });
+      if (['id', 'identity'].includes(String(req.query.fields || '').toLowerCase())) {
+        const useCanonicalIdentity = String(req.query.fields || '').toLowerCase() === 'identity';
+        const selected = questions
+          .map(question => ({ id: question.id, questionUid: question.questionUid }))
+          .filter(question => (useCanonicalIdentity ? question.questionUid || question.id : question.id));
+        const ids = selected.map(question => useCanonicalIdentity ? question.questionUid || question.id : question.id);
+        return res.json({ count: ids.length, ids, questions: selected });
       }
       return res.json({ count, questions });
     }
@@ -288,7 +292,10 @@ const bulkDeleteQuestions = async (req, res) => {
       return res.status(400).json({ error: 'ids must be a non-empty array' });
     }
 
-    const result = await questionService.removeQuestionsBulk(ids, req.query.examMode);
+    const result = await questionService.removeQuestionsBulk(ids, req.query.examMode, {
+      topic: req.query.topic,
+      subject: req.query.subject,
+    });
     return res.json({ message: `Deleted ${result.deleted} questions`, ...result });
   } catch (err) {
     return res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });

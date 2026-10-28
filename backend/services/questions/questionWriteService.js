@@ -164,7 +164,7 @@ export async function removeQuestion(id, topic = undefined, examMode = undefined
   return result.deletedCount > 0;
 }
 
-export async function removeQuestionsBulk(ids, examMode = undefined) {
+export async function removeQuestionsBulk(ids, examMode = undefined, context = {}) {
   parseQuestionExamMode(examMode);
   const collection = getQuestionsCollection();
 
@@ -183,7 +183,7 @@ export async function removeQuestionsBulk(ids, examMode = undefined) {
   try {
     const resolved = [];
     for (const id of uniqueIds) {
-      const question = await resolveQuestion(collection, id, { examMode });
+      const question = await resolveQuestion(collection, id, { examMode, ...context });
       if (question) resolved.push(question._id);
     }
     const result = await collection.deleteMany(scopedQuestionFilter({ _id: { $in: resolved } }, examMode));

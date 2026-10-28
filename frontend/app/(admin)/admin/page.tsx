@@ -8,6 +8,7 @@ import { useAdminQuestionBank } from '@/features/admin/questions/useAdminQuestio
 import { ChevronLeft,ChevronRight,ChevronsLeft,ChevronsRight } from "lucide-react";
 import {
 DIFFICULTIES,
+questionReference,
 type SubjectKey
 } from "./admin-question-bank-model";
 import { ConfirmDialog,ImagePreviewDialog,QuestionEditorDialog } from "./AdminQuestionDialogs";
@@ -344,14 +345,16 @@ export default function AdminPanel() {
               <tr><td colSpan={8} style={{ padding: 40, textAlign: "center", color: "var(--color-text-secondary)" }}>Loading...</td></tr>
             ) : paginated.length === 0 ? (
               <tr><td colSpan={8} style={{ padding: 40, textAlign: "center", color: "var(--color-text-secondary)" }}>No questions found</td></tr>
-            ) : paginated.map((q, i) => (
-              <tr key={q.id} data-selected={selected.has(q.id)} style={{
+            ) : paginated.map((q, i) => {
+              const reference = questionReference(q);
+              return (
+              <tr key={reference} data-selected={selected.has(reference)} style={{
                 borderBottom: "0.5px solid var(--color-border-tertiary)",
-                background: selected.has(q.id) ? "var(--admin-blue-soft)" : i % 2 === 0 ? "var(--color-background-primary)" : "var(--color-background-secondary)"
+                background: selected.has(reference) ? "var(--admin-blue-soft)" : i % 2 === 0 ? "var(--color-background-primary)" : "var(--color-background-secondary)"
               }}>
                 <td data-label="Select" style={{ padding: "10px 14px" }}>
                   <label className={styles.selection}>
-                  <input type="checkbox" checked={selected.has(q.id)} onChange={() => toggleOne(q.id)}
+                  <input type="checkbox" checked={selected.has(reference)} onChange={() => toggleOne(reference)}
                     style={{ cursor: "pointer", width: 15, height: 15 }} aria-label={`Select question ${q.id}`} />
                   <span className={styles.mobileLabel}>Select</span>
                   </label>
@@ -389,7 +392,7 @@ export default function AdminPanel() {
                 </td>
                 <td data-label="Actions" style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
                   <button data-ui-button="state" onClick={() => openEdit(q)} style={{ marginRight: 6, padding: "4px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-primary)" }}>Edit</button>
-                  <button data-ui-button="state" onClick={() => setDeleteConfirm(q.id)} style={{ padding: "4px 10px", borderRadius: 6, border: "0.5px solid #fecaca", background: "transparent", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>Delete</button>
+                  <button data-ui-button="state" onClick={() => setDeleteConfirm(q)} style={{ padding: "4px 10px", borderRadius: 6, border: "0.5px solid #fecaca", background: "transparent", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>Delete</button>
                   <>
                     <input
                       type="file"
@@ -436,7 +439,8 @@ export default function AdminPanel() {
                   )}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
