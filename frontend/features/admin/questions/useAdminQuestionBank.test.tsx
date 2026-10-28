@@ -139,16 +139,17 @@ it('downloads matching questions as NDJSON using active subject, topic, quizName
   clickSpy.mockRestore();
 });
 
-it('selects all matching topic questions across pages and deletes them in batches', async () => {
+it('selects and deletes all matching questions by canonical identity, even when legacy IDs repeat', async () => {
   const allTopicIds = Array.from({ length: 120 }, (_, i) => `econ_${i + 1}`);
+  const allQuestionUids = allTopicIds.map((_, i) => `q_${String(i + 1).padStart(32, '0')}`);
   fetch.mockImplementation(async (url: string, init?: RequestInit) => {
     if (String(url || '').includes('/api/questions/export')) {
       return {
         ok: true,
         json: async () => ({
           count: allTopicIds.length,
-          ids: allTopicIds,
-          questions: allTopicIds.map((id) => ({ id })),
+          ids: allQuestionUids,
+          questions: allTopicIds.map((id, i) => ({ id: i < 2 ? 'reused-id' : id, questionUid: allQuestionUids[i] })),
         }),
       };
     }
@@ -162,7 +163,7 @@ it('selects all matching topic questions across pages and deletes them in batche
     return {
       ok: true,
       json: async () => ({
-        questions: allTopicIds.slice(0, 50).map((id) => ({ id, subject: 'general-awareness', topic: 'basics-of-economics' })),
+        questions: allTopicIds.slice(0, 50).map((id, i) => ({ id: i < 2 ? 'reused-id' : id, questionUid: allQuestionUids[i], subject: 'general-awareness', topic: 'basics-of-economics' })),
         count: 50,
         total: 120,
         facets: { topics: ['basics-of-economics'], exams: ['SSC CGL'], quizNames: ['PYQ'] },
@@ -191,8 +192,60 @@ it('selects all matching topic questions across pages and deletes them in batche
 
   const bulkDeleteCalls = fetch.mock.calls.filter((call) => String(call[0] || '').includes('/api/questions/bulk-delete'));
   expect(bulkDeleteCalls).toHaveLength(2);
+  expect(JSON.parse(String(bulkDeleteCalls[0][1]?.body)).ids).toEqual(allQuestionUids.slice(0, 100));
+  expect(bulkDeleteCalls[0][0]).toContain('topic=basics-of-economics');
+  expect(bulkDeleteCalls[0][0]).toContain('subject=general-awareness');
   expect(result.current.selected.size).toBe(0);
   expect(result.current.success).toContain('Deleted 120 questions');
+});
+
+it('deletes one displayed question through its canonical identity', async () => {
+  const questionUid = 'q_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  fetch.mockImplementation(async () => ({
+    ok: true,
+    json: async () => ({
+      questions: [{ id: 'q451', questionUid, subject: 'reasoning', topic: 'coding-decoding' }],
+      count: 1,
+      total: 1,
+      facets: { topics: ['coding-decoding'], exams: ['SSC Selection Post'], quizNames: ['Concept Drill'] },
+    }),
+  }));
+
+  const { result } = renderHook(useAdminQuestionBank);
+  await waitFor(() => expect(result.current.questions).toHaveLength(1));
+
+  await act(async () => {
+    await result.current.handleDelete(result.current.questions[0]);
+  });
+
+  const deleteCall = fetch.mock.calls.find((call) => String(call[0] || '').includes(`/api/questions/${questionUid}`));
+  expect(deleteCall?.[1]).toMatchObject({ method: 'DELETE' });
+  expect(deleteCall?.[0]).toContain('topic=coding-decoding');
+  expect(deleteCall?.[0]).toContain('subject=reasoning');
+  expect(result.current.success).toContain('Question deleted');
+});
+
+it('deletes a legacy question ID within its displayed subject and topic', async () => {
+  fetch.mockImplementation(async () => ({
+    ok: true,
+    json: async () => ({
+      questions: [{ id: 'q451', subject: 'reasoning', topic: 'coding-decoding' }],
+      count: 1,
+      total: 1,
+      facets: { topics: ['coding-decoding'], exams: ['SSC Selection Post'], quizNames: ['Concept Drill'] },
+    }),
+  }));
+
+  const { result } = renderHook(useAdminQuestionBank);
+  await waitFor(() => expect(result.current.questions).toHaveLength(1));
+
+  await act(async () => {
+    await result.current.handleDelete(result.current.questions[0]);
+  });
+
+  const deleteCall = fetch.mock.calls.find((call) => String(call[0] || '').includes('/api/questions/q451?'));
+  expect(deleteCall?.[0]).toContain('topic=coding-decoding');
+  expect(deleteCall?.[0]).toContain('subject=reasoning');
 });
 
 it('shows canonical GA topics and topic-specific chapters when General Awareness is selected', async () => {

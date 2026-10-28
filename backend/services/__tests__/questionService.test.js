@@ -676,6 +676,17 @@ describe('MongoDB-backed question writes', () => {
     expect(result).toEqual({ deleted: 2, failed: 0, total: 2 });
   });
 
+  it('uses the selected topic and subject to resolve legacy IDs safely during a bulk delete', async () => {
+    const collection = {
+      find: vi.fn(() => createCursor([{ _id: 'question-a' }])),
+      deleteMany: vi.fn(async () => ({ deletedCount: 1 })),
+    };
+    getQuestionsCollectionMock.mockReturnValue(collection);
+
+    await expect(removeQuestionsBulk(['reused-id'], 'ssc', { topic: 'coding-decoding', subject: 'reasoning' })).resolves.toEqual({ deleted: 1, failed: 0, total: 1 });
+    expect(collection.find).toHaveBeenCalledWith(expect.objectContaining({ $and: expect.any(Array) }));
+  });
+
   it('reports every requested id as failed when bulk deletion throws', async () => {
     const collection = {
       find: vi.fn(filter => createCursor([{ _id: filter.id.$in[0] }])),

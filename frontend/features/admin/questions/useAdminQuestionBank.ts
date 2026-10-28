@@ -7,6 +7,7 @@ import {
   normalizeSubjectKey,
   resolveGeneralAwarenessQuestionTaxonomy,
   SUBJECT_TOPIC_OPTIONS,
+  questionReference,
   type Question
 } from '@/app/(admin)/admin/admin-question-bank-model';
 import { questionWriteResponse as fetchWithRetry } from "@/features/quiz/api/questionWrites";
@@ -68,7 +69,7 @@ export function useAdminQuestionBank() {
   const [editing, setEditing] = useState<Question | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [formData, setFormData] = useState<Omit<Question, "id">>(EMPTY_Q);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<Question | null>(null);
 
   // Multi-select
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -226,7 +227,7 @@ export function useAdminQuestionBank() {
   };
 
   const paginated = filtered;
-  const paginatedIds = paginated.map((q) => q.id);
+  const paginatedIds = paginated.map(questionReference);
   const allPageSelected = paginatedIds.length > 0 && paginatedIds.every((id) => selected.has(id));
   const allMatchingSelected = totalCount > 0 && selected.size >= totalCount;
 
@@ -243,7 +244,7 @@ export function useAdminQuestionBank() {
   };
 
   const selectAll = () => {
-    setSelected(new Set(filtered.map((q) => q.id)));
+    setSelected(new Set(filtered.map(questionReference)));
   };
 
   const selectAllMatching = async () => {
@@ -260,7 +261,7 @@ export function useAdminQuestionBank() {
       const params = new URLSearchParams();
       params.set("examMode", mode);
       params.set("format", "json");
-      params.set("fields", "id");
+      params.set("fields", "identity");
       if (filterSubject) params.set("subject", filterSubject);
       if (filterTopic) params.set("topic", filterTopic);
       if (filterChapter) params.set("chapter", filterChapter);
@@ -292,7 +293,9 @@ export function useAdminQuestionBank() {
             ids = data.ids.map((id: unknown) => String(id || "").trim()).filter(Boolean);
           } else {
             const list = Array.isArray(data) ? data : data?.questions || [];
-            ids = list.map((q: { id?: string }) => String(q?.id || "").trim()).filter(Boolean);
+            ids = list
+              .map((q: Pick<Question, "id" | "questionUid">) => questionReference(q).trim())
+              .filter(Boolean);
           }
         } catch {
           // fallback if response was NDJSON text
@@ -306,7 +309,7 @@ export function useAdminQuestionBank() {
           .filter(Boolean)
           .map((line) => {
             try {
-              return String(JSON.parse(line)?.id || "").trim();
+              return questionReference(JSON.parse(line) as Pick<Question, "id" | "questionUid">).trim();
             } catch {
               return "";
             }
@@ -340,11 +343,15 @@ export function useAdminQuestionBank() {
 
     try {
       const BATCH_SIZE = 100;
+      const deleteParams = new URLSearchParams();
+      if (filterTopic) deleteParams.set("topic", filterTopic);
+      if (filterSubject) deleteParams.set("subject", filterSubject);
+      const bulkDeleteUrl = scopedUrl(`${API}/api/questions/bulk-delete${deleteParams.size ? `?${deleteParams}` : ""}`);
       for (let i = 0; i < idsToDelete.length; i += BATCH_SIZE) {
         const batchIds = idsToDelete.slice(i, i + BATCH_SIZE);
         // 1. Try fast batch bulk delete endpoint first
         const res = await fetchWithRetry(
-          scopedUrl(`${API}/api/questions/bulk-delete`),
+          bulkDeleteUrl,
           {
             method: "POST",
             headers: {
@@ -378,7 +385,7 @@ export function useAdminQuestionBank() {
       }
 
       // Optimistically remove deleted questions from local state
-      setQuestions((prev) => prev.filter((q) => !selected.has(q.id)));
+      setQuestions((prev) => prev.filter((q) => !selected.has(questionReference(q))));
       setSelected(new Set());
       setBulkDeleteConfirm(false);
       showMsg(failed > 0 ? `Deleted ${deleted}, failed ${failed}` : `Deleted ${deleted} questions ✓`);
@@ -458,10 +465,14 @@ export function useAdminQuestionBank() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (question: Question) => {
     try {
       const secret = getAdminToken();
-      const res = await fetchWithRetry(scopedUrl(`${API}/api/questions/${encodeURIComponent(id)}`), {
+      const reference = questionReference(question);
+      const deleteParams = new URLSearchParams();
+      if (question.topic) deleteParams.set("topic", question.topic);
+      if (question.subject) deleteParams.set("subject", question.subject);
+      const res = await fetchWithRetry(scopedUrl(`${API}/api/questions/${encodeURIComponent(reference)}?${deleteParams}`), {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${secret}`,
@@ -477,10 +488,10 @@ export function useAdminQuestionBank() {
       }
       showMsg("Question deleted ✓");
       setDeleteConfirm(null);
-      setQuestions((prev) => prev.filter((q) => q.id !== id));
+      setQuestions((prev) => prev.filter((q) => questionReference(q) !== reference));
       setSelected((prev) => {
         const next = new Set(prev);
-        next.delete(id);
+        next.delete(reference);
         return next;
       });
       fetchQuestions();
