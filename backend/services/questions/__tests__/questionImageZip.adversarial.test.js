@@ -16,7 +16,7 @@ vi.mock('../../../infrastructure/objectStorage.js', () => ({
 }));
 
 import { connectMongoDB, disconnectMongoDB, getQuestionsCollection } from '../../../config/mongodb.js';
-import { processQuestionBankImageZip } from '../questionImageZip.js';
+import { B2_UPLOAD_CONCURRENCY, processQuestionBankImageZip } from '../questionImageZip.js';
 import { assertQuestionExamMode } from '../questionExamMode.js';
 
 let mongo;
@@ -335,6 +335,62 @@ describe('Adversarial Challenge 1: Concurrency & Mid-Flight Modifications', () =
 });
 
 describe('Adversarial Challenge 2: Partial Failure Simulation & Storage Rollback', () => {
+  it('uploads a large ZIP through bounded B2 batches instead of serially', async () => {
+    const questionIds = Array.from({ length: B2_UPLOAD_CONCURRENCY + 1 }, (_, index) => `ssc_batch_${index}`);
+    await getQuestionsCollection().insertMany(questionIds.map(id => ({
+      ...structuredClone(sampleQuestions[0]),
+      id,
+      questionUid: `q_${id}`,
+    })));
+    const images = questionIds.map((questionId, index) => ({
+      questionId, target: 'question', file: `images/batch-${index}.png`,
+    }));
+    const zip = await makeTestZip({
+      manifest: { version: 1, examMode: 'ssc', images },
+      files: Object.fromEntries(images.map(({ file }) => [file, 'SAMPLE_PNG'])),
+    });
+    let active = 0;
+    let peak = 0;
+    putObject.mockImplementation(async () => {
+      active++;
+      peak = Math.max(peak, active);
+      await new Promise(resolve => setTimeout(resolve, 5));
+      active--;
+    });
+
+    await processQuestionBankImageZip({
+      buffer: zip,
+      examMode: 'ssc',
+      expectedUpdatedAts: Object.fromEntries(questionIds.map(id => [id, STAMP_T0])),
+      validateOnly: false,
+    });
+
+    expect(putObject).toHaveBeenCalledTimes(images.length);
+    expect(peak).toBe(B2_UPLOAD_CONCURRENCY);
+  });
+
+  it('retries a temporarily busy storage dependency with the same import key', async () => {
+    const manifest = {
+      version: 1,
+      examMode: 'ssc',
+      images: [{ questionId: 'ssc_adv_1', target: 'question', file: 'images/retry.png' }],
+    };
+    const zip = await makeTestZip({ manifest, files: { 'images/retry.png': 'SAMPLE_PNG' } });
+    putObject
+      .mockRejectedValueOnce(Object.assign(new Error('Dependency is temporarily busy'), { statusCode: 503, retryAfter: 0 }))
+      .mockResolvedValueOnce(undefined);
+
+    await expect(processQuestionBankImageZip({
+      buffer: zip,
+      examMode: 'ssc',
+      expectedUpdatedAts: { ssc_adv_1: STAMP_T0 },
+      validateOnly: false,
+    })).resolves.toMatchObject({ success: true, appliedCount: 1 });
+
+    expect(putObject).toHaveBeenCalledTimes(2);
+    expect(putObject.mock.calls[0][0]).toBe(putObject.mock.calls[1][0]);
+  });
+
   it('2.1 Storage failure on 3rd upload: deletes 1st and 2nd keys, 0 DB modifications', async () => {
     const manifest = {
       version: 1,
