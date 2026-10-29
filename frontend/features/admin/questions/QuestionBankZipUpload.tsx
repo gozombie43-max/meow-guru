@@ -91,7 +91,7 @@ export function createManifestTemplate(examMode: string = "ssc") {
 }
 
 interface ZipApiResponse {
-  error?: string;
+  error?: unknown;
   message?: string;
   valid?: boolean;
   success?: boolean;
@@ -102,6 +102,22 @@ interface ZipApiResponse {
   [key: string]: unknown;
 }
 
+function errorMessage(value: unknown): string | null {
+  if (typeof value === "string" && value.trim()) return value.trim();
+  if (!value || typeof value !== "object") return null;
+
+  const detail = value as Record<string, unknown>;
+  for (const key of ["message", "detail", "title", "error_description"]) {
+    const message = errorMessage(detail[key]);
+    if (message) return message;
+  }
+
+  if (typeof detail.code === "string" && detail.code.trim()) {
+    return `Request failed (${detail.code.trim()}).`;
+  }
+  return null;
+}
+
 async function readResponse(response: Response): Promise<ZipApiResponse> {
   let data: ZipApiResponse = {};
   try {
@@ -110,7 +126,11 @@ async function readResponse(response: Response): Promise<ZipApiResponse> {
     data = {};
   }
   if (!response.ok || data?.error) {
-    throw new Error(data?.error || `Request failed with status ${response.status}`);
+    throw new Error(
+      errorMessage(data?.error) ||
+      errorMessage(data) ||
+      `Request failed with status ${response.status}`
+    );
   }
   return data;
 }

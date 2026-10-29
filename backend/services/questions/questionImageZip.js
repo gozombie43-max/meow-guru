@@ -17,6 +17,29 @@ import { invalidateQuestionMetadata } from './questionMetadataCache.js';
 export const fail = (message, statusCode = 422) => Object.assign(new Error(message), { statusCode });
 
 const IMAGE_PATH_REGEX = /^images\/[A-Za-z0-9_-]+\.(png|jpg|jpeg|webp)$/;
+// Leave capacity for normal image reads/writes that share the global storage boundary.
+export const B2_UPLOAD_CONCURRENCY = 4;
+const B2_UPLOAD_RETRIES = 4;
+
+const sleep = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
+function isRetryableStorageError(error) {
+  const status = error?.statusCode || error?.status || error?.$metadata?.httpStatusCode;
+  return [429, 502, 503, 504].includes(status);
+}
+async function putObjectWithRetry(key, bytes) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await putObject(key, bytes, 'image/webp');
+      return;
+    } catch (error) {
+      if (!isRetryableStorageError(error) || attempt >= B2_UPLOAD_RETRIES) throw error;
+      // The import owns this UUID-prefixed key, so retrying the same PUT is idempotent.
+      const retryAfterMs = Number(error?.retryAfter) * 1000;
+      const backoffMs = Math.min(2_000, 250 * 2 ** attempt);
+      await sleep(Number.isFinite(retryAfterMs) && retryAfterMs >= 0 ? retryAfterMs : backoffMs);
+    }
+  }
+}
 
 export const imageMappingSchema = z
   .object({
@@ -543,18 +566,32 @@ export async function processQuestionBankImageZip(bufferOrOptions, options = {})
   let saving = false;
 
   try {
-    let uploadIdx = 0;
-    for (const [file, item] of converted) {
-      const key = `${prefix}/${uploadIdx}.webp`;
-      uploadIdx++;
-      await putObject(key, item.bytes, 'image/webp');
-      attempted.push(key);
-      urls.set(file, {
-        url: stableImageUrl(key),
-        key,
-        width: item.width,
-        height: item.height,
-      });
+    const uploads = [...converted.entries()];
+    for (let offset = 0; offset < uploads.length; offset += B2_UPLOAD_CONCURRENCY) {
+      const batch = uploads.slice(offset, offset + B2_UPLOAD_CONCURRENCY);
+      const outcomes = await Promise.allSettled(
+        batch.map(async ([file, item], batchIndex) => {
+          const key = `${prefix}/${offset + batchIndex}.webp`;
+          await putObjectWithRetry(key, item.bytes);
+          return { file, item, key };
+        })
+      );
+
+      // Wait for every in-flight write before handling a failure so rollback sees
+      // every object that this batch successfully created.
+      for (const outcome of outcomes) {
+        if (outcome.status !== 'fulfilled') continue;
+        const { file, item, key } = outcome.value;
+        attempted.push(key);
+        urls.set(file, {
+          url: stableImageUrl(key),
+          key,
+          width: item.width,
+          height: item.height,
+        });
+      }
+      const failed = outcomes.find(outcome => outcome.status === 'rejected');
+      if (failed?.status === 'rejected') throw failed.reason;
     }
 
     saving = true;

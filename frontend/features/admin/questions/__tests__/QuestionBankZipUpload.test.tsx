@@ -220,4 +220,33 @@ describe("QuestionBankZipUpload Component", () => {
 
     await screen.findByText(/Upload successful|Successfully updated/i);
   });
+
+  it("shows a usable message when an upstream error is structured", async () => {
+    const QuestionBankZipUpload = getComponent();
+    render(<QuestionBankZipUpload />);
+
+    const file = new File(["zip content"], "import.zip", { type: "application/zip" });
+    fireEvent.change(screen.getByLabelText(/ZIP/i), { target: { files: [file] } });
+    vi.mocked(requestResponse).mockResolvedValueOnce(mockResponse({
+      valid: true,
+      summary: {
+        questionCount: 1,
+        fileCount: 1,
+        targetCount: 1,
+        targets: [{ questionId: "q1", target: "question", file: "images/q1.png" }],
+        expectedUpdatedAts: { q1: "2026-10-23T00:00:00.000Z" },
+      },
+    }));
+    fireEvent.click(screen.getByRole("button", { name: /Validate ZIP/i }));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Upload & link/i })).toBeEnabled());
+
+    vi.mocked(requestResponse).mockResolvedValueOnce(mockResponse({
+      error: { code: "GatewayTimeout", message: "The import request timed out upstream." },
+    }, 504));
+    fireEvent.click(screen.getByRole("button", { name: /Upload & link/i }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("The import request timed out upstream.");
+    expect(alert).not.toHaveTextContent("[object Object]");
+  });
 });

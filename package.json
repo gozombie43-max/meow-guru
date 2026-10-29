@@ -47,6 +47,7 @@
     "follow-redirects": "1.16.1",
     "vite": "8.2.4",
     "dompurify": "3.4.17",
+    "re2js": "2.8.7",
     "vitest": "5.0.5",
     "@vitest/coverage-v8": "5.0.5",
     "@vitest/mocker": "5.0.5",
