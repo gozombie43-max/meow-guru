@@ -2,10 +2,12 @@
 
 import defaultStyles from "@/components/SubjectHub.module.css";
 import { ArrowLeft, ArrowUpDown, Check, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { useRef } from "react";
 import { MobileTopicCard } from "./MobileTopicCard";
-import type { SubjectHubView } from './useSubjectHubView';
+import type { SubjectHubView } from "./useSubjectHubView";
 
 export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const {
     config,
     CATEGORIES,
@@ -21,6 +23,7 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
     sortMenuOpen,
     setSortMenuOpen,
     sortOptions,
+    recentTopicSlug,
     mobileTopics,
     isChapterMode,
   } = view;
@@ -60,20 +63,22 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
             )}
           </button>
 
-          {/* Filter Dropdown Popover */}
+          {/* Compact Filter Dropdown Popover */}
           <div
             data-hub-part="mobileTabsScroll"
             className={`${defaultStyles.mobileFilterDropdown} ${mobileFilterOpen ? defaultStyles.mobileFilterDropdownOpen : ""}`}
             aria-label="Filter categories"
           >
             <div className={defaultStyles.mobileFilterDropdownHeader}>
-              <span>Filter by Priority</span>
+              <span>Priority</span>
               {mobileCategory !== "all" && (
                 <button
                   type="button"
+                  data-custom-focus
                   className={defaultStyles.mobileFilterResetBtn}
                   onClick={() => {
                     setMobileCategory("all");
+                    setMobileFilterOpen(false);
                   }}
                 >
                   Reset
@@ -85,7 +90,7 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
                 const isSelected = mobileCategory === cat.id;
                 return (
                   <button
-                    data-ui-button="state"
+                    data-custom-focus
                     key={cat.id}
                     type="button"
                     className={`${defaultStyles.mobileFilterOptionItem} ${isSelected ? defaultStyles.mobileFilterOptionItemActive : ""}`}
@@ -97,7 +102,7 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
                   >
                     <span className={defaultStyles.mobileFilterOptionLabel}>{cat.label}</span>
                     {isSelected && (
-                      <Check size={14} strokeWidth={2.6} className={defaultStyles.mobileFilterCheckIcon} />
+                      <Check size={13} strokeWidth={2.5} className={defaultStyles.mobileFilterCheckIcon} />
                     )}
                   </button>
                 );
@@ -124,13 +129,25 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
       )}
 
       <div data-hub-part="mobileBody" className={defaultStyles.mobileBody}>
-        {/* Search */}
-        <div data-hub-part="mobileSearchRow" className={`${defaultStyles.mobileSearchRow} ${defaultStyles.oledSearchRow}`}>
-          <Search className={defaultStyles.mobileSearchIcon} size={16} />
+        {/* Compact Pinned Search Bar */}
+        <div
+          role="search"
+          data-hub-part="mobileSearchRow"
+          className={`${defaultStyles.mobileSearchRow} ${defaultStyles.oledSearchRow}`}
+        >
+          <Search className={defaultStyles.mobileSearchIcon} size={15} aria-hidden="true" />
           <input
-            type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
+            ref={searchInputRef}
+            type="search"
+            spellCheck={false}
+            autoCapitalize="none"
+            autoCorrect="off"
+            autoComplete="off"
+            data-custom-focus
+            data-mobile-chapter-search
+            enterKeyHint="search"
             className={defaultStyles.mobileSearchInput}
-            placeholder={config.mobileSearchPlaceholder}
+            placeholder={config.mobileSearchPlaceholder || "Search topics"}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             aria-label="Search topics"
@@ -139,17 +156,23 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
             <div className={defaultStyles.mobileSearchRightActions}>
               <button
                 type="button"
+                data-custom-focus
+                data-ui-interaction="none"
                 className={defaultStyles.mobileSearchClearBtn}
-                onClick={() => setSearchQuery("")}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  setSearchQuery("");
+                  searchInputRef.current?.focus();
+                }}
                 aria-label="Clear Search"
               >
-                <X size={11} />
+                <X size={13} />
               </button>
             </div>
           ) : null}
         </div>
 
-        {/* OLED Metadata & Sort Bar */}
+        {/* Metadata & Sort Bar */}
         {(() => {
           const totalQuestions = (mobileTopics ?? []).reduce((sum, t) => {
             const detail = config.mobileTopicDetails?.[t.slug];
@@ -163,6 +186,7 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
               <div className={defaultStyles.oledSortWrap}>
                 <button
                   type="button"
+                  data-custom-focus
                   className={`${defaultStyles.oledSortBtn} ${sortMenuOpen ? defaultStyles.oledSortBtnActive : ""}`}
                   onClick={() => setSortMenuOpen((prev) => !prev)}
                   aria-label="Sort topics"
@@ -179,6 +203,7 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
                       <button
                         key={opt.id}
                         type="button"
+                        data-custom-focus
                         className={`${defaultStyles.oledSortOption} ${sortBy === opt.id ? defaultStyles.oledSortOptionActive : ""}`}
                         onClick={() => {
                           setSortBy(opt.id);
@@ -201,6 +226,7 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
           <div className={defaultStyles.oledTopicGrid}>
             {(mobileTopics ?? []).map((topic, index) => {
               const detail = config.mobileTopicDetails?.[topic.slug];
+              const isRecent = topic.slug === recentTopicSlug;
               return (
                 <MobileTopicCard
                   key={topic.id}
@@ -211,6 +237,8 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
                   accent={detail?.color ?? topic.color}
                   detail={detail}
                   priority={index === 0}
+                  isRecent={isRecent}
+                  subjectId={config.subjectId}
                 />
               );
             })}

@@ -34,8 +34,27 @@
 }
 
 :global(html.mock-test-surface),
-:global(body.mock-test-surface) {
+:global(body.mock-test-surface),
+:global(html):has(.page),
+:global(body):has(.page) {
   background: var(--background);
+  overflow: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+:global(body.mock-test-surface.has-bottom-nav),
+:global(body.has-bottom-nav):has(.page) {
+  padding-bottom: 0 !important;
+}
+
+:global(html.mock-test-surface)::-webkit-scrollbar,
+:global(body.mock-test-surface)::-webkit-scrollbar,
+:global(html):has(.page)::-webkit-scrollbar,
+:global(body):has(.page)::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -141,10 +160,19 @@
   min-height: 0;
   width: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
   padding: 16px 16px calc(var(--app-bottom-nav-height, 94px) + var(--safe-bottom) + 16px);
   box-sizing: border-box;
+}
+
+.contentBody::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .section {
@@ -1149,7 +1177,6 @@
 
   .contentBody {
     padding: 24px 24px calc(24px + var(--app-bottom-nav-occupied-height, 0px));
-    scrollbar-gutter: stable;
   }
 
   .catChip {
@@ -1380,25 +1407,28 @@
   }
 }
 
-/* --- macOS Scrollbar Styling --- */
-.macosContent::-webkit-scrollbar {
-  width: 8px;
+/* --- Hide side scrollbars while preserving touch/wheel/keyboard scroll --- */
+.page,
+.app,
+.homeContainer,
+.macosWindow,
+.macosContent,
+.contentBody,
+.macosSidebar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-.macosContent::-webkit-scrollbar-track {
-  background: transparent;
-}
-.macosContent::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.15);
-  border-radius: 10px;
-}
-:global(body.theme-dark) .macosContent::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-.macosContent::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.3);
-}
-:global(body.theme-dark) .macosContent::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.35);
+
+.page::-webkit-scrollbar,
+.app::-webkit-scrollbar,
+.homeContainer::-webkit-scrollbar,
+.macosWindow::-webkit-scrollbar,
+.macosContent::-webkit-scrollbar,
+.contentBody::-webkit-scrollbar,
+.macosSidebar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* Shared borderless OLED appearance. */

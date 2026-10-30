@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import { useEffect, type CSSProperties } from "react";
+import { recordRecentFromRoute } from "@/lib/recent-study";
 import {
   BookOpenCheck,
   Compass,
@@ -29,6 +30,11 @@ export default function TopicPracticeModes({
   hasStudyMode: boolean;
 }) {
   const { counts, isLoading, isError } = useQuestionCounts({ topic: questionTopic, subject });
+
+  useEffect(() => {
+    recordRecentFromRoute(subject, base);
+  }, [subject, base]);
+
   const modes = [
     {
       title: "PYQ", sub: "Previous year Qs", href: `${base}/quiz?mode=concept`, mode: "concept",
@@ -110,7 +116,10 @@ export default function TopicPracticeModes({
                 <path d="M28 0 C28 10, 0 13, 0 23 C0 33, 28 36, 28 46 L88 46 L88 0 Z" fill="var(--card-2)" />
               </svg>
               <div className="sg-tab-action-wrap">
-                <span className="sg-card-qs-text">
+                <span
+                  className="sg-card-qs-text"
+                  data-zero={countLabel === "0" || countLabel === "—" ? "true" : undefined}
+                >
                   <span>{countLabel}</span>
                   <span className="sg-card-qs-label">Questions</span>
                 </span>

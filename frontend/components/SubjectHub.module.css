@@ -1394,7 +1394,7 @@
   background: var(--dark-canvas);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: none !important;
   display: grid;
   grid-template-columns: 40px 1fr 40px;
   align-items: center;
@@ -1404,7 +1404,7 @@
 
 :global(body.theme-light) .mobileTopbar {
   background: var(--light-only-surface, rgba(255, 255, 255, 0.85)) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-bottom: none !important;
 }
 
 .mobileBackBtn {
@@ -1936,34 +1936,52 @@
   .oledMobile .mobileTopicIconBox { width: 36px; height: 36px; border-radius: 9px; background: color-mix(in srgb, var(--topic-color) 14%, transparent); box-shadow: none; }
   .oledMobile .mobileTopicIconBox svg { width: 24px; height: 24px; color: var(--topic-color) !important; stroke: var(--topic-color); }
   .oledMobile .mobileTopicRow:focus-visible, .oledMobile .mobileTabBtn:focus-visible { outline: 2px solid #4799e8; outline-offset: 2px; }
-  :global(html:not(.theme-light)) .oledMobile { background: #000; }
-  :global(html:not(.theme-light)) .oledMobile .mobileBody { background: #000; }
-  :global(html:not(.theme-light)) .oledMobile .mobileSearchInput { background: #1c1c1e; border: 0; box-shadow: none; color: #e5eaf0; }
-  :global(html:not(.theme-light)) .oledMobile .mobileTopicRow { background: #1c1c1e; }
+  :global(html:not(.theme-light)) .oledMobile { background: #0E0F12; }
+  :global(html:not(.theme-light)) .oledMobile .mobileBody { background: #0E0F12; }
+  :global(html:not(.theme-light)) .oledMobile .mobileSearchInput { background: transparent; border: 0; box-shadow: none; color: #E8EAED; }
+  :global(html:not(.theme-light)) .oledMobile .mobileTopicRow { background: #16181D; }
   :global(html:not(.theme-light)) .oledMobile .mobileTopicRow:hover,
-  :global(html:not(.theme-light)) .oledMobile .mobileTopicRow:active { background: #252527; }
-  :global(html:not(.theme-light)) .oledMobile .mobileTopicName { color: #e5eaf0; }
-  :global(html:not(.theme-light)) .oledMobile .mobileChevron { color: #788696; }
+  :global(html:not(.theme-light)) .oledMobile .mobileTopicRow:active { background: #1E2128; }
+  :global(html:not(.theme-light)) .oledMobile .mobileTopicName { color: #E8EAED; }
+  :global(html:not(.theme-light)) .oledMobile .mobileChevron { color: #9AA0A6; }
 }
 
 /* Single-column thumbnail list for mobile subject topics. */
 .oledTopicGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 0;
+  gap: 8px;
   padding: 0 0 36px;
 }
 
 @media (max-width: 340px) {
   .oledTopicGrid {
-    gap: 0;
+    gap: 8px;
     padding-bottom: 24px;
   }
 }
 
-/* ── OLED Mobile Container & Topbar (Header/Search/Meta pinned, only cards scroll) ── */
+/* ── Elevated Mobile Container & Topbar (#0E0F12 canvas / #16181D cards) ── */
+@media (max-width: 767px) {
+  :global(html):has(.oledMobile),
+  :global(body):has(.oledMobile) {
+    background: #0E0F12 !important;
+    overflow: hidden !important;
+  }
+
+  :global(body.has-bottom-nav):has(.oledMobile) {
+    padding-bottom: 0 !important;
+  }
+
+  :global(html.theme-light):has(.oledMobile),
+  :global(body.theme-light):has(.oledMobile) {
+    background: var(--light-canvas, #f4f5f7) !important;
+  }
+}
+
 .oledMobile {
-  background: #000000 !important;
+  --ui-header-surface: #0E0F12;
+  background: #0E0F12 !important;
   height: calc(100dvh - var(--app-bottom-nav-occupied-height, calc(var(--app-bottom-nav-height) + var(--safe-bottom))));
   max-height: calc(100dvh - var(--app-bottom-nav-occupied-height, calc(var(--app-bottom-nav-height) + var(--safe-bottom))));
   display: flex !important;
@@ -1973,7 +1991,8 @@
   box-sizing: border-box;
 }
 
-.oledMobileTopbar {
+.oledMobileTopbar,
+.oledMobile .oledMobileTopbar[data-ui-chrome="header"] {
   position: relative;
   overflow: visible;
   height: calc(56px + var(--safe-top));
@@ -1984,8 +2003,9 @@
   grid-template-columns: 36px 1fr 36px;
   align-items: center;
   flex-shrink: 0;
-  background: #000000 !important;
+  background: #0E0F12 !important;
   border-bottom: none !important;
+  box-shadow: none !important;
   max-width: 500px;
   margin: 0 auto;
   width: 100%;
@@ -2001,7 +2021,7 @@
   border-radius: 50%;
   background: transparent !important;
   border: none !important;
-  color: #ECECF0;
+  color: #E8EAED;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2017,11 +2037,11 @@
 }
 
 .oledMobile .mobileTopbarTitle {
-  font-size: 17.5px;
+  font-size: 1rem;
   font-weight: 700;
   line-height: 24px;
-  letter-spacing: -0.15px;
-  color: #ECECEF;
+  letter-spacing: -0.01em;
+  color: #E8EAED;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -2039,10 +2059,10 @@
   max-width: 500px !important;
   width: 100% !important;
   box-sizing: border-box !important;
-  background: #000000 !important;
+  background: #0E0F12 !important;
 }
 
-/* ── Mobile Header Filter & Popover ── */
+/* ── Mobile Header Filter & Compact Popover ── */
 .mobileHeaderFilterWrap {
   position: relative;
   display: flex;
@@ -2063,7 +2083,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ECECF0;
+  color: #E8EAED;
   position: relative;
   cursor: pointer;
   padding: 0;
@@ -2084,49 +2104,49 @@
 
 .mobileHeaderFilterBtnActive,
 .mobileHeaderFilterHasSelection {
-  color: #69A9ED !important;
+  color: var(--ios-system-blue, #0a84ff) !important;
 }
 
 .filterActiveDot {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 5px;
-  height: 5px;
+  top: 8px;
+  right: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #347FD1;
-  box-shadow: 0 0 6px #347FD1;
+  background: var(--ios-system-blue, #0a84ff);
 }
 
 .mobileFilterBackdrop {
   position: fixed;
   inset: 0;
   z-index: 70;
-  background: rgba(0, 0, 0, 0.5);
+  background: transparent;
   -webkit-tap-highlight-color: transparent;
 }
 
 .mobileFilterDropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   right: 0;
-  min-width: 190px;
-  background: #1B1B1D;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  padding: 8px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.03);
+  width: min(142px, calc(100vw - 24px));
+  min-width: 142px;
+  background: #16181D;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 11px;
+  padding: 5px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
   z-index: 90;
   opacity: 0;
-  transform: translateY(-6px) scale(0.96);
+  transform: translateY(-4px) scale(0.97);
   pointer-events: none;
-  transition: opacity 0.16s ease, transform 0.16s ease;
+  transition: opacity 0.14s ease, transform 0.14s ease;
 }
 
 :global(body.theme-light) .mobileFilterDropdown {
   background: var(--light-only-surface, #ffffff) !important;
   border-color: var(--light-only-border, rgba(0, 0, 0, 0.12)) !important;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12) !important;
 }
 
 .mobileFilterDropdownOpen {
@@ -2139,14 +2159,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 6px 8px;
-  font-size: 11px;
+  gap: 6px;
+  padding: 3px 6px 5px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(169, 181, 202, 0.7);
+  letter-spacing: 0.06em;
+  color: #9AA0A6;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+  white-space: nowrap;
 }
 
 :global(body.theme-light) .mobileFilterDropdownHeader {
@@ -2157,16 +2179,16 @@
 .mobileFilterResetBtn {
   background: transparent;
   border: none;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
-  color: #69A9ED;
+  color: var(--ios-system-blue, #0a84ff);
   cursor: pointer;
   padding: 0;
+  outline: none;
 }
 
 .mobileFilterOptionsList {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 2px;
 }
 
@@ -2175,15 +2197,17 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 8px 10px;
-  border-radius: 10px;
+  min-height: 29px;
+  padding: 5px 8px;
+  border-radius: 7px;
   border: 1px solid transparent;
   background: transparent;
-  color: #d1d9e6;
-  font-size: 13.5px;
+  color: #E8EAED;
+  font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
   text-align: left;
+  outline: none;
   transition: border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
   -webkit-tap-highlight-color: transparent;
 }
@@ -2192,19 +2216,21 @@
   color: var(--light-only-text, #1c1c1e) !important;
 }
 
-.mobileFilterOptionItem:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
+.mobileFilterOptionItem:hover,
+.mobileFilterOptionItem:focus-visible {
+  background: #1E2128;
+  color: #E8EAED;
 }
 
-:global(body.theme-light) .mobileFilterOptionItem:hover {
+:global(body.theme-light) .mobileFilterOptionItem:hover,
+:global(body.theme-light) .mobileFilterOptionItem:focus-visible {
   background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.05)) !important;
 }
 
 .mobileFilterOptionItemActive {
-  background: rgba(52, 127, 209, 0.16) !important;
-  border-color: rgba(52, 127, 209, 0.35) !important;
-  color: #69A9ED !important;
+  background: rgba(10, 132, 255, 0.14) !important;
+  border-color: rgba(10, 132, 255, 0.28) !important;
+  color: var(--ios-system-blue, #0a84ff) !important;
   font-weight: 600;
 }
 
@@ -2219,7 +2245,7 @@
 }
 
 .mobileFilterCheckIcon {
-  color: #69A9ED;
+  color: var(--ios-system-blue, #0a84ff);
   flex-shrink: 0;
 }
 
@@ -2227,102 +2253,128 @@
   color: var(--ios-system-blue) !important;
 }
 
-/* ── OLED Search Row (Fixed) ── */
+/* ── Compact Pinned Search Row (38px, matching Chapters page) ── */
 .oledSearchRow {
   position: relative;
   display: flex;
   align-items: center;
+  gap: 8px;
   width: 100%;
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
   flex-shrink: 0 !important;
-  margin-bottom: 0 !important;
+  padding: 0 10px 0 12px;
+  margin: 8px 0 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: #16181D;
+  color: #E8EAED;
+  box-sizing: border-box;
+  cursor: text;
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.oledSearchRow:focus-within {
+  border-color: var(--ios-system-blue, #0a84ff);
+  box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.14);
+}
+
+.oledSearchRow .mobileSearchIcon {
+  position: static;
+  transform: none;
+  flex: none;
+  color: #9AA0A6 !important;
+  width: 15px;
+  height: 15px;
+  pointer-events: none;
+  transition: color 150ms ease;
+}
+
+.oledSearchRow:focus-within .mobileSearchIcon {
+  color: var(--ios-system-blue, #0a84ff) !important;
 }
 
 .oledSearchRow .mobileSearchInput {
-  height: 40px;
-  border-radius: 12px;
-  background: #17171A !important;
-  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  width: 100%;
+  height: 100% !important;
+  min-width: 0;
+  flex: 1;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
   outline: none !important;
-  padding: 0 34px 0 36px;
-  font-size: 12px;
+  box-shadow: none !important;
+  padding: 0 !important;
+  font-size: 16px !important;
   font-weight: 450;
-  color: #F2F2F4;
-  transition: border-color 150ms ease, background-color 150ms ease;
+  line-height: 1.25;
+  color: #E8EAED;
   -webkit-tap-highlight-color: transparent;
 }
 
 .oledSearchRow .mobileSearchInput::placeholder {
-  color: var(--light-only-text-muted, #7C7E87) !important;
-  font-size: 12px;
+  color: #9AA0A6 !important;
+  font-size: 14px !important;
   font-weight: 450;
 }
 
 .oledSearchRow .mobileSearchInput:focus,
 .oledSearchRow .mobileSearchInput:focus-visible {
   outline: none !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  background: #1C1C20 !important;
+  border: 0 !important;
+  background: transparent !important;
   box-shadow: none !important;
 }
 
-.oledSearchRow .mobileSearchIcon {
-  left: 12px;
-  color: #7B7E88 !important;
-  width: 14px;
-  height: 14px;
-  position: absolute;
-  pointer-events: none;
-}
-
 .oledSearchRow .mobileSearchRightActions {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
+  position: static;
+  transform: none;
   display: flex;
   align-items: center;
+  flex: none;
   z-index: 5;
 }
 
 .oledSearchRow .mobileSearchClearBtn {
-  width: 20px !important;
-  height: 20px !important;
-  min-height: 20px !important;
-  min-width: 20px !important;
-  max-width: 20px !important;
-  max-height: 20px !important;
+  width: 22px !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  min-width: 22px !important;
+  max-width: 22px !important;
+  max-height: 22px !important;
   padding: 0 !important;
   border-radius: 50% !important;
-  background: #27272B !important;
+  background: rgba(255, 255, 255, 0.08) !important;
   border: none !important;
-  color: #A0A1A8 !important;
-  display: flex !important;
+  outline: none !important;
+  color: #9AA0A6 !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer;
-  transition: background-color 100ms ease, color 100ms ease, transform 100ms ease;
+  transition: background-color 120ms ease, color 120ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .oledSearchRow .mobileSearchClearBtn:active {
-  background: #36363C !important;
-  color: #F2F2F4 !important;
-  transform: scale(0.92);
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #E8EAED !important;
 }
 
-/* ── OLED Metadata & Sort Bar (Fixed) ── */
+/* ── Metadata & Sort Bar (Fixed) ── */
 .oledMetaBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 8px 0 8px;
+  margin: 2px 2px 6px;
   flex-shrink: 0 !important;
 }
 
 .oledMetaCount {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
-  color: #A0A1A8;
+  color: #9AA0A6;
   letter-spacing: -0.01em;
 }
 
@@ -2334,38 +2386,40 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  height: 30px;
-  padding: 0 11px;
-  border-radius: 0;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 6px;
+  border-radius: 6px;
   background: transparent;
   border: 0;
-  color: #F2F2F4;
+  outline: none;
+  color: #9AA0A6;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 100ms ease, border-color 100ms ease;
+  transition: background-color 100ms ease, color 100ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .oledSortBtn:active,
 .oledSortBtnActive {
   background: transparent;
-  color: var(--ios-system-blue);
+  color: var(--ios-system-blue, #0a84ff);
 }
 
 .oledSortDropdown {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  min-width: 150px;
-  background: #1B1B1D;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 14px;
-  padding: 6px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+  width: min(148px, calc(100vw - 24px));
+  min-width: 148px;
+  background: #16181D;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 11px;
+  padding: 5px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
   z-index: 100;
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 2px;
 }
 
@@ -2374,26 +2428,30 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 7px 10px;
-  border-radius: 8px;
-  border: none;
+  min-height: 29px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  border: 1px solid transparent;
   background: transparent;
-  color: #9B9AA4;
-  font-size: 12px;
+  color: #E8EAED;
+  font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
   text-align: left;
+  outline: none;
   transition: border-color 100ms ease, background-color 100ms ease, color 100ms ease;
 }
 
-.oledSortOption:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #F1F1F3;
+.oledSortOption:hover,
+.oledSortOption:focus-visible {
+  background: #1E2128;
+  color: #E8EAED;
 }
 
 .oledSortOptionActive {
-  background: rgba(52, 127, 209, 0.15) !important;
-  color: #69A9ED !important;
+  background: rgba(10, 132, 255, 0.14) !important;
+  border-color: rgba(10, 132, 255, 0.28) !important;
+  color: var(--ios-system-blue, #0a84ff) !important;
   font-weight: 600;
 }
 
@@ -2420,12 +2478,12 @@
 }
 
 :global([data-topic-layout="compact"]) .mobileTopbarTitle {
-  font-size: 18px;
+  font-size: 1rem;
   line-height: 24px;
   font-weight: 700;
 }
 
-:global([data-topic-layout="compact"]) .oledMobile :is(.mobileBackBtn, .mobileHeaderFilterBtn, .mobileSearchClearBtn) {
+:global([data-topic-layout="compact"]) .oledMobile :is(.mobileBackBtn, .mobileHeaderFilterBtn) {
   width: 44px !important;
   height: 44px !important;
   min-width: 44px !important;
@@ -2436,25 +2494,11 @@
 }
 
 :global([data-topic-layout="compact"]) .oledMobile [data-hub-part="mobileBody"] {
-  padding-inline: 16px !important;
-}
-
-:global([data-topic-layout="compact"]) .oledSearchRow .mobileSearchInput {
-  height: 44px;
-  padding-right: 48px;
-  font-size: 16px;
-}
-
-:global([data-topic-layout="compact"]) .oledSearchRow .mobileSearchInput::placeholder {
-  font-size: 13px;
-}
-
-:global([data-topic-layout="compact"]) .mobileSearchRightActions {
-  right: 0;
+  padding-inline: 14px !important;
 }
 
 :global([data-topic-layout="compact"]) .oledMetaBar {
-  margin: 4px 0;
+  margin: 2px 2px 6px;
   gap: 8px;
 }
 
@@ -2464,12 +2508,13 @@
 }
 
 :global([data-topic-layout="compact"]) .oledSortBtn {
-  min-height: 44px;
+  min-height: 28px;
+  height: 28px;
   font-size: 12px;
 }
 
 :global([data-topic-layout="compact"]) .oledTopicGrid {
-  gap: 0;
+  gap: 8px;
   padding-bottom: 24px;
 }
 
@@ -2485,7 +2530,17 @@
   color: var(--light-text);
 }
 
-:global(html.theme-light) :global([data-topic-layout="compact"]) :is(.mobileSearchInput, .oledSortDropdown) {
+:global(html.theme-light) :global([data-topic-layout="compact"]) .oledSearchRow {
+  background: var(--light-surface) !important;
+  color: var(--light-text);
+  border-color: var(--light-border) !important;
+}
+
+:global(html.theme-light) :global([data-topic-layout="compact"]) .oledSearchRow .mobileSearchInput {
+  color: var(--light-text) !important;
+}
+
+:global(html.theme-light) :global([data-topic-layout="compact"]) .oledSortDropdown {
   background: var(--light-surface) !important;
   color: var(--light-text);
   border-color: var(--light-border) !important;
@@ -2507,7 +2562,7 @@
 
 .oledTopicScrollArea .mobileTopicCount {
   font-size: 12.5px;
-  color: #8C8E97;
+  color: #9AA0A6;
   text-align: center;
   padding: 48px 16px;
   margin: 0;
@@ -2516,3 +2571,135 @@
 /* Fill photograph frames without inherited icon padding. */
 :is(.tileIconBox, .tableTopicIcon, .heroCardIconBox) img { width: 100%; height: 100%; object-fit: cover; }
 .sidebarItemIcon img { border-radius: 4px; }
+
+/* Hide all scrollbars on mobile SubjectHub views while keeping smooth touch/wheel scroll. */
+@media (max-width: 767px) {
+  .pageRoot,
+  .pageRoot *,
+  .oledMobile,
+  .oledTopicScrollArea,
+  .mobileTopicGroup {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  .pageRoot::-webkit-scrollbar,
+  .pageRoot ::-webkit-scrollbar,
+  .oledMobile::-webkit-scrollbar,
+  .oledTopicScrollArea::-webkit-scrollbar,
+  .mobileTopicGroup::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}
+
+/* ── Interactive Study Mode Banner (English Desktop Studio) ── */
+.studyModeBannerWrap {
+  margin-bottom: 2px;
+}
+
+.studyModeBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, rgb(var(--ios-system-blue-rgb) / 0.12) 0%, rgba(99, 102, 241, 0.12) 100%);
+  border: 1px solid rgb(var(--ios-system-blue-rgb) / 0.35);
+  text-decoration: none;
+  color: var(--mac-text-primary);
+  transition: background-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), color 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgb(var(--ios-system-blue-rgb) / 0.08);
+  cursor: pointer;
+}
+
+.studyModeBanner:hover {
+  background: linear-gradient(135deg, rgb(var(--ios-system-blue-rgb) / 0.2) 0%, rgba(99, 102, 241, 0.2) 100%);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgb(var(--ios-system-blue-rgb) / 0.18);
+}
+
+:global(body.theme-dark) .studyModeBanner {
+  background: linear-gradient(135deg, rgb(var(--ios-system-blue-rgb) / 0.16) 0%, rgba(99, 102, 241, 0.16) 100%);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.32);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+:global(body.theme-dark) .studyModeBanner:hover {
+  background: linear-gradient(135deg, rgb(var(--ios-system-blue-rgb) / 0.25) 0%, rgba(99, 102, 241, 0.25) 100%);
+  border-color: rgb(var(--ios-system-blue-rgb) / 0.65);
+  box-shadow: 0 4px 16px rgb(var(--ios-system-blue-rgb) / 0.28);
+}
+
+.studyModeBannerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.studyModeIconBox {
+  width: 32px;
+  height: 32px;
+  border-radius: 8.5px;
+  background: linear-gradient(135deg, var(--ios-system-blue), #6366f1);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgb(var(--ios-system-blue-rgb) / 0.35);
+}
+
+.studyModeInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.studyModeKicker {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ios-system-blue);
+}
+
+.studyModeTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mac-text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.studyModeSub {
+  font-size: 10px;
+  color: var(--mac-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.studyModeLaunchBtn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--light-accent);
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0, 113, 227, 0.3);
+}
+
+.studyModeBanner:hover .studyModeLaunchBtn {
+  background: #0077ed;
+  transform: scale(1.04);
+}
