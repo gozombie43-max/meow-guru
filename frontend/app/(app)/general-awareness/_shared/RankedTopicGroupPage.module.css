@@ -246,7 +246,7 @@
   color: var(--geo-secondary);
 }
 
-/* Elevated grouped card container for chapters */
+/* Grouped list container for chapters on simple dark background */
 .page .chapterList {
   display: flex;
   flex-direction: column;
@@ -255,7 +255,7 @@
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  gap: 8px;
+  gap: 0;
   border-radius: 0;
   background: transparent !important;
   border: 0 !important;
@@ -268,23 +268,33 @@
   grid-template-columns: 80px minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 13px;
-  min-height: 82px;
+  min-height: 80px;
   flex-shrink: 0;
-  padding: 11px 12px;
+  padding: 12px 2px;
   box-sizing: border-box;
-  background: var(--geo-surface, #1c1c1e);
-  border: 1px solid var(--geo-border, rgba(255, 255, 255, 0.06));
-  border-radius: 13px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--geo-sep, rgba(255, 255, 255, 0.07));
+  border-radius: 0;
   text-decoration: none;
   color: var(--geo-text, #e5eaf0);
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 140ms ease, border-color 140ms ease;
+  transition: background-color 140ms ease;
+}
+
+.chapterRow:last-child {
+  border-bottom: 0;
 }
 
 .chapterRowRecent {
-  background: var(--geo-surface, #1c1c1e);
-  border-color: rgba(10, 132, 255, 0.34);
-  box-shadow: 0 0 10px rgba(10, 132, 255, 0.16);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--geo-sep, rgba(255, 255, 255, 0.07));
+  box-shadow: none;
+}
+
+.chapterRowRecent:last-child {
+  border-bottom: 0;
 }
 
 .chapterRow .chapterIcon {
@@ -422,8 +432,7 @@
 }
 
 .chapterRow:active {
-  background: var(--geo-surface-muted, #252527);
-  border-color: rgba(10, 132, 255, 0.28);
+  background: var(--geo-surface-muted, rgba(255, 255, 255, 0.04));
 }
 
 .chapterRow:active .chapterChevron {
@@ -433,8 +442,7 @@
 
 @media (hover: hover) {
   .chapterRow:hover {
-    background: var(--geo-surface-muted, #252527);
-    border-color: rgba(10, 132, 255, 0.24);
+    background: var(--geo-surface-muted, rgba(255, 255, 255, 0.04));
   }
   .chapterRow:hover .chapterChevron {
     color: var(--geo-accent, #0a84ff);
@@ -469,9 +477,14 @@
 }
 
 :global(html.theme-light) .chapterRowRecent {
-  background: var(--light-surface, #ffffff);
-  border-color: rgba(0, 113, 227, 0.34);
-  box-shadow: 0 0 10px rgba(0, 113, 227, 0.12);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: none;
+}
+
+:global(html.theme-light) .chapterRowRecent:last-child {
+  border-bottom: 0;
 }
 
 :global(html.theme-light) .chapterRow.chapterRowRecent .chapterIcon,
@@ -514,9 +527,15 @@
 }
 
 :global(html.theme-light) .chapterRow {
-  background: var(--light-surface, #ffffff);
-  border-color: var(--light-border, #e1e4e8);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: none;
   color: var(--light-text, #242830);
+}
+
+:global(html.theme-light) .chapterRow:last-child {
+  border-bottom: 0;
 }
 
 .header {
