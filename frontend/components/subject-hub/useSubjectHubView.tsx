@@ -3,6 +3,7 @@ import { useSubjectHub } from "@/components/subject-hub/useSubjectHub";
 
 import defaultStyles from "@/components/SubjectHub.module.css";
 import { useQuestionCounts } from "@/hooks/useQuestionCounts";
+import { useRecentTopic } from "@/lib/recent-study";
 import { Sparkles } from "lucide-react";
 
 import { useRouter } from "next/navigation";
@@ -21,7 +22,7 @@ const {
     icon: HubIcon,
   } = config;
 const STUDY_MODE_TOPICS = config.studyModeTopics ?? EMPTY_STUDY_TOPICS;
-const styles = config.styles ?? defaultStyles;
+const styles = useMemo(() => (config.styles ? { ...defaultStyles, ...config.styles } : defaultStyles), [config.styles]);
 const router = useRouter();
 const {
     toggleThemeMode,
@@ -52,6 +53,7 @@ const sortOptions: Array<{ id: SubjectHubSort; label: string }> = [
   ];
 const oledMobile = true;
 const mobileStyles = defaultStyles;
+const recentTopicSlug = useRecentTopic(config.subjectId);
 const mobileTopics = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     const filtered = TOPICS.filter((topic) => {
@@ -81,8 +83,17 @@ const mobileTopics = useMemo(() => {
     if (sortBy === "alpha") {
       return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
     }
+    if (recentTopicSlug) {
+      const recentIndex = filtered.findIndex((t) => t.slug === recentTopicSlug);
+      if (recentIndex > 0) {
+        const next = [...filtered];
+        const [recentItem] = next.splice(recentIndex, 1);
+        next.unshift(recentItem);
+        return next;
+      }
+    }
     return filtered;
-  }, [TOPICS, searchQuery, mobileCategory, sortBy, config.mobileTopicDetails]);
+  }, [TOPICS, searchQuery, mobileCategory, sortBy, config.mobileTopicDetails, recentTopicSlug]);
 const isChapterMode = !!config.getChapterGroup;
 const filteredTopics = useMemo(() => {
     if (isChapterMode) {
@@ -275,6 +286,6 @@ useEffect(() => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [router, config.chapterBasePrefix, searchInputRef, setSearchQuery, setSelectedTopicId]);
 const SelectedIcon = selectedTopic.icon;
-return { config, TOPICS, CATEGORIES, PRIORITY_CONFIG, PRACTICE_MODES, HubIcon, STUDY_MODE_TOPICS, styles, router, toggleThemeMode, isDark, searchQuery, setSearchQuery, viewMode, setViewMode, selectedTopicId, setSelectedTopicId, sidebarOpen, setSidebarOpen, searchInputRef, isListening, toggleVoiceSearch, activeCategory, setActiveCategory, selectedChapterSlug, setSelectedChapterSlug, mobileCategory, setMobileCategory, mobileFilterOpen, setMobileFilterOpen, sortBy, setSortBy, sortMenuOpen, setSortMenuOpen, sortOptions, oledMobile, mobileStyles, mobileTopics, isChapterMode, filteredTopics, selectedTopic, currentGroup, rawChapters, chapters, selectedChapter, hasStudyMode, targetQuestionTopic, modeQuestionCounts, topicPracticeModes, currentIndex, categoryCounts, stateRef, SelectedIcon };
+return { config, TOPICS, CATEGORIES, PRIORITY_CONFIG, PRACTICE_MODES, HubIcon, STUDY_MODE_TOPICS, styles, router, toggleThemeMode, isDark, searchQuery, setSearchQuery, viewMode, setViewMode, selectedTopicId, setSelectedTopicId, sidebarOpen, setSidebarOpen, searchInputRef, isListening, toggleVoiceSearch, activeCategory, setActiveCategory, selectedChapterSlug, setSelectedChapterSlug, mobileCategory, setMobileCategory, mobileFilterOpen, setMobileFilterOpen, sortBy, setSortBy, sortMenuOpen, setSortMenuOpen, sortOptions, oledMobile, mobileStyles, recentTopicSlug, mobileTopics, isChapterMode, filteredTopics, selectedTopic, currentGroup, rawChapters, chapters, selectedChapter, hasStudyMode, targetQuestionTopic, modeQuestionCounts, topicPracticeModes, currentIndex, categoryCounts, stateRef, SelectedIcon };
 }
 export type SubjectHubView = ReturnType<typeof useSubjectHubView>;

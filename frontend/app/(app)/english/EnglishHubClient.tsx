@@ -2,7 +2,6 @@
 import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
 import SubjectHub from "@/components/subject-hub/SubjectHub";
 import { Languages } from "lucide-react";
-import styles from "./english.module.css";
 import { CATEGORIES, PRACTICE_MODES, PRIORITY_CONFIG, STUDY_MODE_TOPICS, TOPICS } from "./topic-data";
 
 const config = {
@@ -15,10 +14,9 @@ const config = {
   priorityConfig: PRIORITY_CONFIG,
   practiceModes: PRACTICE_MODES,
   studyModeTopics: STUDY_MODE_TOPICS,
-  styles,
   notesLabel: "Vocabulary & Rules Bank",
   searchPlaceholder: "Search topics, grammar, rules... (⌘K)",
-  mobileSearchPlaceholder: "Search english topics…",
+  mobileSearchPlaceholder: "Search topics",
 };
 
 export default function EnglishHubClient() {

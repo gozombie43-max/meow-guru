@@ -60,7 +60,7 @@ const config: {
   },
   notesLabel: "Formula & Tricks Bank",
   searchPlaceholder: "Search math topics, formulas, rules... (⌘K)",
-  mobileSearchPlaceholder: "Search mathematics topics...",
+  mobileSearchPlaceholder: "Search topics",
 };
 
 export default function MathematicsHubClient() {

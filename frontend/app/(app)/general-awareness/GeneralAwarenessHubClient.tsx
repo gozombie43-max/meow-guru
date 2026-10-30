@@ -20,7 +20,7 @@ const config = {
   practiceModes: PRACTICE_MODES,
   notesLabel: "Facts & Summary Notes",
   searchPlaceholder: "Search topics, chapters... (⌘K)",
-  mobileSearchPlaceholder: "Search topics…",
+  mobileSearchPlaceholder: "Search topics",
   getChapterGroup: getGeneralAwarenessTopicGroup,
   chapterBasePrefix: "/general-awareness",
 };

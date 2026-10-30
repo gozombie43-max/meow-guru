@@ -2,10 +2,10 @@
 
 // Shared chapter hub for General Awareness and IIT JAM Physics.
 
-import MicIcon from "@/components/MicIcon";
 import TopicThumbnail from "@/components/subject-hub/TopicThumbnail";
 import ChapterThumbnail from "./ChapterThumbnail";
 import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
+import { recordRecentChapter, recordRecentTopic, useRecentChapter } from "@/lib/recent-study";
 import { chapterImage } from "@/lib/topic-images";
 import { useBackLayer } from "@/hooks/useAppNavigation";
 import { ArrowLeft, Check, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from "lucide-react";
@@ -14,31 +14,8 @@ import type {
 RankedTopicGroup,
 RankedTopicPriority,
 } from "@/lib/ranked-topic-groups";
-
-
-interface SpeechRecognitionResultEvent {
-  results?: { [index: number]: { [index: number]: { transcript?: string } } };
-}
-
-interface SpeechRecognitionInstance {
-  lang: string;
-  interimResults: boolean;
-  maxAlternatives: number;
-  onstart: (() => void) | null;
-  onresult: ((event: SpeechRecognitionResultEvent) => void) | null;
-  onerror: (() => void) | null;
-  onend: (() => void) | null;
-  start(): void;
-  stop(): void;
-}
-
-type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
-type SpeechRecognitionWindow = Window & {
-  SpeechRecognition?: SpeechRecognitionConstructor;
-  webkitSpeechRecognition?: SpeechRecognitionConstructor;
-};
 import Link from "next/link";
-import { useCallback,useEffect,useMemo,useRef,useState } from "react";
+import { useEffect,useMemo,useRef,useState } from "react";
 import styles from "./RankedTopicGroupPage.module.css";
 
 type PriorityFilter = RankedTopicPriority | "All";
@@ -68,12 +45,23 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
   // Uploads are keyed by chapter slug; fall back to the slugified chapter title.
   const questionTotal = (topic: { slug: string; title: string }) =>
     data?.totals?.[topic.slug] ?? data?.totals?.[slugifyTitle(topic.title)] ?? 0;
+  const questionSolved = (topic: { slug: string; title: string }) =>
+    data?.userProgress?.[topic.slug]?.userSolved ??
+    data?.userProgress?.[topic.title]?.userSolved ??
+    data?.userProgress?.[slugifyTitle(topic.title)]?.userSolved ??
+    0;
   const [query, setQuery] = useState("");
   const [priority, setPriority] = useState<PriorityFilter>("All");
   const [filterOpen, setFilterOpen] = useState(false);
   const filterDialogRef = useRef<HTMLDialogElement>(null);
   const filterTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
+  const recentChapterSlug = useRecentChapter(subject, group.slug);
   useBackLayer(filterOpen, () => setFilterOpen(false));
+
+  useEffect(() => {
+    recordRecentTopic(subject, group.slug);
+  }, [subject, group.slug]);
 
   useEffect(() => {
     const dialog = filterDialogRef.current;
@@ -102,78 +90,26 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
     return () => window.clearTimeout(timer);
   }, [group.slug, group.filters]);
 
-  const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
-
-  const toggleVoiceSearch = useCallback(() => {
-    if (typeof window === "undefined") return;
-    const speechWindow = window as SpeechRecognitionWindow;
-    const SpeechRecognitionClass =
-      speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
-
-    if (!SpeechRecognitionClass) {
-      alert("Voice search is not supported in this browser.");
-      return;
-    }
-
-    if (isListening) {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      setIsListening(false);
-      return;
-    }
-
-    try {
-      const recognition = new SpeechRecognitionClass();
-      recognition.lang = "en-US";
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
-
-      recognition.onresult = (event: SpeechRecognitionResultEvent) => {
-        const transcript = event.results?.[0]?.[0]?.transcript;
-        if (transcript) {
-          setQuery(transcript);
-        }
-      };
-
-      recognition.onerror = () => {
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch {
-      setIsListening(false);
-    }
-  }, [isListening]);
-
-  useEffect(() => {
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
-  }, []);
-
   const topics = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
-    return group.topics.filter((topic) => {
+    const filtered = group.topics.filter((topic) => {
       const matchesQuery =
         normalizedQuery === "" || topic.title.toLowerCase().includes(normalizedQuery);
       const matchesPriority =
         normalizedQuery !== "" || priority === "All" || topic.priority === priority;
       return matchesQuery && matchesPriority;
     });
-  }, [group.topics, priority, query]);
+    if (recentChapterSlug) {
+      const recentIndex = filtered.findIndex((topic) => topic.slug === recentChapterSlug);
+      if (recentIndex > 0) {
+        const next = [...filtered];
+        const [recentItem] = next.splice(recentIndex, 1);
+        next.unshift(recentItem);
+        return next;
+      }
+    }
+    return filtered;
+  }, [group.topics, priority, query, recentChapterSlug]);
 
   const filters = useMemo<readonly PriorityFilter[]>(
     () => ["All", ...group.filters],
@@ -185,7 +121,7 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
       type="button"
       data-ui-button="state"
       data-ui-shape="icon"
-      className={styles.headerFilter}
+      className={`${styles.headerFilter} ${priority !== "All" ? styles.headerFilterActive : ""}`}
       aria-label={`Filter chapters, ${priority} selected`}
       aria-haspopup="dialog"
       aria-expanded={filterOpen}
@@ -196,6 +132,7 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
       }}
     >
       <SlidersHorizontal size={20} aria-hidden="true" />
+      {priority !== "All" && <span className={styles.filterActiveDot} aria-hidden="true" />}
     </button>
   );
 
@@ -233,19 +170,23 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
             <input
               className={styles.searchInput}
               type="search"
+              data-custom-focus
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="none"
               spellCheck={false}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={`Search ${group.label.toLowerCase()} chapters`}
+              placeholder="Search chapters"
               aria-label={`Search ${group.label} chapters`}
             />
             {query ? (
-              <button data-ui-button="secondary"
+              <button
                 type="button"
+                data-custom-focus
+                data-ui-interaction="none"
                 className={styles.clearButton}
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => setQuery("")}
                 aria-label="Clear chapter search"
               >
@@ -262,27 +203,40 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
             </div>
 
             {topics.length > 0 ? (
-              topics.map((topic) => (
-                <Link
-                  key={topic.slug}
-                  className={styles.row}
-                  href={`${routeBase}/${topic.slug}`}
-                  aria-label={group.filters.length ? `Rank ${topic.rank}: ${topic.title}, ${topic.priority} ${group.metricLabel.toLowerCase()}. Open topic.` : `${topic.rank}. ${topic.title}. Open chapter.`}
-                >
-                  <span className={styles.rank}>{topic.rank}</span>
-                  <span className={styles.chapterCell}>
-                    <span className={styles.chapterPhoto} aria-hidden="true"><TopicThumbnail src={chapterImage(topic.slug, group.slug)} size={48} /></span>
-                    <span className={styles.chapter}>{topic.title}<span className={styles.chapterQuestionCount}>{questionTotal(topic)} Questions</span></span>
-                  </span>
-                  <span className={styles.weightage} hidden={!group.filters.length}>
-                    <span
-                      className={`${styles.weightDot} ${PRIORITY_CLASS[topic.priority]}`}
-                      aria-hidden="true"
-                    />
-                    {topic.priority}
-                  </span>
-                </Link>
-              ))
+              topics.map((topic) => {
+                const total = questionTotal(topic);
+                const solved = Math.min(questionSolved(topic), total);
+                return (
+                  <Link
+                    key={topic.slug}
+                    className={styles.row}
+                    href={`${routeBase}/${topic.slug}`}
+                    onClick={() => recordRecentChapter(subject, group.slug, topic.slug)}
+                    aria-label={group.filters.length ? `Rank ${topic.rank}: ${topic.title}, ${topic.priority} ${group.metricLabel.toLowerCase()}. Open topic.` : `${topic.rank}. ${topic.title}. Open chapter.`}
+                  >
+                    <span className={styles.rank}>{topic.rank}</span>
+                    <span className={styles.chapterCell}>
+                      <span className={styles.chapterPhoto} aria-hidden="true"><TopicThumbnail src={chapterImage(topic.slug, group.slug)} size={48} /></span>
+                      <span className={styles.chapter}>
+                        {topic.title}
+                        <span className={styles.chapterQuestionCount}>
+                          <span className={styles.attemptedCount}>{solved}</span>
+                          <span className={styles.attemptedSlash}>/</span>
+                          <span className={styles.totalCount}>{total}</span>{" "}
+                          <span className={styles.attemptedLabel}>attempted</span>
+                        </span>
+                      </span>
+                    </span>
+                    <span className={styles.weightage} hidden={!group.filters.length}>
+                      <span
+                        className={`${styles.weightDot} ${PRIORITY_CLASS[topic.priority]}`}
+                        aria-hidden="true"
+                      />
+                      {topic.priority}
+                    </span>
+                  </Link>
+                );
+              })
             ) : (
               <div className={styles.empty}>No chapters match your search.</div>
             )}
@@ -310,10 +264,19 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
         </header>
 
         <div data-hub-part="mobileBody" className={hubStyles.mobileBody}>
-          {/* Mobile Search Row */}
-          <div data-hub-part="mobileSearchRow" className={styles.chapterSearch}>
-            <Search size={21} aria-hidden="true" />
+          {/* Mobile Search Row — pinned above the scrollable chapter list */}
+          <div
+            data-hub-part="mobileSearchRow"
+            className={styles.chapterSearch}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                mobileSearchInputRef.current?.focus();
+              }
+            }}
+          >
+            <Search size={15} className={styles.mobileSearchIcon} aria-hidden="true" />
             <input
+              ref={mobileSearchInputRef}
               type="search"
               autoComplete="off"
               autoCorrect="off"
@@ -323,62 +286,102 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
               data-custom-focus
               data-mobile-chapter-search
               enterKeyHint="search"
-              placeholder={isListening ? "Listening... speak chapter" : `Search ${group.label.toLowerCase()} chapters…`}
+              placeholder="Search chapters"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label={`Search ${group.label} chapters`}
             />
-            <div className={styles.chapterSearchActions}>
-              {query && (
-                <button data-ui-button="state" data-ui-shape="icon"
+            {query && (
+              <div className={styles.chapterSearchActions}>
+                <button
                   type="button"
-                  className={styles.searchAction}
-                  onClick={() => setQuery("")}
+                  data-custom-focus
+                  data-ui-interaction="none"
+                  className={styles.clearSearchBtn}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setQuery("");
+                    mobileSearchInputRef.current?.focus();
+                  }}
                   aria-label="Clear Search"
                 >
-                  <X size={11} />
+                  <X size={13} />
                 </button>
-              )}
-              <span className={styles.searchDivider} aria-hidden="true" />
-              <button data-ui-button="state" data-ui-shape="icon"
-                type="button"
-                className={styles.searchAction}
-                aria-pressed={isListening}
-                onClick={toggleVoiceSearch}
-                aria-label={isListening ? "Stop voice search" : "Voice search"}
-                title={isListening ? "Listening..." : "Voice search"}
-              >
-                <MicIcon size={16} />
-              </button>
-            </div>
+              </div>
+            )}
           </div>
 
-          {/* Flat chapter list with stable rank and unrestricted title wrapping. */}
-          <div data-hub-part="mobileTopicGroup" className={styles.chapterList}>
+          {/* Elevated chapter list with brand accents and attempted progress */}
+          <div
+            data-hub-part="mobileTopicGroup"
+            className={styles.chapterList}
+          >
             {topics.length === 0 ? (
-              <div style={{ padding: "28px 16px", textAlign: "center", color: "var(--mac-text-secondary, #8E8E93)", fontSize: "0.9rem" }}>
+              <div className={styles.mobileEmpty}>
                 No {group.label.toLowerCase()} chapters found matching &ldquo;{query}&rdquo;
               </div>
             ) : (
               topics.map((topic, index) => {
+                const total = questionTotal(topic);
+                const solved = Math.min(questionSolved(topic), total);
+                const isRecent = topic.slug === recentChapterSlug;
+                const percent = total > 0 ? Math.min(100, Math.round((solved / total) * 100)) : 0;
+                const barFillWidth = percent > 0 ? Math.max(8, percent) : 6;
                 return (
                   <Link
                     key={topic.slug}
                     href={`${routeBase}/${topic.slug}`}
-                    data-hub-part="mobileTopicRow" className={styles.chapterRow}
-                    aria-label={`${topic.rank}. ${topic.title}`}
+                    onClick={() => recordRecentChapter(subject, group.slug, topic.slug)}
+                    data-hub-part="mobileTopicRow"
+                    data-recent={isRecent ? "true" : undefined}
+                    className={`${styles.chapterRow} ${isRecent ? styles.chapterRowRecent : ""}`}
+                    aria-label={`${topic.rank}. ${topic.title}${isRecent ? ", continue" : ""}`}
                   >
-                      <div className={styles.chapterIcon}>
-                        <ChapterThumbnail src={chapterImage(topic.slug, group.slug)} eager={index < EAGER_THUMBNAILS} className={styles.chapterImg} />
-                        <span className={styles.mobileRankNum} aria-hidden="true">{topic.rank}</span>
-                      </div>
-                      <span className={styles.chapterText}>
-                        <span className={styles.mobileTopicName}>{topic.title}</span>
+                    <div className={styles.chapterIcon}>
+                      <ChapterThumbnail src={chapterImage(topic.slug, group.slug)} eager={index < EAGER_THUMBNAILS} className={styles.chapterImg} />
+                      <span
+                        className={styles.mobileRankNum}
+                        aria-hidden="true"
+                      >
+                        {topic.rank}
+                      </span>
+                    </div>
+                    <span className={styles.chapterText}>
+                      <span className={styles.mobileTopicName}>{topic.title}</span>
+                      <span className={styles.chapterMetaRow}>
                         <span className={styles.chapterQuestionCount}>
-                          {questionTotal(topic)} Questions
+                          <span className={styles.attemptedCount}>{solved}</span>
+                          <span className={styles.attemptedSlash}>/</span>
+                          <span className={styles.totalCount}>{total}</span>{" "}
+                          <span className={styles.attemptedLabel}>attempted</span>
                         </span>
                       </span>
-                      <ChevronRight className={styles.chapterChevron} size={20} aria-hidden="true" />
+                    </span>
+                    {isRecent ? (
+                      <span className={styles.continueBadge}>
+                        <span>Continue</span>
+                        <svg
+                          className={styles.continueIcon}
+                          width="10"
+                          height="10"
+                          viewBox="0 0 10 10"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path d="M2 1.5a.6.6 0 0 1 .93-.5l5.6 3.5a.6.6 0 0 1 0 1L2.93 9A.6.6 0 0 1 2 8.5v-7Z" />
+                        </svg>
+                      </span>
+                    ) : (
+                      <ChevronRight className={styles.chapterChevron} size={18} aria-hidden="true" />
+                    )}
+                    {isRecent && (
+                      <span className={styles.recentMeterTrack} aria-hidden="true">
+                        <span
+                          className={styles.recentMeterFill}
+                          style={{ width: `${barFillWidth}%` }}
+                        />
+                      </span>
+                    )}
                   </Link>
                 );
               })
@@ -401,23 +404,30 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
         }}
       >
         <div className={styles.filterDialogHeader}>
-          <h2 id="chapter-filter-title">Filter chapters</h2>
-          <button type="button" data-ui-button="icon" aria-label="Close filters" onClick={() => setFilterOpen(false)}>
-            <X size={20} aria-hidden="true" />
-          </button>
+          <span id="chapter-filter-title" className={styles.filterDialogTitle}>{group.metricLabel}</span>
+          {priority !== "All" && (
+            <button
+              type="button"
+              data-custom-focus
+              className={styles.filterResetBtn}
+              onClick={() => { setPriority("All"); setFilterOpen(false); }}
+            >
+              Reset
+            </button>
+          )}
         </div>
         <div className={styles.filterOptions} aria-label={`Filter by ${group.metricLabel.toLowerCase()}`}>
           {filters.map((filter) => (
             <button
               key={filter}
               type="button"
-              data-ui-button="state"
+              data-custom-focus
               className={styles.filterOption}
               aria-pressed={priority === filter}
               onClick={() => { setPriority(filter); setFilterOpen(false); }}
             >
-              {filter}
-              {priority === filter && <Check size={18} aria-hidden="true" />}
+              <span>{filter}</span>
+              {priority === filter && <Check size={13} strokeWidth={2.5} aria-hidden="true" />}
             </button>
           ))}
         </div>

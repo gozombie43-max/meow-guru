@@ -15,7 +15,7 @@ const config = {
   practiceModes: PRACTICE_MODES,
   notesLabel: "Formula & Tricks Bank",
   searchPlaceholder: "Search topics, subtopics, rules... (⌘K)",
-  mobileSearchPlaceholder: "Search topics…",
+  mobileSearchPlaceholder: "Search topics",
 };
 
 export default function ReasoningHubClient() {

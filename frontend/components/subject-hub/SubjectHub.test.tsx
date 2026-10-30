@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import SubjectHub from "./SubjectHub";
+import { recordRecentTopic } from "@/lib/recent-study";
 import { Calculator } from "lucide-react";
 import {
   CATEGORIES,
@@ -19,6 +20,7 @@ let desktop = false;
 let updateViewport: (() => void) | undefined;
 beforeEach(() => {
   desktop = false;
+  localStorage.clear();
   countsQuery.mockClear();
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     get matches() { return desktop; },
@@ -180,6 +182,26 @@ describe("SubjectHub", () => {
       expect(row.querySelector('svg.lucide-chevron-right')).not.toBeNull();
       expect(row.querySelector('img[data-topic-thumbnail]')).not.toBeNull();
     });
+  });
+
+  it("promotes the most recently practiced topic to the first card with a single Continue tag", () => {
+    recordRecentTopic("mathematics", "simple-interest");
+    const { container } = render(
+      <SubjectHub
+        config={{
+          ...mockConfig,
+          mobileAppearance: "oled",
+        }}
+      />
+    );
+
+    const rows = container.querySelectorAll('[data-hub-part="mobileTopicRow"]');
+    expect(rows.length).toBeGreaterThan(1);
+    const firstRow = rows[0] as HTMLElement;
+    expect(firstRow).toHaveAttribute("data-recent", "true");
+    expect(firstRow).toHaveTextContent("Simple Interest");
+    expect(within(firstRow).getByText("Continue")).toBeInTheDocument();
+    expect(within(firstRow).queryByText("Recently")).not.toBeInTheDocument();
   });
 });
 
