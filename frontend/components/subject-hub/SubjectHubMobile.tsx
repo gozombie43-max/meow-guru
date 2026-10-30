@@ -132,13 +132,9 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
       <div data-hub-part="mobileBody" className={defaultStyles.mobileBody}>
         {/* Compact Pinned Search Bar */}
         <div
+          role="search"
           data-hub-part="mobileSearchRow"
           className={`${defaultStyles.mobileSearchRow} ${defaultStyles.oledSearchRow}`}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              searchInputRef.current?.focus();
-            }
-          }}
         >
           <Search className={defaultStyles.mobileSearchIcon} size={15} aria-hidden="true" />
           <input

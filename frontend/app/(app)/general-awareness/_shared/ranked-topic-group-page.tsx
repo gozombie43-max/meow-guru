@@ -266,13 +266,9 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
         <div data-hub-part="mobileBody" className={hubStyles.mobileBody}>
           {/* Mobile Search Row — pinned above the scrollable chapter list */}
           <div
+            role="search"
             data-hub-part="mobileSearchRow"
             className={styles.chapterSearch}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                mobileSearchInputRef.current?.focus();
-              }
-            }}
           >
             <Search size={15} className={styles.mobileSearchIcon} aria-hidden="true" />
             <input
