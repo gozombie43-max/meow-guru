@@ -1950,13 +1950,13 @@
 .oledTopicGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
+  gap: 0;
   padding: 0 0 36px;
 }
 
 @media (max-width: 340px) {
   .oledTopicGrid {
-    gap: 8px;
+    gap: 0;
     padding-bottom: 24px;
   }
 }
@@ -2514,7 +2514,7 @@
 }
 
 :global([data-topic-layout="compact"]) .oledTopicGrid {
-  gap: 8px;
+  gap: 0;
   padding-bottom: 24px;
 }
 

@@ -1,8 +1,9 @@
-/* Shared elevated card surface for mobile subject topics (#000000 canvas / #1c1c1e cards) */
+/* Shared elevated row surface for mobile subject topics (#000000 canvas / clean list rows) */
 .card {
   --topic-accent: var(--ios-system-blue, #0a84ff);
-  --topic-surface: #1c1c1e;
-  --topic-surface-muted: #252527;
+  --topic-surface: transparent;
+  --topic-surface-muted: rgba(255, 255, 255, 0.05);
+  --topic-sep: rgba(255, 255, 255, 0.07);
   --topic-border: rgba(255, 255, 255, 0.06);
   --topic-text: #e5eaf0;
   --topic-muted: #a2a9b4;
@@ -17,27 +18,36 @@
   column-gap: 13px;
   width: 100%;
   min-width: 0;
-  min-height: 78px;
-  padding: 11px 12px;
+  min-height: 74px;
+  padding: 12px 2px;
   box-sizing: border-box;
   background: var(--topic-surface);
-  border: 1px solid var(--topic-border);
-  border-radius: 13px;
+  border: 0;
+  border-bottom: 1px solid var(--topic-sep);
+  border-radius: 0;
   color: var(--topic-text);
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 140ms ease, border-color 140ms ease;
+  transition: background-color 140ms ease;
+}
+
+.card:last-child {
+  border-bottom: 0;
 }
 
 .cardRecent {
-  background: var(--topic-surface);
-  border-color: rgba(10, 132, 255, 0.34);
-  box-shadow: 0 0 10px rgba(10, 132, 255, 0.16);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--topic-sep);
+  box-shadow: none;
+}
+
+.cardRecent:last-child {
+  border-bottom: 0;
 }
 
 .card:active {
   background: var(--topic-surface-muted);
-  border-color: rgba(10, 132, 255, 0.28);
 }
 
 .card:active .chevron {
@@ -174,8 +184,9 @@
 }
 
 :global(html.theme-light) .card {
-  --topic-surface: var(--light-surface, #ffffff);
-  --topic-surface-muted: var(--light-surface-muted, #eef1f4);
+  --topic-surface: transparent;
+  --topic-surface-muted: rgba(0, 0, 0, 0.04);
+  --topic-sep: rgba(0, 0, 0, 0.06);
   --topic-border: var(--light-border, #e1e4e8);
   --topic-text: var(--light-text, #172033);
   --topic-muted: var(--light-text-secondary, #596579);
@@ -183,12 +194,18 @@
   --topic-slash: var(--light-only-text-muted, rgba(15, 23, 42, 0.4));
   --topic-total: var(--light-only-text-muted, #64748b);
   --topic-label: var(--light-only-text-muted, #64748b);
+  box-shadow: none;
 }
 
 :global(html.theme-light) .cardRecent {
-  background: var(--light-surface, #ffffff);
-  border-color: rgba(0, 113, 227, 0.34);
-  box-shadow: 0 0 10px rgba(0, 113, 227, 0.12);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--topic-sep);
+  box-shadow: none;
+}
+
+:global(html.theme-light) .cardRecent:last-child {
+  border-bottom: 0;
 }
 
 :global(html.theme-light) .cardRecent .iconTile {
@@ -244,7 +261,6 @@
 @media (hover: hover) {
   .card:hover {
     background: var(--topic-surface-muted);
-    border-color: rgba(10, 132, 255, 0.24);
   }
   .card:hover .chevron {
     color: var(--ios-system-blue, #0a84ff);
