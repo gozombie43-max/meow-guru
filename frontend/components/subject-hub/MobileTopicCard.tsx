@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { prefetchOnce } from "@/lib/intent-prefetch";
-import { recordRecentTopic } from "@/lib/recent-study";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { ChevronRight, type LucideIcon } from "lucide-react";
@@ -18,7 +17,6 @@ export interface MobileTopicCardProps {
   accent: string;
   priority?: boolean;
   isRecent?: boolean;
-  subjectId?: string;
   detail?: { color?: string; questionCount?: number; progress?: number; userSolved?: number };
 }
 
@@ -29,27 +27,26 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
   accent,
   priority = false,
   isRecent = false,
-  subjectId,
   detail,
 }: MobileTopicCardProps) {
   const router = useRouter();
   const count = detail?.questionCount ?? 0;
   const userSolved = detail?.userSolved ?? 0;
   const percent = count > 0 ? Math.min(100, Math.round((userSolved / count) * 100)) : 0;
-  const barFillWidth = percent > 0 ? Math.max(8, percent) : 6;
+  // Progress ring around the thumbnail; keep a visible sliver once started.
+  const ringProgress = percent > 0 ? Math.max(4, percent) : 0;
 
   return (
     <Link
       href={href}
       prefetch={false}
-      onClick={subjectId ? () => recordRecentTopic(subjectId, slug) : undefined}
       onPointerEnter={() => { prefetchOnce(router, href); }}
       onFocus={() => { prefetchOnce(router, href); }}
       onTouchStart={() => { prefetchOnce(router, href); }}
       data-hub-part="mobileTopicRow"
       data-recent={isRecent ? "true" : undefined}
       className={`${styles.card} ${isRecent ? styles.cardRecent : ""}`}
-      style={{ "--topic-accent": accent } as React.CSSProperties}
+      style={{ "--topic-accent": accent, "--ring-progress": ringProgress } as React.CSSProperties}
       aria-label={`${name}, ${count} questions${isRecent ? ", continue" : ""}`}
     >
       <div className={styles.iconTile} aria-hidden="true">
@@ -90,14 +87,6 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
         </span>
       ) : (
         <ChevronRight size={19} strokeWidth={1.8} className={styles.chevron} aria-hidden="true" />
-      )}
-      {isRecent && (
-        <span className={styles.recentMeterTrack} aria-hidden="true">
-          <span
-            className={styles.recentMeterFill}
-            style={{ width: `${barFillWidth}%` }}
-          />
-        </span>
       )}
     </Link>
   );

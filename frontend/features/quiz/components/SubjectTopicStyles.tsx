@@ -4,11 +4,11 @@ export function SubjectTopicStyles() {
         @keyframes sg-in { from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)} }
 
         /* ════════════════════════════════════
-           THEME DEFAULTS (#0E0F12 / #16181D)
+           THEME DEFAULTS (#000000 / #1c1c1e)
            ════════════════════════════════════ */
         html:has(.sg-page),
         body:has(.sg-page) {
-          background: #0E0F12 !important;
+          background: #000000 !important;
           scrollbar-width: none;
           -ms-overflow-style: none;
         }
@@ -23,14 +23,14 @@ export function SubjectTopicStyles() {
         }
 
         .sg-page {
-          --bg: #0E0F12;
-          --ui-header-surface: #0E0F12;
-          --card: #16181D;
-          --card-2: #1E2128;
+          --bg: #000000;
+          --ui-header-surface: #000000;
+          --card: #1c1c1e;
+          --card-2: #252527;
           --sep: rgba(255, 255, 255, 0.06);
-          --label: #E8EAED;
-          --label-2: #9AA0A6;
-          --label-3: #7B8189;
+          --label: #e5eaf0;
+          --label-2: #a2a9b4;
+          --label-3: #8e8e93;
 
           box-sizing: border-box;
           height: calc(100dvh - var(--app-bottom-nav-occupied-height, calc(var(--app-bottom-nav-height) + var(--safe-bottom))));
@@ -62,7 +62,7 @@ export function SubjectTopicStyles() {
           flex-shrink: 0;
           z-index: 50;
           padding: var(--safe-top) 14px 0;
-          background: var(--bg, #0E0F12) !important;
+          background: var(--bg, #000000) !important;
           border-bottom: none !important;
           box-shadow: none !important;
         }
@@ -81,7 +81,7 @@ export function SubjectTopicStyles() {
           display: flex;
           align-items: center;
           justify-content: center;
-          color: var(--label, #E8EAED) !important;
+          color: var(--label, #e5eaf0) !important;
           position: absolute;
           left: 0;
           top: 0;
@@ -113,7 +113,7 @@ export function SubjectTopicStyles() {
           letter-spacing: -0.01em;
           max-width: calc(100% - 88px);
           margin: 0;
-          color: var(--label, #E8EAED) !important;
+          color: var(--label, #e5eaf0) !important;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -138,19 +138,19 @@ export function SubjectTopicStyles() {
 
         /* ── Banner (Formula & Notes) ── */
         .sg-banner-wrap {
-          padding: 4px 14px 10px;
+          padding: 8px 16px 16px;
           animation: sg-in .28s cubic-bezier(.22,1,.36,1) both .02s;
         }
         .sg-banner {
-          background: var(--card, #16181D);
+          background: var(--card, #1c1c1e);
           border: 1px solid var(--sep, rgba(255, 255, 255, 0.06));
-          border-radius: 13px;
-          padding: 10px 13px;
-          min-height: 60px;
+          border-radius: 16px;
+          padding: 16px;
+          min-height: 84px;
           box-sizing: border-box;
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 14px;
           margin: 0;
           text-decoration: none;
           -webkit-tap-highlight-color: transparent;
@@ -158,13 +158,13 @@ export function SubjectTopicStyles() {
         }
         .sg-banner:hover,
         .sg-banner:active {
-          background: var(--card-2, #1E2128);
+          background: var(--card-2, #252527);
           border-color: rgba(10, 132, 255, 0.28);
         }
         .sg-banner-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
+          width: 48px;
+          height: 48px;
+          border-radius: 13px;
           flex-shrink: 0;
           background: rgba(231, 38, 54, 0.12);
           display: flex;
@@ -172,8 +172,8 @@ export function SubjectTopicStyles() {
           justify-content: center;
         }
         .sg-banner-icon svg {
-          width: 24px;
-          height: 24px;
+          width: 28px;
+          height: 28px;
           filter: none !important;
         }
         .sg-banner-body {
@@ -181,7 +181,7 @@ export function SubjectTopicStyles() {
           min-width: 0;
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          gap: 4px;
         }
         .sg-banner-kicker {
           color: var(--label-2);
@@ -191,22 +191,22 @@ export function SubjectTopicStyles() {
           text-transform: uppercase;
         }
         .sg-banner-title {
-          font-size: 14.5px;
-          font-weight: 600;
-          line-height: 1.25;
+          font-size: 16px;
+          font-weight: 650;
+          line-height: 1.28;
           margin: 0;
-          letter-spacing: -0.01em;
-          color: var(--label, #E8EAED);
+          letter-spacing: -0.015em;
+          color: var(--label, #e5eaf0);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
         .sg-banner-sub {
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 450;
-          color: var(--label-2, #9AA0A6);
+          color: var(--label-2, #a2a9b4);
           margin: 0;
-          line-height: 1.3;
+          line-height: 1.35;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -220,31 +220,32 @@ export function SubjectTopicStyles() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          height: 30px;
-          padding: 0 13px;
-          border-radius: 999px;
-          background: rgba(10, 132, 255, 0.14);
-          border: 1px solid rgba(10, 132, 255, 0.28);
-          color: var(--ios-system-blue, #0A84FF);
-          font-size: 12.5px;
-          font-weight: 600;
+          height: 34px;
+          padding: 0 15px;
+          border-radius: 9px;
+          background: #ffffff;
+          border: 1px solid #ffffff;
+          color: #0b0c0e;
+          font-size: 13px;
+          font-weight: 650;
           letter-spacing: -0.01em;
           box-shadow: none;
-          transition: background-color 0.15s ease, border-color 0.15s ease;
+          transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
         }
         .sg-banner:hover .sg-banner-open-btn,
         .sg-banner:active .sg-banner-open-btn {
-          background: rgba(10, 132, 255, 0.22);
+          background: #e5eaf0;
+          border-color: #e5eaf0;
         }
 
         /* ── Section label ── */
         .sg-section {
-          font-size: 11.5px;
+          font-size: 12px;
           font-weight: 700;
-          color: var(--label-2, #9AA0A6);
+          color: var(--label-2, #a2a9b4);
           text-transform: uppercase;
           letter-spacing: 0.06em;
-          padding: 2px 16px 6px;
+          padding: 4px 18px 10px;
           animation: sg-up .26s ease both .05s;
         }
 
@@ -253,8 +254,8 @@ export function SubjectTopicStyles() {
           position: relative;
           display: flex;
           flex-direction: column;
-          gap: 7px;
-          margin: 0 14px 0;
+          gap: 10px;
+          margin: 0 16px 16px;
           background: transparent;
           overflow: visible;
           animation: sg-up .3s ease both .08s;
@@ -266,12 +267,12 @@ export function SubjectTopicStyles() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 12px;
-          padding: 9px 13px;
-          min-height: 58px;
-          border-radius: 13px;
-          background: var(--card, #16181D);
-          color: var(--label, #E8EAED);
+          gap: 14px;
+          padding: 13px 15px;
+          min-height: 68px;
+          border-radius: 14px;
+          background: var(--card, #1c1c1e);
+          color: var(--label, #e5eaf0);
           text-decoration: none;
           border: 1px solid var(--sep, rgba(255, 255, 255, 0.06));
           box-shadow: none;
@@ -283,8 +284,8 @@ export function SubjectTopicStyles() {
 
         .sg-card:hover,
         .sg-card:active {
-          color: var(--label, #E8EAED);
-          background: var(--card-2, #1E2128);
+          color: var(--label, #e5eaf0);
+          background: var(--card-2, #252527);
           border-color: rgba(10, 132, 255, 0.28);
         }
 
@@ -297,7 +298,7 @@ export function SubjectTopicStyles() {
         .sg-card-left {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 13px;
           min-width: 0;
           flex: 1;
           padding-right: 0;
@@ -306,9 +307,9 @@ export function SubjectTopicStyles() {
 
         .sg-badge {
           --icon-color: color-mix(in srgb, var(--card-accent, #0A84FF) 78%, #b6becb);
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
+          width: 42px;
+          height: 42px;
+          border-radius: 11px;
           background: color-mix(in srgb, var(--icon-color) 14%, transparent) !important;
           color: var(--icon-color) !important;
           border: 0 !important;
@@ -320,8 +321,8 @@ export function SubjectTopicStyles() {
         }
 
         .sg-badge svg {
-          width: 18px;
-          height: 18px;
+          width: 20px;
+          height: 20px;
           color: var(--icon-color) !important;
           stroke: currentColor;
         }
@@ -331,14 +332,14 @@ export function SubjectTopicStyles() {
           flex-direction: column;
           min-width: 0;
           flex: 1;
-          gap: 2px;
+          gap: 3px;
         }
 
         .sg-card-name {
-          font-size: 14.5px;
-          font-weight: 600;
-          color: var(--label, #E8EAED);
-          line-height: 1.25;
+          font-size: 15.5px;
+          font-weight: 620;
+          color: var(--label, #e5eaf0);
+          line-height: 1.28;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -346,13 +347,13 @@ export function SubjectTopicStyles() {
         }
 
         .sg-card-sub {
-          font-size: 12px;
+          font-size: 12.5px;
           font-weight: 450;
-          color: var(--label-2, #9AA0A6);
+          color: var(--label-2, #a2a9b4);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          line-height: 1.3;
+          line-height: 1.32;
         }
 
         /* ── Right Question Count Column ── */
@@ -384,11 +385,11 @@ export function SubjectTopicStyles() {
           flex-direction: column;
           align-items: flex-end;
           text-align: right;
-          gap: 2px;
-          font-size: 13.5px;
+          gap: 3px;
+          font-size: 15px;
           font-weight: 700;
           font-variant-numeric: tabular-nums;
-          color: var(--label, #E8EAED);
+          color: var(--label, #e5eaf0);
           letter-spacing: -0.01em;
           white-space: nowrap;
           line-height: 1.15;
@@ -402,13 +403,13 @@ export function SubjectTopicStyles() {
         }
 
         .sg-card-qs-text[data-zero="true"] > span:first-child {
-          color: var(--label-2, #9AA0A6);
+          color: var(--label-2, #a2a9b4);
           font-weight: 600;
         }
 
         .sg-card-qs-label {
-          color: var(--label-2, #9AA0A6);
-          font-size: 11px;
+          color: var(--label-2, #a2a9b4);
+          font-size: 11.5px;
           font-weight: 500;
           line-height: 1.15;
         }
@@ -447,9 +448,16 @@ export function SubjectTopicStyles() {
         }
         body.theme-light .sg-banner-open-btn,
         html.theme-light .sg-banner-open-btn {
-          background: rgba(0, 113, 227, 0.1);
-          border-color: rgba(0, 113, 227, 0.25);
-          color: var(--ios-system-blue, #0071e3);
+          background: #ffffff;
+          border-color: rgba(15, 23, 42, 0.16);
+          color: var(--light-text, #0f172a);
+        }
+        body.theme-light .sg-banner:hover .sg-banner-open-btn,
+        html.theme-light .sg-banner:hover .sg-banner-open-btn,
+        body.theme-light .sg-banner:active .sg-banner-open-btn,
+        html.theme-light .sg-banner:active .sg-banner-open-btn {
+          background: #f1f5f9;
+          border-color: rgba(15, 23, 42, 0.24);
         }
         body.theme-light .sg-card,
         html.theme-light .sg-card {

@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, type CSSProperties } from "react";
-import { recordRecentFromRoute } from "@/lib/recent-study";
+import type { CSSProperties } from "react";
 import {
   BookOpenCheck,
   Compass,
@@ -30,10 +29,6 @@ export default function TopicPracticeModes({
   hasStudyMode: boolean;
 }) {
   const { counts, isLoading, isError } = useQuestionCounts({ topic: questionTopic, subject });
-
-  useEffect(() => {
-    recordRecentFromRoute(subject, base);
-  }, [subject, base]);
 
   const modes = [
     {

@@ -5,7 +5,7 @@
 import TopicThumbnail from "@/components/subject-hub/TopicThumbnail";
 import ChapterThumbnail from "./ChapterThumbnail";
 import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
-import { recordRecentChapter, recordRecentTopic, useRecentChapter } from "@/lib/recent-study";
+import { useRecentChapter } from "@/lib/recent-study";
 import { chapterImage } from "@/lib/topic-images";
 import { useBackLayer } from "@/hooks/useAppNavigation";
 import { ArrowLeft, Check, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from "lucide-react";
@@ -58,10 +58,6 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
   const mobileSearchInputRef = useRef<HTMLInputElement>(null);
   const recentChapterSlug = useRecentChapter(subject, group.slug);
   useBackLayer(filterOpen, () => setFilterOpen(false));
-
-  useEffect(() => {
-    recordRecentTopic(subject, group.slug);
-  }, [subject, group.slug]);
 
   useEffect(() => {
     const dialog = filterDialogRef.current;
@@ -211,7 +207,6 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                     key={topic.slug}
                     className={styles.row}
                     href={`${routeBase}/${topic.slug}`}
-                    onClick={() => recordRecentChapter(subject, group.slug, topic.slug)}
                     aria-label={group.filters.length ? `Rank ${topic.rank}: ${topic.title}, ${topic.priority} ${group.metricLabel.toLowerCase()}. Open topic.` : `${topic.rank}. ${topic.title}. Open chapter.`}
                   >
                     <span className={styles.rank}>{topic.rank}</span>
@@ -322,15 +317,16 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                 const solved = Math.min(questionSolved(topic), total);
                 const isRecent = topic.slug === recentChapterSlug;
                 const percent = total > 0 ? Math.min(100, Math.round((solved / total) * 100)) : 0;
-                const barFillWidth = percent > 0 ? Math.max(8, percent) : 6;
+                // Progress ring around the thumbnail; keep a visible sliver once started.
+                const ringProgress = percent > 0 ? Math.max(4, percent) : 0;
                 return (
                   <Link
                     key={topic.slug}
                     href={`${routeBase}/${topic.slug}`}
-                    onClick={() => recordRecentChapter(subject, group.slug, topic.slug)}
                     data-hub-part="mobileTopicRow"
                     data-recent={isRecent ? "true" : undefined}
                     className={`${styles.chapterRow} ${isRecent ? styles.chapterRowRecent : ""}`}
+                    style={isRecent ? ({ "--ring-progress": ringProgress } as React.CSSProperties) : undefined}
                     aria-label={`${topic.rank}. ${topic.title}${isRecent ? ", continue" : ""}`}
                   >
                     <div className={styles.chapterIcon}>
@@ -369,14 +365,6 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                       </span>
                     ) : (
                       <ChevronRight className={styles.chapterChevron} size={18} aria-hidden="true" />
-                    )}
-                    {isRecent && (
-                      <span className={styles.recentMeterTrack} aria-hidden="true">
-                        <span
-                          className={styles.recentMeterFill}
-                          style={{ width: `${barFillWidth}%` }}
-                        />
-                      </span>
                     )}
                   </Link>
                 );

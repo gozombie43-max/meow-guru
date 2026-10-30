@@ -6,11 +6,11 @@ import { quizSessionReducer } from '../model/sessionReducer';
 import { useCallback, useRef, type Dispatch } from "react";
 import type { QuizSessionState, QuizEvent } from "../model/sessionReducer";
 
-export function useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch, persistAnswer, snapshot }: {
+export function useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch, persistAnswer, snapshot, onAnswerSubmitted }: {
   currentQ: QuizQuestion | undefined; token: string | null;
   timer: ReturnType<typeof useQuizTimer>; state: QuizSessionState; dispatch: Dispatch<QuizEvent>;
   persistAnswer: (command: Omit<QuizAnswerCommand, 'resume'>, snapshot: RecentQuizPayload) => Promise<void>;
-  snapshot: (state: QuizSessionState) => RecentQuizPayload;
+  snapshot: (state: QuizSessionState) => RecentQuizPayload; onAnswerSubmitted?: () => void;
 }) {
   const { currentIndex, selectedAnswers, submittedQuestions } = state;
   const { timerRef, maxTime, stopTimer } = timer;
@@ -29,7 +29,7 @@ export function useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch
     stopTimer();
     const timeTaken = Math.max(1, timerRef.current?.getElapsed ? timerRef.current.getElapsed() : maxTime - (timerRef.current?.getTimeLeft() ?? 0));
     const event: QuizEvent = { type: 'SUBMIT', question: currentQ, timeTaken };
-    dispatch(event);
+    dispatch(event); onAnswerSubmitted?.();
     const correct = selected === currentQ.correctAnswer;
     try { navigator.vibrate?.(correct ? [12, 35, 18] : 20); } catch {}
     if (token) {
@@ -41,7 +41,7 @@ export function useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch
         dispatch({ type: 'ERROR', message: 'Could not sync this answer yet. Your next save will retry.' });
       });
     }
-  }, [currentQ, state, submittedQuestions, currentIndex, selectedAnswers, stopTimer, timerRef, maxTime, token, dispatch, persistAnswer, snapshot]);
+  }, [currentQ, state, submittedQuestions, currentIndex, selectedAnswers, stopTimer, timerRef, maxTime, token, dispatch, persistAnswer, snapshot, onAnswerSubmitted]);
   const handleClearResponse = useCallback(() => dispatch({ type: 'CLEAR' }), [dispatch]);
   const resetAnswers = useCallback(() => { submitting.current.clear(); dispatch({ type: 'RESTART' }); }, [dispatch]);
   return { selectedAnswers, submittedQuestions, selectedAnswer: selectedAnswers[currentIndex] ?? null,
