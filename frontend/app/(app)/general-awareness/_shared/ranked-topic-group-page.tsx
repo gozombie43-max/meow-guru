@@ -4,6 +4,7 @@
 
 import MicIcon from "@/components/MicIcon";
 import TopicThumbnail from "@/components/subject-hub/TopicThumbnail";
+import ChapterThumbnail from "./ChapterThumbnail";
 import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
 import { chapterImage } from "@/lib/topic-images";
 import { useBackLayer } from "@/hooks/useAppNavigation";
@@ -41,6 +42,9 @@ import { useCallback,useEffect,useMemo,useRef,useState } from "react";
 import styles from "./RankedTopicGroupPage.module.css";
 
 type PriorityFilter = RankedTopicPriority | "All";
+
+// Rows visible on first paint of a typical phone; the rest lazy-load near the viewport.
+const EAGER_THUMBNAILS = 6;
 
 const slugifyTitle = (title: string) =>
   title.trim().toLowerCase().replace(/&/g, " ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -356,7 +360,7 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                 No {group.label.toLowerCase()} chapters found matching &ldquo;{query}&rdquo;
               </div>
             ) : (
-              topics.map((topic) => {
+              topics.map((topic, index) => {
                 return (
                   <Link
                     key={topic.slug}
@@ -365,9 +369,9 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                     aria-label={`${topic.rank}. ${topic.title}`}
                   >
                       <div className={styles.chapterIcon}>
-                        <TopicThumbnail src={chapterImage(topic.slug, group.slug)} size={56} />
+                        <ChapterThumbnail src={chapterImage(topic.slug, group.slug)} eager={index < EAGER_THUMBNAILS} className={styles.chapterImg} />
+                        <span className={styles.mobileRankNum} aria-hidden="true">{topic.rank}</span>
                       </div>
-                      <span className={styles.mobileRankNum} aria-hidden="true">{topic.rank}.</span>
                       <span className={styles.chapterText}>
                         <span className={styles.mobileTopicName}>{topic.title}</span>
                         <span className={styles.chapterQuestionCount}>
