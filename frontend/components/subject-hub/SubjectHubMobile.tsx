@@ -1,7 +1,6 @@
 "use client";
 
 import defaultStyles from "@/components/SubjectHub.module.css";
-import { recordRecentTopic } from "@/lib/recent-study";
 import { ArrowLeft, ArrowUpDown, Check, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 import { useRef } from "react";
 import { MobileTopicCard } from "./MobileTopicCard";
@@ -239,7 +238,7 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
                   detail={detail}
                   priority={index === 0}
                   isRecent={isRecent}
-                  onSelect={() => recordRecentTopic(config.subjectId, topic.slug)}
+                  subjectId={config.subjectId}
                 />
               );
             })}

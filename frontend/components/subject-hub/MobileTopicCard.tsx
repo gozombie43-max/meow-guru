@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { prefetchOnce } from "@/lib/intent-prefetch";
+import { recordRecentTopic } from "@/lib/recent-study";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { ChevronRight, type LucideIcon } from "lucide-react";
@@ -17,7 +18,7 @@ export interface MobileTopicCardProps {
   accent: string;
   priority?: boolean;
   isRecent?: boolean;
-  onSelect?: () => void;
+  subjectId?: string;
   detail?: { color?: string; questionCount?: number; progress?: number; userSolved?: number };
 }
 
@@ -28,7 +29,7 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
   accent,
   priority = false,
   isRecent = false,
-  onSelect,
+  subjectId,
   detail,
 }: MobileTopicCardProps) {
   const router = useRouter();
@@ -41,7 +42,7 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
     <Link
       href={href}
       prefetch={false}
-      onClick={onSelect}
+      onClick={subjectId ? () => recordRecentTopic(subjectId, slug) : undefined}
       onPointerEnter={() => { prefetchOnce(router, href); }}
       onFocus={() => { prefetchOnce(router, href); }}
       onTouchStart={() => { prefetchOnce(router, href); }}
