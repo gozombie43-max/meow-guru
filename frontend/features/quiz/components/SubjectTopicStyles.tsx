@@ -142,11 +142,11 @@ export function SubjectTopicStyles() {
           animation: sg-in .28s cubic-bezier(.22,1,.36,1) both .02s;
         }
         .sg-banner {
-          background: rgba(255, 255, 255, 0.04);
-          border: 0;
-          border-radius: 14px;
-          padding: 14px 16px;
-          min-height: 80px;
+          background: var(--card, #1c1c1e);
+          border: 1px solid var(--sep, rgba(255, 255, 255, 0.08));
+          border-radius: 16px;
+          padding: 16px;
+          min-height: 84px;
           box-sizing: border-box;
           display: flex;
           align-items: center;
@@ -154,11 +154,14 @@ export function SubjectTopicStyles() {
           margin: 0;
           text-decoration: none;
           -webkit-tap-highlight-color: transparent;
-          transition: background-color .15s ease;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+          transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
         }
         .sg-banner:hover,
         .sg-banner:active {
-          background: rgba(255, 255, 255, 0.07);
+          background: var(--card-2, #252527);
+          border-color: rgba(255, 255, 255, 0.16);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.36);
         }
         .sg-banner-icon {
           width: 48px;
@@ -253,43 +256,40 @@ export function SubjectTopicStyles() {
           position: relative;
           display: flex;
           flex-direction: column;
-          gap: 0;
+          gap: 10px;
           margin: 0 16px 16px;
           background: transparent;
           overflow: visible;
           animation: sg-up .3s ease both .08s;
         }
 
-        /* ── PRACTICE MODE ROW ── */
+        /* ── PRACTICE MODE CARD ── */
         .sg-card {
           position: relative;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 14px;
-          padding: 13px 4px;
-          min-height: 64px;
-          border-radius: 0;
-          background: transparent;
+          padding: 13px 15px;
+          min-height: 68px;
+          border-radius: 14px;
+          background: var(--card, #1c1c1e);
           color: var(--label, #e5eaf0);
           text-decoration: none;
-          border: 0;
-          border-bottom: 1px solid var(--sep, rgba(255, 255, 255, 0.07));
-          box-shadow: none;
-          transition: background-color 0.15s ease;
+          border: 1px solid var(--sep, rgba(255, 255, 255, 0.08));
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+          transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
           cursor: pointer;
           overflow: hidden;
           -webkit-tap-highlight-color: transparent;
         }
 
-        .sg-card:last-child {
-          border-bottom: 0;
-        }
-
         .sg-card:hover,
         .sg-card:active {
           color: var(--label, #e5eaf0);
-          background: rgba(255, 255, 255, 0.04);
+          background: var(--card-2, #252527);
+          border-color: rgba(255, 255, 255, 0.16);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.36);
         }
 
         .sg-card:focus-visible,
@@ -445,9 +445,9 @@ export function SubjectTopicStyles() {
         }
         body.theme-light .sg-banner,
         html.theme-light .sg-banner {
-          background: rgba(0, 0, 0, 0.03);
-          border: 0;
-          box-shadow: none;
+          background: var(--light-only-surface, #FFFFFF);
+          border: 1px solid var(--light-border, rgba(0, 0, 0, 0.08));
+          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
         }
         body.theme-light .sg-banner-open-btn,
         html.theme-light .sg-banner-open-btn {
@@ -464,18 +464,16 @@ export function SubjectTopicStyles() {
         }
         body.theme-light .sg-card,
         html.theme-light .sg-card {
-          background: transparent;
-          border: 0;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+          background: var(--light-only-surface, #FFFFFF);
+          border: 1px solid var(--light-border, rgba(0, 0, 0, 0.08));
           color: var(--light-only-text, #0f172a);
-          box-shadow: none;
-        }
-        body.theme-light .sg-card:last-child {
-          border-bottom: 0;
+          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
         }
         body.theme-light .sg-card:hover,
         html.theme-light .sg-card:hover {
-          background: rgba(0, 0, 0, 0.03);
+          background: var(--light-canvas, #f8fafc);
+          border-color: rgba(0, 113, 227, 0.25);
+          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
         }
         body.theme-light .sg-badge,
         html.theme-light .sg-badge {
