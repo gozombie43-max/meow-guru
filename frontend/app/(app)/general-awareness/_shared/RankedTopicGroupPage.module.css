@@ -15,13 +15,13 @@
 
 :global(body.theme-dark) .page,
 :global(html.theme-dark) .page {
-  --geo-bg: #0E0F12;
-  --geo-surface: #16181D;
-  --geo-surface-muted: #1E2128;
+  --geo-bg: #000000;
+  --geo-surface: #1c1c1e;
+  --geo-surface-muted: #252527;
   --geo-border: rgba(255, 255, 255, 0.06);
-  --geo-text: #E8EAED;
-  --geo-secondary: #9AA0A6;
-  --geo-tertiary: #7B8189;
+  --geo-text: #e5eaf0;
+  --geo-secondary: #a2a9b4;
+  --geo-tertiary: #8e8e93;
   --geo-accent: var(--ios-system-blue, #0a84ff);
   --geo-accent-soft: rgba(10, 132, 255, 0.14);
 }
@@ -48,12 +48,12 @@
 }
 
 /* =========================================================================
-   MOBILE CHAPTERS VIEW (< 768px) — Elevated Dark Theme (#0E0F12 / #16181D)
+   MOBILE CHAPTERS VIEW (< 768px) — Elevated Dark Theme (#000000 / #1c1c1e)
    ========================================================================= */
 @media (max-width: 767px) {
   :global(html):has(.page .mobileLayout),
   :global(body):has(.page .mobileLayout) {
-    background: #0E0F12 !important;
+    background: #000000 !important;
     overflow: hidden !important;
   }
 
@@ -68,25 +68,25 @@
 }
 
 .page .mobileLayout {
-  --ui-header-surface: var(--geo-bg, #0E0F12);
-  background: var(--geo-bg, #0E0F12) !important;
+  --ui-header-surface: var(--geo-bg, #000000);
+  background: var(--geo-bg, #000000) !important;
 }
 
 .page .mobileLayout [data-hub-part="mobileTopbar"],
 .page .mobileLayout [data-hub-part="mobileTopbar"][data-ui-chrome="header"] {
-  background: var(--geo-bg, #0E0F12) !important;
+  background: var(--geo-bg, #000000) !important;
   border-bottom: none !important;
   box-shadow: none !important;
 }
 
 .page .mobileLayout [data-hub-part="mobileBody"] {
-  background: var(--geo-bg, #0E0F12) !important;
+  background: var(--geo-bg, #000000) !important;
   padding-inline: 14px !important;
 }
 
 .mobileTopbarTitle {
   margin: 0;
-  color: var(--geo-text, #E8EAED) !important;
+  color: var(--geo-text, #e5eaf0) !important;
   font-size: 1rem !important;
   font-weight: 700 !important;
   text-align: center;
@@ -98,7 +98,7 @@
 }
 
 .mobileBackBtn {
-  color: var(--geo-text, #E8EAED) !important;
+  color: var(--geo-text, #e5eaf0) !important;
 }
 
 :global(body.theme-light) .mobileBackBtn,
@@ -109,7 +109,7 @@
 .mobileTopicName {
   font-size: 15px;
   font-weight: 600;
-  color: var(--geo-text, #E8EAED);
+  color: var(--geo-text, #e5eaf0);
   line-height: 1.35;
   letter-spacing: -0.01em;
   min-width: 0;
@@ -133,7 +133,7 @@
   border-radius: 6px;
   background: rgba(14, 15, 18, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #E8EAED !important;
+  color: #e5eaf0 !important;
   font-size: 11.5px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -157,8 +157,8 @@
   margin: 8px 0;
   border: 1px solid var(--geo-border, rgba(255, 255, 255, 0.06));
   border-radius: 10px;
-  background: var(--geo-surface, #16181D);
-  color: var(--geo-text, #E8EAED);
+  background: var(--geo-surface, #1c1c1e);
+  color: var(--geo-text, #e5eaf0);
   box-sizing: border-box;
   cursor: text;
   transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
@@ -166,7 +166,7 @@
 
 .mobileSearchIcon {
   flex: none;
-  color: var(--geo-secondary, #9AA0A6);
+  color: var(--geo-secondary, #a2a9b4);
   pointer-events: none;
   transition: color 150ms ease;
 }
@@ -189,7 +189,7 @@
   outline: none !important;
   box-shadow: none !important;
   background: transparent;
-  color: var(--geo-text, #E8EAED);
+  color: var(--geo-text, #e5eaf0);
   font: inherit;
   font-size: 16px;
   line-height: 1.25;
@@ -203,7 +203,7 @@
 }
 
 .chapterSearchInput::placeholder {
-  color: var(--geo-secondary, #9AA0A6);
+  color: var(--geo-secondary, #a2a9b4);
   font-size: 14px;
 }
 
@@ -227,7 +227,7 @@
   border: 0;
   outline: none;
   background: rgba(255, 255, 255, 0.08);
-  color: var(--geo-secondary, #9AA0A6);
+  color: var(--geo-secondary, #a2a9b4);
   padding: 0;
   display: inline-flex;
   align-items: center;
@@ -238,7 +238,7 @@
 
 .clearSearchBtn:active {
   background: rgba(255, 255, 255, 0.16);
-  color: var(--geo-text, #E8EAED);
+  color: var(--geo-text, #e5eaf0);
 }
 
 :global(html.theme-light) .clearSearchBtn {
@@ -272,17 +272,17 @@
   flex-shrink: 0;
   padding: 11px 12px;
   box-sizing: border-box;
-  background: var(--geo-surface, #16181D);
+  background: var(--geo-surface, #1c1c1e);
   border: 1px solid var(--geo-border, rgba(255, 255, 255, 0.06));
   border-radius: 13px;
   text-decoration: none;
-  color: var(--geo-text, #E8EAED);
+  color: var(--geo-text, #e5eaf0);
   -webkit-tap-highlight-color: transparent;
   transition: background-color 140ms ease, border-color 140ms ease;
 }
 
 .chapterRowRecent {
-  background: var(--geo-surface, #16181D);
+  background: var(--geo-surface, #1c1c1e);
   border-color: rgba(10, 132, 255, 0.34);
   box-shadow: 0 0 10px rgba(10, 132, 255, 0.16);
 }
@@ -294,7 +294,7 @@
   height: 60px;
   border-radius: 10px;
   overflow: hidden;
-  background: #20242c;
+  background: #29292c;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
@@ -306,7 +306,7 @@
 }
 
 .chapterChevron {
-  color: var(--geo-secondary, #9AA0A6);
+  color: var(--geo-secondary, #a2a9b4);
   opacity: 0.75;
   transition: color 140ms ease, opacity 140ms ease;
 }
@@ -326,7 +326,7 @@
   font-size: 15px;
   font-weight: 600;
   line-height: 1.32;
-  color: var(--geo-text, #E8EAED);
+  color: var(--geo-text, #e5eaf0);
 }
 
 .chapterMetaRow {
@@ -339,7 +339,7 @@
 .chapterQuestionCount {
   display: inline-flex;
   align-items: baseline;
-  color: var(--geo-secondary, #9AA0A6);
+  color: var(--geo-secondary, #a2a9b4);
   font-size: 12.5px;
   font-weight: 450;
   line-height: 1.35;
@@ -352,38 +352,38 @@
 }
 
 .attemptedSlash {
-  color: var(--geo-secondary, #9AA0A6);
+  color: var(--geo-secondary, #a2a9b4);
   opacity: 0.65;
   margin: 0 1.5px;
 }
 
 .totalCount {
-  color: var(--geo-secondary, #9AA0A6);
+  color: var(--geo-secondary, #a2a9b4);
   font-weight: 500;
 }
 
 .attemptedLabel {
-  color: var(--geo-secondary, #9AA0A6);
+  color: var(--geo-secondary, #a2a9b4);
   font-size: 12px;
   margin-left: 4px;
 }
 
-.recentMeterTrack {
-  grid-column: 1 / -1;
-  display: block;
-  width: 100%;
-  height: 4.5px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.09);
-  overflow: hidden;
-  margin-top: 9px;
+/* Recent chapter: progress drawn as a ring along the thumbnail border. */
+.chapterRow.chapterRowRecent .chapterIcon,
+.chapterRow.chapterRowRecent .chapterIcon:has(.chapterImg[data-loaded]) {
+  padding: 2.5px;
+  box-sizing: border-box;
+  box-shadow: none;
+  animation: none;
+  background: conic-gradient(
+    #0a84ff 0%,
+    #60a5fa calc(var(--ring-progress, 0) * 1%),
+    rgba(255, 255, 255, 0.12) calc(var(--ring-progress, 0) * 1%) 100%
+  );
 }
 
-.recentMeterFill {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #0a84ff 0%, #60a5fa 100%);
+.chapterRowRecent .chapterIcon img {
+  border-radius: 7.5px;
 }
 
 .continueBadge {
@@ -397,7 +397,7 @@
   font-weight: 550;
   letter-spacing: -0.01em;
   line-height: 1;
-  color: var(--geo-text, #E8EAED);
+  color: var(--geo-text, #e5eaf0);
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.14);
   white-space: nowrap;
@@ -412,7 +412,7 @@
 .mobileEmpty {
   padding: 28px 16px;
   text-align: center;
-  color: var(--geo-secondary, #9AA0A6);
+  color: var(--geo-secondary, #a2a9b4);
   font-size: 0.9rem;
 }
 
@@ -422,7 +422,7 @@
 }
 
 .chapterRow:active {
-  background: var(--geo-surface-muted, #1E2128);
+  background: var(--geo-surface-muted, #252527);
   border-color: rgba(10, 132, 255, 0.28);
 }
 
@@ -433,7 +433,7 @@
 
 @media (hover: hover) {
   .chapterRow:hover {
-    background: var(--geo-surface-muted, #1E2128);
+    background: var(--geo-surface-muted, #252527);
     border-color: rgba(10, 132, 255, 0.24);
   }
   .chapterRow:hover .chapterChevron {
@@ -474,8 +474,13 @@
   box-shadow: 0 0 10px rgba(0, 113, 227, 0.12);
 }
 
-:global(html.theme-light) .recentMeterTrack {
-  background: rgba(15, 23, 42, 0.09);
+:global(html.theme-light) .chapterRow.chapterRowRecent .chapterIcon,
+:global(html.theme-light) .chapterRow.chapterRowRecent .chapterIcon:has(.chapterImg[data-loaded]) {
+  background: conic-gradient(
+    #0071e3 0%,
+    #3b9bff calc(var(--ring-progress, 0) * 1%),
+    rgba(15, 23, 42, 0.12) calc(var(--ring-progress, 0) * 1%) 100%
+  );
 }
 
 :global(html.theme-light) .continueBadge {
@@ -804,7 +809,7 @@
 
 .headerFilter {
   position: relative;
-  color: var(--geo-text, #E8EAED);
+  color: var(--geo-text, #e5eaf0);
   background: transparent;
   border: 0;
   padding: 0;
@@ -849,8 +854,8 @@
   max-height: calc(100dvh - 48px);
   margin: 0;
   padding: 5px;
-  color: var(--geo-text, #E8EAED);
-  background: var(--geo-surface, #16181D);
+  color: var(--geo-text, #e5eaf0);
+  background: var(--geo-surface, #1c1c1e);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 11px;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
@@ -875,7 +880,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--geo-secondary, #9AA0A6);
+  color: var(--geo-secondary, #a2a9b4);
   white-space: nowrap;
   margin: 0;
 }
@@ -904,7 +909,7 @@
   min-height: 29px;
   padding: 5px 8px;
   border-radius: 7px;
-  color: var(--geo-text, #E8EAED);
+  color: var(--geo-text, #e5eaf0);
   background: transparent;
   border: 1px solid transparent;
   font-size: 12.5px;

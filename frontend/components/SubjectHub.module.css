@@ -1936,14 +1936,14 @@
   .oledMobile .mobileTopicIconBox { width: 36px; height: 36px; border-radius: 9px; background: color-mix(in srgb, var(--topic-color) 14%, transparent); box-shadow: none; }
   .oledMobile .mobileTopicIconBox svg { width: 24px; height: 24px; color: var(--topic-color) !important; stroke: var(--topic-color); }
   .oledMobile .mobileTopicRow:focus-visible, .oledMobile .mobileTabBtn:focus-visible { outline: 2px solid #4799e8; outline-offset: 2px; }
-  :global(html:not(.theme-light)) .oledMobile { background: #0E0F12; }
-  :global(html:not(.theme-light)) .oledMobile .mobileBody { background: #0E0F12; }
-  :global(html:not(.theme-light)) .oledMobile .mobileSearchInput { background: transparent; border: 0; box-shadow: none; color: #E8EAED; }
-  :global(html:not(.theme-light)) .oledMobile .mobileTopicRow { background: #16181D; }
+  :global(html:not(.theme-light)) .oledMobile { background: #000000; }
+  :global(html:not(.theme-light)) .oledMobile .mobileBody { background: #000000; }
+  :global(html:not(.theme-light)) .oledMobile .mobileSearchInput { background: transparent; border: 0; box-shadow: none; color: #e5eaf0; }
+  :global(html:not(.theme-light)) .oledMobile .mobileTopicRow { background: #1c1c1e; }
   :global(html:not(.theme-light)) .oledMobile .mobileTopicRow:hover,
-  :global(html:not(.theme-light)) .oledMobile .mobileTopicRow:active { background: #1E2128; }
-  :global(html:not(.theme-light)) .oledMobile .mobileTopicName { color: #E8EAED; }
-  :global(html:not(.theme-light)) .oledMobile .mobileChevron { color: #9AA0A6; }
+  :global(html:not(.theme-light)) .oledMobile .mobileTopicRow:active { background: #252527; }
+  :global(html:not(.theme-light)) .oledMobile .mobileTopicName { color: #e5eaf0; }
+  :global(html:not(.theme-light)) .oledMobile .mobileChevron { color: #a2a9b4; }
 }
 
 /* Single-column thumbnail list for mobile subject topics. */
@@ -1961,11 +1961,11 @@
   }
 }
 
-/* ── Elevated Mobile Container & Topbar (#0E0F12 canvas / #16181D cards) ── */
+/* ── Elevated Mobile Container & Topbar (#000000 canvas / #1c1c1e cards) ── */
 @media (max-width: 767px) {
   :global(html):has(.oledMobile),
   :global(body):has(.oledMobile) {
-    background: #0E0F12 !important;
+    background: #000000 !important;
     overflow: hidden !important;
   }
 
@@ -1980,8 +1980,8 @@
 }
 
 .oledMobile {
-  --ui-header-surface: #0E0F12;
-  background: #0E0F12 !important;
+  --ui-header-surface: #000000;
+  background: #000000 !important;
   height: calc(100dvh - var(--app-bottom-nav-occupied-height, calc(var(--app-bottom-nav-height) + var(--safe-bottom))));
   max-height: calc(100dvh - var(--app-bottom-nav-occupied-height, calc(var(--app-bottom-nav-height) + var(--safe-bottom))));
   display: flex !important;
@@ -2003,7 +2003,7 @@
   grid-template-columns: 36px 1fr 36px;
   align-items: center;
   flex-shrink: 0;
-  background: #0E0F12 !important;
+  background: #000000 !important;
   border-bottom: none !important;
   box-shadow: none !important;
   max-width: 500px;
@@ -2021,7 +2021,7 @@
   border-radius: 50%;
   background: transparent !important;
   border: none !important;
-  color: #E8EAED;
+  color: #e5eaf0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2041,7 +2041,7 @@
   font-weight: 700;
   line-height: 24px;
   letter-spacing: -0.01em;
-  color: #E8EAED;
+  color: #e5eaf0;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -2059,7 +2059,7 @@
   max-width: 500px !important;
   width: 100% !important;
   box-sizing: border-box !important;
-  background: #0E0F12 !important;
+  background: #000000 !important;
 }
 
 /* ── Mobile Header Filter & Compact Popover ── */
@@ -2083,7 +2083,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #E8EAED;
+  color: #e5eaf0;
   position: relative;
   cursor: pointer;
   padding: 0;
@@ -2131,7 +2131,7 @@
   right: 0;
   width: min(142px, calc(100vw - 24px));
   min-width: 142px;
-  background: #16181D;
+  background: #1c1c1e;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 11px;
   padding: 5px;
@@ -2165,7 +2165,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #9AA0A6;
+  color: #a2a9b4;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   margin-bottom: 3px;
   white-space: nowrap;
@@ -2202,7 +2202,7 @@
   border-radius: 7px;
   border: 1px solid transparent;
   background: transparent;
-  color: #E8EAED;
+  color: #e5eaf0;
   font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
@@ -2218,8 +2218,8 @@
 
 .mobileFilterOptionItem:hover,
 .mobileFilterOptionItem:focus-visible {
-  background: #1E2128;
-  color: #E8EAED;
+  background: #252527;
+  color: #e5eaf0;
 }
 
 :global(body.theme-light) .mobileFilterOptionItem:hover,
@@ -2268,8 +2268,8 @@
   margin: 8px 0 6px !important;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
-  background: #16181D;
-  color: #E8EAED;
+  background: #1c1c1e;
+  color: #e5eaf0;
   box-sizing: border-box;
   cursor: text;
   transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
@@ -2284,7 +2284,7 @@
   position: static;
   transform: none;
   flex: none;
-  color: #9AA0A6 !important;
+  color: #a2a9b4 !important;
   width: 15px;
   height: 15px;
   pointer-events: none;
@@ -2309,12 +2309,12 @@
   font-size: 16px !important;
   font-weight: 450;
   line-height: 1.25;
-  color: #E8EAED;
+  color: #e5eaf0;
   -webkit-tap-highlight-color: transparent;
 }
 
 .oledSearchRow .mobileSearchInput::placeholder {
-  color: #9AA0A6 !important;
+  color: #a2a9b4 !important;
   font-size: 14px !important;
   font-weight: 450;
 }
@@ -2348,7 +2348,7 @@
   background: rgba(255, 255, 255, 0.08) !important;
   border: none !important;
   outline: none !important;
-  color: #9AA0A6 !important;
+  color: #a2a9b4 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -2359,7 +2359,7 @@
 
 .oledSearchRow .mobileSearchClearBtn:active {
   background: rgba(255, 255, 255, 0.16) !important;
-  color: #E8EAED !important;
+  color: #e5eaf0 !important;
 }
 
 /* ── Metadata & Sort Bar (Fixed) ── */
@@ -2374,7 +2374,7 @@
 .oledMetaCount {
   font-size: 12px;
   font-weight: 500;
-  color: #9AA0A6;
+  color: #a2a9b4;
   letter-spacing: -0.01em;
 }
 
@@ -2393,7 +2393,7 @@
   background: transparent;
   border: 0;
   outline: none;
-  color: #9AA0A6;
+  color: #a2a9b4;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -2413,7 +2413,7 @@
   right: 0;
   width: min(148px, calc(100vw - 24px));
   min-width: 148px;
-  background: #16181D;
+  background: #1c1c1e;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 11px;
   padding: 5px;
@@ -2433,7 +2433,7 @@
   border-radius: 7px;
   border: 1px solid transparent;
   background: transparent;
-  color: #E8EAED;
+  color: #e5eaf0;
   font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
@@ -2444,8 +2444,8 @@
 
 .oledSortOption:hover,
 .oledSortOption:focus-visible {
-  background: #1E2128;
-  color: #E8EAED;
+  background: #252527;
+  color: #e5eaf0;
 }
 
 .oledSortOptionActive {
@@ -2562,7 +2562,7 @@
 
 .oledTopicScrollArea .mobileTopicCount {
   font-size: 12.5px;
-  color: #9AA0A6;
+  color: #a2a9b4;
   text-align: center;
   padding: 48px 16px;
   margin: 0;

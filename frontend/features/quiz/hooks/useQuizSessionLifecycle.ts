@@ -12,6 +12,7 @@ import useSWR from 'swr';
 import api from '@/shared/api/client';
 import { createResumeSaver } from '../model/resumeDelta';
 import { authSessionIdentity } from '@/lib/auth-session-identity';
+import { recordRecentFromRoute } from '@/lib/recent-study';
 import type { RecentQuizPayload } from '@/lib/userApi';
 import { serializeConceptSelection } from '../model/conceptSelection';
 
@@ -37,7 +38,8 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
 
   const { user, token, refreshUser, loading: authLoading } = useAuth();
   const quizKey = `${subjectConfig.subjectId}:${slug}`;
-  const quizHref = `${routeBase ?? `/${subjectConfig.subjectId}/${slug}`}/quiz`;
+  const practiceBase = routeBase ?? `/${subjectConfig.subjectId}/${slug}`;
+  const quizHref = `${practiceBase}/quiz`;
   const resumeSummary = useMemo(() => {
     if (!resumeRequested) return null;
     return (
@@ -99,7 +101,10 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     submittedQuestions: [...next.submittedQuestions], results: next.results,
     status: next.phase === 'completed' ? 'completed' : 'in-progress',
   }), [quizKey, title, subjectConfig.subjectId, slug, quizHref, mode, questions, sessionFilters]);
-  const answers = useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch, persistAnswer: saver.answer, snapshot });
+  const handleAnswerSubmitted = useCallback(() => {
+    recordRecentFromRoute(subjectConfig.subjectId, practiceBase);
+  }, [subjectConfig.subjectId, practiceBase]);
+  const answers = useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch, persistAnswer: saver.answer, snapshot, onAnswerSubmitted: handleAnswerSubmitted });
   useQuizSync({
     saver,
     token,

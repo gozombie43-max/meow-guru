@@ -128,6 +128,22 @@ describe('quiz controller public behavior', () => {
     expect(mocks.start).not.toHaveBeenCalled();
   });
 
+  it('records recent topic only after a question answer is actually submitted', () => {
+    localStorage.clear();
+    const { result } = setup();
+    expect(localStorage.getItem('recent-study:v1')).toBeNull();
+    act(() => result.current.handleStart());
+    expect(localStorage.getItem('recent-study:v1')).toBeNull();
+    act(() => result.current.handleSubmitCurrent());
+    expect(localStorage.getItem('recent-study:v1')).toBeNull();
+    act(() => result.current.handleSelectAnswer(1));
+    expect(localStorage.getItem('recent-study:v1')).toBeNull();
+    act(() => result.current.handleSubmitCurrent());
+    expect(JSON.parse(localStorage.getItem('recent-study:v1') ?? '{}')).toMatchObject({
+      topics: { math: 'percentages' },
+    });
+  });
+
   it('finds a deep linked question after another page arrives', () => {
     mocks.params.set('qid', '3'); mocks.hasMore = true;
     const { result, rerender } = setup();

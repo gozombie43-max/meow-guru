@@ -238,7 +238,6 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
                   detail={detail}
                   priority={index === 0}
                   isRecent={isRecent}
-                  subjectId={config.subjectId}
                 />
               );
             })}
