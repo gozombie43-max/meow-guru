@@ -142,8 +142,8 @@ export function SubjectTopicStyles() {
           animation: sg-in .28s cubic-bezier(.22,1,.36,1) both .02s;
         }
         .sg-banner {
-          background: var(--card, #1c1c1e);
-          border: 1px solid var(--sep, rgba(255, 255, 255, 0.08));
+          background: transparent;
+          border: 1px solid var(--sep, rgba(255, 255, 255, 0.12));
           border-radius: 16px;
           padding: 16px;
           min-height: 84px;
@@ -154,14 +154,14 @@ export function SubjectTopicStyles() {
           margin: 0;
           text-decoration: none;
           -webkit-tap-highlight-color: transparent;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
-          transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+          box-shadow: none;
+          transition: border-color .15s ease;
         }
         .sg-banner:hover,
         .sg-banner:active {
-          background: var(--card-2, #252527);
-          border-color: rgba(255, 255, 255, 0.16);
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.36);
+          background: transparent;
+          border-color: rgba(255, 255, 255, 0.25);
+          box-shadow: none;
         }
         .sg-banner-icon {
           width: 48px;
@@ -273,12 +273,12 @@ export function SubjectTopicStyles() {
           padding: 13px 15px;
           min-height: 68px;
           border-radius: 14px;
-          background: var(--card, #1c1c1e);
+          background: transparent;
           color: var(--label, #e5eaf0);
           text-decoration: none;
-          border: 1px solid var(--sep, rgba(255, 255, 255, 0.08));
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
-          transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+          border: 1px solid var(--sep, rgba(255, 255, 255, 0.12));
+          box-shadow: none;
+          transition: border-color 0.15s ease;
           cursor: pointer;
           overflow: hidden;
           -webkit-tap-highlight-color: transparent;
@@ -287,9 +287,9 @@ export function SubjectTopicStyles() {
         .sg-card:hover,
         .sg-card:active {
           color: var(--label, #e5eaf0);
-          background: var(--card-2, #252527);
-          border-color: rgba(255, 255, 255, 0.16);
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.36);
+          background: transparent;
+          border-color: rgba(255, 255, 255, 0.25);
+          box-shadow: none;
         }
 
         .sg-card:focus-visible,
@@ -445,9 +445,17 @@ export function SubjectTopicStyles() {
         }
         body.theme-light .sg-banner,
         html.theme-light .sg-banner {
-          background: var(--light-only-surface, #FFFFFF);
-          border: 1px solid var(--light-border, rgba(0, 0, 0, 0.08));
-          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+          background: transparent;
+          border: 1px solid var(--light-border, rgba(0, 0, 0, 0.12));
+          box-shadow: none;
+        }
+        body.theme-light .sg-banner:hover,
+        html.theme-light .sg-banner:hover,
+        body.theme-light .sg-banner:active,
+        html.theme-light .sg-banner:active {
+          background: transparent;
+          border-color: rgba(0, 0, 0, 0.25);
+          box-shadow: none;
         }
         body.theme-light .sg-banner-open-btn,
         html.theme-light .sg-banner-open-btn {
@@ -464,16 +472,18 @@ export function SubjectTopicStyles() {
         }
         body.theme-light .sg-card,
         html.theme-light .sg-card {
-          background: var(--light-only-surface, #FFFFFF);
-          border: 1px solid var(--light-border, rgba(0, 0, 0, 0.08));
+          background: transparent;
+          border: 1px solid var(--light-border, rgba(0, 0, 0, 0.12));
           color: var(--light-only-text, #0f172a);
-          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+          box-shadow: none;
         }
         body.theme-light .sg-card:hover,
-        html.theme-light .sg-card:hover {
-          background: var(--light-canvas, #f8fafc);
-          border-color: rgba(0, 113, 227, 0.25);
-          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+        html.theme-light .sg-card:hover,
+        body.theme-light .sg-card:active,
+        html.theme-light .sg-card:active {
+          background: transparent;
+          border-color: rgba(0, 113, 227, 0.35);
+          box-shadow: none;
         }
         body.theme-light .sg-badge,
         html.theme-light .sg-badge {
