@@ -17,6 +17,7 @@ RankedTopicPriority,
 import Link from "next/link";
 import { useEffect,useMemo,useRef,useState } from "react";
 import styles from "./RankedTopicGroupPage.module.css";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 type PriorityFilter = RankedTopicPriority | "All";
 
@@ -41,6 +42,12 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
   backHref?: string;
   backLabel?: string;
 }) {
+  // useMediaQuery starts false on both server and first hydration pass —
+  // mobile devices stay on mobile view; desktop switches after mount.
+  // This prevents the old desktop layout from bleeding into the mobile view
+  // (and vice-versa), which was causing the overlap / flash-of-wrong-design.
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
   const { data } = useTopicQuestionTotals(subject);
   // Uploads are keyed by chapter slug; fall back to the slugified chapter title.
   const questionTotal = (topic: { slug: string; title: string }) =>
@@ -136,243 +143,252 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
     <div className={styles.page}>
       {/* =========================================================================
           DESKTOP VIEW (>= 768px)
+          Only rendered when isDesktop is true — prevents the old desktop design
+          from bleeding into the mobile view and causing overlap/flash issues.
           ========================================================================= */}
-      <div className={styles.desktopContainer}>
-        <header data-ui-chrome="header" className={styles.header}>
-          <Link replace data-ui-button="secondary"
-            href={backHref}
-            className={styles.backButton}
-            aria-label={`Back to ${backLabel}`}
-          >
-            <ChevronLeft size={23} strokeWidth={2.2} />
-          </Link>
-          <h1 className={styles.headerTitle}>{group.label}</h1>
-          {group.filters.length > 0 ? filterButton : null}
-        </header>
+      {isDesktop && (
+        <div className={styles.desktopContainer}>
+          <header data-ui-chrome="header" className={styles.header}>
+            <Link replace data-ui-button="secondary"
+              href={backHref}
+              className={styles.backButton}
+              aria-label={`Back to ${backLabel}`}
+            >
+              <ChevronLeft size={23} strokeWidth={2.2} />
+            </Link>
+            <h1 className={styles.headerTitle}>{group.label}</h1>
+            {group.filters.length > 0 ? filterButton : null}
+          </header>
 
-        <main className={styles.content}>
-          <section className={styles.intro} aria-labelledby="ranked-topics-heading">
-            <p className={styles.eyebrow}>{group.eyebrow}</p>
-            <h2 id="ranked-topics-heading" className={styles.heading}>
-              {group.topics.length} chapters{group.filters.length ? ", ranked" : ""}
-            </h2>
-            <p className={styles.description}>
-              {group.description}
-            </p>
-          </section>
+          <main className={styles.content}>
+            <section className={styles.intro} aria-labelledby="ranked-topics-heading">
+              <p className={styles.eyebrow}>{group.eyebrow}</p>
+              <h2 id="ranked-topics-heading" className={styles.heading}>
+                {group.topics.length} chapters{group.filters.length ? ", ranked" : ""}
+              </h2>
+              <p className={styles.description}>
+                {group.description}
+              </p>
+            </section>
 
-          <div className={styles.searchWrap}>
-            <Search className={styles.searchIcon} size={17} aria-hidden="true" />
-            <input
-              className={styles.searchInput}
-              type="search"
-              data-custom-focus
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="none"
-              spellCheck={false}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search chapters"
-              aria-label={`Search ${group.label} chapters`}
-            />
-            {query ? (
-              <button
-                type="button"
+            <div className={styles.searchWrap}>
+              <Search className={styles.searchIcon} size={17} aria-hidden="true" />
+              <input
+                className={styles.searchInput}
+                type="search"
                 data-custom-focus
-                data-ui-interaction="none"
-                className={styles.clearButton}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setQuery("")}
-                aria-label="Clear chapter search"
-              >
-                <X size={15} />
-              </button>
-            ) : null}
-          </div>
-
-          <section className={styles.table} aria-label={`Ranked ${group.label} chapters`}>
-            <div className={styles.tableHeader} aria-hidden="true">
-              <span>Rank</span>
-              <span>Chapter</span>
-              <span>{group.filters.length ? group.metricLabel : ""}</span>
-            </div>
-
-            {topics.length > 0 ? (
-              topics.map((topic) => {
-                const total = questionTotal(topic);
-                const solved = Math.min(questionSolved(topic), total);
-                return (
-                  <Link
-                    key={topic.slug}
-                    className={styles.row}
-                    href={`${routeBase}/${topic.slug}`}
-                    aria-label={group.filters.length ? `Rank ${topic.rank}: ${topic.title}, ${topic.priority} ${group.metricLabel.toLowerCase()}. Open topic.` : `${topic.rank}. ${topic.title}. Open chapter.`}
-                  >
-                    <span className={styles.rank}>{topic.rank}</span>
-                    <span className={styles.chapterCell}>
-                      <span className={styles.chapterPhoto} aria-hidden="true"><TopicThumbnail src={chapterImage(topic.slug, group.slug)} size={48} /></span>
-                      <span className={styles.chapter}>
-                        {topic.title}
-                        <span className={styles.chapterQuestionCount}>
-                          <span className={styles.attemptedCount}>{solved}</span>
-                          <span className={styles.attemptedSlash}>/</span>
-                          <span className={styles.totalCount}>{total}</span>{" "}
-                          <span className={styles.attemptedLabel}>attempted</span>
-                        </span>
-                      </span>
-                    </span>
-                    <span className={styles.weightage} hidden={!group.filters.length}>
-                      <span
-                        className={`${styles.weightDot} ${PRIORITY_CLASS[topic.priority]}`}
-                        aria-hidden="true"
-                      />
-                      {topic.priority}
-                    </span>
-                  </Link>
-                );
-              })
-            ) : (
-              <div className={styles.empty}>No chapters match your search.</div>
-            )}
-          </section>
-        </main>
-      </div>
-
-      {/* =========================================================================
-          MOBILE / TABLET VIEW (< 768px Handheld Devices)
-          ========================================================================= */}
-      <div className={`${hubStyles.mobileContainer} ${hubStyles.fixedTopicsMobile} ${hubStyles.oledMobile} ${styles.mobileLayout}`}>
-        {/* Mobile Topbar */}
-        <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={`${hubStyles.mobileTopbar} ${styles.mobileHeader}`}>
-          <Link replace
-            href={backHref}
-            className={`${hubStyles.mobileBackBtn} ${styles.mobileBackBtn}`}
-            aria-label={`Back to ${backLabel}`}
-          >
-            <ArrowLeft size={18} strokeWidth={2.4} />
-          </Link>
-          <h1 className={`${hubStyles.mobileTopbarTitle} ${styles.mobileTopbarTitle}`}>
-            {group.label} Chapters
-          </h1>
-          {group.filters.length > 0 ? filterButton : null}
-        </header>
-
-        <div data-hub-part="mobileBody" className={hubStyles.mobileBody}>
-          {/* Mobile Search Row — pinned above the scrollable chapter list */}
-          <div
-            role="search"
-            data-hub-part="mobileSearchRow"
-            className={styles.chapterSearch}
-          >
-            <Search size={15} className={styles.mobileSearchIcon} aria-hidden="true" />
-            <input
-              ref={mobileSearchInputRef}
-              type="search"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="none"
-              spellCheck={false}
-              className={styles.chapterSearchInput}
-              data-custom-focus
-              data-mobile-chapter-search
-              enterKeyHint="search"
-              placeholder="Search chapters"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              aria-label={`Search ${group.label} chapters`}
-            />
-            {query && (
-              <div className={styles.chapterSearchActions}>
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search chapters"
+                aria-label={`Search ${group.label} chapters`}
+              />
+              {query ? (
                 <button
                   type="button"
                   data-custom-focus
                   data-ui-interaction="none"
-                  className={styles.clearSearchBtn}
+                  className={styles.clearButton}
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    setQuery("");
-                    mobileSearchInputRef.current?.focus();
-                  }}
-                  aria-label="Clear Search"
+                  onClick={() => setQuery("")}
+                  aria-label="Clear chapter search"
                 >
-                  <X size={13} />
+                  <X size={15} />
                 </button>
-              </div>
-            )}
-          </div>
+              ) : null}
+            </div>
 
-          {/* Elevated chapter list with brand accents and attempted progress */}
-          <div
-            data-hub-part="mobileTopicGroup"
-            className={styles.chapterList}
-          >
-            {topics.length === 0 ? (
-              <div className={styles.mobileEmpty}>
-                No {group.label.toLowerCase()} chapters found matching &ldquo;{query}&rdquo;
+            <section className={styles.table} aria-label={`Ranked ${group.label} chapters`}>
+              <div className={styles.tableHeader} aria-hidden="true">
+                <span>Rank</span>
+                <span>Chapter</span>
+                <span>{group.filters.length ? group.metricLabel : ""}</span>
               </div>
-            ) : (
-              topics.map((topic, index) => {
-                const total = questionTotal(topic);
-                const solved = Math.min(questionSolved(topic), total);
-                const isRecent = topic.slug === recentChapterSlug;
-                const percent = total > 0 ? Math.min(100, Math.round((solved / total) * 100)) : 0;
-                // Progress ring around the thumbnail; keep a visible sliver once started.
-                const ringProgress = percent > 0 ? Math.max(4, percent) : 0;
-                return (
-                  <Link
-                    key={topic.slug}
-                    href={`${routeBase}/${topic.slug}`}
-                    data-hub-part="mobileTopicRow"
-                    data-recent={isRecent ? "true" : undefined}
-                    className={`${styles.chapterRow} ${isRecent ? styles.chapterRowRecent : ""}`}
-                    style={isRecent ? ({ "--ring-progress": ringProgress } as React.CSSProperties) : undefined}
-                    aria-label={`${topic.rank}. ${topic.title}${isRecent ? ", continue" : ""}`}
-                  >
-                    <div className={styles.chapterIcon}>
-                      <ChapterThumbnail src={chapterImage(topic.slug, group.slug)} eager={index < EAGER_THUMBNAILS} className={styles.chapterImg} />
-                      <span
-                        className={styles.mobileRankNum}
-                        aria-hidden="true"
-                      >
-                        {topic.rank}
-                      </span>
-                    </div>
-                    <span className={styles.chapterText}>
-                      <span className={styles.mobileTopicName}>{topic.title}</span>
-                      <span className={styles.chapterMetaRow}>
-                        <span className={styles.chapterQuestionCount}>
-                          <span className={styles.attemptedCount}>{solved}</span>
-                          <span className={styles.attemptedSlash}>/</span>
-                          <span className={styles.totalCount}>{total}</span>{" "}
-                          <span className={styles.attemptedLabel}>attempted</span>
+
+              {topics.length > 0 ? (
+                topics.map((topic) => {
+                  const total = questionTotal(topic);
+                  const solved = Math.min(questionSolved(topic), total);
+                  return (
+                    <Link
+                      key={topic.slug}
+                      className={styles.row}
+                      href={`${routeBase}/${topic.slug}`}
+                      aria-label={group.filters.length ? `Rank ${topic.rank}: ${topic.title}, ${topic.priority} ${group.metricLabel.toLowerCase()}. Open topic.` : `${topic.rank}. ${topic.title}. Open chapter.`}
+                    >
+                      <span className={styles.rank}>{topic.rank}</span>
+                      <span className={styles.chapterCell}>
+                        <span className={styles.chapterPhoto} aria-hidden="true"><TopicThumbnail src={chapterImage(topic.slug, group.slug)} size={48} /></span>
+                        <span className={styles.chapter}>
+                          {topic.title}
+                          <span className={styles.chapterQuestionCount}>
+                            <span className={styles.attemptedCount}>{solved}</span>
+                            <span className={styles.attemptedSlash}>/</span>
+                            <span className={styles.totalCount}>{total}</span>{" "}
+                            <span className={styles.attemptedLabel}>attempted</span>
+                          </span>
                         </span>
                       </span>
-                    </span>
-                    {isRecent ? (
-                      <span className={styles.continueBadge}>
-                        <span>Continue</span>
-                        <svg
-                          className={styles.continueIcon}
-                          width="10"
-                          height="10"
-                          viewBox="0 0 10 10"
-                          fill="currentColor"
+                      <span className={styles.weightage} hidden={!group.filters.length}>
+                        <span
+                          className={`${styles.weightDot} ${PRIORITY_CLASS[topic.priority]}`}
+                          aria-hidden="true"
+                        />
+                        {topic.priority}
+                      </span>
+                    </Link>
+                  );
+                })
+              ) : (
+                <div className={styles.empty}>No chapters match your search.</div>
+              )}
+            </section>
+          </main>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MOBILE / TABLET VIEW (< 768px Handheld Devices)
+          Only rendered when isDesktop is false — prevents the new mobile layout
+          from rendering on desktop, and prevents both layouts being in the DOM
+          at the same time (which caused the overlap / previous-design flashing).
+          ========================================================================= */}
+      {!isDesktop && (
+        <div className={`${hubStyles.mobileContainer} ${hubStyles.fixedTopicsMobile} ${hubStyles.oledMobile} ${styles.mobileLayout}`}>
+          {/* Mobile Topbar */}
+          <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={`${hubStyles.mobileTopbar} ${styles.mobileHeader}`}>
+            <Link replace
+              href={backHref}
+              className={`${hubStyles.mobileBackBtn} ${styles.mobileBackBtn}`}
+              aria-label={`Back to ${backLabel}`}
+            >
+              <ArrowLeft size={18} strokeWidth={2.4} />
+            </Link>
+            <h1 className={`${hubStyles.mobileTopbarTitle} ${styles.mobileTopbarTitle}`}>
+              {group.label} Chapters
+            </h1>
+            {group.filters.length > 0 ? filterButton : null}
+          </header>
+
+          <div data-hub-part="mobileBody" className={hubStyles.mobileBody}>
+            {/* Mobile Search Row — pinned above the scrollable chapter list */}
+            <div
+              role="search"
+              data-hub-part="mobileSearchRow"
+              className={styles.chapterSearch}
+            >
+              <Search size={15} className={styles.mobileSearchIcon} aria-hidden="true" />
+              <input
+                ref={mobileSearchInputRef}
+                type="search"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                className={styles.chapterSearchInput}
+                data-custom-focus
+                data-mobile-chapter-search
+                enterKeyHint="search"
+                placeholder="Search chapters"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                aria-label={`Search ${group.label} chapters`}
+              />
+              {query && (
+                <div className={styles.chapterSearchActions}>
+                  <button
+                    type="button"
+                    data-custom-focus
+                    data-ui-interaction="none"
+                    className={styles.clearSearchBtn}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      setQuery("");
+                      mobileSearchInputRef.current?.focus();
+                    }}
+                    aria-label="Clear Search"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Elevated chapter list with brand accents and attempted progress */}
+            <div
+              data-hub-part="mobileTopicGroup"
+              className={styles.chapterList}
+            >
+              {topics.length === 0 ? (
+                <div className={styles.mobileEmpty}>
+                  No {group.label.toLowerCase()} chapters found matching &ldquo;{query}&rdquo;
+                </div>
+              ) : (
+                topics.map((topic, index) => {
+                  const total = questionTotal(topic);
+                  const solved = Math.min(questionSolved(topic), total);
+                  const isRecent = topic.slug === recentChapterSlug;
+                  const percent = total > 0 ? Math.min(100, Math.round((solved / total) * 100)) : 0;
+                  // Progress ring around the thumbnail; keep a visible sliver once started.
+                  const ringProgress = percent > 0 ? Math.max(4, percent) : 0;
+                  return (
+                    <Link
+                      key={topic.slug}
+                      href={`${routeBase}/${topic.slug}`}
+                      data-hub-part="mobileTopicRow"
+                      data-recent={isRecent ? "true" : undefined}
+                      className={`${styles.chapterRow} ${isRecent ? styles.chapterRowRecent : ""}`}
+                      style={isRecent ? ({ "--ring-progress": ringProgress } as React.CSSProperties) : undefined}
+                      aria-label={`${topic.rank}. ${topic.title}${isRecent ? ", continue" : ""}`}
+                    >
+                      <div className={styles.chapterIcon}>
+                        <ChapterThumbnail src={chapterImage(topic.slug, group.slug)} eager={index < EAGER_THUMBNAILS} className={styles.chapterImg} />
+                        <span
+                          className={styles.mobileRankNum}
                           aria-hidden="true"
                         >
-                          <path d="M2 1.5a.6.6 0 0 1 .93-.5l5.6 3.5a.6.6 0 0 1 0 1L2.93 9A.6.6 0 0 1 2 8.5v-7Z" />
-                        </svg>
+                          {topic.rank}
+                        </span>
+                      </div>
+                      <span className={styles.chapterText}>
+                        <span className={styles.mobileTopicName}>{topic.title}</span>
+                        <span className={styles.chapterMetaRow}>
+                          <span className={styles.chapterQuestionCount}>
+                            <span className={styles.attemptedCount}>{solved}</span>
+                            <span className={styles.attemptedSlash}>/</span>
+                            <span className={styles.totalCount}>{total}</span>{" "}
+                            <span className={styles.attemptedLabel}>attempted</span>
+                          </span>
+                        </span>
                       </span>
-                    ) : (
-                      <ChevronRight className={styles.chapterChevron} size={18} aria-hidden="true" />
-                    )}
-                  </Link>
-                );
-              })
-            )}
+                      {isRecent ? (
+                        <span className={styles.continueBadge}>
+                          <span>Continue</span>
+                          <svg
+                            className={styles.continueIcon}
+                            width="10"
+                            height="10"
+                            viewBox="0 0 10 10"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path d="M2 1.5a.6.6 0 0 1 .93-.5l5.6 3.5a.6.6 0 0 1 0 1L2.93 9A.6.6 0 0 1 2 8.5v-7Z" />
+                          </svg>
+                        </span>
+                      ) : (
+                        <ChevronRight className={styles.chapterChevron} size={18} aria-hidden="true" />
+                      )}
+                    </Link>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
       <dialog
         ref={filterDialogRef}
         id="chapter-filter-dialog"
