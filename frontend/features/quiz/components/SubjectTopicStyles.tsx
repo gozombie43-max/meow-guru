@@ -28,8 +28,6 @@ export function SubjectTopicStyles() {
           --card: #1c1c1e;
           --card-2: #252527;
           --sep: rgba(255, 255, 255, 0.06);
-          --sg-outline: rgba(255, 255, 255, 0.24);
-          --sg-outline-hover: rgba(255, 255, 255, 0.45);
           --label: #e5eaf0;
           --label-2: #a2a9b4;
           --label-3: #8e8e93;
@@ -144,8 +142,8 @@ export function SubjectTopicStyles() {
           animation: sg-in .28s cubic-bezier(.22,1,.36,1) both .02s;
         }
         .sg-banner {
-          background: transparent !important;
-          border: 1.5px solid var(--sg-outline, rgba(255, 255, 255, 0.24)) !important;
+          background: transparent;
+          border: 1px solid var(--sep, rgba(255, 255, 255, 0.12));
           border-radius: 16px;
           padding: 16px;
           min-height: 84px;
@@ -156,14 +154,14 @@ export function SubjectTopicStyles() {
           margin: 0;
           text-decoration: none;
           -webkit-tap-highlight-color: transparent;
-          box-shadow: none !important;
+          box-shadow: none;
           transition: border-color .15s ease;
         }
         .sg-banner:hover,
         .sg-banner:active {
-          background: transparent !important;
-          border-color: var(--sg-outline-hover, rgba(255, 255, 255, 0.45)) !important;
-          box-shadow: none !important;
+          background: transparent;
+          border-color: rgba(255, 255, 255, 0.25);
+          box-shadow: none;
         }
         .sg-banner-icon {
           width: 48px;
@@ -275,11 +273,11 @@ export function SubjectTopicStyles() {
           padding: 13px 15px;
           min-height: 68px;
           border-radius: 14px;
-          background: transparent !important;
+          background: transparent;
           color: var(--label, #e5eaf0);
           text-decoration: none;
-          border: 1.5px solid var(--sg-outline, rgba(255, 255, 255, 0.24)) !important;
-          box-shadow: none !important;
+          border: 1px solid var(--sep, rgba(255, 255, 255, 0.12));
+          box-shadow: none;
           transition: border-color 0.15s ease;
           cursor: pointer;
           overflow: hidden;
@@ -289,9 +287,9 @@ export function SubjectTopicStyles() {
         .sg-card:hover,
         .sg-card:active {
           color: var(--label, #e5eaf0);
-          background: transparent !important;
-          border-color: var(--sg-outline-hover, rgba(255, 255, 255, 0.45)) !important;
-          box-shadow: none !important;
+          background: transparent;
+          border-color: rgba(255, 255, 255, 0.25);
+          box-shadow: none;
         }
 
         .sg-card:focus-visible,
@@ -433,8 +431,6 @@ export function SubjectTopicStyles() {
           --card: var(--light-only-surface, #FFFFFF);
           --card-2: var(--light-border, #e5e7eb);
           --sep: var(--light-border, rgba(0, 0, 0, 0.08));
-          --sg-outline: rgba(0, 0, 0, 0.18);
-          --sg-outline-hover: var(--ios-system-blue, #007aff);
           --label: var(--light-text, #0f172a);
           --label-2: var(--light-text-secondary, #64748b);
           --label-3: var(--light-text-muted, #94a3b8);
@@ -449,17 +445,17 @@ export function SubjectTopicStyles() {
         }
         body.theme-light .sg-banner,
         html.theme-light .sg-banner {
-          background: transparent !important;
-          border: 1.5px solid var(--sg-outline, rgba(0, 0, 0, 0.18)) !important;
-          box-shadow: none !important;
+          background: transparent;
+          border: 1px solid var(--light-border, rgba(0, 0, 0, 0.12));
+          box-shadow: none;
         }
         body.theme-light .sg-banner:hover,
         html.theme-light .sg-banner:hover,
         body.theme-light .sg-banner:active,
         html.theme-light .sg-banner:active {
-          background: transparent !important;
-          border-color: var(--sg-outline-hover, #007aff) !important;
-          box-shadow: none !important;
+          background: transparent;
+          border-color: rgba(0, 0, 0, 0.25);
+          box-shadow: none;
         }
         body.theme-light .sg-banner-open-btn,
         html.theme-light .sg-banner-open-btn {
@@ -476,18 +472,18 @@ export function SubjectTopicStyles() {
         }
         body.theme-light .sg-card,
         html.theme-light .sg-card {
-          background: transparent !important;
-          border: 1.5px solid var(--sg-outline, rgba(0, 0, 0, 0.18)) !important;
+          background: transparent;
+          border: 1px solid var(--light-border, rgba(0, 0, 0, 0.12));
           color: var(--light-only-text, #0f172a);
-          box-shadow: none !important;
+          box-shadow: none;
         }
         body.theme-light .sg-card:hover,
         html.theme-light .sg-card:hover,
         body.theme-light .sg-card:active,
         html.theme-light .sg-card:active {
-          background: transparent !important;
-          border-color: var(--sg-outline-hover, #007aff) !important;
-          box-shadow: none !important;
+          background: transparent;
+          border-color: rgba(0, 113, 227, 0.35);
+          box-shadow: none;
         }
         body.theme-light .sg-badge,
         html.theme-light .sg-badge {
