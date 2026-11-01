@@ -116,13 +116,8 @@ function useMeowConvexAuth() {
       }
 
       const requestSession = sessionIdentity;
-      const _requestUserId = userId;
-
-      const request = (async (): Promise<string | null> => {
-        try {
-          const { data } = await api.post<ConvexTokenResponse>(
-            '/auth/convex/token'
-          );
+      const request = api.post<ConvexTokenResponse>('/auth/convex/token')
+        .then(({ data }): string | null => {
 
           // Reject responses belonging to an old Meow session.
           if (
@@ -150,7 +145,8 @@ function useMeowConvexAuth() {
           };
 
           return data.token;
-        } catch (error) {
+        })
+        .catch((error): string | null => {
           const status = (
             error as { response?: { status?: number } }
           )?.response?.status;
@@ -161,8 +157,7 @@ function useMeowConvexAuth() {
           }
 
           throw error;
-        }
-      })();
+        });
 
       inFlight.current = {
         sessionIdentity: requestSession,
