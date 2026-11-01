@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { LangToggle } from "@/components/LangToggle";
-import { Settings, ArrowLeft, ArrowRight, BookOpenText } from "lucide-react";
+import { Settings, ArrowLeft, ArrowRight, BookOpenText, Check } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
 
@@ -51,7 +51,12 @@ export function MobileQuizHeader({ activeLang, currentIndex, questions, hasMore,
       </div>
       <div className="ios-series-header-right">
         <button data-ui-button="state" type="button" className="ios-series-icon-button ios-series-palette-trigger" onClick={openPalette} aria-label={`Question ${questionNumber}${total !== null ? ` of ${total}` : ""} - Open question navigator`}>
-          <span className="ios-series-palette-num">{total !== null ? `${questionNumber} / ${total}` : `Question ${questionNumber}`}</span>
+          <span className="ios-series-palette-num">{total !== null ? (
+              <>
+                <span className="ios-series-palette-current">{questionNumber}</span>
+                <span className="ios-series-palette-total"> / {total}</span>
+              </>
+            ) : `Question ${questionNumber}`}</span>
         </button>
       </div>
     </header>
@@ -204,7 +209,7 @@ function MobileQuizFooterControls({
         aria-label={!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}
       >
         <span>{!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}</span>
-        {isCurrentSubmitted && <ArrowRight className="ios-series-btn-arrow" aria-hidden="true" />}
+        {isCurrentSubmitted ? <ArrowRight className="ios-series-btn-arrow" aria-hidden="true" /> : <Check className="ios-series-btn-arrow" aria-hidden="true" />}
       </button>
       </div>
     </footer>

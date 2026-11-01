@@ -2039,3 +2039,134 @@
 }
 .ios-series-quiz .ios-series-option:active,
 .ios-series-quiz .ios-series-dock button:active { transform: none !important; }
+
+/* ==========================================================================
+   Light theme: white answer cards on a soft canvas, crisp outlines,
+   neutral header tiles and a blue-tinted timer.
+   ========================================================================== */
+.ios-series-quiz[data-theme="light"] {
+  --quiz-background: var(--light-canvas, #f5f7fa);
+  --quiz-surface: var(--light-surface-muted, #edf1f6);
+  --quiz-answer-surface: var(--light-surface, #ffffff);
+  --quiz-surface-hover: #f8fafc;
+  --quiz-surface-selected: #eef5ff;
+  --quiz-text-primary: var(--light-text, #182438);
+  --quiz-text-secondary: var(--light-text-secondary, #526176);
+  --quiz-letter: #eef1f6;
+  --quiz-card-border: var(--light-border, #dce3ec);
+  --ui-header-surface: var(--quiz-background);
+  background: var(--quiz-background);
+}
+.ios-series-quiz[data-theme="light"] .ios-series-device,
+.ios-series-quiz[data-theme="light"] .ios-series-rail { background: var(--quiz-background); }
+
+/* Header: rounded-square settings tile, grey track with white active pill. */
+.ios-series-quiz[data-theme="light"] .ios-series-settings-trigger {
+  border-radius: 14px !important;
+  background: var(--quiz-surface) !important;
+  background-clip: content-box !important;
+  color: #475569 !important;
+}
+.ios-series-quiz[data-theme="light"] .lang-toggle.lang-toggle {
+  --lang-toggle-bg: var(--quiz-surface);
+  --lang-toggle-active-bg: #ffffff;
+  --lang-toggle-active-shadow: 0 1px 3px rgb(15 23 42 / 0.1);
+  --lang-toggle-text: #334155;
+  --lang-toggle-text-active: var(--quiz-accent);
+  --lang-toggle-text-hover: var(--quiz-text-primary);
+}
+.ios-series-quiz[data-theme="light"] .lang-toggle-option { font-weight: 600 !important; }
+.ios-series-quiz[data-theme="light"] .lang-toggle-slider { box-shadow: 0 1px 3px rgb(15 23 42 / 0.1) !important; }
+.ios-series-quiz[data-theme="light"] .ios-series-palette-trigger {
+  background-color: var(--quiz-surface) !important;
+  color: var(--quiz-text-secondary) !important;
+}
+.ios-series-quiz .ios-series-palette-current { font-weight: 700; color: var(--quiz-text-primary, inherit); }
+.ios-series-quiz .ios-series-palette-total { font-weight: 500; color: var(--quiz-text-secondary, inherit); }
+
+/* Meta row: blue-tinted timer pill. */
+.ios-series-quiz[data-theme="light"] .ios-series-timer {
+  background: #e8effa !important;
+  color: var(--quiz-text-primary) !important;
+  font-weight: 600;
+}
+.ios-series-quiz[data-theme="light"] .ios-series-timer svg { color: var(--quiz-accent) !important; }
+
+/* Question: strong, high-contrast prompt. */
+.ios-series-quiz[data-theme="light"] .ios-series-prompt {
+  color: var(--quiz-text-primary);
+  font-weight: 700;
+}
+
+/* Answers: white cards with a hairline border. */
+.ios-series-quiz[data-theme="light"] .ios-series-option {
+  background: var(--quiz-answer-surface);
+  box-shadow: inset 0 0 0 1px var(--quiz-card-border) !important;
+}
+.ios-series-quiz[data-theme="light"] .ios-series-option:not(:disabled):hover {
+  background: var(--quiz-surface-hover);
+  box-shadow: inset 0 0 0 1px #cbd5e1 !important;
+}
+.ios-series-quiz[data-theme="light"] .ios-series-option.is-selected {
+  background: var(--quiz-surface-selected);
+  box-shadow: inset 0 0 0 1.5px var(--quiz-accent) !important;
+}
+.ios-series-quiz[data-theme="light"] .ios-series-option.is-correct,
+.ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong {
+  background: color-mix(in srgb, var(--quiz-result-color) 8%, #ffffff);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--quiz-result-color) 45%, transparent) !important;
+}
+.ios-series-quiz[data-theme="light"] .ios-series-option-value { color: var(--quiz-text-primary); }
+.ios-series-quiz[data-theme="light"] .ios-series-option:not(.is-selected, .is-correct, .is-wrong) .ios-series-option-letter {
+  background: var(--quiz-letter);
+  color: #334155;
+  font-weight: 700;
+}
+.ios-series-quiz[data-theme="light"] .ios-series-option.is-selected:not(.is-correct, .is-wrong) .ios-series-option-letter {
+  background: var(--quiz-accent);
+  color: #ffffff;
+}
+.ios-series-quiz[data-theme="light"] .ios-series-option-radio {
+  width: 22px; height: 22px; border-width: 1.5px;
+  border-color: #b6c0cd; opacity: 1;
+}
+.ios-series-quiz[data-theme="light"] .ios-series-option-radio.is-selected {
+  border-color: var(--quiz-accent);
+  background: var(--quiz-accent);
+  box-shadow: inset 0 0 0 4px #ffffff;
+}
+
+/* Dock: white bar matching the answer cards. */
+.ios-series-quiz[data-theme="light"] .ios-series-dock {
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px var(--quiz-card-border);
+}
+
+/* Dock primary action: a tinted tile that shares the bar's grid, height and
+   icon-over-label rhythm instead of floating as a separate solid pill. */
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock .ios-series-footer-next {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-width: 0; height: 52px; min-height: 52px; gap: 5px; padding: 4px 2px !important;
+  border: 0 !important; border-radius: 22px !important; box-shadow: none !important;
+  background: color-mix(in srgb, var(--quiz-accent) 12%, transparent) !important;
+  --ui-surface: transparent;
+  color: var(--quiz-accent) !important;
+  font-size: 12px !important; font-weight: 600 !important; line-height: 1.2 !important;
+}
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock .ios-series-footer-next .ios-series-btn-arrow {
+  display: block; width: 20px; height: 20px; flex-shrink: 0; order: -1;
+  color: inherit; stroke-width: 2;
+}
+.ios-series-quiz[data-theme="dark"] .ios-series-dock .ios-series-footer-next {
+  background: color-mix(in srgb, var(--quiz-accent) 20%, transparent) !important;
+  color: color-mix(in srgb, var(--quiz-accent) 70%, white) !important;
+}
+@media (hover: hover) {
+  .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock .ios-series-footer-next:not(:disabled):hover {
+    background: color-mix(in srgb, var(--quiz-accent) 18%, transparent) !important;
+  }
+}
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock .ios-series-footer-next:disabled {
+  background: transparent !important;
+  color: var(--quiz-text-secondary) !important;
+}

@@ -112,7 +112,7 @@ try {
       if (theme === 'light') {
         lightGeometry = metrics.geometry;
         assert.equal(metrics.canvas, 'rgb(245, 247, 250)');
-        assert.equal(metrics.headerBackground, 'rgb(255, 255, 255)', 'Light headers must not inherit the dark canvas');
+        assert.equal(metrics.headerBackground, 'rgb(245, 247, 250)', 'Light headers must not inherit the dark canvas');
         assert.equal(metrics.headerIconColor, 'rgb(24, 36, 56)', 'Light header icons must remain readable');
         assert.equal(metrics.submit, 'rgb(0, 122, 255)');
         assert.equal(metrics.languageBackground, 'rgb(237, 241, 246)');
