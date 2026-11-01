@@ -298,34 +298,73 @@ jobs:
       - name: Configure isolated staging runtime
         env:
           STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+          STAGING_CONVEX_JWT_PRIVATE_KEY_B64: ${{ secrets.STAGING_CONVEX_JWT_PRIVATE_KEY_B64 }}
         shell: bash
         run: |
           set -euo pipefail
+
+          : "${STAGING_MONGODB_URI:?Missing STAGING_MONGODB_URI secret}"
+          : "${STAGING_CONVEX_JWT_PRIVATE_KEY_B64:?Missing STAGING_CONVEX_JWT_PRIVATE_KEY_B64 secret}"
+          : "${STAGING_APP_NAME:?Missing STAGING_APP_NAME}"
+          : "${STAGING_APP_HOST:?Missing STAGING_APP_HOST}"
+          : "${RESOURCE_GROUP:?Missing RESOURCE_GROUP}"
+
           jwt_secret="$(openssl rand -hex 32)"
           refresh_secret="$(openssl rand -hex 32)"
+
           echo "::add-mask::$jwt_secret"
           echo "::add-mask::$refresh_secret"
+          echo "::add-mask::$STAGING_CONVEX_JWT_PRIVATE_KEY_B64"
+
+          umask 077
+          settings_file="$(mktemp "${RUNNER_TEMP:-/tmp}/meow-staging-settings.XXXXXX.json")"
+          trap 'rm -f "$settings_file"' EXIT
+
+          jq -n \
+            --arg mongoUri "$STAGING_MONGODB_URI" \
+            --arg jwtSecret "$jwt_secret" \
+            --arg refreshSecret "$refresh_secret" \
+            --arg googleCallback "https://${STAGING_APP_HOST}/auth/google/callback" \
+            --arg convexIssuer "https://${STAGING_APP_HOST}/auth/convex" \
+            --arg convexAudience "meow-convex-staging" \
+            --arg convexKeyId "meow-convex-3b3030964606" \
+            --arg convexPrivateKey "$STAGING_CONVEX_JWT_PRIVATE_KEY_B64" \
+            '[
+              {"name":"MONGODB_URI","value":$mongoUri},
+              {"name":"MONGODB_DB","value":"quizDB_staging"},
+              {"name":"QUIZ_ONLY_MODE","value":"true"},
+              {"name":"RUN_EMBEDDED_WORKERS","value":"false"},
+              {"name":"DEPLOYMENT_ENVIRONMENT","value":"staging"},
+              {"name":"PROCESS_ROLE","value":"api"},
+              {"name":"NODE_ENV","value":"production"},
+              {"name":"TRAINING_INDEXED_QUESTIONS","value":"true"},
+              {"name":"TRAINING_LOCAL_INGRESS","value":"true"},
+              {"name":"JWT_SECRET","value":$jwtSecret},
+              {"name":"REFRESH_TOKEN_SECRET","value":$refreshSecret},
+              {"name":"FRONTEND_URL","value":"https://example.invalid"},
+              {"name":"GOOGLE_CLIENT_ID","value":"staging-disabled"},
+              {"name":"GOOGLE_CLIENT_SECRET","value":"staging-disabled"},
+              {"name":"GOOGLE_CALLBACK_URL","value":$googleCallback},
+              {"name":"CONVEX_JWT_ISSUER","value":$convexIssuer},
+              {"name":"CONVEX_JWT_AUDIENCE","value":$convexAudience},
+              {"name":"CONVEX_JWT_KEY_ID","value":$convexKeyId},
+              {"name":"CONVEX_JWT_PRIVATE_KEY_B64","value":$convexPrivateKey}
+            ]' > "$settings_file"
+
+          chmod 600 "$settings_file"
+
           az webapp config appsettings set \
-            --name "$STAGING_APP_NAME" --resource-group "$RESOURCE_GROUP" \
-            --settings \
-              "MONGODB_URI=$STAGING_MONGODB_URI" \
-              "MONGODB_DB=quizDB_staging" \
-              "QUIZ_ONLY_MODE=true" \
-              "RUN_EMBEDDED_WORKERS=false" \
-              "DEPLOYMENT_ENVIRONMENT=staging" \
-              "PROCESS_ROLE=api" \
-              "NODE_ENV=production" \
-              "TRAINING_INDEXED_QUESTIONS=true" \
-              "TRAINING_LOCAL_INGRESS=true" \
-              "JWT_SECRET=$jwt_secret" \
-              "REFRESH_TOKEN_SECRET=$refresh_secret" \
-              "FRONTEND_URL=https://example.invalid" \
-              "GOOGLE_CLIENT_ID=staging-disabled" \
-              "GOOGLE_CLIENT_SECRET=staging-disabled" \
-              "GOOGLE_CALLBACK_URL=https://$STAGING_APP_HOST/auth/google/callback" \
+            --name "$STAGING_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --settings "@$settings_file" \
             --output none
-          az webapp config set --name "$STAGING_APP_NAME" --resource-group "$RESOURCE_GROUP" \
-            --startup-file 'npm --workspace backend start' --always-on false --output none
+
+          az webapp config set \
+            --name "$STAGING_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --startup-file 'npm --workspace backend start' \
+            --always-on false \
+            --output none
       - name: Deploy staging backend
         uses: azure/webapps-deploy@b686016b4de8820a23519503685d8d03fbfa03a6 # v3
         with:
@@ -433,3 +472,55 @@ jobs:
           print_state_and_quotas
           echo '::error::Staging release failed readiness verification'
           exit 1
+      - name: Verify staging Convex authentication endpoints
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          jwks_file="$(mktemp)"
+          token_file="$(mktemp)"
+          trap 'rm -f "$jwks_file" "$token_file"' EXIT
+
+          jwks_status="$(curl --silent --show-error --max-time 20 \
+            --output "$jwks_file" \
+            --write-out '%{http_code}' \
+            "https://${STAGING_APP_HOST}/auth/convex/.well-known/jwks.json")" \
+            || jwks_status="transport-error"
+
+          if [ "$jwks_status" != "200" ]; then
+            echo "::error::Convex JWKS endpoint returned HTTP $jwks_status"
+            cat "$jwks_file"
+            exit 1
+          fi
+
+          if ! jq -e \
+            --arg kid "meow-convex-3b3030964606" \
+            '.keys | any(.[];
+              .kid == $kid and
+              .alg == "ES256" and
+              .kty == "EC" and
+              .crv == "P-256" and
+              (.key_ops | index("verify") != null)
+            )' "$jwks_file" >/dev/null; then
+            echo "::error::Convex JWKS key validation failed"
+            exit 1
+          fi
+
+          token_status="$(curl --silent --show-error --max-time 20 \
+            --output "$token_file" \
+            --write-out '%{http_code}' \
+            --request POST \
+            --header 'Content-Type: application/json' \
+            --data '{}' \
+            "https://${STAGING_APP_HOST}/auth/convex/token")" \
+            || token_status="transport-error"
+
+          if [ "$token_status" != "401" ]; then
+            echo "::error::Unauthenticated Convex token request returned HTTP $token_status instead of 401"
+            cat "$token_file"
+            exit 1
+          fi
+
+          echo "PASS: Convex JWKS is publicly accessible."
+          echo "PASS: Expected ES256 public key is published."
+          echo "PASS: Unauthenticated token issuance is rejected."

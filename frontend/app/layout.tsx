@@ -1,6 +1,7 @@
 import type { Metadata,Viewport } from 'next';
 import localFont from 'next/font/local';
 import { AuthProvider } from '@/context/AuthContext';
+import { MeowConvexProvider } from '@/components/MeowConvexProvider';
 import { VirtualKeyboardProvider } from '@/components/VirtualKeyboardProvider';
 import SelectionPopover from '@/components/SelectionPopover';
 import SkipToContent from '@/components/SkipToContent';
@@ -83,7 +84,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={GeistSans.variable} suppressHydrationWarning>
         <SkipToContent />
         <ThemeColor />
-        <VirtualKeyboardProvider><AuthProvider>{children}</AuthProvider></VirtualKeyboardProvider>
+        <VirtualKeyboardProvider>
+          <AuthProvider>
+            <MeowConvexProvider>
+              {children}
+            </MeowConvexProvider>
+          </AuthProvider>
+        </VirtualKeyboardProvider>
         <SelectionPopover />
       </body>
     </html>

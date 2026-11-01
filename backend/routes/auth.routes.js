@@ -3,6 +3,7 @@ import { runtimeLog } from '../infrastructure/runtimeLog.js';
 
 import express from 'express';
 import firebaseAuthRoutes from './firebaseAuth.routes.js';
+import convexAuthRoutes from './convexAuth.routes.js';
 import { requireTrustedOrigin } from '../auth/requestOrigin.js';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
@@ -41,6 +42,7 @@ import { emailOtpRequestLimiter, emailOtpVerifyLimiter } from '../middleware/rat
 
 const router = express.Router();
 router.use('/firebase', firebaseAuthRoutes);
+router.use('/convex', convexAuthRoutes);
 
 /*
  * Kept as an init function so index.js does not need
