@@ -15,6 +15,16 @@ const environmentSchema = z.object({
   QUEUE_REDIS_NAMESPACE: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9:_-]{2,127}$/, 'Use a bounded explicit namespace').optional(),
   BATTLE_REDIS_CRITICAL: z.enum(['true', 'false']).optional(),
   EMBEDDED_WORKERS_CRITICAL: z.enum(['true', 'false']).optional(),
+  CONVEX_JWT_ISSUER: z.string().url().optional(),
+  CONVEX_JWT_AUDIENCE: z.string().min(1).max(200).optional(),
+  CONVEX_JWT_KEY_ID: z.string()
+    .regex(/^[A-Za-z0-9._-]{1,128}$/)
+    .optional(),
+  CONVEX_JWT_PRIVATE_KEY_B64: z.string()
+    .min(100)
+    .max(4096)
+    .regex(/^[A-Za-z0-9+/]+={0,2}$/)
+    .optional(),
 }).superRefine((env, ctx) => {
   if (env.JWT_SECRET === env.REFRESH_TOKEN_SECRET) ctx.addIssue({ code: 'custom', path: ['REFRESH_TOKEN_SECRET'], message: 'Use a separate refresh secret' });
   if (['staging', 'production'].includes(env.DEPLOYMENT_ENVIRONMENT || '') && env.NODE_ENV !== 'production') {
@@ -33,6 +43,39 @@ const environmentSchema = z.object({
     const staging = env.DEPLOYMENT_ENVIRONMENT === 'staging';
     const parts = (namespace || '').toLowerCase().split(/[:_-]/);
     if (!(staging ? parts.includes('staging') : parts.some(part => ['prod', 'production'].includes(part))) || parts.some(part => ['dev', 'development', 'local', 'test', ...(staging ? ['prod', 'production'] : ['staging'])].includes(part))) ctx.addIssue({ code: 'custom', path: ['QUEUE_REDIS_NAMESPACE'], message: 'Queue Redis requires an explicit environment-qualified namespace' });
+  }
+
+  const convexJwtFields = /** @type {const} */ ([
+    'CONVEX_JWT_ISSUER',
+    'CONVEX_JWT_AUDIENCE',
+    'CONVEX_JWT_KEY_ID',
+    'CONVEX_JWT_PRIVATE_KEY_B64',
+  ]);
+
+  const configuredConvexFields = convexJwtFields.filter(
+    key => env[key] !== undefined
+  );
+
+  if (
+    configuredConvexFields.length !== 0 &&
+    configuredConvexFields.length !== convexJwtFields.length
+  ) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['CONVEX_JWT_ISSUER'],
+      message: 'All four Convex JWT settings must be configured together',
+    });
+  }
+
+  if (
+    env.CONVEX_JWT_ISSUER &&
+    new URL(env.CONVEX_JWT_ISSUER).protocol !== 'https:'
+  ) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['CONVEX_JWT_ISSUER'],
+      message: 'Convex JWT issuer must use HTTPS',
+    });
   }
 });
 
