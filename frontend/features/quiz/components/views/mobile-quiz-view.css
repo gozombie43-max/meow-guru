@@ -2045,15 +2045,15 @@
    neutral header tiles and a blue-tinted timer.
    ========================================================================== */
 .ios-series-quiz[data-theme="light"] {
-  --quiz-background: #f5f7fa;
-  --quiz-surface: #e9edf3;
-  --quiz-answer-surface: #ffffff;
+  --quiz-background: var(--light-canvas, #f5f7fa);
+  --quiz-surface: var(--light-surface-muted, #edf1f6);
+  --quiz-answer-surface: var(--light-surface, #ffffff);
   --quiz-surface-hover: #f8fafc;
   --quiz-surface-selected: #eef5ff;
-  --quiz-text-primary: #0f172a;
-  --quiz-text-secondary: #64748b;
+  --quiz-text-primary: var(--light-text, #182438);
+  --quiz-text-secondary: var(--light-text-secondary, #526176);
   --quiz-letter: #eef1f6;
-  --quiz-card-border: #e2e8f0;
+  --quiz-card-border: var(--light-border, #dce3ec);
   --ui-header-surface: var(--quiz-background);
   background: var(--quiz-background);
 }
