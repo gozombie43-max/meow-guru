@@ -6,6 +6,7 @@ import { useExamMode } from '@/context/ExamModeContext';
 import { JAM_SECTIONS, jamSectionHref, isJamContent } from '@/lib/exam-mode';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
+import StudentActivity from '@/components/StudentActivity';
 import styles from './page.module.css';
 
 type RecentQuiz = NonNullable<NonNullable<ReturnType<typeof useAuth>['user']>['recentQuizzes']>[number];
@@ -80,6 +81,8 @@ function DashboardContent() {
               ))}</div>
             </section>
           </div>
+          <div className={styles.sideColumn}>
+          <StudentActivity />
           <section className={styles.section} aria-labelledby="recent-heading">
             <div className={styles.sectionHead}><h2 id="recent-heading">Recent practice</h2><span>Latest sessions</span></div>
             <div className={styles.activity}>
@@ -90,6 +93,7 @@ function DashboardContent() {
               )) : <div className={styles.empty}><BookOpen size={26} /><h3>Your progress starts here</h3><p>Your recent sessions will appear here after you start practicing.</p></div>}
             </div>
           </section>
+          </div>
         </div>
       </main>
     </div>
