@@ -4,6 +4,7 @@ import {
   Authenticated,
   Unauthenticated,
   AuthLoading,
+  useConvex,
   useQuery,
 } from 'convex/react';
 
@@ -28,6 +29,19 @@ function IdentityResult() {
 }
 
 export default function ConvexAuthDiagnostics() {
+  const convex = useConvex();
+
+  if (!convex) {
+    return (
+      <main className="min-h-screen p-6">
+        <h1 className="mb-6 text-xl font-semibold">
+          Meow Convex Authentication
+        </h1>
+        <p className="text-neutral-400">Connecting to Convex client...</p>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen p-6">
       <h1 className="mb-6 text-xl font-semibold">

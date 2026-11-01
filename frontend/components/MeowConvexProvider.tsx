@@ -2,14 +2,15 @@
 
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
+  useState,
+  type ComponentType,
   type ReactNode,
 } from 'react';
-
-import {
-  ConvexProviderWithAuth,
-  ConvexReactClient,
+import type {
+  ConvexReactClient as ConvexReactClientType,
 } from 'convex/react';
 
 import { useAuth as useMeowAuth } from '@/context/AuthContext';
@@ -31,10 +32,48 @@ if (convexEnabled && !convexUrl) {
   throw new Error('NEXT_PUBLIC_CONVEX_URL is required when Convex auth is enabled.');
 }
 
-const convexClient =
-  convexEnabled && convexUrl
-    ? new ConvexReactClient(convexUrl)
-    : null;
+type AuthHook = () => {
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  fetchAccessToken: (args: { forceRefreshToken: boolean }) => Promise<string | null>;
+};
+
+interface ActiveConvexProviderProps {
+  client: ConvexReactClientType;
+  useAuth: AuthHook;
+  children: ReactNode;
+}
+
+let ActiveProviderComponent: ComponentType<ActiveConvexProviderProps> | null = null;
+let activeConvexClient: ConvexReactClientType | null = null;
+let loadPromise: Promise<ComponentType<ActiveConvexProviderProps> | null> | null = null;
+
+function loadConvexModules(): Promise<ComponentType<ActiveConvexProviderProps> | null> {
+  if (ActiveProviderComponent) {
+    return Promise.resolve(ActiveProviderComponent);
+  }
+  if (!convexEnabled || !convexUrl) {
+    return Promise.resolve(null);
+  }
+  if (!loadPromise) {
+    loadPromise = import('convex/react').then(({ ConvexProviderWithAuth, ConvexReactClient }) => {
+      activeConvexClient = new ConvexReactClient(convexUrl);
+      ActiveProviderComponent = function ActiveConvexProvider({
+        client,
+        useAuth,
+        children,
+      }: ActiveConvexProviderProps) {
+        return (
+          <ConvexProviderWithAuth client={client} useAuth={useAuth}>
+            {children}
+          </ConvexProviderWithAuth>
+        );
+      };
+      return ActiveProviderComponent;
+    });
+  }
+  return loadPromise;
+}
 
 function useMeowConvexAuth() {
   const { user, token, loading } = useMeowAuth();
@@ -158,18 +197,35 @@ export function MeowConvexProvider({
 }: {
   children: ReactNode;
 }) {
+  const [isLoaded, setIsLoaded] = useState(
+    () => convexEnabled && Boolean(convexUrl) && ActiveProviderComponent !== null
+  );
+
+  useEffect(() => {
+    if (!convexEnabled || !convexUrl || isLoaded) {
+      return;
+    }
+    let active = true;
+    loadConvexModules().then((comp) => {
+      if (active && comp) {
+        setIsLoaded(true);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [isLoaded]);
+
   // Keep the existing application operational until the Azure
   // Convex authentication endpoint is deployed.
-  if (!convexEnabled || !convexClient) {
+  if (!convexEnabled || !convexUrl || !isLoaded || !ActiveProviderComponent || !activeConvexClient) {
     return <>{children}</>;
   }
 
+  const Provider = ActiveProviderComponent;
   return (
-    <ConvexProviderWithAuth
-      client={convexClient}
-      useAuth={useMeowConvexAuth}
-    >
+    <Provider client={activeConvexClient} useAuth={useMeowConvexAuth}>
       {children}
-    </ConvexProviderWithAuth>
+    </Provider>
   );
 }
