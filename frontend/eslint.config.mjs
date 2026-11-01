@@ -53,6 +53,7 @@ const eslintConfig = defineConfig([
     "dist/**",
     "coverage/**",
     "test-results/**",
+    "convex/_generated/**",
     "next-env.d.ts",
     "*.log",
   ]),
