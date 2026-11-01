@@ -42,6 +42,15 @@ const dynamicRoutes: Record<string, string> = {
   '/mock-test/[examSlug]/[testId]/review/[attemptId]': '/mock-test/ssc-cgl/browser-test/review/screenshot-attempt',
 };
 
+// This route is deliberately protected by build-time development and Convex
+// configuration flags.  The production-like browser fixture leaves Convex off,
+// so it correctly returns Next's 404 page and cannot be captured as an app
+// route. Keep it out of this public-route screenshot suite rather than making
+// the fixture enable a real Convex deployment.
+const screenshotExcludedRoutes = new Set([
+  '/dev/convex-auth',
+]);
+
 for (const [template, route] of Object.entries(dynamicRoutes)) {
   if (!template.endsWith('[topic]') && !template.endsWith('[chapter]')) continue;
   for (const suffix of ['/formula-notes', '/quiz']) {
@@ -49,7 +58,9 @@ for (const [template, route] of Object.entries(dynamicRoutes)) {
   }
 }
 
-const routeTemplates = [...new Set(findPageFiles(appDir).map(fileToRoute))].sort();
+const routeTemplates = [...new Set(findPageFiles(appDir).map(fileToRoute))]
+  .filter(route => !screenshotExcludedRoutes.has(route))
+  .sort();
 
 function routeFolder(route: string): string {
   if (route === '/') return 'home';
