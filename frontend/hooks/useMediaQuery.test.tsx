@@ -10,6 +10,12 @@ describe("useMediaQuery", () => {
     vi.unstubAllGlobals();
   });
 
+  it("returns false when matchMedia is unavailable", () => {
+    vi.stubGlobal("matchMedia", undefined);
+    const { result } = renderHook(() => useMediaQuery("(min-width: 1024px)"));
+    expect(result.current).toBe(false);
+  });
+
   it("tracks media query changes and removes its listener", () => {
     let matches = false;
     let listener: (() => void) | undefined;

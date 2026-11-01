@@ -44,7 +44,7 @@
       "shell-quote": "1.11.0"
     },
     "engine.io": "6.6.11",
-    "follow-redirects": "1.16.1",
+    "follow-redirects": "1.16.2",
     "vite": "8.2.4",
     "dompurify": "3.4.17",
     "re2js": "2.8.7",
