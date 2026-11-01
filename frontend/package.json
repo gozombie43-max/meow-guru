@@ -19,7 +19,10 @@
     "test:e2e": "playwright test",
     "test:request-flows": "node scripts/capture-request-flows.mjs",
     "screenshots:all": "node scripts/capture-all-routes.mjs",
-    "screenshots:all:dark": "node scripts/capture-all-routes.mjs --theme=dark"
+    "screenshots:all:dark": "node scripts/capture-all-routes.mjs --theme=dark",
+    "screenshots:all:mobile": "node scripts/capture-all-routes.mjs --project=mobile",
+    "screenshots:all:mobile:dark": "node scripts/capture-all-routes.mjs --project=mobile --theme=dark",
+    "screenshots:all:mobile:both": "node scripts/capture-all-routes.mjs --project=mobile --theme=both"
   },
   "dependencies": {
     "@fontsource/noto-sans-bengali": "^5.3.0",
