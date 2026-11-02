@@ -142,8 +142,8 @@ export function SubjectTopicStyles() {
           animation: sg-in .28s cubic-bezier(.22,1,.36,1) both .02s;
         }
         .sg-banner {
-          background: transparent;
-          border: 1px solid var(--sep, rgba(255, 255, 255, 0.12));
+          background: #0e0e10;
+          border: 1.5px solid rgba(255, 255, 255, 0.22);
           border-radius: 16px;
           padding: 16px;
           min-height: 84px;
@@ -159,23 +159,24 @@ export function SubjectTopicStyles() {
         }
         .sg-banner:hover,
         .sg-banner:active {
-          background: transparent;
-          border-color: rgba(255, 255, 255, 0.25);
+          background: #141416;
+          border-color: rgba(255, 255, 255, 0.42);
           box-shadow: none;
         }
         .sg-banner-icon {
-          width: 48px;
-          height: 48px;
+          width: 44px;
+          height: 44px;
           border-radius: 13px;
           flex-shrink: 0;
-          background: rgba(231, 38, 54, 0.12);
+          background: color-mix(in srgb, #e72636 22%, #e8e8ec);
+          color: color-mix(in srgb, #e72636 88%, #000000);
           display: flex;
           align-items: center;
           justify-content: center;
         }
         .sg-banner-icon svg {
-          width: 28px;
-          height: 28px;
+          width: 22px;
+          height: 22px;
           filter: none !important;
         }
         .sg-banner-body {
@@ -273,12 +274,12 @@ export function SubjectTopicStyles() {
           padding: 13px 15px;
           min-height: 68px;
           border-radius: 14px;
-          background: transparent;
+          background: #0e0e10;
           color: var(--label, #e5eaf0);
           text-decoration: none;
-          border: 1px solid var(--sep, rgba(255, 255, 255, 0.12));
+          border: 1.5px solid rgba(255, 255, 255, 0.22);
           box-shadow: none;
-          transition: border-color 0.15s ease;
+          transition: border-color 0.15s ease, transform 0.12s ease, background-color 0.15s ease;
           cursor: pointer;
           overflow: hidden;
           -webkit-tap-highlight-color: transparent;
@@ -287,8 +288,8 @@ export function SubjectTopicStyles() {
         .sg-card:hover,
         .sg-card:active {
           color: var(--label, #e5eaf0);
-          background: transparent;
-          border-color: rgba(255, 255, 255, 0.25);
+          background: #141416;
+          border-color: rgba(255, 255, 255, 0.42);
           box-shadow: none;
         }
 
@@ -296,6 +297,14 @@ export function SubjectTopicStyles() {
         .sg-banner:focus-visible {
           outline: 2px solid var(--ios-system-blue, #0A84FF);
           outline-offset: -2px;
+        }
+
+        .sg-card:active {
+          transform: scale(0.985);
+          background: #1a1a1d;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .sg-card:active { transform: none; }
         }
 
         .sg-card-left {
@@ -309,11 +318,11 @@ export function SubjectTopicStyles() {
         }
 
         .sg-badge {
-          --icon-color: color-mix(in srgb, var(--card-accent, #0A84FF) 78%, #b6becb);
-          width: 42px;
-          height: 42px;
+          --icon-color: color-mix(in srgb, var(--card-accent, #0A84FF) 88%, #000000);
+          width: 44px;
+          height: 44px;
           border-radius: 11px;
-          background: color-mix(in srgb, var(--icon-color) 14%, transparent) !important;
+          background: color-mix(in srgb, var(--card-accent, #0A84FF) 22%, #e8e8ec) !important;
           color: var(--icon-color) !important;
           border: 0 !important;
           display: flex;
@@ -324,8 +333,8 @@ export function SubjectTopicStyles() {
         }
 
         .sg-badge svg {
-          width: 20px;
-          height: 20px;
+          width: 22px;
+          height: 22px;
           color: var(--icon-color) !important;
           stroke: currentColor;
         }
@@ -446,7 +455,7 @@ export function SubjectTopicStyles() {
         body.theme-light .sg-banner,
         html.theme-light .sg-banner {
           background: transparent;
-          border: 1px solid var(--light-border, rgba(0, 0, 0, 0.12));
+          border: 1.5px solid rgba(15, 23, 42, 0.2);
           box-shadow: none;
         }
         body.theme-light .sg-banner:hover,
@@ -473,7 +482,7 @@ export function SubjectTopicStyles() {
         body.theme-light .sg-card,
         html.theme-light .sg-card {
           background: transparent;
-          border: 1px solid var(--light-border, rgba(0, 0, 0, 0.12));
+          border: 1.5px solid rgba(15, 23, 42, 0.2);
           color: var(--light-only-text, #0f172a);
           box-shadow: none;
         }
@@ -603,7 +612,7 @@ export function SubjectTopicStyles() {
             height: 42px;
             border-radius: 12px;
           }
-          .sg-banner-icon svg { width: 28px; height: 28px; }
+          .sg-banner-icon svg { width: 22px; height: 22px; }
           .sg-banner-title { font-size: 1.05rem; font-weight: 700; }
           .sg-banner-sub { font-size: 0.82rem; margin-top: 2px; }
           .sg-section { padding: 0; margin-bottom: 14px; }

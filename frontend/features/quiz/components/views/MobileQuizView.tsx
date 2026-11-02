@@ -100,6 +100,14 @@ export interface MobileQuizViewProps {
   solution: Pick<MobileQuizFields, "openSolution" | "isSolutionOpen" | "closeSolution">;
 }
 
+// Plain numeric answers (e.g. "$14$", "\\(2.5\\%\\)") are stored as math but read
+// better in the interface font; real expressions still go through KaTeX.
+const PLAIN_NUMBER_OPTION = /^(?:\$\$?|\\\()\s*([-+−]?\d[\d,]*(?:\.\d+)?)\s*(\\?%)?\s*(?:\$\$?|\\\))$/;
+function toPlainOption(option: string): string {
+  const match = option.trim().match(PLAIN_NUMBER_OPTION);
+  return match ? `${match[1]}${match[2] ? "%" : ""}` : option;
+}
+
 export function MobileQuizView({ configuration, settings, question, navigation, answer, solution }: MobileQuizViewProps) {
   const appNavigation = useAppNavigation();
   const { routeBase, slug, subjectConfig, theme, themeStyles, toggleTheme, title } = configuration;
@@ -241,7 +249,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
                     {String.fromCharCode(65 + index)}
                   </span>
                   <span className="ios-series-option-value">
-                    <RichContent text={option} />
+                    <RichContent text={toPlainOption(option)} />
                   </span>
                   <span className="ios-series-option-status">
                     {(isCorrect || isWrong) ? (
@@ -263,16 +271,8 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
                             aria-label="Incorrect option"
                           />
                         )}
-                        {!isCorrect && !isWrong && (
-                          <span className="ios-series-option-radio is-dimmed" aria-hidden="true" />
-                        )}
                       </>
-                    ) : (
-                      <span
-                        className={`ios-series-option-radio ${isSelected ? "is-selected" : ""}`}
-                        aria-hidden="true"
-                      />
-                    )}
+                    ) : null}
                   </span>
                 </button>
               );

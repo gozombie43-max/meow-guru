@@ -59,6 +59,11 @@ export function MobileQuizHeader({ activeLang, currentIndex, questions, hasMore,
             ) : `Question ${questionNumber}`}</span>
         </button>
       </div>
+      {total !== null && (
+        <div className="ios-series-progress" aria-hidden="true">
+          <span className="ios-series-progress-fill" style={{ width: `${Math.min(100, (questionNumber / total) * 100)}%` }} />
+        </div>
+      )}
     </header>
   );
 }

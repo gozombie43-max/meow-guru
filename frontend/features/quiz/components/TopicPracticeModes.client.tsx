@@ -3,13 +3,13 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import {
-  BookOpenCheck,
-  Compass,
-  FileQuestion,
-  Flame,
-  Shuffle,
-  Sparkles,
-  Zap,
+  CalendarClock,
+  GraduationCap,
+  Layers,
+  Mountain,
+  NotebookPen,
+  Sprout,
+  Timer,
 } from "lucide-react";
 import { useQuestionCounts } from "@/hooks/useQuestionCounts";
 
@@ -33,43 +33,43 @@ export default function TopicPracticeModes({
   const modes = [
     {
       title: "PYQ", sub: "Previous year Qs", href: `${base}/quiz?mode=concept`, mode: "concept",
-      icon: FileQuestion, color: "#0d9488", gradient: "linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%)",
+      icon: CalendarClock, color: "#0d9488", gradient: "linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%)",
       gradientDark: "linear-gradient(135deg, rgba(13, 148, 136, 0.2) 0%, rgba(13, 148, 136, 0.08) 100%)",
       border: "rgba(13, 148, 136, 0.22)", borderDark: "rgba(13, 148, 136, 0.35)", shadow: "0 2px 8px rgba(13, 148, 136, 0.08)",
     },
     {
       title: "CareerWill", sub: formulaSubtitle, href: `${base}/quiz?mode=formula`, mode: "formula",
-      icon: BookOpenCheck, color: "#2563eb", gradient: "linear-gradient(135deg, #edf4fe 0%, #dbeafe 100%)",
+      icon: NotebookPen, color: "#2563eb", gradient: "linear-gradient(135deg, #edf4fe 0%, #dbeafe 100%)",
       gradientDark: "linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.08) 100%)",
       border: "rgba(37, 99, 235, 0.22)", borderDark: "rgba(37, 99, 235, 0.35)", shadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
     },
     {
       title: "PW", sub: mixedSubtitle, href: `${base}/quiz?mode=mixed`, mode: "mixed",
-      icon: Shuffle, color: "#4f46e5", gradient: "linear-gradient(135deg, #f1f3fd 0%, #e0e7ff 100%)",
+      icon: Layers, color: "#4f46e5", gradient: "linear-gradient(135deg, #f1f3fd 0%, #e0e7ff 100%)",
       gradientDark: "linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.08) 100%)",
       border: "rgba(79, 70, 229, 0.22)", borderDark: "rgba(79, 70, 229, 0.35)", shadow: "0 2px 8px rgba(79, 70, 229, 0.08)",
     },
     {
       title: "Selection Way", sub: "Speed test", href: `${base}/quiz?mode=ai-challenge`, mode: "ai-challenge",
-      icon: Zap, color: "#7c3aed", gradient: "linear-gradient(135deg, #f7f2fe 0%, #ede9fe 100%)",
+      icon: Timer, color: "#7c3aed", gradient: "linear-gradient(135deg, #f7f2fe 0%, #ede9fe 100%)",
       gradientDark: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0.08) 100%)",
       border: "rgba(124, 58, 237, 0.22)", borderDark: "rgba(124, 58, 237, 0.35)", shadow: "0 2px 8px rgba(124, 58, 237, 0.08)",
     },
     {
       title: "Topic Mix", sub: "Foundation easy", href: `${base}/quiz?mode=easy`, mode: "easy",
-      icon: Compass, color: "#0284c7", gradient: "linear-gradient(135deg, #edf9ff 0%, #e0f2fe 100%)",
+      icon: Sprout, color: "#0284c7", gradient: "linear-gradient(135deg, #edf9ff 0%, #e0f2fe 100%)",
       gradientDark: "linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(2, 132, 199, 0.08) 100%)",
       border: "rgba(2, 132, 199, 0.22)", borderDark: "rgba(2, 132, 199, 0.35)", shadow: "0 2px 8px rgba(2, 132, 199, 0.08)",
     },
     {
       title: "Tier 2", sub: "Advanced level", href: `${base}/quiz?mode=hard`, mode: "hard",
-      icon: Flame, color: "#e11d48", gradient: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+      icon: Mountain, color: "#e11d48", gradient: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
       gradientDark: "linear-gradient(135deg, rgba(225, 29, 72, 0.2) 0%, rgba(225, 29, 72, 0.08) 100%)",
       border: "rgba(225, 29, 72, 0.22)", borderDark: "rgba(225, 29, 72, 0.35)", shadow: "0 2px 8px rgba(225, 29, 72, 0.08)",
     },
     ...(hasStudyMode ? [{
       title: "Study Mode", sub: "Interactive study deck", href: `${base}/study-mode`, mode: "study-mode",
-      icon: Sparkles, color: "#ec4899", gradient: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)",
+      icon: GraduationCap, color: "#ec4899", gradient: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)",
       gradientDark: "linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(236, 72, 153, 0.08) 100%)",
       border: "rgba(236, 72, 153, 0.22)", borderDark: "rgba(236, 72, 153, 0.35)", shadow: "0 2px 8px rgba(236, 72, 153, 0.08)",
     }] : []),
