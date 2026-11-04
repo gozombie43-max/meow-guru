@@ -114,7 +114,7 @@ try {
       await measure('open_solution', async () => { await page.getByRole('button', { name: /^View solution$/i }).click(); await expect(page.locator('[aria-label="Question solution"]')).toBeVisible(); });
       await page.getByRole('button', { name: 'Back to quiz' }).click();
       await measure('open_ai_tutor', async () => { await page.getByRole('button', { name: /Ask AI tutor/i }).click(); await expect(page.locator('textarea.tutor-textarea')).toBeVisible(); });
-      await page.getByRole('button', { name: 'Back to quiz' }).click();
+      await page.keyboard.press('Escape');
       await measure('next_question', async () => { await page.getByRole('button', { name: 'Next', exact: true }).click(); await expect(page.getByRole('button', { name: 'Submit', exact: true })).toBeVisible(); });
       await measure('training_hub', async () => { await page.goto(`/play?exam=${exam}`); await expect(page.getByRole('button', { name: 'Set up Adaptive' })).toBeEnabled(); });
       await measure('training_setup', async () => { await page.getByRole('button', { name: 'Set up Adaptive' }).click(); await expect(page.getByRole('button', { name: /Begin training/i })).toBeEnabled(); });

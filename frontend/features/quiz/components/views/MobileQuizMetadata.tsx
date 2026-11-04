@@ -2,8 +2,9 @@ import { useEffect, useId, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { useNativeDialog } from "@/components/ui/Dialog";
 
-export function MobileQuizMetadata({ topic, compactExamLabel, fullExamLabel }: {
+export function MobileQuizMetadata({ topic, hideTopic = false, compactExamLabel, fullExamLabel }: {
   topic: string;
+  hideTopic?: boolean;
   compactExamLabel: string;
   fullExamLabel: string;
 }) {
@@ -26,7 +27,7 @@ export function MobileQuizMetadata({ topic, compactExamLabel, fullExamLabel }: {
     <button type="button" data-ui-button="state" className="ios-series-metadata-trigger"
       aria-label="Show topic and exam details" aria-haspopup="dialog" aria-expanded={open}
       onClick={() => setOpen(true)}>
-      <span>{[topic, compactExamLabel].filter(Boolean).join(" · ")}</span>
+      <span>{[hideTopic ? "" : topic, compactExamLabel].filter(Boolean).join(" · ")}</span>
     </button>
     <dialog ref={dialogRef} className="ios-series-metadata-dialog" aria-labelledby={titleId}>
       <div className="ios-series-metadata-detail">

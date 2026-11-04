@@ -8,7 +8,7 @@ function pick<T, K extends keyof T>(source: T, keys: readonly K[]): Pick<T, K> {
 export function mobileQuizViewModel(model: MobileQuizFields): MobileQuizViewProps {
   return {
     configuration: pick(model, ["routeBase","slug","subjectConfig","theme","themeStyles","toggleTheme","title"]),
-    settings: pick(model, ["isSettingsOpen","setIsSettingsOpen","hideQuestionNumbers","handleToggleHideQuestionNumbers","hideViewSolution","handleToggleHideViewSolution","hideAiTutor","handleToggleHideAiTutor","handleToggleHideBoth","textSize","handleSetTextSize","textWeight","handleSetTextWeight","spacing","handleSetSpacing"]),
+    settings: pick(model, ["isSettingsOpen","setIsSettingsOpen","hideQuestionNumbers","handleToggleHideQuestionNumbers","hideSubtopic","handleToggleHideSubtopic","hideViewSolution","handleToggleHideViewSolution","hideAiTutor","handleToggleHideAiTutor","handleToggleHideBoth","textSize","handleSetTextSize","textWeight","handleSetTextWeight","spacing","handleSetSpacing"]),
     question: pick(model, ["activeLang","isTranslating","setActiveLang","currentQ","conceptColours","hasDetailedExamLabel","examDetailsRef","compactExamLabel","fullExamLabel","hasQuestionText","displayedQuestion","renderQuestionLine","displayedOptions","displayedSolution"]),
     navigation: pick(model, ["availableCount","hasMore","isFetchingMore","fetchMore","currentIndex","openPalette","questions","selectedAnswers","submittedQuestions","activeRailBtnRef","goToQuestion","handlePrev","handleNext","isPaletteOpen","closePalette"]),
     answer: pick(model, ["isCurrentSubmitted","selectedAnswer","handleSelectAnswer","submitError","handleSubmitCurrent","canSubmit","timerRef","results"]),
