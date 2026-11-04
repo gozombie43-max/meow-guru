@@ -208,23 +208,36 @@
         }
 
         .fn-tabs {
-          display: inline-flex;
-          align-items: center;
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          align-items: stretch;
           gap: 8px;
-          min-width: 100%;
+          width: 100%;
         }
 
         .fn-tab-pill {
-          padding: 7px 16px;
-          border-radius: 999px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-sizing: border-box;
+          width: 100%;
+          min-width: 0;
+          height: 40px;
+          min-height: 40px;
+          margin: 0;
+          padding: 0 6px;
+          border-radius: 12px;
           border: 1px solid var(--border);
           background: var(--card-bg);
           color: var(--tab-color);
           font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 0.03em;
+          font-weight: 650;
+          line-height: 1;
+          letter-spacing: 0.04em;
           cursor: pointer;
           white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
           transition: border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), color 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
           -webkit-tap-highlight-color: transparent;
         }
@@ -237,7 +250,7 @@
           background: var(--accent);
           border-color: var(--accent);
           color: #ffffff;
-          box-shadow: 0 2px 10px rgb(var(--ios-system-blue-rgb) / 0.35);
+          box-shadow: none;
         }
 
         /* ── Scrollable PDF Cards Area Only ── */

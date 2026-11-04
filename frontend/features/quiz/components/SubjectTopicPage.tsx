@@ -117,7 +117,7 @@ export default function SubjectTopicPage({
             {/* BANNER */}
             <div className="sg-banner-wrap">
               <Link href={notesHref} className="sg-banner" aria-label={bannerAriaLabel || bannerActionLabel || "Open formula notes"}>
-                <div className="sg-banner-icon"><FileText size={22} strokeWidth={2.2} aria-hidden="true" /></div>
+                <div className="sg-banner-icon"><FileText size={18} strokeWidth={1.75} aria-hidden="true" /></div>
                 <div className="sg-banner-body">
                   {bannerKicker ? <div className="sg-banner-kicker">{bannerKicker}</div> : null}
                   <div className="sg-banner-title">{headlineText}</div>
@@ -132,7 +132,7 @@ export default function SubjectTopicPage({
 
           <div className="sg-right-pane">
             {/* SECTION LABEL */}
-            <div className="sg-section">Practice Modes</div>
+            <div className="sg-section">Practice modes</div>
 
             <TopicPracticeModes
               subject={subject}
