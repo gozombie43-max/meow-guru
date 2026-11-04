@@ -64,11 +64,11 @@ for (const [parent, width] of [
       await reviewBtn.click();
     }
     await page.getByRole("button", { name: /ask ai tutor/i }).click();
-    await expect(page.getByRole("dialog", { name: "AI Tutor", exact: true })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "AI Solution", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Back to quiz", exact: true })).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.evaluate(() => history.back());
-    await expect(page.getByRole("dialog", { name: "AI Tutor", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("dialog", { name: "AI Solution", exact: true })).toHaveCount(0);
     if (width < 768) {
       await page.setViewportSize({ width, height: 568 });
       await page.getByRole("button", { name: "Open quiz settings", exact: true }).click();

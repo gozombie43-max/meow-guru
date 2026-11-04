@@ -195,17 +195,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 5px; width: max-content; height: 28px !important; min-height: 28px !important; max-height: 28px !important; padding: 0 10px 0 11px !important; font-size: 12px !important;
   width: max-content;
-  height: 34px !important;
-  min-height: 34px !important;
-  max-height: 34px !important;
-  padding: 0 13px 0 14px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
+  padding: 0 10px 0 11px !important;
   border: 1px solid var(--bd);
   border-radius: 9999px !important;
   background: var(--field);
   color: var(--gr);
-  font-size: 13.5px !important;
+  font-size: 12px !important;
   font-weight: 500 !important;
   line-height: 1.35 !important;
   letter-spacing: -0.01em;
@@ -228,8 +228,8 @@
 }
 
 .quiz-chatbot-shell .tutor-header-pill > svg.lucide {
-  width: 14px !important;
-  height: 14px !important;
+  width: 12px !important;
+  height: 12px !important;
   flex-shrink: 0 !important;
   opacity: 0.7;
   transform: none !important;
@@ -336,7 +336,7 @@
   gap: 10px;
   width: 100%;
   padding: 7px 10px;
-  min-height: 34px !important;
+  min-height: 28px !important;
   border: 0;
   border-radius: 8px !important;
   background: transparent;
@@ -630,14 +630,14 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Noto Sans Bengali", "Hind Siliguri", sans-serif;
 }
 
-.quiz-chatbot-shell .tutor-textarea, .quiz-chatbot-shell .tutor-textarea::placeholder, .quiz-chatbot-shell[lang="bn"] :is(.ot, .ctxl, .ctxs, .chip, .tutor-menu-item, .tutor-menu-text, .tutor-menu-header, .tutor-textarea, .sbody) {
+.quiz-chatbot-shell :is(.tutor-textarea, .tutor-textarea::placeholder, .mu, .sbody, .sbody p, .sbody li, .sbody td, .sbody blockquote), .quiz-chatbot-shell[lang="bn"] :is(.ot, .ctxl, .ctxs, .chip, .tutor-menu-item, .tutor-menu-text, .tutor-menu-header, .tutor-textarea, .mu, .sbody, .sbody p, .sbody li, .sbody td, .sbody blockquote) {
   font-family: "Noto Sans Bengali", "Hind Siliguri", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
   font-weight: 400 !important;
   letter-spacing: 0 !important;
   font-synthesis: none;
 }
 
-.quiz-chatbot-shell[lang="bn"] .ctxl span {
+.quiz-chatbot-shell :is(.sbody h1, .sbody h2, .sbody h3, .sbody h4, .sbody strong, .sbody b, .sbody th) { font-family: "Noto Sans Bengali", "Hind Siliguri", -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif !important; font-weight: 400 !important; color: var(--dk); letter-spacing: 0 !important; font-synthesis: none !important; } .quiz-chatbot-shell[lang="bn"] .ctxl span {
   font-weight: 500 !important;
 }
 
@@ -879,10 +879,12 @@
   width: fit-content;
   max-width: 88%;
   margin: 0 0 24px auto;
-  padding: 12px 16px;
+  padding: 11px 16px;
   border-radius: 18px 18px 4px 18px;
   background: var(--field);
-  font-size: 15px;
+  font-size: 14px;
+  line-height: 1.55;
+  font-weight: 400;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
@@ -908,7 +910,7 @@
 .quiz-chatbot-shell .slbl2 {
   color: var(--gr);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .quiz-chatbot-shell .cpb {
@@ -918,13 +920,23 @@
   padding: 6px 12px;
   color: var(--gr);
   font-size: 12px;
+  font-weight: 400;
 }
 
 .quiz-chatbot-shell .sbody {
-  font-size: 17px;
-  line-height: 1.85;
+  font-size: 14.5px;
+  line-height: 1.72;
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--dk);
   overflow-wrap: anywhere;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.quiz-chatbot-shell.dark .sbody {
+  color: #d4d8e1;
 }
 
 .quiz-chatbot-shell .sbody > :first-child {
@@ -932,23 +944,44 @@
 }
 
 .quiz-chatbot-shell .sbody p {
-  margin: 0 0 18px;
+  margin: 0 0 14px;
+  font-weight: 400;
 }
 
 .quiz-chatbot-shell .sbody :is(h1,h2,h3,h4) {
-  margin: 26px 0 12px;
-  line-height: 1.4;
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: -.3px;
+  margin: 18px 0 8px;
+  line-height: 1.45;
+  font-size: 15.5px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--dk);
+  font-synthesis: none;
 }
 
 .quiz-chatbot-shell .sbody h1 {
-  font-size: 23px;
+  font-size: 16.5px;
+  font-weight: 500;
 }
 
-.quiz-chatbot-shell .sbody strong {
-  font-weight: 700;
+.quiz-chatbot-shell .sbody :is(strong, b) {
+  font-weight: 500;
+  color: var(--dk);
+  font-synthesis: none;
+}
+
+.quiz-chatbot-shell .sbody hr {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 18px 0;
+}
+
+.quiz-chatbot-shell:not(.dark) .sbody hr {
+  border-top-color: var(--bd);
+}
+
+.quiz-chatbot-shell .sbody .katex {
+  font-size: 1.02em;
+  font-weight: 400;
 }
 
 .quiz-chatbot-shell .sbody ol {
@@ -1088,12 +1121,26 @@
 }
 
 .quiz-chatbot-shell .typing {
+  align-items: center;
   display: flex;
   gap: 5px;
   padding: 16px 0;
 }
 
-.quiz-chatbot-shell .typing span {
+.quiz-chatbot-shell .typing-label {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.quiz-chatbot-shell .typing-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 3px;
+}
+
+.quiz-chatbot-shell .typing-dots span {
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -1101,11 +1148,11 @@
   animation: tutor-thinking 1s infinite alternate;
 }
 
-.quiz-chatbot-shell .typing span:nth-child(2) {
+.quiz-chatbot-shell .typing-dots span:nth-child(2) {
   animation-delay: .2s;
 }
 
-.quiz-chatbot-shell .typing span:nth-child(3) {
+.quiz-chatbot-shell .typing-dots span:nth-child(3) {
   animation-delay: .4s;
 }
 
@@ -1180,7 +1227,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .quiz-chatbot-shell .typing span {
+  .quiz-chatbot-shell .typing-dots span {
     animation: none;
   }
 }
@@ -1211,11 +1258,11 @@
 @media (max-width: 380px) {
   .quiz-chatbot-shell .tutor-header-pill {
     gap: 6px;
-    padding: 0 11px 0 12px !important;
-    font-size: 12.5px !important;
-    height: 32px !important;
-    min-height: 32px !important;
-    max-height: 32px !important;
+    padding: 0 9px 0 10px !important;
+    font-size: 11.5px !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    max-height: 26px !important;
   }
   .quiz-chatbot-shell .tutor-plus-btn {
     width: 32px !important;
