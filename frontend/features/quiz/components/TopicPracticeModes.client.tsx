@@ -3,13 +3,13 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import {
-  CalendarClock,
+  BookOpen,
   GraduationCap,
+  History,
   Layers,
-  Mountain,
-  NotebookPen,
-  Sprout,
+  Shuffle,
   Timer,
+  TrendingUp,
 } from "lucide-react";
 import { useQuestionCounts } from "@/hooks/useQuestionCounts";
 
@@ -33,13 +33,13 @@ export default function TopicPracticeModes({
   const modes = [
     {
       title: "PYQ", sub: "Previous year Qs", href: `${base}/quiz?mode=concept`, mode: "concept",
-      icon: CalendarClock, color: "#0d9488", gradient: "linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%)",
+      icon: History, color: "#0d9488", gradient: "linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%)",
       gradientDark: "linear-gradient(135deg, rgba(13, 148, 136, 0.2) 0%, rgba(13, 148, 136, 0.08) 100%)",
       border: "rgba(13, 148, 136, 0.22)", borderDark: "rgba(13, 148, 136, 0.35)", shadow: "0 2px 8px rgba(13, 148, 136, 0.08)",
     },
     {
       title: "CareerWill", sub: formulaSubtitle, href: `${base}/quiz?mode=formula`, mode: "formula",
-      icon: NotebookPen, color: "#2563eb", gradient: "linear-gradient(135deg, #edf4fe 0%, #dbeafe 100%)",
+      icon: BookOpen, color: "#2563eb", gradient: "linear-gradient(135deg, #edf4fe 0%, #dbeafe 100%)",
       gradientDark: "linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.08) 100%)",
       border: "rgba(37, 99, 235, 0.22)", borderDark: "rgba(37, 99, 235, 0.35)", shadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
     },
@@ -57,13 +57,13 @@ export default function TopicPracticeModes({
     },
     {
       title: "Topic Mix", sub: "Foundation easy", href: `${base}/quiz?mode=easy`, mode: "easy",
-      icon: Sprout, color: "#0284c7", gradient: "linear-gradient(135deg, #edf9ff 0%, #e0f2fe 100%)",
+      icon: Shuffle, color: "#0284c7", gradient: "linear-gradient(135deg, #edf9ff 0%, #e0f2fe 100%)",
       gradientDark: "linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(2, 132, 199, 0.08) 100%)",
       border: "rgba(2, 132, 199, 0.22)", borderDark: "rgba(2, 132, 199, 0.35)", shadow: "0 2px 8px rgba(2, 132, 199, 0.08)",
     },
     {
       title: "Tier 2", sub: "Advanced level", href: `${base}/quiz?mode=hard`, mode: "hard",
-      icon: Mountain, color: "#e11d48", gradient: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+      icon: TrendingUp, color: "#e11d48", gradient: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
       gradientDark: "linear-gradient(135deg, rgba(225, 29, 72, 0.2) 0%, rgba(225, 29, 72, 0.08) 100%)",
       border: "rgba(225, 29, 72, 0.22)", borderDark: "rgba(225, 29, 72, 0.35)", shadow: "0 2px 8px rgba(225, 29, 72, 0.08)",
     },
@@ -82,6 +82,7 @@ export default function TopicPracticeModes({
       {modes.map((mode) => {
         const ModeIcon = mode.icon;
         const countLabel = isLoading ? "…" : isError ? "—" : `${counts[mode.mode] ?? 0}`;
+        const isEmpty = !isLoading && !isError && countLabel === "0";
         return (
           <Link
             key={mode.title}
@@ -90,6 +91,7 @@ export default function TopicPracticeModes({
             // until a mode is selected, especially on mobile connections.
             prefetch={subject === "mathematics" ? false : undefined}
             className="sg-card"
+            data-empty={isEmpty ? "true" : undefined}
             style={{
               "--card-gradient": mode.gradient,
               "--card-gradient-dark": mode.gradientDark,
@@ -100,7 +102,7 @@ export default function TopicPracticeModes({
             } as CSSProperties}
           >
             <div className="sg-card-left">
-              <div className="sg-badge"><ModeIcon size={18} strokeWidth={2.2} /></div>
+              <div className="sg-badge"><ModeIcon size={18} strokeWidth={1.75} aria-hidden="true" /></div>
               <div className="sg-card-info">
                 <div className="sg-card-name">{mode.title}</div>
                 <div className="sg-card-sub">{mode.sub}</div>
@@ -111,13 +113,19 @@ export default function TopicPracticeModes({
                 <path d="M28 0 C28 10, 0 13, 0 23 C0 33, 28 36, 28 46 L88 46 L88 0 Z" fill="var(--card-2)" />
               </svg>
               <div className="sg-tab-action-wrap">
-                <span
-                  className="sg-card-qs-text"
-                  data-zero={countLabel === "0" || countLabel === "—" ? "true" : undefined}
-                >
-                  <span>{countLabel}</span>
-                  <span className="sg-card-qs-label">Questions</span>
-                </span>
+                {isLoading ? (
+                  <span className="sg-card-qs-skeleton" role="status" aria-label="Loading question count" />
+                ) : isEmpty ? (
+                  <span className="sg-card-qs-text" data-zero="true">Soon</span>
+                ) : (
+                  <span
+                    className="sg-card-qs-text"
+                    data-zero={countLabel === "—" ? "true" : undefined}
+                  >
+                    <span>{countLabel}</span>
+                    <span className="sg-card-qs-label">Qs</span>
+                  </span>
+                )}
               </div>
             </div>
           </Link>

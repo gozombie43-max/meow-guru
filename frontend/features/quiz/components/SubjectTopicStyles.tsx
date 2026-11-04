@@ -108,9 +108,8 @@ export function SubjectTopicStyles() {
         .sg-back svg { width: 20px; height: 20px; }
         .sg-nav-title {
           font-size: 16px;
-          font-weight: 700;
+          font-weight: 600;
           line-height: 24px;
-          letter-spacing: -0.01em;
           max-width: calc(100% - 88px);
           margin: 0;
           color: var(--label, #e5eaf0) !important;
@@ -142,8 +141,8 @@ export function SubjectTopicStyles() {
           animation: sg-in .28s cubic-bezier(.22,1,.36,1) both .02s;
         }
         .sg-banner {
-          background: #0e0e10;
-          border: 1.5px solid rgba(255, 255, 255, 0.22);
+          background: #111113;
+          border: 1px solid rgba(255, 255, 255, 0.09);
           border-radius: 16px;
           padding: 16px;
           min-height: 84px;
@@ -159,24 +158,25 @@ export function SubjectTopicStyles() {
         }
         .sg-banner:hover,
         .sg-banner:active {
-          background: #141416;
-          border-color: rgba(255, 255, 255, 0.42);
+          background: #161618;
+          border-color: rgba(255, 255, 255, 0.18);
           box-shadow: none;
         }
         .sg-banner-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 13px;
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
           flex-shrink: 0;
-          background: color-mix(in srgb, #e72636 22%, #e8e8ec);
-          color: color-mix(in srgb, #e72636 88%, #000000);
+          background: #1a1a1d;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          color: var(--label-2, #a2a9b4);
           display: flex;
           align-items: center;
           justify-content: center;
         }
         .sg-banner-icon svg {
-          width: 22px;
-          height: 22px;
+          width: 18px;
+          height: 18px;
           filter: none !important;
         }
         .sg-banner-body {
@@ -195,10 +195,9 @@ export function SubjectTopicStyles() {
         }
         .sg-banner-title {
           font-size: 16px;
-          font-weight: 650;
+          font-weight: 600;
           line-height: 1.28;
           margin: 0;
-          letter-spacing: -0.015em;
           color: var(--label, #e5eaf0);
           white-space: nowrap;
           overflow: hidden;
@@ -243,12 +242,10 @@ export function SubjectTopicStyles() {
 
         /* ── Section label ── */
         .sg-section {
-          font-size: 12px;
-          font-weight: 700;
-          color: var(--label-2, #a2a9b4);
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          padding: 4px 18px 10px;
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--label-3, #8e8e93);
+          padding: 4px 20px 8px;
           animation: sg-up .26s ease both .05s;
         }
 
@@ -274,10 +271,10 @@ export function SubjectTopicStyles() {
           padding: 13px 15px;
           min-height: 68px;
           border-radius: 14px;
-          background: #0e0e10;
+          background: #111113;
           color: var(--label, #e5eaf0);
           text-decoration: none;
-          border: 1.5px solid rgba(255, 255, 255, 0.22);
+          border: 1px solid rgba(255, 255, 255, 0.09);
           box-shadow: none;
           transition: border-color 0.15s ease, transform 0.12s ease, background-color 0.15s ease;
           cursor: pointer;
@@ -288,8 +285,8 @@ export function SubjectTopicStyles() {
         .sg-card:hover,
         .sg-card:active {
           color: var(--label, #e5eaf0);
-          background: #141416;
-          border-color: rgba(255, 255, 255, 0.42);
+          background: #161618;
+          border-color: rgba(255, 255, 255, 0.18);
           box-shadow: none;
         }
 
@@ -318,13 +315,13 @@ export function SubjectTopicStyles() {
         }
 
         .sg-badge {
-          --icon-color: color-mix(in srgb, var(--card-accent, #0A84FF) 88%, #000000);
-          width: 44px;
-          height: 44px;
-          border-radius: 11px;
-          background: color-mix(in srgb, var(--card-accent, #0A84FF) 22%, #e8e8ec) !important;
+          --icon-color: var(--label-2, #a2a9b4);
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          background: #1a1a1d !important;
           color: var(--icon-color) !important;
-          border: 0 !important;
+          border: 1px solid rgba(255, 255, 255, 0.06) !important;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -333,8 +330,8 @@ export function SubjectTopicStyles() {
         }
 
         .sg-badge svg {
-          width: 22px;
-          height: 22px;
+          width: 18px;
+          height: 18px;
           color: var(--icon-color) !important;
           stroke: currentColor;
         }
@@ -348,14 +345,13 @@ export function SubjectTopicStyles() {
         }
 
         .sg-card-name {
-          font-size: 15.5px;
-          font-weight: 620;
+          font-size: 15px;
+          font-weight: 600;
           color: var(--label, #e5eaf0);
           line-height: 1.28;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          letter-spacing: -0.01em;
         }
 
         .sg-card-sub {
@@ -391,39 +387,68 @@ export function SubjectTopicStyles() {
           align-items: center;
           justify-content: flex-end;
         }
-
         .sg-card-qs-text {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          text-align: right;
+          display: inline-flex;
+          align-items: center;
           gap: 3px;
+          height: 28px;
+          padding: 0 10px;
+          box-sizing: border-box;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.06);
           font-size: 15px;
           font-weight: 700;
           font-variant-numeric: tabular-nums;
           color: var(--label, #e5eaf0);
-          letter-spacing: -0.01em;
           white-space: nowrap;
-          line-height: 1.15;
-          background: none;
-          border: none;
-          padding: 0;
+          line-height: 1;
         }
 
         .sg-card-qs-text > span:first-child {
-          color: var(--ios-system-blue, #0A84FF);
+          color: #ffffff;
         }
 
-        .sg-card-qs-text[data-zero="true"] > span:first-child {
-          color: var(--label-2, #a2a9b4);
+        .sg-card-qs-text[data-zero="true"] {
+          font-size: 12px;
           font-weight: 600;
+          color: var(--label-3, #8e8e93);
+          background: rgba(255, 255, 255, 0.04);
+        }
+        .sg-card-qs-text[data-zero="true"] > span:first-child {
+          color: inherit;
         }
 
         .sg-card-qs-label {
           color: var(--label-2, #a2a9b4);
-          font-size: 11.5px;
-          font-weight: 500;
-          line-height: 1.15;
+          font-size: 11px;
+          font-weight: 600;
+          line-height: 1;
+          margin-top: 2px;
+        }
+
+        /* -- Count loading placeholder -- */
+        @keyframes sg-fade { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        .sg-card-qs-skeleton {
+          display: inline-block;
+          width: 62px;
+          height: 28px;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.06);
+          animation: sg-fade 1.4s ease-in-out infinite;
+        }
+        body.theme-light .sg-card-qs-skeleton,
+        html.theme-light .sg-card-qs-skeleton {
+          background: rgba(15, 23, 42, 0.08);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .sg-card-qs-skeleton { animation: none; }
+        }
+
+        /* -- Empty mode (no questions yet) -- */
+        .sg-card[data-empty="true"] .sg-badge,
+        .sg-card[data-empty="true"] .sg-card-info {
+          opacity: 0.55;
         }
 
         /* ════════════════════════════════════
@@ -496,12 +521,13 @@ export function SubjectTopicStyles() {
         }
         body.theme-light .sg-badge,
         html.theme-light .sg-badge {
-          background: color-mix(in srgb, var(--card-accent, #007AFF) 12%, transparent) !important;
-          color: var(--card-accent, #007AFF) !important;
+          background: #ffffff !important;
+          border-color: rgba(15, 23, 42, 0.08) !important;
+          color: var(--light-text-secondary, #64748b) !important;
         }
         body.theme-light .sg-badge svg,
         html.theme-light .sg-badge svg {
-          color: var(--card-accent, #007AFF) !important;
+          color: var(--light-text-secondary, #64748b) !important;
           stroke: currentColor;
         }
         body.theme-light .sg-card-name,
@@ -511,6 +537,21 @@ export function SubjectTopicStyles() {
         body.theme-light .sg-card-sub,
         html.theme-light .sg-card-sub {
           color: var(--light-only-text-muted, #64748b);
+        }
+        body.theme-light .sg-card-qs-text,
+        html.theme-light .sg-card-qs-text {
+          background: rgba(15, 23, 42, 0.05);
+          border-color: rgba(15, 23, 42, 0.08);
+        }
+        body.theme-light .sg-card-qs-text > span:first-child,
+        html.theme-light .sg-card-qs-text > span:first-child {
+          color: var(--light-text, #0f172a);
+        }
+        body.theme-light .sg-card-qs-text[data-zero="true"],
+        html.theme-light .sg-card-qs-text[data-zero="true"],
+        body.theme-light .sg-card-qs-text[data-zero="true"] > span:first-child,
+        html.theme-light .sg-card-qs-text[data-zero="true"] > span:first-child {
+          color: var(--light-text-muted, #94a3b8);
         }
 
         /* ════════════════════════════════════
@@ -608,14 +649,14 @@ export function SubjectTopicStyles() {
             margin: 0;
           }
           .sg-banner-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
           }
-          .sg-banner-icon svg { width: 22px; height: 22px; }
+          .sg-banner-icon svg { width: 18px; height: 18px; }
           .sg-banner-title { font-size: 1.05rem; font-weight: 700; }
           .sg-banner-sub { font-size: 0.82rem; margin-top: 2px; }
-          .sg-section { padding: 0; margin-bottom: 14px; }
+          .sg-section { padding: 0; margin-bottom: 8px; }
 
           .sg-grid {
             margin: 0;
