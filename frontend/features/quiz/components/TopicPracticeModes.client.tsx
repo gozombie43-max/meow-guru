@@ -83,24 +83,16 @@ export default function TopicPracticeModes({
         const ModeIcon = mode.icon;
         const countLabel = isLoading ? "…" : isError ? "—" : `${counts[mode.mode] ?? 0}`;
         const isEmpty = !isLoading && !isError && countLabel === "0";
-        return (
-          <Link
-            key={mode.title}
-            href={mode.href}
-            // Keep the separated mathematics quiz bundle off the topic page
-            // until a mode is selected, especially on mobile connections.
-            prefetch={subject === "mathematics" ? false : undefined}
-            className="sg-card"
-            data-empty={isEmpty ? "true" : undefined}
-            style={{
-              "--card-gradient": mode.gradient,
-              "--card-gradient-dark": mode.gradientDark,
-              "--card-border": mode.border,
-              "--card-border-dark": mode.borderDark,
-              "--card-accent": mode.color,
-              "--card-shadow": mode.shadow,
-            } as CSSProperties}
-          >
+        const cardStyle = {
+          "--card-gradient": mode.gradient,
+          "--card-gradient-dark": mode.gradientDark,
+          "--card-border": mode.border,
+          "--card-border-dark": mode.borderDark,
+          "--card-accent": mode.color,
+          "--card-shadow": mode.shadow,
+        } as CSSProperties;
+        const cardContent = (
+          <>
             <div className="sg-card-left">
               <div className="sg-badge"><ModeIcon size={18} strokeWidth={1.75} aria-hidden="true" /></div>
               <div className="sg-card-info">
@@ -128,6 +120,32 @@ export default function TopicPracticeModes({
                 )}
               </div>
             </div>
+          </>
+        );
+        if (isEmpty) {
+          return (
+            <div
+              key={mode.title}
+              className="sg-card"
+              data-empty="true"
+              aria-disabled="true"
+              style={cardStyle}
+            >
+              {cardContent}
+            </div>
+          );
+        }
+        return (
+          <Link
+            key={mode.title}
+            href={mode.href}
+            // Keep the separated mathematics quiz bundle off the topic page
+            // until a mode is selected, especially on mobile connections.
+            prefetch={subject === "mathematics" ? false : undefined}
+            className="sg-card"
+            style={cardStyle}
+          >
+            {cardContent}
           </Link>
         );
       })}
