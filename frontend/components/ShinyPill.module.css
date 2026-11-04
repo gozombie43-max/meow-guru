@@ -16,7 +16,8 @@
 }
 
 :global(body.theme-dark) .baseText,
-:global(html.theme-dark) .baseText {
+:global(html.theme-dark) .baseText,
+:global(.quiz-chatbot-shell.dark) .baseText {
   color: var(--text-dark, #f8fafc);
 }
 
@@ -58,7 +59,8 @@
 }
 
 :global(body.theme-dark) .shineLayer,
-:global(html.theme-dark) .shineLayer {
+:global(html.theme-dark) .shineLayer,
+:global(.quiz-chatbot-shell.dark) .shineLayer {
   background: linear-gradient(
     115deg,
     transparent 0%,
