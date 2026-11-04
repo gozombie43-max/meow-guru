@@ -446,9 +446,24 @@ export function SubjectTopicStyles() {
         }
 
         /* -- Empty mode (no questions yet) -- */
+        .sg-card[data-empty="true"],
+        .sg-card[data-empty="true"]:hover,
+        .sg-card[data-empty="true"]:active {
+          cursor: default;
+          pointer-events: none;
+          transform: none !important;
+          background: #0a0a0c;
+          border-color: rgba(255, 255, 255, 0.05);
+          box-shadow: none;
+        }
         .sg-card[data-empty="true"] .sg-badge,
         .sg-card[data-empty="true"] .sg-card-info {
-          opacity: 0.55;
+          opacity: 0.45;
+        }
+        .sg-card[data-empty="true"] .sg-card-qs-text {
+          background: transparent;
+          border-color: rgba(255, 255, 255, 0.05);
+          color: rgba(255, 255, 255, 0.35);
         }
 
         /* ════════════════════════════════════
@@ -552,6 +567,20 @@ export function SubjectTopicStyles() {
         body.theme-light .sg-card-qs-text[data-zero="true"] > span:first-child,
         html.theme-light .sg-card-qs-text[data-zero="true"] > span:first-child {
           color: var(--light-text-muted, #94a3b8);
+        }
+        body.theme-light .sg-card[data-empty="true"],
+        html.theme-light .sg-card[data-empty="true"],
+        body.theme-light .sg-card[data-empty="true"]:hover,
+        html.theme-light .sg-card[data-empty="true"]:hover,
+        body.theme-light .sg-card[data-empty="true"]:active,
+        html.theme-light .sg-card[data-empty="true"]:active {
+          background: transparent;
+          border-color: rgba(15, 23, 42, 0.08);
+        }
+        body.theme-light .sg-card[data-empty="true"] .sg-card-qs-text,
+        html.theme-light .sg-card[data-empty="true"] .sg-card-qs-text {
+          background: transparent;
+          border-color: rgba(15, 23, 42, 0.08);
         }
 
         /* ════════════════════════════════════
