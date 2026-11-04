@@ -41,6 +41,8 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const {
     hideQuestionNumbers,
+    hideSubtopic,
+    toggleHideSubtopic: handleToggleHideSubtopic,
     hideViewSolution,
     hideAiTutor,
     textSize,
@@ -116,7 +118,7 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
 
   return { activeRailBtnRef, activeMacBtnRef, examDetailsRef, isIos, isMac, theme, toggleTheme,
     modeLabels, themeStyles, isPaletteOpen, isSettingsOpen, setIsSettingsOpen,
-    hideQuestionNumbers, hideViewSolution, hideAiTutor, textSize, textWeight, spacing,
+    hideQuestionNumbers, hideSubtopic, handleToggleHideSubtopic, hideViewSolution, hideAiTutor, textSize, textWeight, spacing,
     handleToggleHideQuestionNumbers, handleToggleHideViewSolution, handleToggleHideAiTutor,
     handleToggleHideBoth, handleSetTextSize, handleSetTextWeight, handleSetSpacing, openPalette, closePalette,
     isDesktop, touchStartXRef, touchStartYRef, scrollActiveQuestion, renderQuestionLine };

@@ -16,6 +16,7 @@ import {
   Moon,
   Settings,
   Sun,
+  Tag,
   Type,
   X,
 } from "lucide-react";
@@ -114,6 +115,8 @@ export interface QuizSettingsModalProps {
   onToggleTheme: () => void;
   hideQuestionNumbers: boolean;
   onToggleHideQuestionNumbers: (val: boolean) => void;
+  hideSubtopic?: boolean;
+  onToggleHideSubtopic?: (val: boolean) => void;
   hideViewSolution: boolean;
   onToggleHideViewSolution: (val: boolean) => void;
   hideAiTutor: boolean;
@@ -135,6 +138,8 @@ export function QuizSettingsModal({
   onToggleTheme,
   hideQuestionNumbers,
   onToggleHideQuestionNumbers,
+  hideSubtopic,
+  onToggleHideSubtopic,
   hideViewSolution,
   onToggleHideViewSolution,
   hideAiTutor,
@@ -273,6 +278,16 @@ export function QuizSettingsModal({
                       ariaLabel="Toggle hide question numbers row"
                     />
                   </SettingsRow>
+                  {onToggleHideSubtopic && (
+                    <SettingsRow icon={<Tag size={17} />} label="Hide subtopic name">
+                      <SwitchToggle
+                        checked={Boolean(hideSubtopic)}
+                        onChange={onToggleHideSubtopic}
+                        label="Hide Subtopic Name"
+                        ariaLabel="Toggle hide subtopic name"
+                      />
+                    </SettingsRow>
+                  )}
                 </section>
 
                 <section className="ios-settings-group ios-settings-visibility" aria-label="Tool visibility">

@@ -43,10 +43,9 @@ describe('QuizChatbot Component', () => {
     vi.mocked(meowAIModel.generateContent).mockResolvedValue({
       response: { text: () => 'Gemini tutor reply' },
     } as Awaited<ReturnType<typeof meowAIModel.generateContent>>);
-    render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
+    render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} activeLang="hi" />);
     fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
     expect(screen.getByRole('button', { name: `Selected model: ${GEMINI_TUTOR_MODEL}` })).toHaveTextContent(GEMINI_TUTOR_MODEL);
-    fireEvent.click(screen.getByRole('button', { name: 'हिंदी' }));
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Explain this' } });
     fireEvent.click(screen.getByRole('button', { name: /Send message/i }));
     await screen.findByText('Gemini tutor reply');
@@ -252,7 +251,7 @@ describe('QuizChatbot Component', () => {
     expect(textarea).toHaveValue('');
   });
 
-  it('renders language toggle on header left and auto-syncs with activeLang="bn"', async () => {
+  it('auto-syncs with activeLang="bn" without rendering a header language toggle', async () => {
     vi.mocked(meowAIModel.generateContent).mockResolvedValue({
       response: { text: () => 'বাংলায় সম্পূর্ণ সমাধান।' },
     } as Awaited<ReturnType<typeof meowAIModel.generateContent>>);
@@ -269,17 +268,8 @@ describe('QuizChatbot Component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
 
-    // Verify language toggle buttons exist
-    const enBtn = screen.getByRole('button', { name: 'English' });
-    const hiBtn = screen.getByRole('button', { name: 'हिंदी' });
-    const bnBtn = screen.getByRole('button', { name: 'বাংলা' });
-    expect(enBtn).toBeInTheDocument();
-    expect(hiBtn).toBeInTheDocument();
-    expect(bnBtn).toBeInTheDocument();
-
-    // Verify active language is Bengali
-    expect(bnBtn.className).toContain('active');
-    expect(enBtn.className).not.toContain('active');
+    // Verify header language toggle buttons are removed
+    expect(screen.queryByRole('button', { name: 'Response language' })).not.toBeInTheDocument();
 
     // Verify Bengali localized placeholder
     const textarea = screen.getByPlaceholderText('যেকোনো প্রশ্ন জিজ্ঞাসা করুন');
@@ -296,7 +286,7 @@ describe('QuizChatbot Component', () => {
     }));
   });
 
-  it('allows user to switch language to Hindi interactively', async () => {
+  it('auto-syncs with activeLang="hi" when quiz language changes', async () => {
     vi.mocked(meowAIModel.generateContent).mockResolvedValue({
       response: { text: () => 'हिंदी में समाधान।' },
     } as Awaited<ReturnType<typeof meowAIModel.generateContent>>);
@@ -307,16 +297,11 @@ describe('QuizChatbot Component', () => {
         questionNumber={1}
         topicTitle="General Awareness"
         question={mockQuestion}
-        activeLang="en"
+        activeLang="hi"
       />
     );
 
     fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
-
-    const hiBtn = screen.getByRole('button', { name: 'हिंदी' });
-    fireEvent.click(hiBtn);
-
-    expect(hiBtn.className).toContain('active');
 
     // Verify Hindi localized placeholder
     const textarea = screen.getByPlaceholderText('कुछ भी पूछें');
@@ -345,14 +330,15 @@ describe('QuizChatbot Component', () => {
     expect(trigger).toHaveFocus();
   });
 
-  it('closes when clicking the Back to quiz button', () => {
+  it('does not render theme toggle or back arrow in header and closes when clicking the backdrop', () => {
     render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
     const trigger = screen.getByRole('button', { name: /Ask AI Tutor/i });
     fireEvent.click(trigger);
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    const backBtn = screen.getByRole('button', { name: 'Back to quiz' });
-    expect(backBtn).toBeInTheDocument();
-    fireEvent.click(backBtn);
+    expect(screen.queryByRole('button', { name: 'Toggle dark mode' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Back to quiz' })).not.toBeInTheDocument();
+    const backdrop = screen.getByRole('button', { name: 'Dismiss AI tutor' });
+    fireEvent.click(backdrop);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 

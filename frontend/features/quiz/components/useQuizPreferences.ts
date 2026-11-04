@@ -17,6 +17,7 @@ export type QuizSpacing = "comfortable" | "compact";
 
 const STORAGE_KEYS = {
   hideQuestionNumbers: "quiz_hide_question_numbers",
+  hideSubtopic: "quiz_hide_subtopic",
   hideViewSolution: "quiz_hide_view_solution",
   hideAiTutor: "quiz_hide_ai_tutor",
   textSize: "quiz_text_size",
@@ -37,6 +38,7 @@ function writePreference(key: string, value: boolean | string | number) {
 
 export function useQuizPreferences() {
   const [hideQuestionNumbers, setHideQuestionNumbers] = useState(true);
+  const [hideSubtopic, setHideSubtopic] = useState(true);
   const [hideViewSolution, setHideViewSolution] = useState(false);
   const [hideAiTutor, setHideAiTutor] = useState(false);
   const [textSize, setTextSizeState] = useState<QuizTextSize>("md");
@@ -47,6 +49,7 @@ export function useQuizPreferences() {
     const timer = window.setTimeout(() => {
       try {
         setHideQuestionNumbers(readPreference(STORAGE_KEYS.hideQuestionNumbers, true));
+        setHideSubtopic(readPreference(STORAGE_KEYS.hideSubtopic, true));
         setHideViewSolution(readPreference(STORAGE_KEYS.hideViewSolution));
         setHideAiTutor(readPreference(STORAGE_KEYS.hideAiTutor));
         const savedTextSize = window.localStorage.getItem(STORAGE_KEYS.textSize);
@@ -72,6 +75,11 @@ export function useQuizPreferences() {
   const toggleHideQuestionNumbers = useCallback((value: boolean) => {
     setHideQuestionNumbers(value);
     writePreference(STORAGE_KEYS.hideQuestionNumbers, value);
+  }, []);
+
+  const toggleHideSubtopic = useCallback((value: boolean) => {
+    setHideSubtopic(value);
+    writePreference(STORAGE_KEYS.hideSubtopic, value);
   }, []);
 
   const toggleHideViewSolution = useCallback((value: boolean) => {
@@ -110,6 +118,8 @@ export function useQuizPreferences() {
   return {
     textWeight, setTextWeight,
     hideQuestionNumbers,
+    hideSubtopic,
+    toggleHideSubtopic,
     hideViewSolution,
     hideAiTutor,
     textSize,

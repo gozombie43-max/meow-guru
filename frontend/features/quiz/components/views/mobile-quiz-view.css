@@ -2170,3 +2170,41 @@
   background: transparent !important;
   color: var(--quiz-text-secondary) !important;
 }
+
+
+/* ==========================================================================
+   Answer selection: crisp 1px blue outline + smooth, stationary press.
+   Overrides the shared tap-scale / :active scale+brightness which made the
+   card jump and flash on tap.
+   ========================================================================== */
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color 180ms cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 180ms cubic-bezier(0.2, 0, 0, 1) !important;
+}
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option .ios-series-option-letter {
+  transition:
+    background-color 180ms cubic-bezier(0.2, 0, 0, 1),
+    color 180ms cubic-bezier(0.2, 0, 0, 1) !important;
+}
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option:active,
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option:active:not(:disabled) {
+  animation: none !important;
+  scale: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option:not(:disabled):active:not(.is-selected) {
+  background: var(--quiz-surface-hover);
+}
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option.is-selected:not(.is-correct, .is-wrong) {
+  box-shadow: inset 0 0 0 1px var(--quiz-accent, var(--ios-system-blue)) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ios-series-quiz .ios-series-option,
+  .ios-series-quiz .ios-series-option .ios-series-option-letter {
+    transition: none !important;
+  }
+}

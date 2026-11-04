@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600&display=swap');
+
 /* Tutor styles stay within the portal; no global message or typography selectors. */
 
 .quiz-chatbot-fab {
@@ -38,7 +40,7 @@
   height: 100%;
   border: 0;
   border-radius: 0;
-  background: #0006;
+  background: rgba(0, 0, 0, 0.58);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -63,13 +65,16 @@
   --bg: var(--light-canvas, #f5f6f8);
   --card-bg: var(--light-surface, #fff);
   --field: var(--light-surface-muted, #eef0f4);
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   color: var(--dk);
   background: var(--bg);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Noto Sans Bengali", "Hind Siliguri", sans-serif;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -114,40 +119,69 @@
   height: 20px;
 }
 
+.quiz-chatbot-shell .tutor-menu-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 40;
+  animation: tutor-scrim-fade 0.15s ease;
+}
+
+.quiz-chatbot-shell.dark .tutor-menu-scrim {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.quiz-chatbot-shell.dark :is(.tutor-dropdown-modal, .tutor-quick-menu) {
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.7);
+}
+
+@keyframes tutor-scrim-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .quiz-chatbot-shell .tutor-header {
   position: relative;
+  z-index: 50;
   flex-shrink: 0;
   padding: var(--safe-top, 0px) max(14px, var(--safe-right, 0px)) 0 max(14px, var(--safe-left, 0px));
   background: var(--card-bg);
   border-bottom: 1px solid var(--bd);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  z-index: 20;
 }
 
 .quiz-chatbot-shell .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 4px 0;
-  min-height: 40px;
+  gap: 12px;
+  padding: 6px 0;
+  min-height: 44px;
 }
 
 .quiz-chatbot-shell .topbar-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
-  flex: 1 1 auto;
+}
+
+.quiz-chatbot-shell .tutor-brand-icon {
+  width: 24px !important;
+  height: 24px !important;
+  flex-shrink: 0;
+  color: var(--ios-system-blue, #0a84ff);
 }
 
 .quiz-chatbot-shell .logo {
-  font-size: 16px;
+  font-size: 16.5px;
   white-space: nowrap;
-  letter-spacing: -.4px;
-  font-weight: 700;
-  line-height: 1;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--dk);
   flex-shrink: 0;
 }
 
@@ -160,50 +194,88 @@
 .quiz-chatbot-shell .tutor-header-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 26px;
-  min-height: 26px !important;
-  max-height: 26px !important;
-  padding: 0 8px 0 9px;
+  justify-content: center;
+  gap: 7px;
+  width: max-content;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  padding: 0 13px 0 14px !important;
   border: 1px solid var(--bd);
-  border-radius: 9999px;
+  border-radius: 9999px !important;
   background: var(--field);
-  color: var(--dk);
-  font-size: 12px;
-  font-weight: 550;
+  color: var(--gr);
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
   letter-spacing: -0.01em;
   flex-shrink: 0;
   cursor: pointer;
-  transition: color 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), filter 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: none !important;
+  scale: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: color 0.12s ease, background-color 0.12s ease, border-color 0.12s ease !important;
   user-select: none;
   -webkit-user-select: none;
   box-sizing: border-box;
 }
 
-.quiz-chatbot-shell .tutor-header-pill:hover {
-  background: var(--card-bg);
+.quiz-chatbot-shell.dark .tutor-header-pill {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.quiz-chatbot-shell .tutor-header-pill > svg.lucide {
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+  opacity: 0.7;
+  transform: none !important;
+  transition: opacity 0.12s ease !important;
+}
+
+.quiz-chatbot-shell .tutor-header-pill[aria-expanded="true"] > svg.lucide {
+  opacity: 0.95;
+}
+
+.quiz-chatbot-shell .tutor-header-pill:hover,
+.quiz-chatbot-shell .tutor-header-pill:active,
+.quiz-chatbot-shell .tutor-header-pill[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--field) 85%, var(--dk));
   color: var(--dk);
-  border-color: rgb(var(--ios-system-blue-rgb) / 0.4);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border-color: color-mix(in srgb, var(--bd) 70%, var(--gr));
+  animation: none !important;
+  scale: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+.quiz-chatbot-shell.dark .tutor-header-pill:hover,
+.quiz-chatbot-shell.dark .tutor-header-pill:active,
+.quiz-chatbot-shell.dark .tutor-header-pill[aria-expanded="true"] {
+  background: #26262a;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.quiz-chatbot-shell .tutor-header-pill:focus-visible {
+  outline: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+  outline-offset: 2px !important;
+}
+
+.quiz-chatbot-shell .tutor-header-pill[aria-expanded="true"] {
+  position: relative;
+  z-index: 60;
 }
 
 .quiz-chatbot-shell .tutor-model-pill {
-  max-width: 145px;
+  max-width: none;
 }
 
 .quiz-chatbot-shell .tutor-model-pill .model-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.quiz-chatbot-shell .tutor-lang-pill {
-  max-width: 100px;
-}
-
-.quiz-chatbot-shell .tutor-lang-pill .lang-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -215,39 +287,31 @@
   border-radius: 14px;
   background: var(--card-bg);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
-  z-index: 100;
+  z-index: 60;
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  animation: tutor-dropdown-pop 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+  animation: tutor-dropdown-pop 0.12s ease-out;
 }
 
 @keyframes tutor-dropdown-pop {
   from {
     opacity: 0;
-    transform: translateY(-4px) scale(0.97);
+    transform: translateY(-3px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 .quiz-chatbot-shell .tutor-model-menu {
-  left: 0;
-  width: min(280px, calc(100vw - 28px));
+  right: 0;
+  min-width: 185px;
+  width: max-content;
+  max-width: calc(100vw - 28px);
   max-height: min(60dvh, 400px);
   overflow-y: auto;
-}
-
-.quiz-chatbot-shell .tutor-lang-menu {
-  display: none;
-  right: 0;
-  width: 135px;
-}
-
-.quiz-chatbot-shell .tutor-lang-menu.open {
-  display: flex;
-  flex-direction: column;
 }
 
 .quiz-chatbot-shell .tutor-dropdown-title {
@@ -265,92 +329,63 @@
   gap: 2px;
 }
 
-.quiz-chatbot-shell .tutor-dropdown-item {
+.quiz-chatbot-shell .tutor-dropdown-modal .tutor-dropdown-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  padding: 7px 9px;
-  min-height: unset;
+  padding: 7px 10px;
+  min-height: 34px !important;
   border: 0;
-  border-radius: 8px;
+  border-radius: 8px !important;
   background: transparent;
   color: var(--dk);
   font-size: 13px;
+  font-weight: 500 !important;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.12s ease, color 0.12s ease;
+  animation: none !important;
+  scale: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  outline: none !important;
+  transition: background-color 0.12s ease, color 0.12s ease !important;
 }
 
-.quiz-chatbot-shell .tutor-dropdown-item:hover {
-  background: var(--field);
+.quiz-chatbot-shell .tutor-dropdown-modal .tutor-dropdown-item:hover,
+.quiz-chatbot-shell .tutor-dropdown-modal .tutor-dropdown-item:active {
+  background: rgba(255, 255, 255, 0.08);
+  animation: none !important;
+  scale: 1 !important;
+  transform: none !important;
+  filter: none !important;
 }
 
-.quiz-chatbot-shell .tutor-dropdown-item.active {
+.quiz-chatbot-shell .tutor-dropdown-modal .tutor-dropdown-item.active {
   background: var(--orl);
   color: var(--or);
-  font-weight: 600;
+  font-weight: 600 !important;
 }
 
-.quiz-chatbot-shell .tutor-dropdown-item-main {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-  flex: 1;
+.quiz-chatbot-shell .tutor-dropdown-modal .tutor-dropdown-item > svg.lucide {
+  width: 15px !important;
+  height: 15px !important;
+  flex-shrink: 0 !important;
 }
 
 .quiz-chatbot-shell .tutor-dropdown-item .model-name {
-  font-size: 12.5px;
-  font-weight: 600;
-}
-
-.quiz-chatbot-shell .tutor-dropdown-item .model-badge {
-  font-size: 10px;
-  color: var(--gr);
-}
-
-.quiz-chatbot-shell .tutor-dropdown-item .model-desc {
-  font-size: 11px;
-  color: var(--gr);
-  line-height: 1.3;
-}
-
-.quiz-chatbot-shell :is(.dmbtn, .closebtn) {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  min-height: unset;
-  flex-shrink: 0;
-  border-radius: 6px;
-  border: 0;
-  background: transparent;
-  color: var(--gr);
-  padding: 0;
-  transition: color 0.15s ease, background-color 0.15s ease;
-}
-
-.quiz-chatbot-shell :is(.dmbtn, .closebtn):hover {
-  color: var(--dk);
-  background: color-mix(in srgb, var(--dk) 7%, transparent);
-}
-
-.quiz-chatbot-shell :is(.dmbtn, .closebtn):active {
-  background: color-mix(in srgb, var(--dk) 12%, transparent);
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .quiz-chatbot-shell .topbar-right {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  justify-self: end;
   gap: 6px;
-}
-
-.quiz-chatbot-shell .top-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  min-width: 0;
 }
 
 
@@ -377,24 +412,35 @@
 
 .quiz-chatbot-shell .ctx {
   display: flex;
-  gap: 12px;
-  padding: 14px;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px 14px 12px;
   border: 1px solid var(--bd);
-  border-radius: 16px;
+  border-radius: 22px;
   background: var(--card-bg);
+}
+
+.quiz-chatbot-shell.dark .ctx {
+  background: #141416;
+  border-color: rgba(255, 255, 255, 0.07);
 }
 
 .quiz-chatbot-shell .ctxi {
   flex-shrink: 0;
   width: 36px;
   height: 36px;
+  border-radius: 50%;
   display: grid;
   place-items: center;
-  background: var(--orl);
-  color: var(--or);
-  border-radius: 11px;
+  background: rgba(24, 36, 56, 0.07);
+  color: var(--dk);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
+}
+
+.quiz-chatbot-shell.dark .ctxi {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .quiz-chatbot-shell .ctxl {
@@ -406,7 +452,7 @@
   display: block;
   color: var(--dk);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   overflow-wrap: anywhere;
 }
 
@@ -417,59 +463,182 @@
 }
 
 .quiz-chatbot-shell .ltitle {
-  margin: 26px 0 16px;
-  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 24px 0 16px;
+  padding-left: 4px;
+  font-size: 20px;
   line-height: 1.25;
-  letter-spacing: -.7px;
-  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-weight: 600;
   text-align: left;
 }
 
+.quiz-chatbot-shell .ltitle span {
+  display: inline-block;
+  line-height: 1.25;
+}
+
+.quiz-chatbot-shell .ltitle-sparkle {
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0;
+  display: block;
+  color: var(--ios-system-blue, #0a84ff);
+  transform: translateY(-1px);
+}
+
+.quiz-chatbot-shell[lang="bn"] .ltitle {
+  font-family: "Noto Sans Bengali", "Hind Siliguri", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-weight: 500 !important;
+  letter-spacing: 0;
+  line-height: 1.25;
+  font-synthesis: none;
+}
+
+.quiz-chatbot-shell[lang="bn"] .ltitle-sparkle {
+  transform: translateY(-2.5px);
+}
+
 .quiz-chatbot-shell .opts {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   gap: 10px;
+  width: 100%;
 }
 
 .quiz-chatbot-shell .opt {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--bd);
-  border-radius: 16px;
-  background: var(--card-bg);
+  gap: 14px;
+  padding: 7px 10px 7px 8px !important;
+  min-height: 52px !important;
+  border: 1px solid var(--bd) !important;
+  border-radius: 9999px !important;
+  background: var(--card-bg) !important;
+  box-shadow: none !important;
   text-align: left;
   width: 100%;
+  min-width: 0;
+  font-weight: 400 !important;
+  animation: none !important;
+  scale: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  transition: background-color 0.14s ease, border-color 0.14s ease !important;
 }
 
-.quiz-chatbot-shell .opt:hover {
-  border-color: var(--or);
+.quiz-chatbot-shell.dark .opt {
+  background: #141416 !important;
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+.quiz-chatbot-shell .opt:hover,
+.quiz-chatbot-shell .opt:active {
+  background: color-mix(in srgb, var(--card-bg) 88%, var(--dk)) !important;
+  animation: none !important;
+  scale: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.quiz-chatbot-shell.dark .opt:hover,
+.quiz-chatbot-shell.dark .opt:active {
+  background: #1e1e22 !important;
+  border-color: rgba(255, 255, 255, 0.13) !important;
 }
 
 .quiz-chatbot-shell .oi {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  background: var(--field);
-  color: var(--or);
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(24, 36, 56, 0.07);
+  color: var(--dk) !important;
+}
+
+.quiz-chatbot-shell.dark .oi {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.quiz-chatbot-shell .oi svg {
+  width: 17px !important;
+  height: 17px !important;
+  color: inherit !important;
+  stroke: currentColor !important;
 }
 
 .quiz-chatbot-shell .ot {
-  display: block;
-  font-size: 15px;
-  line-height: 1.4;
-  font-weight: 650;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  background: transparent !important;
+  color: var(--dk);
+  font-size: 14.5px;
+  line-height: 1.45;
+  font-weight: 400 !important;
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.quiz-chatbot-shell .os {
-  display: block;
-  margin-top: 4px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--gr);
+.quiz-chatbot-shell .oa {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(24, 36, 56, 0.07);
+  color: var(--dk) !important;
+  margin-left: auto;
+}
+
+.quiz-chatbot-shell.dark .oa {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.quiz-chatbot-shell .oa svg {
+  width: 15px !important;
+  height: 15px !important;
+  stroke-width: 2.3 !important;
+  color: inherit !important;
+  stroke: currentColor !important;
+}
+
+.quiz-chatbot-shell.dark .opt:hover .ot,
+.quiz-chatbot-shell.dark .opt:active .ot {
+  color: #ffffff;
+}
+
+.quiz-chatbot-shell[lang="bn"] {
+  font-family: "Noto Sans Bengali", "Hind Siliguri", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.quiz-chatbot-shell[lang="bn"] :is(.logo, .tutor-header-pill, .ctxi) {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "Noto Sans Bengali", "Hind Siliguri", sans-serif;
+}
+
+.quiz-chatbot-shell .tutor-textarea, .quiz-chatbot-shell .tutor-textarea::placeholder, .quiz-chatbot-shell[lang="bn"] :is(.ot, .ctxl, .ctxs, .chip, .tutor-menu-item, .tutor-menu-text, .tutor-menu-header, .tutor-textarea, .sbody) {
+  font-family: "Noto Sans Bengali", "Hind Siliguri", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  font-synthesis: none;
+}
+
+.quiz-chatbot-shell[lang="bn"] .ctxl span {
+  font-weight: 500 !important;
 }
 
 .quiz-chatbot-shell .bbar {
@@ -477,8 +646,6 @@
   padding: 6px 12px calc(8px + var(--safe-bottom, 0px)) 12px;
   border-top: 1px solid var(--bd);
   background: var(--card-bg);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 .quiz-chatbot-shell .tutor-composer-card {
@@ -490,46 +657,6 @@
   background: transparent;
   border: 0;
   box-shadow: none;
-}
-
-.quiz-chatbot-shell .tutor-model-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  height: 24px;
-  min-height: 24px !important;
-  max-height: 24px !important;
-  padding: 0 8px 0 7px;
-  border: 1px solid var(--bd);
-  border-radius: 9999px;
-  background: var(--field);
-  color: var(--gr);
-  font-size: 11.5px;
-  font-weight: 550;
-  letter-spacing: -0.01em;
-  flex-shrink: 0;
-  max-width: 155px;
-  cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, border-color 0.15s ease, transform 0.15s ease, filter 0.15s ease;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.quiz-chatbot-shell .tutor-model-pill:hover {
-  background: var(--card-bg);
-  color: var(--dk);
-  border-color: rgb(var(--ios-system-blue-rgb) / 0.35);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-}
-
-.quiz-chatbot-shell .tutor-model-pill .model-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.quiz-chatbot-shell .tutor-model-pill svg {
-  flex-shrink: 0;
 }
 
 .quiz-chatbot-shell .model-tier {
@@ -572,6 +699,8 @@
 }
 
 .quiz-chatbot-shell .tutor-plus-btn.active {
+  position: relative;
+  z-index: 60;
   background: var(--orl);
   color: var(--or);
   border-color: var(--or);
@@ -697,7 +826,7 @@
   border-radius: 16px;
   background: var(--card-bg);
   box-shadow: 0 8px 30px #0003;
-  z-index: 50;
+  z-index: 60;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -737,21 +866,6 @@
 
 .quiz-chatbot-shell .tutor-menu-icon {
   color: var(--or);
-}
-
-.quiz-chatbot-shell .model-title-row {
-  display: flex;
-  gap: 8px;
-}
-
-.quiz-chatbot-shell .model-badge, .quiz-chatbot-shell .model-desc {
-  font-size: 12px;
-  color: var(--gr);
-}
-
-.quiz-chatbot-shell .model-desc {
-  display: block;
-  margin-top: 4px;
 }
 
 .quiz-chatbot-shell .chat-divider {
@@ -1048,22 +1162,6 @@
   .quiz-chatbot-shell .tutor-textarea {
     font-size: 15px;
   }
-  .quiz-chatbot-shell .tutor-model-pill {
-    padding: 0 12px 0 10px;
-    height: 26px;
-    min-height: 26px !important;
-    max-height: 26px !important;
-    font-size: 12px;
-    gap: 6px;
-    max-width: 240px;
-  }
-  .quiz-chatbot-shell .tutor-model-pill .model-name {
-    max-width: 200px;
-  }
-  .quiz-chatbot-shell .tutor-model-pill svg {
-    width: 14px;
-    height: 14px;
-  }
   .quiz-chatbot-shell .tutor-send-btn {
     width: 30px !important;
     height: 30px !important;
@@ -1075,12 +1173,6 @@
   .quiz-chatbot-shell .tutor-send-btn svg {
     width: 15px;
     height: 15px;
-  }
-  .quiz-chatbot-shell .opts {
-    grid-template-columns: 1fr 1fr;
-  }
-  .quiz-chatbot-shell .opt:first-child {
-    grid-column: 1 / -1;
   }
   .quiz-chatbot-shell .ltitle {
     font-size: 30px;
@@ -1117,20 +1209,13 @@
 }
 
 @media (max-width: 380px) {
-  .quiz-chatbot-shell .tutor-model-pill {
-    gap: 3px;
-    padding: 0 6px;
-    font-size: 10.5px;
-    height: 22px;
-    min-height: 22px !important;
-    max-height: 22px !important;
-  }
-  .quiz-chatbot-shell .tutor-model-pill .model-name {
-    max-width: 90px;
-  }
-  .quiz-chatbot-shell .tutor-model-pill svg {
-    width: 11px;
-    height: 11px;
+  .quiz-chatbot-shell .tutor-header-pill {
+    gap: 6px;
+    padding: 0 11px 0 12px !important;
+    font-size: 12.5px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
   }
   .quiz-chatbot-shell .tutor-plus-btn {
     width: 32px !important;
@@ -1199,7 +1284,7 @@
 
 .quiz-chatbot-shell .tutor-input-capsule {
   min-height: 44px;
-  padding: 5px 6px 5px 14px;
+  padding: 6px 6px 6px 16px;
   border-radius: 22px;
   align-items: flex-end;
 }
@@ -1224,6 +1309,16 @@
 .quiz-chatbot-shell .tutor-textarea::placeholder {
   font-size: inherit;
   line-height: inherit;
+}
+
+.quiz-chatbot-shell[lang="bn"] .tutor-textarea {
+  padding: 7px 0 1px;
+  line-height: 24px;
+}
+
+.quiz-chatbot-shell[lang="bn"] .tutor-textarea::placeholder {
+  font-size: 14.5px !important;
+  line-height: 24px !important;
 }
 
 .quiz-chatbot-shell .tutor-plus-btn {

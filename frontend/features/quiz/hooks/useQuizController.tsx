@@ -40,7 +40,7 @@ export function useQuizController({
   const searchParams = useSearchParams();
   const { activeRailBtnRef, activeMacBtnRef, examDetailsRef, isIos, isMac, theme, toggleTheme,
     modeLabels, themeStyles, isPaletteOpen, isSettingsOpen, setIsSettingsOpen,
-    hideQuestionNumbers, hideViewSolution, hideAiTutor, textSize, textWeight, spacing,
+    hideQuestionNumbers, hideSubtopic, handleToggleHideSubtopic, hideViewSolution, hideAiTutor, textSize, textWeight, spacing,
     handleToggleHideQuestionNumbers, handleToggleHideViewSolution, handleToggleHideAiTutor,
     handleToggleHideBoth, handleSetTextSize, handleSetTextWeight, handleSetSpacing, openPalette, closePalette,
     isDesktop, touchStartXRef, touchStartYRef, scrollActiveQuestion, renderQuestionLine } = useQuizPresentation(subjectConfig, presentation);
@@ -224,6 +224,8 @@ export function useQuizController({
     isSettingsOpen,
     setIsSettingsOpen,
     hideQuestionNumbers,
+    hideSubtopic,
+    handleToggleHideSubtopic,
     openPalette,
     handleToggleHideQuestionNumbers,
     hideViewSolution,

@@ -29,7 +29,7 @@ describe('embedded tutor typing and reopen', () => {
     const parsed = probes.markdown.mock.calls.length;
     for (const value of ['W', 'Wh', 'Why', 'Why?']) fireEvent.change(screen.getByRole('textbox'), { target: { value } });
     expect(probes.markdown).toHaveBeenCalledTimes(parsed);
-    fireEvent.click(screen.getByRole('button', { name: 'Back to quiz' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss AI tutor' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Open tutor' }));
     expect(screen.getByRole('textbox')).toHaveValue('Why?');

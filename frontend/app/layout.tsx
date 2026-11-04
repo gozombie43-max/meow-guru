@@ -8,6 +8,10 @@ import SkipToContent from '@/components/SkipToContent';
 import ThemeColor from '@/components/ThemeColor';
 import { API_BASE } from '@/lib/api-base';
 import { earlySessionScript } from '@/lib/early-session';
+import '@fontsource/noto-sans-bengali/400.css';
+import '@fontsource/noto-sans-bengali/500.css';
+import '@fontsource/noto-sans-bengali/600.css';
+import '@fontsource/noto-sans-bengali/700.css';
 import './globals.css';
 import './light-theme.css';
 import './dark-theme.css';
@@ -75,6 +79,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+        />
         <script
           id="theme-bootstrap"
           dangerouslySetInnerHTML={{ __html: themeBootstrapScript }}

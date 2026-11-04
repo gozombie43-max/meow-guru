@@ -42,6 +42,8 @@ export type MobileQuizFields = Pick<
   | "fetchMore"
   | "toggleTheme"
   | "handleToggleHideQuestionNumbers"
+  | "hideSubtopic"
+  | "handleToggleHideSubtopic"
   | "hideViewSolution"
   | "handleToggleHideViewSolution"
   | "hideAiTutor"
@@ -93,7 +95,7 @@ export type MobileQuizFields = Pick<
 
 export interface MobileQuizViewProps {
   configuration: Pick<MobileQuizFields, "routeBase" | "slug" | "subjectConfig" | "theme" | "themeStyles" | "toggleTheme" | "title">;
-  settings: Pick<MobileQuizFields, "isSettingsOpen" | "setIsSettingsOpen" | "hideQuestionNumbers" | "handleToggleHideQuestionNumbers" | "hideViewSolution" | "handleToggleHideViewSolution" | "hideAiTutor" | "handleToggleHideAiTutor" | "handleToggleHideBoth" | "textSize" | "handleSetTextSize" | "textWeight" | "handleSetTextWeight" | "spacing" | "handleSetSpacing">;
+  settings: Pick<MobileQuizFields, "isSettingsOpen" | "setIsSettingsOpen" | "hideQuestionNumbers" | "handleToggleHideQuestionNumbers" | "hideSubtopic" | "handleToggleHideSubtopic" | "hideViewSolution" | "handleToggleHideViewSolution" | "hideAiTutor" | "handleToggleHideAiTutor" | "handleToggleHideBoth" | "textSize" | "handleSetTextSize" | "textWeight" | "handleSetTextWeight" | "spacing" | "handleSetSpacing">;
   question: Pick<MobileQuizFields, "activeLang" | "isTranslating" | "setActiveLang" | "currentQ" | "conceptColours" | "hasDetailedExamLabel" | "examDetailsRef" | "compactExamLabel" | "fullExamLabel" | "hasQuestionText" | "displayedQuestion" | "renderQuestionLine" | "displayedOptions" | "displayedSolution">;
   navigation: Pick<MobileQuizFields, "availableCount" | "hasMore" | "isFetchingMore" | "fetchMore" | "currentIndex" | "openPalette" | "questions" | "selectedAnswers" | "submittedQuestions" | "activeRailBtnRef" | "goToQuestion" | "handlePrev" | "handleNext" | "isPaletteOpen" | "closePalette">;
   answer: Pick<MobileQuizFields, "isCurrentSubmitted" | "selectedAnswer" | "handleSelectAnswer" | "submitError" | "handleSubmitCurrent" | "canSubmit" | "timerRef" | "results">;
@@ -111,7 +113,7 @@ function toPlainOption(option: string): string {
 export function MobileQuizView({ configuration, settings, question, navigation, answer, solution }: MobileQuizViewProps) {
   const appNavigation = useAppNavigation();
   const { routeBase, slug, subjectConfig, theme, themeStyles, toggleTheme, title } = configuration;
-  const { isSettingsOpen, setIsSettingsOpen, hideQuestionNumbers, handleToggleHideQuestionNumbers, hideViewSolution, handleToggleHideViewSolution, hideAiTutor, handleToggleHideAiTutor, handleToggleHideBoth, textSize, handleSetTextSize, textWeight, handleSetTextWeight, spacing, handleSetSpacing } = settings;
+  const { isSettingsOpen, setIsSettingsOpen, hideQuestionNumbers, handleToggleHideQuestionNumbers, hideSubtopic, handleToggleHideSubtopic, hideViewSolution, handleToggleHideViewSolution, hideAiTutor, handleToggleHideAiTutor, handleToggleHideBoth, textSize, handleSetTextSize, textWeight, handleSetTextWeight, spacing, handleSetSpacing } = settings;
   const { activeLang, isTranslating, setActiveLang, currentQ, compactExamLabel, fullExamLabel, hasQuestionText, displayedQuestion, renderQuestionLine, displayedOptions } = question;
   const { currentIndex, openPalette, questions, selectedAnswers, submittedQuestions, activeRailBtnRef, goToQuestion, handlePrev, handleNext, isPaletteOpen, closePalette } = navigation;
   const { isCurrentSubmitted, selectedAnswer, handleSelectAnswer, submitError, handleSubmitCurrent, canSubmit, timerRef, results } = answer;
@@ -165,6 +167,8 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           onToggleTheme={toggleTheme}
           hideQuestionNumbers={hideQuestionNumbers}
           onToggleHideQuestionNumbers={handleToggleHideQuestionNumbers}
+          hideSubtopic={hideSubtopic}
+          onToggleHideSubtopic={handleToggleHideSubtopic}
           hideViewSolution={hideViewSolution}
           onToggleHideViewSolution={handleToggleHideViewSolution}
           hideAiTutor={hideAiTutor}
@@ -198,6 +202,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
             <MobileQuizMetadata
               key={currentQ.id}
               topic={currentQ.concept || title}
+              hideTopic={hideSubtopic}
               compactExamLabel={compactExamLabel}
               fullExamLabel={fullExamLabel}
             />
