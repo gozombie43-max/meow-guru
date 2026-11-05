@@ -27,6 +27,8 @@
   --border: rgb(255 255 255 / 7%);
   --correct: #32d19a;
   --incorrect: #ff696e;
+  --correct-bg: color-mix(in srgb, var(--correct) 16%, var(--card));
+  --incorrect-bg: color-mix(in srgb, var(--incorrect) 16%, var(--card));
 }
 .header {
   flex-shrink: 0;
