@@ -205,7 +205,6 @@ export default function QuizChatbot({
   const [savedDraft, setSavedDraft] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [selectedModel, setSelectedModel] = useState("o4-mini");
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
@@ -339,18 +338,6 @@ export default function QuizChatbot({
       id: "o4-mini",
     },
   ];
-
-  const handleCopy = async (content: string, index: number) => {
-    try {
-      await navigator.clipboard.writeText(content);
-      setCopiedIndex(index);
-      setTimeout(() => setCopiedIndex(null), 2000);
-    } catch {
-      setCopiedIndex(null);
-    }
-  };
-
-
 
   return (
     <>
@@ -528,13 +515,6 @@ export default function QuizChatbot({
                           <div className="sb">
                             <div className="sh2">
                               <span className="slbl2">{message.isError ? 'Unable to respond' : 'Solution'}</span>
-                              <button data-ui-button="state"
-                                type="button"
-                                className="cpb"
-                                onClick={() => handleCopy(message.content, index)}
-                              >
-                                {copiedIndex === index ? "Copied!" : "Copy"}
-                              </button>
                             </div>
                             <div className="sbody" role={message.isError ? 'alert' : undefined}>
                               <TutorMarkdown content={message.content} />
