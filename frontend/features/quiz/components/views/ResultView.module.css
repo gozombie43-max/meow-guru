@@ -217,6 +217,8 @@
   overflow-x: hidden;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   padding:
     calc(56px + var(--safe-top, 0px) + 12px)
     max(16px, var(--safe-right, 0px))
@@ -234,10 +236,24 @@
   gap: 12px;
 }
 
+.main::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 @media (min-width: 640px) {
   .main {
     padding-top: calc(56px + var(--safe-top, 0px) + 20px);
     padding-bottom: calc(100px + var(--safe-bottom, 0px));
+    scrollbar-width: thin;
+    -ms-overflow-style: auto;
+  }
+
+  .main::-webkit-scrollbar {
+    display: block;
+    width: 6px;
+    height: 6px;
   }
 
   .mainInner {

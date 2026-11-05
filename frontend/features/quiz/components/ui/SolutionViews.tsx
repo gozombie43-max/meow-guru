@@ -281,6 +281,13 @@ export function SolutionBottomSheet({
                 border-bottom: none;
                 padding-bottom: env(safe-area-inset-bottom, 0px);
                 touch-action: pan-y;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+              .ios-solution-sheet::-webkit-scrollbar {
+                display: none;
+                width: 0;
+                height: 0;
               }
               .ios-solution-drag-zone {
                 display: flex;
@@ -367,6 +374,14 @@ export function SolutionBottomSheet({
                 overflow-y: auto;
                 padding: 18px 22px 16px 22px;
                 overscroll-behavior: contain;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                -webkit-overflow-scrolling: touch;
+              }
+              .ios-solution-body::-webkit-scrollbar {
+                display: none;
+                width: 0;
+                height: 0;
               }
               .ios-solution-container {
                 display: flex;
@@ -468,6 +483,12 @@ export function SolutionBottomSheet({
                 }
                 .ios-solution-body {
                   padding: 22px 28px 20px 28px;
+                  scrollbar-width: thin;
+                  -ms-overflow-style: auto;
+                }
+                .ios-solution-body::-webkit-scrollbar {
+                  display: block;
+                  width: 6px;
                 }
               }
               .ios-solution-backdrop[data-theme="dark"] { backdrop-filter: none; }
