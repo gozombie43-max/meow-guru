@@ -48,5 +48,6 @@ export function stableImageUrl(key) {
 
 export async function listNoteImageObjects(continuationToken) {
   const { b2Client, B2_BUCKET } = await import('../config/b2.js');
-  return retryRead(objectStorage, signal => b2Client.send(new ListObjectsV2Command({ Bucket: B2_BUCKET, Prefix: 'notes/images/', MaxKeys: 100, ContinuationToken: continuationToken }), { abortSignal: signal }));
+  const token = typeof continuationToken === 'string' && continuationToken.trim() ? continuationToken.trim() : undefined;
+  return retryRead(objectStorage, signal => b2Client.send(new ListObjectsV2Command({ Bucket: B2_BUCKET, Prefix: 'notes/images/', MaxKeys: 100, ContinuationToken: token }), { abortSignal: signal }));
 }

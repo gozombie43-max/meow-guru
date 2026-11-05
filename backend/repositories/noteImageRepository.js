@@ -3,7 +3,37 @@ import { getMongoDB, getNotesCollection } from '../config/mongodb.js';
 const images = () => getMongoDB().collection('noteImages');
 const hours = value => value * 60 * 60 * 1000;
 export const noteImageInventoryCursor = () => getMongoDB().collection('runtimeMaintenance').findOne({ _id: 'note-image-inventory' });
-export const saveNoteImageInventoryCursor = token => getMongoDB().collection('runtimeMaintenance').updateOne({ _id: 'note-image-inventory' }, { $set: { token: token || null } }, { upsert: true });
+export const saveNoteImageInventoryCursor = (token, optionsOrDate = null) => {
+  const normalizeDate = d => {
+    if (d === null) return null;
+    if (d instanceof Date) return Number.isFinite(d.getTime()) ? d : new Date();
+    if (typeof d === 'number' && Number.isFinite(d) && d > 0) return new Date(d);
+    if (typeof d === 'string' && d.trim()) {
+      const parsed = new Date(d);
+      if (Number.isFinite(parsed.getTime())) return parsed;
+    }
+    return d;
+  };
+  const isReset = Boolean(optionsOrDate?.reset);
+  const sanitizedToken = isReset ? null : (typeof token === 'string' && token.trim() ? token.trim() : null);
+  const isDateLike = val => val instanceof Date || (typeof val === 'number' && Number.isFinite(val) && val > 0);
+  const completedAt = isDateLike(optionsOrDate)
+    ? (sanitizedToken ? undefined : normalizeDate(optionsOrDate))
+    : (optionsOrDate?.completedAt !== undefined
+        ? normalizeDate(optionsOrDate.completedAt)
+        : (isReset ? null : (sanitizedToken ? undefined : new Date())));
+  const update = {
+    $set: {
+      token: sanitizedToken,
+      ...(completedAt !== undefined ? { completedAt } : {}),
+    },
+  };
+  return getMongoDB().collection('runtimeMaintenance').updateOne(
+    { _id: 'note-image-inventory' },
+    update,
+    { upsert: true },
+  );
+};
 export const trackLegacyNoteImage = (key, now = new Date()) => images().updateOne({ _id: key }, { $setOnInsert: { state: 'pending', createdAt: now, cleanupAfter: now } }, { upsert: true });
 
 export function trackPendingNoteImage(key, userId, now = new Date()) {
