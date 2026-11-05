@@ -407,7 +407,15 @@
   overflow-x: hidden;
   overscroll-behavior: contain;
   padding: 20px max(16px, var(--safe-right, 0px)) 28px max(16px, var(--safe-left, 0px));
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.quiz-chatbot-shell :is(.lscroll, .ca)::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .quiz-chatbot-shell .ctx {
@@ -1167,9 +1175,31 @@
   }
 }
 
+@media (max-width: 639.98px) {
+  .quiz-chatbot-overlay,
+  .quiz-chatbot-modal,
+  .quiz-chatbot-shell {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .quiz-chatbot-overlay::-webkit-scrollbar,
+  .quiz-chatbot-modal::-webkit-scrollbar,
+  .quiz-chatbot-shell::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
 @media (min-width: 640px) {
   .quiz-chatbot-shell :is(.lscroll, .ca) {
     padding: 28px 36px 36px;
+    scrollbar-width: thin;
+    -ms-overflow-style: auto;
+  }
+  .quiz-chatbot-shell :is(.lscroll, .ca)::-webkit-scrollbar {
+    display: block;
+    width: 6px;
   }
   .quiz-chatbot-shell .tutor-header {
     padding-left: 20px;
