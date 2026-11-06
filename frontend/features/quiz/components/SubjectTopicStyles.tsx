@@ -336,6 +336,17 @@ export function SubjectTopicStyles() {
           stroke: currentColor;
         }
 
+        .sg-badge img,
+        .sg-banner-icon img {
+          width: 28px;
+          height: 28px;
+          object-fit: contain;
+          display: block;
+        }
+        .sg-card[data-empty="true"] .sg-badge img {
+          filter: grayscale(1);
+        }
+
         .sg-card-info {
           display: flex;
           flex-direction: column;
@@ -429,20 +440,31 @@ export function SubjectTopicStyles() {
 
         /* -- Count loading placeholder -- */
         @keyframes sg-fade { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        @keyframes sg-count-in {
+          from { opacity: 0; transform: scale(0.92); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes sg-dim-in { from { opacity: 1; } to { opacity: 0.45; } }
         .sg-card-qs-skeleton {
           display: inline-block;
-          width: 62px;
+          width: 56px;
           height: 28px;
           border-radius: 8px;
           background: rgba(255, 255, 255, 0.06);
           animation: sg-fade 1.4s ease-in-out infinite;
+        }
+        .sg-grid[data-reveal="motion"] .sg-card-qs-text {
+          animation: sg-count-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
         }
         body.theme-light .sg-card-qs-skeleton,
         html.theme-light .sg-card-qs-skeleton {
           background: rgba(15, 23, 42, 0.08);
         }
         @media (prefers-reduced-motion: reduce) {
-          .sg-card-qs-skeleton { animation: none; }
+          .sg-card-qs-skeleton,
+          .sg-grid .sg-card-qs-text,
+          .sg-grid .sg-card[data-empty="true"] .sg-badge,
+          .sg-grid .sg-card[data-empty="true"] .sg-card-info { animation: none !important; }
         }
 
         /* -- Empty mode (no questions yet) -- */
@@ -459,6 +481,10 @@ export function SubjectTopicStyles() {
         .sg-card[data-empty="true"] .sg-badge,
         .sg-card[data-empty="true"] .sg-card-info {
           opacity: 0.45;
+        }
+        .sg-grid[data-reveal="motion"] .sg-card[data-empty="true"] .sg-badge,
+        .sg-grid[data-reveal="motion"] .sg-card[data-empty="true"] .sg-card-info {
+          animation: sg-dim-in 0.28s ease-out both;
         }
         .sg-card[data-empty="true"] .sg-card-qs-text {
           background: transparent;

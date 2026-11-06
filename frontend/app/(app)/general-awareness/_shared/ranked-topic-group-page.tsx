@@ -5,6 +5,7 @@
 import TopicThumbnail from "@/components/subject-hub/TopicThumbnail";
 import ChapterThumbnail from "./ChapterThumbnail";
 import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
+import { prefetchQuestionCounts } from "@/hooks/useQuestionCounts";
 import { useRecentChapter } from "@/lib/recent-study";
 import { chapterImage } from "@/lib/topic-images";
 import { useBackLayer } from "@/hooks/useAppNavigation";
@@ -217,6 +218,9 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                       key={topic.slug}
                       className={styles.row}
                       href={`${routeBase}/${topic.slug}`}
+                      onPointerEnter={() => prefetchQuestionCounts({ subject, topic: topic.title })}
+                      onFocus={() => prefetchQuestionCounts({ subject, topic: topic.title })}
+                      onTouchStart={() => prefetchQuestionCounts({ subject, topic: topic.title })}
                       aria-label={group.filters.length ? `Rank ${topic.rank}: ${topic.title}, ${topic.priority} ${group.metricLabel.toLowerCase()}. Open topic.` : `${topic.rank}. ${topic.title}. Open chapter.`}
                     >
                       <span className={styles.rank}>{topic.rank}</span>
@@ -338,6 +342,9 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                     <Link
                       key={topic.slug}
                       href={`${routeBase}/${topic.slug}`}
+                      onPointerEnter={() => prefetchQuestionCounts({ subject, topic: topic.title })}
+                      onFocus={() => prefetchQuestionCounts({ subject, topic: topic.title })}
+                      onTouchStart={() => prefetchQuestionCounts({ subject, topic: topic.title })}
                       data-hub-part="mobileTopicRow"
                       data-recent={isRecent ? "true" : undefined}
                       className={`${styles.chapterRow} ${isRecent ? styles.chapterRowRecent : ""}`}

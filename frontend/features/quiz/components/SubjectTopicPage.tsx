@@ -1,6 +1,6 @@
 import { SubjectTopicStyles } from "@/features/quiz/components/SubjectTopicStyles";
 import Link from "next/link";
-import { FileText } from "lucide-react";
+import Image from "next/image";
 import TopicPracticeModes from "@/features/quiz/components/TopicPracticeModes.client";
 
 export interface SubjectTopicPageProps {
@@ -117,7 +117,7 @@ export default function SubjectTopicPage({
             {/* BANNER */}
             <div className="sg-banner-wrap">
               <Link href={notesHref} className="sg-banner" aria-label={bannerAriaLabel || bannerActionLabel || "Open formula notes"}>
-                <div className="sg-banner-icon"><FileText size={18} strokeWidth={1.75} aria-hidden="true" /></div>
+                <div className="sg-banner-icon"><Image src="/icons/practice/fact-notes.svg" alt="" width={28} height={28} aria-hidden="true" /></div>
                 <div className="sg-banner-body">
                   {bannerKicker ? <div className="sg-banner-kicker">{bannerKicker}</div> : null}
                   <div className="sg-banner-title">{headlineText}</div>

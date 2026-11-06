@@ -1,5 +1,5 @@
 import { runtimeLog } from '../infrastructure/runtimeLog.js';
-import { runMatchmakingPass, emitMatchFound } from '../battle/matchmakingService.js';
+import * as matchmakingService from '../battle/matchmakingService.js';
 import { acquireMatchmakingPass } from '../battle/matchmakingLock.js';
 const POLL_MS = Math.max(250, Number(process.env.BATTLE_MATCHMAKING_POLL_MS) || 1_000);
 const DEGRADED_POLL_MS = Math.max(5_000, POLL_MS * 5);
@@ -9,10 +9,11 @@ export async function runBattleMatchmakingWorkerOnce() {
   running = true;
   let lease;
   try {
+    if ('hasMatchmakingCandidates' in matchmakingService && !await matchmakingService.hasMatchmakingCandidates()) return;
     lease = await acquireMatchmakingPass();
     if (lease.degraded) nextAttemptAt = Date.now() + DEGRADED_POLL_MS + Math.floor(Math.random() * 500);
     if (!lease.acquired) return;
-    for (const match of await runMatchmakingPass({ limit: lease.degraded ? 4 : 25, canContinue: lease.renew })) emitMatchFound(match);
+    for (const match of await matchmakingService.runMatchmakingPass({ limit: lease.degraded ? 4 : 25, canContinue: lease.renew })) matchmakingService.emitMatchFound(match);
   } catch (error) { nextAttemptAt = Date.now() + DEGRADED_POLL_MS; throw error; }
   finally {
     try { await lease?.release(); }

@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { prefetchOnce } from "@/lib/intent-prefetch";
+import { prefetchQuestionCounts } from "@/hooks/useQuestionCounts";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { ChevronRight, type LucideIcon } from "lucide-react";
@@ -18,6 +19,7 @@ export interface MobileTopicCardProps {
   priority?: boolean;
   isRecent?: boolean;
   detail?: { color?: string; questionCount?: number; progress?: number; userSolved?: number };
+  prefetchCounts?: { subject: string; topic: string };
 }
 
 export const MobileTopicCard = React.memo(function MobileTopicCard({
@@ -28,6 +30,7 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
   priority = false,
   isRecent = false,
   detail,
+  prefetchCounts,
 }: MobileTopicCardProps) {
   const router = useRouter();
   const count = detail?.questionCount ?? 0;
@@ -40,9 +43,9 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
     <Link
       href={href}
       prefetch={false}
-      onPointerEnter={() => { prefetchOnce(router, href); }}
-      onFocus={() => { prefetchOnce(router, href); }}
-      onTouchStart={() => { prefetchOnce(router, href); }}
+      onPointerEnter={() => { prefetchOnce(router, href); if (prefetchCounts) prefetchQuestionCounts(prefetchCounts); }}
+      onFocus={() => { prefetchOnce(router, href); if (prefetchCounts) prefetchQuestionCounts(prefetchCounts); }}
+      onTouchStart={() => { prefetchOnce(router, href); if (prefetchCounts) prefetchQuestionCounts(prefetchCounts); }}
       data-hub-part="mobileTopicRow"
       data-recent={isRecent ? "true" : undefined}
       className={`${styles.card} ${isRecent ? styles.cardRecent : ""}`}

@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
 import { createDurableProgressCache } from '../../infrastructure/durableProgressCache.js';
 
-const cache = createDurableProgressCache('training-dashboard', (userId, exam) => createHash('sha256').update(JSON.stringify([String(userId), exam])).digest('hex'), 5, {
+export const TRAINING_DASHBOARD_CACHE_TTL_SECONDS = 120;
+const cache = createDurableProgressCache('training-dashboard', (userId, exam) => createHash('sha256').update(JSON.stringify([String(userId), exam])).digest('hex'), TRAINING_DASHBOARD_CACHE_TTL_SECONDS, {
   validUntil: value => Math.min(Infinity, ...(value?.active ?? []).map(session => Date.parse(session.deadline))),
 });
 export const readTrainingDashboardCache = cache.read;
