@@ -6,6 +6,7 @@ import { importApi } from './api';
 import { ACCEPTED_EXTENSIONS, MAX_FILES, useImportBatch } from './useImportBatch';
 import type { CheckState, FileStatus, ImportFile, ImportJob, PreviewRow } from './types';
 import styles from './BulkTopicImportManager.module.css';
+import { formatBytes } from '@/app/(admin)/admin/admin-question-bank-model';
 
 const STATUS_META: Record<FileStatus, { label: string; tone: 'neutral' | 'info' | 'ok' | 'warn' | 'err' }> = {
   pending: { label: 'Not validated', tone: 'neutral' },
@@ -20,7 +21,6 @@ const STATUS_META: Record<FileStatus, { label: string; tone: 'neutral' | 'info' 
   failed: { label: 'Failed', tone: 'err' },
 };
 const tintIndex = (value: string) => [...value].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 5;
-const formatBytes = (bytes: number) => (bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`);
 const plural = (count: number, word: string) => `${count.toLocaleString()} ${word}${count === 1 ? '' : 's'}`;
 
 function aggregate(job: ImportJob | null, key: 'format' | 'schema' | 'duplicates'): { state: CheckState | 'running'; text: string } {

@@ -2,7 +2,7 @@
 import { useStudyModeEngine } from "./useStudyModeEngine";
 
 
-import { type Question as ApiQuestion } from "@/lib/api/questions";
+import { type Question as ApiQuestion } from "@/features/quiz/api/questions";
 
 type StudyModeMeaning = {
   definition?: string;

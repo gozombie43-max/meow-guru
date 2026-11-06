@@ -1,6 +1,5 @@
-import React from 'react';
 import { quizCorrectIndex } from '@meow/contracts/quiz-grading';
-import { type Question as ApiQuestion } from '@/lib/api/questions';
+import { type Question as ApiQuestion } from '@/features/quiz/api/questions';
 import { QuizMode, Difficulty, QuizQuestionRecord, ConceptColour, QuizQuestion } from '@/features/quiz/model/types';
 
 export const MODE_LABELS: Record<QuizMode, string> = {
@@ -66,109 +65,11 @@ export function buildConceptColours(concepts: string[]): Record<string, ConceptC
   return colours;
 }
 
-export function normalizeQuizTag(value?: string): string {
-  return String(value ?? "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "");
-}
 
-export function matchesQuizTag(
-  question: {
-    quizName?: string;
-    source?: string;
-    quizId?: string;
-  },
-  tags: string[]
-): boolean {
-  const quizTag =
-    normalizeQuizTag(question.quizName) ||
-    normalizeQuizTag(question.quizId) ||
-    normalizeQuizTag(question.source);
 
-  return tags.includes(quizTag);
-}
+export { isStudyModeQuestion } from "@/features/quiz/api/questions";
 
-export function isFormulaQuestion(question: {
-  quizName?: string;
-  source?: string;
-  quizId?: string;
-  topic?: string;
-  letter?: string;
-  word?: string;
-}): boolean {
-  if (matchesQuizTag(question, ["careerwill", "patternbank", "formula", "formulabank", "vocabularybank", "factbank", "antosynopyq"])) {
-    return true;
-  }
-  const normalizedTopic = normalizeQuizTag(question.topic);
-  if (normalizedTopic === "antosynopyq") return true;
-  if (typeof question.letter === "string" && question.letter.trim()) return true;
-  if (typeof question.word === "string" && question.word.trim()) return true;
-  return false;
-}
 
-export function isMixedQuestion(question: {
-  quizName?: string;
-  source?: string;
-  quizId?: string;
-}): boolean {
-  return matchesQuizTag(question, ["pw", "mixedpractice", "mixedpw"]);
-}
-
-export function isAiChallengeQuestion(question: {
-  quizName?: string;
-  source?: string;
-  quizId?: string;
-}): boolean {
-  return matchesQuizTag(question, ["selectionway", "aichallenge"]);
-}
-
-export function isTopicMixQuestion(question: {
-  quizName?: string;
-  source?: string;
-  quizId?: string;
-}): boolean {
-  return matchesQuizTag(question, ["topicmix"]);
-}
-
-export function isTier2Question(question: {
-  quizName?: string;
-  source?: string;
-  quizId?: string;
-}): boolean {
-  return matchesQuizTag(question, ["tier2", "tier2hard"]);
-}
-
-export function isStudyModeQuestion(question: {
-  questionType?: string;
-  quizName?: string;
-  word?: string;
-  meanings?: unknown[];
-}): boolean {
-  if (!question || typeof question !== "object") return false;
-  const qType = String(question.questionType || "").trim().toLowerCase();
-  if (qType === "study-mode" || qType === "studymode") return true;
-  if (String(question.quizName || "").trim().toLowerCase() === "study mode") return true;
-  if (typeof question.word === "string" && question.word.trim() && Array.isArray(question.meanings)) return true;
-  return false;
-}
-
-export function isTaggedModeQuestion(question: {
-  quizName?: string;
-  source?: string;
-  quizId?: string;
-  topic?: string;
-  letter?: string;
-  word?: string;
-}): boolean {
-  return (
-    isFormulaQuestion(question) ||
-    isMixedQuestion(question) ||
-    isAiChallengeQuestion(question) ||
-    isTopicMixQuestion(question) ||
-    isTier2Question(question)
-  );
-}
 
 export function toQuizQuestion(
   question: ApiQuestion,
@@ -299,39 +200,7 @@ export function ensureUniqueQuestionIds(questions: QuizQuestionRecord[]): QuizQu
   });
 }
 
-export function MathFraction({
-  numerator,
-  denominator,
-  className = "",
-}: {
-  numerator: React.ReactNode;
-  denominator: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <span
-      className={`inline-flex flex-col items-center leading-none ${className}`}
-      role="math"
-    >
-      <span
-        className="text-[var(--text-primary)] font-bold"
-        style={{ fontSize: "0.85em" }}
-      >
-        {numerator}
-      </span>
-      <span
-        className="w-full border-t my-[2px]"
-        style={{ minWidth: "1.2em", borderColor: "var(--quiz-divider)" }}
-      />
-      <span
-        className="font-semibold"
-        style={{ fontSize: "0.85em", color: "var(--quiz-text-muted)" }}
-      >
-        {denominator}
-      </span>
-    </span>
-  );
-}
+
 
 type QuestionStatus = "current" | "answered" | "correct" | "wrong" | "not-answered";
 
@@ -373,38 +242,13 @@ export const prefetchQuestionImage = (url?: string) => {
   img.src = url;
 };
 
-export const preloadNextQuestionAssets = (
-  questions: QuizQuestionRecord[],
-  currentIndex: number
-) => {
-  const nextQ = questions[currentIndex + 1];
-  if (!nextQ) return;
-  if (nextQ.questionImage) prefetchQuestionImage(nextQ.questionImage);
-  if (nextQ.solution) {
-    const match = nextQ.solution.match(/!\[.*?\]\((.*?)\)/);
-    if (match?.[1]) prefetchQuestionImage(match[1]);
-  }
-};
 
-export function safeArray<T>(val: unknown): T[] {
-  return Array.isArray(val) ? (val as T[]) : [];
-}
 
 export function clamp(val: number, min: number, max: number): number {
   return Math.min(Math.max(val, min), max);
 }
 
-export function filterQuestionsByMode(
-  questions: QuizQuestionRecord[],
-  mode: QuizMode
-): QuizQuestionRecord[] {
-  if (mode === "formula") return questions.filter(isFormulaQuestion);
-  if (mode === "mixed") return questions.filter(isMixedQuestion);
-  if (mode === "ai-challenge") return questions.filter(isAiChallengeQuestion);
-  if (mode === "easy") return questions.filter(isTopicMixQuestion);
-  if (mode === "hard") return questions.filter(isTier2Question);
-  return questions.filter((q) => !isTaggedModeQuestion(q));
-}
+
 
 export function formatMathBookSolutionLines(solution: string): string[] {
   if (!solution) return [];

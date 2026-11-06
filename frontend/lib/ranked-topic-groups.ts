@@ -16,3 +16,10 @@ export interface RankedTopicGroup {
   readonly filters: readonly RankedTopicPriority[];
   readonly topics: readonly RankedTopic[];
 }
+
+export function toTopicSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}

@@ -1,6 +1,6 @@
 "use client";
 import { useQuestions } from '@/hooks/useQuestions';
-import type { Question } from '@/lib/api/questions';
+import type { Question } from '@/features/quiz/api/questions';
 import { useMemo } from 'react';
 
 // One loading/cache/error boundary for all study-mode presentations.
