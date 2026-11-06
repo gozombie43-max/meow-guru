@@ -1,12 +1,12 @@
-export declare const jamQuestionTopic: (slug: any) => string;
-export declare const JAM_SECTIONS: {
+export function jamQuestionTopic(slug: any): string;
+export const JAM_SECTIONS: {
     slug: string;
     title: string;
     symbol: string;
     color: string;
     topics: string[];
 }[];
-export declare const JAM_MOCK_CONFIGS: {
+export const JAM_MOCK_CONFIGS: {
     'iit-jam-physics': {
         key: string;
         name: string;

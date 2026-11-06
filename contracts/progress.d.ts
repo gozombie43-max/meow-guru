@@ -1,5 +1,4 @@
-import { z } from 'zod';
-export declare const bookmarkPatchSchema: z.ZodObject<{
+export const bookmarkPatchSchema: z.ZodObject<{
     questionId: z.ZodPipe<z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>, z.ZodTransform<string, string | number>>;
     action: z.ZodEnum<{
         add: "add";
@@ -15,12 +14,12 @@ export declare const bookmarkPatchSchema: z.ZodObject<{
         questionIndex: z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>>;
     }, z.core.$strip>>;
 }, z.core.$strip>;
-export declare const progressPatchSchema: z.ZodObject<{
+export const progressPatchSchema: z.ZodObject<{
     topic: z.ZodString;
     attempted: z.ZodNumber;
     correct: z.ZodNumber;
 }, z.core.$strip>;
-export declare const recentQuizPatchSchema: z.ZodObject<{
+export const recentQuizPatchSchema: z.ZodObject<{
     quizKey: z.ZodString;
     title: z.ZodString;
     subject: z.ZodString;
@@ -41,15 +40,15 @@ export declare const recentQuizPatchSchema: z.ZodObject<{
         letter: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>>;
     status: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
-        completed: "completed";
         "in-progress": "in-progress";
+        completed: "completed";
     }>>>;
 }, z.core.$strip>;
-export declare const studyTimePatchSchema: z.ZodObject<{
+export const studyTimePatchSchema: z.ZodObject<{
     activeSeconds: z.ZodNumber;
     timezone: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
-export declare const quizAnswerCommandSchema: z.ZodObject<{
+export const quizAnswerCommandSchema: z.ZodObject<{
     questionId: z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>;
     questionUid: z.ZodOptional<z.ZodString>;
     questionAnchor: z.ZodOptional<z.ZodString>;
@@ -79,8 +78,9 @@ export declare const quizAnswerCommandSchema: z.ZodObject<{
             letter: z.ZodOptional<z.ZodString>;
         }, z.core.$strip>>;
         status: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
-            completed: "completed";
             "in-progress": "in-progress";
+            completed: "completed";
         }>>>;
     }, z.core.$strip>;
 }, z.core.$strip>;
+import { z } from 'zod';

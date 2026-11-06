@@ -1,6 +1,59 @@
-import { z } from 'zod';
-export type QuizLanguage = 'en' | 'bn';
-export type AnswerLetter = 'A' | 'B' | 'C' | 'D';
+/** @param {string} key */
+export function sectionLabel(key: string): string;
+/** @param {ExamPaper} paper */
+export function paperPresentation(paper: ExamPaper): {
+    examName: string;
+    marksPerQuestion: number;
+    negativeMarks: number;
+    compositeTimer: boolean;
+    totalDurationMin: number | undefined;
+    sections: {
+        key: string;
+        label: string;
+        questionCount: number;
+        timeLimitMin: number;
+        marking: {
+            correct: number;
+            incorrect: number;
+        };
+        questions: {
+            translations: {
+                question: LanguageText;
+                options: {
+                    en: string[];
+                    bn: string[];
+                };
+                solution: LanguageText;
+            };
+            questionImage?: string | undefined;
+            questionImageWidth?: number | undefined;
+            questionImageHeight?: number | undefined;
+            id: string;
+            questionType: "MCQ";
+            question: string;
+            options: {
+                id: string;
+                text: string;
+            }[];
+            solution: string;
+        }[];
+    }[];
+    skillTest?: {
+        type: "DEST" | "TYPING";
+        duration: number;
+    } | undefined;
+    shift?: number | undefined;
+    examDate?: string | undefined;
+    paper?: number | undefined;
+    schemaDriven: boolean;
+    exam: "SSC_CGL" | "SSC_CHSL";
+    tier: 1 | 2;
+    type: "MOCK" | "PYQ";
+};
+/** @type {z.ZodType<ExamPaper>} */
+export const examPaperSchema: z.ZodType<ExamPaper>;
+export type QuizLanguage = "en" | "bn";
+export type AnswerLetter = "A" | "B" | "C" | "D";
 export type LanguageText = {
     en: string;
     bn: string;
@@ -23,9 +76,9 @@ export type QuizSection = {
     questions: QuizQuestion[];
 };
 export type ExamPaper = {
-    exam: 'SSC_CGL' | 'SSC_CHSL';
+    exam: "SSC_CGL" | "SSC_CHSL";
     tier: 1 | 2;
-    type: 'MOCK' | 'PYQ';
+    type: "MOCK" | "PYQ";
     paper?: number;
     examDate?: string;
     shift?: number;
@@ -33,61 +86,8 @@ export type ExamPaper = {
     negativeMarks: number;
     sections: Record<string, QuizSection>;
     skillTest?: {
-        type: 'DEST' | 'TYPING';
+        type: "DEST" | "TYPING";
         duration: number;
     };
 };
-/** @type {z.ZodType<ExamPaper>} */
-export declare const examPaperSchema: z.ZodType<ExamPaper>;
-/** @param {string} key */
-export declare function sectionLabel(key: string): string;
-/** @param {ExamPaper} paper */
-export declare function paperPresentation(paper: ExamPaper): {
-    schemaDriven: boolean;
-    exam: "SSC_CGL" | "SSC_CHSL";
-    tier: 1 | 2;
-    type: "MOCK" | "PYQ";
-    paper?: number | undefined;
-    examDate?: string | undefined;
-    shift?: number | undefined;
-    skillTest?: {
-        type: 'DEST' | 'TYPING';
-        duration: number;
-    } | undefined;
-    examName: string;
-    marksPerQuestion: number;
-    negativeMarks: number;
-    compositeTimer: boolean;
-    totalDurationMin: number | undefined;
-    sections: {
-        key: string;
-        label: string;
-        questionCount: number;
-        timeLimitMin: number;
-        marking: {
-            correct: number;
-            incorrect: number;
-        };
-        questions: {
-            id: string;
-            questionType: 'MCQ';
-            question: string;
-            options: {
-                id: string;
-                text: string;
-            }[];
-            solution: string;
-            questionImage?: string | undefined;
-            questionImageWidth?: number | undefined;
-            questionImageHeight?: number | undefined;
-            translations: {
-                question: LanguageText;
-                options: {
-                    en: string[];
-                    bn: string[];
-                };
-                solution: LanguageText;
-            };
-        }[];
-    }[];
-};
+import { z } from 'zod';

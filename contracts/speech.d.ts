@@ -1,5 +1,4 @@
-import { z } from 'zod';
-export declare const speechRequestSchema: z.ZodObject<{
+export const speechRequestSchema: z.ZodObject<{
     text: z.ZodString;
     bengaliText: z.ZodDefault<z.ZodOptional<z.ZodString>>;
     voice: z.ZodCatch<z.ZodEnum<{
@@ -8,14 +7,14 @@ export declare const speechRequestSchema: z.ZodObject<{
     }>>;
     rate: z.ZodCatch<z.ZodString>;
 }, z.core.$strip>;
-export declare const translationRequestSchema: z.ZodObject<{
+export const translationRequestSchema: z.ZodObject<{
     texts: z.ZodArray<z.ZodString>;
     targetLang: z.ZodEnum<{
         bn: "bn";
         hi: "hi";
     }>;
 }, z.core.$strip>;
-export declare const translationResponseSchema: z.ZodArray<z.ZodObject<{
+export const translationResponseSchema: z.ZodArray<z.ZodObject<{
     translations: z.ZodArray<z.ZodObject<{
         text: z.ZodString;
         to: z.ZodEnum<{
@@ -24,3 +23,4 @@ export declare const translationResponseSchema: z.ZodArray<z.ZodObject<{
         }>;
     }, z.core.$strip>>;
 }, z.core.$strip>>;
+import { z } from 'zod';

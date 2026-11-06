@@ -1,11 +1,10 @@
-import { z } from 'zod';
-export declare const TRAINING_MODES: string[];
-export declare const TRAINING_EXAMS: {
+export const TRAINING_MODES: string[];
+export const TRAINING_EXAMS: {
     id: string;
     label: string;
 }[];
-export declare const MISTAKES: string[];
-export declare const startSchema: z.ZodObject<{
+export const MISTAKES: string[];
+export const startSchema: z.ZodObject<{
     mode: z.ZodEnum<{
         [x: string]: string;
     }>;
@@ -21,14 +20,14 @@ export declare const startSchema: z.ZodObject<{
     count: z.ZodDefault<z.ZodUnion<readonly [z.ZodLiteral<10>, z.ZodLiteral<20>, z.ZodLiteral<25>, z.ZodLiteral<50>, z.ZodLiteral<"full">]>>;
     minutes: z.ZodDefault<z.ZodUnion<readonly [z.ZodLiteral<5>, z.ZodLiteral<10>, z.ZodLiteral<15>]>>;
 }, z.core.$strip>;
-export declare const actionSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
+export const actionSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     type: z.ZodLiteral<"answer">;
     revision: z.ZodNumber;
     choice: z.ZodNullable<z.ZodNumber>;
     confidence: z.ZodOptional<z.ZodNullable<z.ZodEnum<{
-        guess: "guess";
         sure: "sure";
         unsure: "unsure";
+        guess: "guess";
     }>>>;
 }, z.core.$strip>, z.ZodObject<{
     type: z.ZodLiteral<"visit">;
@@ -41,3 +40,4 @@ export declare const actionSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     type: z.ZodLiteral<"abandon">;
     revision: z.ZodNumber;
 }, z.core.$strip>], "type">;
+import { z } from 'zod';
