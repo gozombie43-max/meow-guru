@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
 import { createDurableProgressCache } from '../../infrastructure/durableProgressCache.js';
 
-const cache = createDurableProgressCache('topic-progress', userId => createHash('sha256').update(String(userId)).digest('hex'), 10);
+export const TOPIC_PROGRESS_CACHE_TTL_SECONDS = 300;
+const cache = createDurableProgressCache('topic-progress', userId => createHash('sha256').update(String(userId)).digest('hex'), TOPIC_PROGRESS_CACHE_TTL_SECONDS);
 export const readTopicProgressCache = cache.read;
 export const writeTopicProgressCache = cache.write;
 export const cachedTopicProgress = (userId, build) => cache.load([userId], build);

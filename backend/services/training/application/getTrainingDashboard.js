@@ -22,7 +22,7 @@ export function getTrainingDashboardData(userId, exam) {
 async function loadDashboard(userId, exam) {
   const start = performance.now();
   return cachedTrainingDashboard(userId, exam, async () => {
-    // Cached dashboards last at most five seconds and never outlive a visible
+    // Cached dashboards have a bounded TTL and never outlive a visible
     // active-session deadline. Cache misses recover expiry without a worker.
     const expired = await expiredActiveSessions(userId, exam);
     for (const stale of expired) {

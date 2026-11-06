@@ -8,6 +8,7 @@ import { isNormalizedQuestionKeysEnabled, questionCountsCache, revisionedQuestio
 import { readQuestionMetadata } from "./questionMetadataCache.js";
 import { canonicalMode, ensureConceptGroups } from "./conceptGroupService.js";
 import { deriveModeKey, normalizeSearchKey } from "./questionNormalizer.js";
+import { isCanonicalQuestionScope } from './topicCatalog.js';
 import {
   buildExcludeStudyModeCondition,
   caseInsensitiveExact,
@@ -18,23 +19,27 @@ import {
   buildModeFilter,
 } from "./questionQueryBuilder.js";
 
+const CANONICAL_COUNTS_PREFIX = 'question-counts:v3:canonical:';
 const countsCache = createTieredCache({
-  freshMs: 120000, staleMs: 120000, localCache: questionCountsCache,
-  isEmpty: counts => Object.values(counts).every(count => count === 0),
+  freshMs: 300000, staleMs: 300000, localCache: questionCountsCache,
+  isEmpty: (counts, key) => !String(key || '').startsWith(CANONICAL_COUNTS_PREFIX)
+    && Object.values(counts).every(count => count === 0),
 });
-const countsKey = async params => `question-counts:v3:${createHash('sha256').update(await revisionedQuestionCacheKey(JSON.stringify(params))).digest('hex')}`;
+const countsKey = async params => `${isCanonicalQuestionScope(params) ? CANONICAL_COUNTS_PREFIX : 'question-counts:v3:'}${createHash('sha256').update(await revisionedQuestionCacheKey(JSON.stringify(params))).digest('hex')}`;
 
 export async function primeQuestionCountCaches(paramsList) {
+  if (!paramsList.length) return;
   const keys = [...new Set(await Promise.all(paramsList.map(params => countsKey(canonicalQuestionQuery('counts', params)))))];
   const missing = keys.filter(key => !countsCache.hasFresh(key));
+  if (!missing.length) return;
   const shared = await redisGetJsonMany(missing.map(key => `tiered:v2:${key}`));
   missing.forEach((key, index) => { if (shared[index]) countsCache.prime(key, shared[index]); });
 }
 
-export async function fetchQuestionCounts(input, { sharedChecked = false } = {}) {
+export async function fetchQuestionCounts(input, { sharedChecked = false, cacheShared = true } = {}) {
   const params = canonicalQuestionQuery('counts', input);
   if (!params.topic && !params.subject) throw Object.assign(new Error('topic or subject is required'), { statusCode: 400 });
-  return countsCache.read(await countsKey(params), () => buildQuestionCounts(params), { allowStale: false, sharedChecked });
+  return countsCache.read(await countsKey(params), () => buildQuestionCounts(params), { allowStale: false, sharedChecked, cacheShared });
 }
 
 async function buildQuestionCounts(params) {

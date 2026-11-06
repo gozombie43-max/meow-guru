@@ -1,48 +1,11 @@
-import { JAM_SECTIONS, jamQuestionTopic } from '@meow/contracts/jam';
 import { aggregateQuestionModeCounts, findPersistedQuestionMetadata, saveTopicCountSnapshot } from '../../repositories/questionMetadataRepository.js';
 import { createTieredCache } from '../../infrastructure/tieredCache.js';
 import { getQuestionRevision, isNormalizedQuestionKeysEnabled } from "./questionCache.js";
-import { fetchQuestionCounts, primeQuestionCountCaches } from "./questionMetadataService.js";
+import { fetchQuestionCounts } from "./questionMetadataService.js";
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
 import { caseInsensitiveExact, mongoString, questionModeFromAggregateKey } from "./questionQueryBuilder.js";
 import { normalizeSearchKey } from "./questionNormalizer.js";
-
-// Canonical hub topics per subject. Counts use the same mode resolver as topic pages.
-const SUBJECT_TOPICS = {
-  mathematics: [
-    "percentages", "ratio-and-proportion", "profit-and-loss", "simple-interest",
-    "compound-interest", "time-and-work", "time-and-distance", "algebra", "geometry",
-    "mensuration", "trigonometry", "number-system", "averages", "discount",
-    "mixture-and-alligation", "partnership", "square-roots", "statistics-probability",
-    "simplification", "lcm-and-hcf", "problems-on-ages", "pipes-and-cisterns",
-    "calendar-and-clock", "height-and-distance", "boat-and-stream",
-  ],
-  reasoning: [
-    "coding-decoding", "syllogism-inferences", "puzzle-seating-arrangement", "series",
-    "analogy", "classification-odd-one-out", "blood-relations", "direction-distance",
-    "venn-diagram", "inequalities", "mathematical-symbolic-operations", "order-ranking",
-    "statement-conclusion", "statement-assumptions", "statement-arguments",
-    "problem-solving-critical-thinking", "non-verbal-figures", "paper-folding-cutting",
-    "mirror-water-image", "cube-dice", "matrix", "logical-sequence-of-words",
-    "emotional-intelligence", "social-intelligence", "word-building",
-  ],
-  english: [
-    "synonyms-antonyms", "one-word-substitution", "idioms-phrases",
-    "spot-the-error-error-detection", "sentence-correction-improvement", "cloze-test",
-    "reading-comprehension", "active-passive-voice", "direct-indirect-narration",
-    "tenses", "subject-verb-agreement", "para-jumbles", "fill-in-the-blanks",
-    "spelling-misspelled-words", "prepositions", "articles", "conjunctions",
-    "homonyms-homophones", "sentence-structure", "para-sentence-completion",
-    "pronouns", "modifiers", "parallelism",
-  ],
-  "general-awareness": [
-    "ancient-history", "medieval-history", "modern-history", "polity", "geography",
-    "physics", "chemistry", "biology", "economy", "current-affairs", "static-gk",
-  ],
-  'iit-jam-physics': JAM_SECTIONS.map(section => jamQuestionTopic(section.slug)),
-};
-
-const PUBLIC_CATALOG_SUBJECTS = ['mathematics', 'reasoning', 'english', 'general-awareness'];
+import { SUBJECT_TOPICS, PUBLIC_CATALOG_SUBJECTS } from './topicCatalog.js';
 
 const MODES = ["concept", "formula", "mixed", "aiChallenge", "easy", "hard"];
 const COUNTED_MODES = new Set(MODES);
@@ -117,21 +80,79 @@ const freshSnapshot = (data, revision) => {
 };
 
 const snapshots = createTieredCache({
-  freshMs: 120000, staleMs: 120000,
+  freshMs: 900000, staleMs: 900000,
   validUntil: data => data ? new Date(data.generatedAt || data.updatedAt).getTime() + MAX_SNAPSHOT_AGE_MS : Infinity,
 });
 
 // This cache is exclusively public catalog data. A previous bank revision is
 // permitted here, never in scoring, question pages or private progress reads.
 const publicSnapshots = createTieredCache({
-  freshMs: 5000, staleMs: MAX_PUBLIC_AGE_MS,
+  freshMs: 300000, staleMs: MAX_PUBLIC_AGE_MS,
   validUntil: data => new Date(data?.generatedAt || data?.updatedAt).getTime() + MAX_PUBLIC_AGE_MS,
 });
+
+const escapeRegex = value => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+async function subjectAppearsEmpty(subject, topics) {
+  if ((await aggregateQuestionModeCounts([{ $limit: 1 }])).length === 0) return true;
+  if (isNormalizedQuestionKeysEnabled()) {
+    if (CHAPTER_SUBJECTS.has(subject)) {
+      const subjectKey = normalizeSearchKey(subject);
+      const topicKeys = topics.map(normalizeSearchKey);
+      return (await aggregateQuestionModeCounts([
+        { $match: { $or: [{ subjectKey }, { topicKey: { $in: topicKeys } }] } },
+        { $limit: 1 },
+      ])).length === 0;
+    }
+    const match = subject === 'iit-jam-physics'
+      ? { subjectKey: normalizeSearchKey(subject) }
+      : { topicKey: { $in: [...new Set(topics.flatMap(topic => {
+        const key = normalizeSearchKey(topic);
+        return ['synonymsantonyms', 'antosynopyq'].includes(key) ? ['synonymsantonyms', 'antosynopyq'] : [key];
+      }))] } };
+    return (await aggregateQuestionModeCounts([{ $match: match }, { $limit: 1 }])).length === 0;
+  }
+  if (subject === 'iit-jam-physics') {
+    return (await aggregateQuestionModeCounts([{ $match: { subject: caseInsensitiveExact(subject) } }, { $limit: 1 }])).length === 0;
+  }
+  const aliases = [...new Set(topics.flatMap(topic => (
+    ['synonymsantonyms', 'antosynopyq'].includes(normalizeSearchKey(topic))
+      ? [topic, 'antosynopyq', 'synonyms-antonyms']
+      : [topic]
+  )))];
+  const pattern = new RegExp(`^\\s*(?:${aliases.map(escapeRegex).join('|')})\\s*$`, 'i');
+  const clauses = [
+    { topic: pattern }, { chapter: pattern }, { subject: pattern },
+    { quizTopic: pattern }, { quizName: pattern }, { source: pattern },
+  ];
+  if (CHAPTER_SUBJECTS.has(subject)) clauses.push({ subject: caseInsensitiveExact(subject) });
+  return (await aggregateQuestionModeCounts([{ $match: { $or: clauses } }, { $limit: 1 }])).length === 0;
+}
+
 const refreshes = new Map();
-function refreshPublicSnapshot(subject) {
+function refreshPublicSnapshot(subject, { periodic = false } = {}) {
   const key = `${subject}:${isNormalizedQuestionKeysEnabled()}`;
   if (refreshes.has(key)) return refreshes.get(key);
-  const work = fetchTopicCountSnapshot(subject).catch(error => {
+  const work = (async () => {
+    const id = `topic-counts:v3:${subject}:${isNormalizedQuestionKeysEnabled()}`;
+    const [revision, saved] = await Promise.all([getQuestionRevision(), findPersistedQuestionMetadata(id)]);
+    if (saved?.revision === revision && validSnapshot(saved.data, subject, revision, MAX_SNAPSHOT_AGE_MS)) {
+      publicSnapshots.prime(`public-catalog:v1:${id}`, saved.data);
+      snapshots.prime(`topic-counts:v3:${id}:${revision}`, saved.data);
+      return saved.data;
+    }
+    if (saved?.revision === revision && validSnapshot(saved.data, subject, revision, MAX_PUBLIC_AGE_MS)
+      && Object.values(saved.data.totals).every(count => count === 0)
+      && await subjectAppearsEmpty(subject, SUBJECT_TOPICS[subject])) {
+      const nowIso = new Date(Date.now()).toISOString();
+      const refreshed = { ...saved.data, generatedAt: nowIso, updatedAt: nowIso };
+      await saveTopicCountSnapshot({ _id: id, revision, data: refreshed, kind: 'topic-counts' });
+      publicSnapshots.prime(`public-catalog:v1:${id}`, refreshed);
+      snapshots.prime(`topic-counts:v3:${id}:${revision}`, refreshed);
+      return refreshed;
+    }
+    return fetchTopicCountSnapshot(subject, { cacheShared: !periodic });
+  })().catch(error => {
     runtimeLog.error('Public topic count refresh failed:', error.message);
   }).finally(() => refreshes.delete(key));
   refreshes.set(key, work);
@@ -149,25 +170,30 @@ export async function refreshTopicCountSnapshots(subjects = PUBLIC_CATALOG_SUBJE
 }
 
 let catalogRefresh;
-export function refreshPublicCatalogs() {
+export function refreshPublicCatalogs({ periodic = false } = {}) {
   if (catalogRefresh) return catalogRefresh;
   catalogRefresh = (async () => {
     // Keep the existing <=4 topic-query budget across subjects as well.
-    for (const subject of PUBLIC_CATALOG_SUBJECTS) await refreshPublicSnapshot(subject);
+    for (const subject of PUBLIC_CATALOG_SUBJECTS) await refreshPublicSnapshot(subject, { periodic });
   })().finally(() => { catalogRefresh = undefined; });
   return catalogRefresh;
 }
 
 export async function initializePublicCatalogs({ fresh = false } = {}) {
   const results = [];
+  const currentRevision = fresh ? null : await getQuestionRevision();
   for (const subject of PUBLIC_CATALOG_SUBJECTS) {
     const id = `topic-counts:v3:${subject}:${isNormalizedQuestionKeysEnabled()}`;
     const saved = await findPersistedQuestionMetadata(id);
     if (!fresh && validSnapshot(saved?.data, subject, saved?.revision, MAX_PUBLIC_AGE_MS)) {
+      publicSnapshots.prime(`public-catalog:v1:${id}`, saved.data);
+      if (saved.revision === currentRevision && validSnapshot(saved.data, subject, currentRevision, MAX_SNAPSHOT_AGE_MS)) {
+        snapshots.prime(`topic-counts:v3:${id}:${currentRevision}`, saved.data);
+      }
       results.push({ subject, revision: saved.revision, rebuilt: false });
       continue;
     }
-    const data = await fetchTopicCountSnapshot(subject);
+    const data = await fetchTopicCountSnapshot(subject, { cacheShared: false });
     // A tiered cache hit alone does not establish durable snapshot presence.
     await saveTopicCountSnapshot({ _id: id, revision: data.revision, data, kind: 'topic-counts' });
     results.push({ subject, revision: data.revision, rebuilt: true });
@@ -197,7 +223,7 @@ export function startTopicCountPrewarm() {
   let stopped = false, pending;
   const warm = () => {
     if (stopped || pending) return;
-    pending = refreshPublicCatalogs().finally(() => { pending = undefined; });
+    pending = refreshPublicCatalogs({ periodic: true }).finally(() => { pending = undefined; });
   };
   warm();
   const timer = setInterval(warm, 15 * 60 * 1000);
@@ -205,7 +231,7 @@ export function startTopicCountPrewarm() {
   return async () => { stopped = true; clearInterval(timer); await pending; };
 }
 
-export async function fetchTopicCountSnapshot(subject = "mathematics") {
+export async function fetchTopicCountSnapshot(subject = "mathematics", { cacheShared = true } = {}) {
   const normalizedSubject = String(subject).toLowerCase();
   const topics = Object.hasOwn(SUBJECT_TOPICS, normalizedSubject) ? SUBJECT_TOPICS[normalizedSubject] : undefined;
   if (!topics) throw Object.assign(new Error(`Unsupported topic-count subject: ${subject}`), { statusCode: 400 });
@@ -214,23 +240,29 @@ export async function fetchTopicCountSnapshot(subject = "mathematics") {
     const revision = await getQuestionRevision();
     const data = await snapshots.read(`topic-counts:v3:${id}:${revision}`, async () => {
       const cached = await findPersistedQuestionMetadata(id);
-      if (cached?.revision === revision && validSnapshot(cached.data, normalizedSubject, revision, MAX_SNAPSHOT_AGE_MS)) return cached.data;
-      const totals = {};
-      await primeQuestionCountCaches(topics.map(topic => ({ subject: normalizedSubject, topic })));
-      for (let offset = 0; offset < topics.length; offset += 4) {
-        await Promise.all(topics.slice(offset, offset + 4).map(async topic => {
-          const counts = await fetchQuestionCounts({ subject: normalizedSubject, topic }, { sharedChecked: true });
-          totals[topic] = MODES.reduce((sum, mode) => sum + (counts[mode] ?? 0), 0);
-        }));
+      if (cached?.revision === revision && validSnapshot(cached.data, normalizedSubject, revision, MAX_SNAPSHOT_AGE_MS)) {
+        publicSnapshots.prime(`public-catalog:v1:${id}`, cached.data);
+        return cached.data;
       }
-      if (CHAPTER_SUBJECTS.has(normalizedSubject)) await addChapterTotals(normalizedSubject, topics, totals);
+      const totals = {};
+      if (await subjectAppearsEmpty(normalizedSubject, topics)) {
+        for (const topic of topics) totals[topic] = 0;
+      } else {
+        for (let offset = 0; offset < topics.length; offset += 4) {
+          await Promise.all(topics.slice(offset, offset + 4).map(async topic => {
+            const counts = await fetchQuestionCounts({ subject: normalizedSubject, topic }, { cacheShared: false });
+            totals[topic] = MODES.reduce((sum, mode) => sum + (counts[mode] ?? 0), 0);
+          }));
+        }
+        if (CHAPTER_SUBJECTS.has(normalizedSubject)) await addChapterTotals(normalizedSubject, topics, totals);
+      }
       if (await getQuestionRevision() !== revision) return null;
-      const generatedAt = new Date().toISOString();
+      const generatedAt = new Date(Date.now()).toISOString();
       const result = { subject: normalizedSubject, revision, totals, generatedAt, updatedAt: generatedAt };
       await saveTopicCountSnapshot({ _id: id, revision, data: result, kind: "topic-counts" });
       publicSnapshots.prime(`public-catalog:v1:${id}`, result);
       return result;
-    }, { allowStale: false });
+    }, { allowStale: false, cacheShared });
     if (data && await getQuestionRevision() === data.revision) return data;
   }
   throw Object.assign(new Error("Question counts are updating; please retry"), { statusCode: 503 });

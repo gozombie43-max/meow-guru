@@ -7,7 +7,7 @@ import { connectMongoDB, disconnectMongoDB } from '../../config/mongodb.js';
 import { clearSharedLocalCaches } from '../../infrastructure/tieredCache.js';
 import progressRouter from '../progress.routes.js';
 import { getTrainingDashboardData } from '../../services/training/application/getTrainingDashboard.js';
-import { cachedTrainingDashboard } from '../../services/training/dashboardCache.js';
+import { cachedTrainingDashboard, TRAINING_DASHBOARD_CACHE_TTL_SECONDS } from '../../services/training/dashboardCache.js';
 vi.mock('../../middleware/protect.js', () => ({ optionalAuth: (_req, _res, next) => next(), protect: (req, res, next) => {
   if (!req.headers.authorization) return res.sendStatus(401);
   req.user = { id: req.headers.authorization }; next();
@@ -51,12 +51,18 @@ it('skips expiry scans on a warm dashboard and reconciles after its active deadl
   expect(expiryCalls()).toHaveLength(1);
 });
 it('recovers expiry scans after the bounded cache TTL without an expiry worker', async () => {
+  const baseNow = Date.now();
+  const clock = vi.spyOn(Date, 'now').mockReturnValue(baseNow);
   const find = vi.spyOn(Collection.prototype, 'find');
   await getTrainingDashboardData('ttl-owner', 'ssc-cgl');
   await getTrainingDashboardData('ttl-owner', 'ssc-cgl');
   const expiryCalls = () => find.mock.calls.filter((call, index) => find.mock.instances[index].collectionName === 'trainingSessions' && call[0]?.deadline?.$lte);
   expect(expiryCalls()).toHaveLength(1);
-  await new Promise(resolve => setTimeout(resolve, 5100));
+  clock.mockReturnValue(baseNow + 5100);
+  await getTrainingDashboardData('ttl-owner', 'ssc-cgl');
+  expect(expiryCalls()).toHaveLength(1);
+  clock.mockReturnValue(baseNow + TRAINING_DASHBOARD_CACHE_TTL_SECONDS * 1000 + 100);
   await getTrainingDashboardData('ttl-owner', 'ssc-cgl');
   expect(expiryCalls()).toHaveLength(2);
+  clock.mockRestore();
 }, 10000);

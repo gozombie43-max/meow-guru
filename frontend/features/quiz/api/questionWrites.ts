@@ -1,4 +1,5 @@
 import { API_BASE } from '@/lib/api-base';
+import { clearPersisted } from '@/lib/persistentQueryCache';
 import { requestResponse,type RequestPolicy } from '@/shared/api/request';
 import { mutate } from 'swr';
 
@@ -15,6 +16,7 @@ export const isQuestionQuery = (key: unknown) => typeof key === 'string'
 export async function invalidateQuestionQueries() {
   // Existing attempts keep their ordered pages; new mounts get a fresh session key.
   sessionRevision += 1;
+  clearPersisted(isQuestionQuery);
   listeners.forEach(listener => listener());
   await mutate(isQuestionQuery, undefined, { revalidate: true });
 }

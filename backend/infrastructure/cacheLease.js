@@ -14,4 +14,5 @@ export const writeWithLease = `
 if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end
 if tonumber(redis.call('GET', KEYS[2]) or '-1') ~= tonumber(ARGV[2]) then return 0 end
 redis.call('SET', KEYS[3], ARGV[3], 'EX', ARGV[4])
+redis.call('DEL', KEYS[1])
 return 1`;

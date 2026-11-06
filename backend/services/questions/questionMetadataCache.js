@@ -8,11 +8,17 @@ import { invalidateTrainingCatalog } from '../training/catalogCache.js';
 import { invalidateQuestionCacheRevision, getQuestionRevision } from './questionCache.js';
 import { isNormalizedQuestionKeysEnabled } from './questionCache.js';
 import { canonicalQuestionQuery } from './questionQueryIdentity.js';
+import { isCanonicalQuestionScope } from './topicCatalog.js';
 
 // Recovery for imports performed outside the application write services.
 const MAX_AGE_MS = 60 * 60 * 1000;
+const CANONICAL_META_PREFIX = 'question-meta:canonical:';
 const pending = new Map();
-const metadataCache = createTieredCache({ freshMs: 300000, staleMs: 300000 });
+const metadataCache = createTieredCache({
+  freshMs: 300000,
+  staleMs: 300000,
+  isEmpty: (meta, key) => !String(key || '').startsWith(CANONICAL_META_PREFIX) && (meta == null || meta?.total === 0),
+});
 onCacheInvalidation(type => { if (type === 'question.changed') { invalidateTrainingCatalog(); invalidateQuestionCacheRevision(); } });
 
 export async function invalidateQuestionMetadata() {
@@ -36,7 +42,8 @@ export async function readQuestionMetadata(params, build) {
     normalized: isNormalizedQuestionKeysEnabled(), schema: 3,
   });
   const revision = await getQuestionRevision();
-  return metadataCache.read(`question-meta:${revision}:${createHash('sha256').update(key).digest('hex')}`, () => readPersistedMetadata(key, revision, params, build));
+  const prefix = isCanonicalQuestionScope(params) ? CANONICAL_META_PREFIX : 'question-meta:';
+  return metadataCache.read(`${prefix}${revision}:${createHash('sha256').update(key).digest('hex')}`, () => readPersistedMetadata(key, revision, params, build));
 }
 
 async function readPersistedMetadata(key, revision, params, build) {

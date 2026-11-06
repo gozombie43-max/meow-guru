@@ -1,16 +1,33 @@
+import { LRUCache } from 'lru-cache';
 import { getCacheCounter, advanceCacheCounter } from '../repositories/cacheRevisionRepository.js';
 import { redisGetJson, redisSetJson } from '../config/redis.js';
-import { publishCacheInvalidation } from './cacheInvalidation.js';
+import { JSON_CACHE_MAX_BYTES } from './cacheEncoding.js';
 import { createTieredCache } from './tieredCache.js';
 import { createSingleFlight } from './singleFlight.js';
 
-export function createDurableProgressCache(prefix, owner, ttlSeconds, { validUntil = () => Infinity } = {}) {
+export function createDurableProgressCache(prefix, owner, ttlSeconds, { validUntil = () => Infinity, maxEntries = 2000 } = {}) {
   const scope = (...args) => `${prefix}:v2:${owner(...args)}`;
-  const cache = createTieredCache({ freshMs: ttlSeconds * 1000, staleMs: ttlSeconds * 1000, waitMs: 100, validUntil });
+  const cache = createTieredCache({
+    freshMs: ttlSeconds * 1000,
+    staleMs: ttlSeconds * 1000,
+    waitMs: 100,
+    distributedLock: false,
+    isEmpty: () => false,
+    validUntil,
+    localCache: new LRUCache({
+      max: maxEntries,
+      maxSize: 20 * 1024 * 1024,
+      maxEntrySize: JSON_CACHE_MAX_BYTES,
+      sizeCalculation: entry => entry.cacheBytes,
+    }),
+  });
   const flight = createSingleFlight();
   return {
     advance: (args, options) => advanceCacheCounter(scope(...args), options),
-    invalidate: () => publishCacheInvalidation(`${prefix}.changed`),
+    // Every mutation advances the durable per-owner MongoDB counter and every
+    // read keys L1 + Redis by `${scope}:${revision}`; no subscriber listens to
+    // `${prefix}.changed`, so skip global Redis PUBLISH fanout per answer.
+    invalidate: async () => {},
     load: (args, build) => flight(scope(...args), async () => {
       for (let attempt = 0; attempt < 3; attempt++) {
         const revisionScope = scope(...args);

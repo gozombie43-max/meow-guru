@@ -60,3 +60,124 @@ it.each(['offline', 'unknown-lease'])('never publishes without a lease when Redi
   expect(publish).not.toHaveBeenCalled();
   expect(shared.get('tiered:v2:recovering').value).toBe(2);
 });
+
+it('serves fresh L1 entries past localMs with zero Redis reads until invalidated', async () => {
+  let time = 1000;
+  const getShared = vi.fn(async key => shared.get(key) ?? null);
+  const setShared = vi.fn(async (key, value) => { shared.set(key, value); return true; });
+  const evalSpy = vi.fn(async () => 1);
+  vi.mocked(getRedisClient).mockResolvedValue({ eval: evalSpy });
+  const cache = createTieredCache({ freshMs: 300000, staleMs: 600000, localMs: 10000, now: () => time, random: () => 0.5, getShared, setShared });
+
+  expect(await cache.read('hot', async () => ({ ok: 1 }))).toEqual({ ok: 1 });
+  // Cold miss: 1 getShared check (no duplicate after lock acquire) and 1 acquireLease eval (release skipped when setShared === true).
+  expect(getShared).toHaveBeenCalledTimes(1);
+  expect(evalSpy).toHaveBeenCalledTimes(1);
+
+  for (const offset of [5000, 15000, 60000, 200000]) {
+    time = 1000 + offset;
+    expect(await cache.read('hot', () => { throw new Error('Should hit L1'); })).toEqual({ ok: 1 });
+  }
+  expect(getShared).toHaveBeenCalledTimes(1);
+  expect(evalSpy).toHaveBeenCalledTimes(1);
+
+  clearSharedLocalCaches();
+  expect(await cache.read('hot', () => { throw new Error('Should hit Redis'); })).toEqual({ ok: 1 });
+  expect(getShared).toHaveBeenCalledTimes(2);
+});
+
+it('accepts both raw values and shared envelopes in prime() and releases locks on build failure', async () => {
+  let time = 1000;
+  const getShared = vi.fn(async () => null);
+  const evalSpy = vi.fn(async () => 1);
+  vi.mocked(getRedisClient).mockResolvedValue({ eval: evalSpy });
+  const cache = createTieredCache({ freshMs: 60000, staleMs: 60000, now: () => time, random: () => 0.5, getShared });
+
+  cache.prime('raw-primed', { subject: 'mathematics', totals: { algebra: 5 } });
+  expect(cache.hasFresh('raw-primed')).toBe(true);
+  expect(await cache.read('raw-primed', () => { throw new Error('Unexpected build'); })).toEqual({ subject: 'mathematics', totals: { algebra: 5 } });
+  expect(getShared).not.toHaveBeenCalled();
+
+  cache.prime('envelope-primed', { value: 42, freshUntil: 1050, staleUntil: 1100 });
+  expect(cache.hasFresh('envelope-primed')).toBe(true);
+  time = 1060;
+  expect(cache.hasFresh('envelope-primed')).toBe(false);
+
+  await expect(cache.read('failing-build', async () => { throw new Error('boom'); })).rejects.toThrow('boom');
+  // 1 acquireLease + 1 releaseLease on failed build
+  expect(evalSpy).toHaveBeenCalledTimes(2);
+});
+
+it('throttles stale Redis probes by localMs on miss and supports lock-free and L1-only modes', async () => {
+  let time = 1000;
+  const getShared = vi.fn(async () => null);
+  const setShared = vi.fn(async () => true);
+  const evalSpy = vi.fn(async () => 1);
+  vi.mocked(getRedisClient).mockResolvedValue({ eval: evalSpy });
+
+  const staleCache = createTieredCache({ freshMs: 100, staleMs: 50000, localMs: 10000, now: () => time, random: () => 0.5, getShared, setShared });
+  await staleCache.read('stale-key', async () => 'v1');
+  getShared.mockClear();
+
+  time = 15000;
+  const failing = vi.fn(async () => { throw new Error('down'); });
+  expect(await staleCache.read('stale-key', failing)).toBe('v1');
+  await vi.waitFor(() => expect(failing).toHaveBeenCalledTimes(1));
+  const probesAfterFirstStale = getShared.mock.calls.length;
+  time = 16000;
+  expect(await staleCache.read('stale-key', failing)).toBe('v1');
+  // Within localMs (10s), read() must not probe getShared before returning stale value.
+  expect(getShared.mock.calls.length).toBe(probesAfterFirstStale);
+
+  evalSpy.mockClear(); getShared.mockClear(); setShared.mockClear();
+  const unlocked = createTieredCache({ distributedLock: false, now: () => time, getShared, setShared });
+  expect(await unlocked.read('u1', async () => ({ progress: [] }))).toEqual({ progress: [] });
+  expect(await unlocked.read('u1', () => { throw new Error('L1 miss'); })).toEqual({ progress: [] });
+  expect(evalSpy).not.toHaveBeenCalled();
+  expect(getShared).toHaveBeenCalledTimes(1);
+  expect(setShared).toHaveBeenCalledTimes(1);
+
+  getShared.mockClear(); setShared.mockClear();
+  expect(await unlocked.read('local-only', async () => 99, { cacheShared: false })).toBe(99);
+  expect(await unlocked.read('local-only', () => { throw new Error('L1 miss'); }, { cacheShared: false })).toBe(99);
+  expect(getShared).not.toHaveBeenCalled();
+  expect(setShared).not.toHaveBeenCalled();
+});
+
+it('throttles background SWR lock acquisitions when cold L1 loads a stale shared envelope and build fails', async () => {
+  let time = 15_000;
+  const staleEnvelope = { value: 'stale-shared', freshUntil: 1_100, staleUntil: 50_000 };
+  const getShared = vi.fn(async () => ({ ...staleEnvelope }));
+  const setShared = vi.fn(async () => true);
+  const evalSpy = vi.fn(async () => 1);
+  vi.mocked(getRedisClient).mockResolvedValue({ eval: evalSpy });
+
+  const cache = createTieredCache({
+    freshMs: 100,
+    staleMs: 50_000,
+    localMs: 10_000,
+    now: () => time,
+    random: () => 0.5,
+    getShared,
+    setShared,
+  });
+
+  const failing = vi.fn(async () => { throw new Error('upstream failure'); });
+
+  // First read on cold L1 loads stale envelope from Redis and triggers 1 background refresh (acquire + release).
+  expect(await cache.read('swr-shared', failing)).toBe('stale-shared');
+  await vi.waitFor(() => expect(failing).toHaveBeenCalledTimes(1));
+  expect(getShared).toHaveBeenCalledTimes(1);
+  expect(evalSpy).toHaveBeenCalledTimes(2);
+
+  // Subsequent reads within localMs (10s) must hit L1 and respect refreshNotBefore on the stored L1 entry.
+  for (const nextTime of [15_100, 18_000, 24_999]) {
+    time = nextTime;
+    expect(await cache.read('swr-shared', failing)).toBe('stale-shared');
+  }
+  await new Promise(resolve => setTimeout(resolve, 20));
+  expect(failing).toHaveBeenCalledTimes(1);
+  expect(getShared).toHaveBeenCalledTimes(1);
+  expect(evalSpy).toHaveBeenCalledTimes(2);
+});
+

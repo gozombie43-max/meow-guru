@@ -238,6 +238,7 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
                   detail={detail}
                   priority={index === 0}
                   isRecent={isRecent}
+                  prefetchCounts={!isChapterMode ? { subject: config.subjectId, topic: topic.questionTopic ?? topic.slug } : undefined}
                 />
               );
             })}

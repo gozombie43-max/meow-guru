@@ -2,15 +2,8 @@
 
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import {
-  BookOpen,
-  GraduationCap,
-  History,
-  Layers,
-  Shuffle,
-  Timer,
-  TrendingUp,
-} from "lucide-react";
+import { useState } from "react";
+import Image from "next/image";
 import { useQuestionCounts } from "@/hooks/useQuestionCounts";
 
 export default function TopicPracticeModes({
@@ -28,48 +21,51 @@ export default function TopicPracticeModes({
   mixedSubtitle: string;
   hasStudyMode: boolean;
 }) {
-  const { counts, isLoading, isError } = useQuestionCounts({ topic: questionTopic, subject });
+  const { counts, isPending, isError } = useQuestionCounts({ topic: questionTopic, subject });
+  // Animate counts in only if the user actually saw the skeleton; cached
+  // counts render instantly without motion.
+  const [revealWithMotion] = useState(isPending);
 
   const modes = [
     {
       title: "PYQ", sub: "Previous year Qs", href: `${base}/quiz?mode=concept`, mode: "concept",
-      icon: History, color: "#0d9488", gradient: "linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%)",
+      icon: "/icons/practice/pyq.svg", color: "#0d9488", gradient: "linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%)",
       gradientDark: "linear-gradient(135deg, rgba(13, 148, 136, 0.2) 0%, rgba(13, 148, 136, 0.08) 100%)",
       border: "rgba(13, 148, 136, 0.22)", borderDark: "rgba(13, 148, 136, 0.35)", shadow: "0 2px 8px rgba(13, 148, 136, 0.08)",
     },
     {
       title: "CareerWill", sub: formulaSubtitle, href: `${base}/quiz?mode=formula`, mode: "formula",
-      icon: BookOpen, color: "#2563eb", gradient: "linear-gradient(135deg, #edf4fe 0%, #dbeafe 100%)",
+      icon: "/icons/practice/careerwill.svg", color: "#2563eb", gradient: "linear-gradient(135deg, #edf4fe 0%, #dbeafe 100%)",
       gradientDark: "linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.08) 100%)",
       border: "rgba(37, 99, 235, 0.22)", borderDark: "rgba(37, 99, 235, 0.35)", shadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
     },
     {
       title: "PW", sub: mixedSubtitle, href: `${base}/quiz?mode=mixed`, mode: "mixed",
-      icon: Layers, color: "#4f46e5", gradient: "linear-gradient(135deg, #f1f3fd 0%, #e0e7ff 100%)",
+      icon: "/icons/practice/pw.svg", color: "#4f46e5", gradient: "linear-gradient(135deg, #f1f3fd 0%, #e0e7ff 100%)",
       gradientDark: "linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.08) 100%)",
       border: "rgba(79, 70, 229, 0.22)", borderDark: "rgba(79, 70, 229, 0.35)", shadow: "0 2px 8px rgba(79, 70, 229, 0.08)",
     },
     {
       title: "Selection Way", sub: "Speed test", href: `${base}/quiz?mode=ai-challenge`, mode: "ai-challenge",
-      icon: Timer, color: "#7c3aed", gradient: "linear-gradient(135deg, #f7f2fe 0%, #ede9fe 100%)",
+      icon: "/icons/practice/selection-way.svg", color: "#7c3aed", gradient: "linear-gradient(135deg, #f7f2fe 0%, #ede9fe 100%)",
       gradientDark: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0.08) 100%)",
       border: "rgba(124, 58, 237, 0.22)", borderDark: "rgba(124, 58, 237, 0.35)", shadow: "0 2px 8px rgba(124, 58, 237, 0.08)",
     },
     {
       title: "Topic Mix", sub: "Foundation easy", href: `${base}/quiz?mode=easy`, mode: "easy",
-      icon: Shuffle, color: "#0284c7", gradient: "linear-gradient(135deg, #edf9ff 0%, #e0f2fe 100%)",
+      icon: "/icons/practice/topic-mix.svg", color: "#0284c7", gradient: "linear-gradient(135deg, #edf9ff 0%, #e0f2fe 100%)",
       gradientDark: "linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(2, 132, 199, 0.08) 100%)",
       border: "rgba(2, 132, 199, 0.22)", borderDark: "rgba(2, 132, 199, 0.35)", shadow: "0 2px 8px rgba(2, 132, 199, 0.08)",
     },
     {
       title: "Tier 2", sub: "Advanced level", href: `${base}/quiz?mode=hard`, mode: "hard",
-      icon: TrendingUp, color: "#e11d48", gradient: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+      icon: "/icons/practice/tier-2.svg", color: "#e11d48", gradient: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
       gradientDark: "linear-gradient(135deg, rgba(225, 29, 72, 0.2) 0%, rgba(225, 29, 72, 0.08) 100%)",
       border: "rgba(225, 29, 72, 0.22)", borderDark: "rgba(225, 29, 72, 0.35)", shadow: "0 2px 8px rgba(225, 29, 72, 0.08)",
     },
     ...(hasStudyMode ? [{
       title: "Study Mode", sub: "Interactive study deck", href: `${base}/study-mode`, mode: "study-mode",
-      icon: GraduationCap, color: "#ec4899", gradient: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)",
+      icon: "/icons/practice/study-mode.svg", color: "#ec4899", gradient: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)",
       gradientDark: "linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(236, 72, 153, 0.08) 100%)",
       border: "rgba(236, 72, 153, 0.22)", borderDark: "rgba(236, 72, 153, 0.35)", shadow: "0 2px 8px rgba(236, 72, 153, 0.08)",
     }] : []),
@@ -78,11 +74,10 @@ export default function TopicPracticeModes({
   const jamLabels: Record<string, string> = { formula: 'Formula practice', mixed: 'Mixed practice', 'ai-challenge': 'Speed practice', hard: 'Advanced practice' };
   if (subject === 'iit-jam-physics') modes.forEach(item => { if (jamLabels[item.mode]) item.title = jamLabels[item.mode]; });
   return (
-    <div className="sg-grid">
+    <div className="sg-grid" data-reveal={revealWithMotion ? "motion" : undefined}>
       {modes.map((mode) => {
-        const ModeIcon = mode.icon;
-        const countLabel = isLoading ? "…" : isError ? "—" : `${counts[mode.mode] ?? 0}`;
-        const isEmpty = !isLoading && !isError && countLabel === "0";
+        const countLabel = isError ? "—" : `${counts[mode.mode] ?? 0}`;
+        const isEmpty = !isPending && !isError && countLabel === "0";
         const cardStyle = {
           "--card-gradient": mode.gradient,
           "--card-gradient-dark": mode.gradientDark,
@@ -94,7 +89,7 @@ export default function TopicPracticeModes({
         const cardContent = (
           <>
             <div className="sg-card-left">
-              <div className="sg-badge"><ModeIcon size={18} strokeWidth={1.75} aria-hidden="true" /></div>
+              <div className="sg-badge"><Image src={mode.icon} alt="" width={28} height={28} aria-hidden="true" /></div>
               <div className="sg-card-info">
                 <div className="sg-card-name">{mode.title}</div>
                 <div className="sg-card-sub">{mode.sub}</div>
@@ -105,7 +100,7 @@ export default function TopicPracticeModes({
                 <path d="M28 0 C28 10, 0 13, 0 23 C0 33, 28 36, 28 46 L88 46 L88 0 Z" fill="var(--card-2)" />
               </svg>
               <div className="sg-tab-action-wrap">
-                {isLoading ? (
+                {isPending ? (
                   <span className="sg-card-qs-skeleton" role="status" aria-label="Loading question count" />
                 ) : isEmpty ? (
                   <span className="sg-card-qs-text" data-zero="true">Soon</span>

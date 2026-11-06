@@ -37,6 +37,44 @@ export async function cancelMatchmakingQueue(userId) {
     return result.modifiedCount === 1;
   });
 }
+const MATCHMAKING_SCAN_LIMIT = 200;
+function bucketKey(ticket) { return `${ticket.subject}\0${ticket.topic}\0${ticket.questionCount}`; }
+function groupEligibleTickets(tickets) {
+  const buckets = new Map();
+  for (const ticket of tickets) {
+    if (!canUseMatchmaking(ticket.userId)) continue;
+    const key = bucketKey(ticket);
+    let list = buckets.get(key);
+    if (!list) { list = []; buckets.set(key, list); }
+    list.push(ticket);
+  }
+  return buckets;
+}
+export function canPairTickets(first, second, now = new Date()) {
+  if (!first || !second || first.userId === second.userId) return false;
+  if (!canUseMatchmaking(first.userId) || !canUseMatchmaking(second.userId)) return false;
+  if (first.subject !== second.subject || first.topic !== second.topic || first.questionCount !== second.questionCount) return false;
+  return Math.abs(first.rating - second.rating) <= Math.max(getAllowedRatingRange(first.queuedAt, now), getAllowedRatingRange(second.queuedAt, now));
+}
+export async function hasMatchmakingCandidates(now = new Date()) {
+  const tickets = await getBattleMatchmakingQueueCollection()
+    .find(
+      { status: 'waiting', expiresAt: { $gt: now } },
+      { projection: { userId: 1, subject: 1, topic: 1, questionCount: 1, rating: 1, queuedAt: 1 } },
+    )
+    .sort({ queuedAt: 1 })
+    .limit(MATCHMAKING_SCAN_LIMIT)
+    .toArray();
+  if (tickets.length < 2) return false;
+  for (const bucket of groupEligibleTickets(tickets).values()) {
+    for (let i = 0; i < bucket.length; i++) {
+      for (let j = i + 1; j < bucket.length; j++) {
+        if (canPairTickets(bucket[i], bucket[j], now)) return true;
+      }
+    }
+  }
+  return tickets.length >= MATCHMAKING_SCAN_LIMIT;
+}
 async function pair(firstTicket, secondTicket) {
   if (!canUseMatchmaking(firstTicket.userId) || !canUseMatchmaking(secondTicket.userId)) return null;
   for (let attempt = 0; attempt < 20; attempt++) {
@@ -46,7 +84,7 @@ async function pair(firstTicket, secondTicket) {
         const queue = getBattleMatchmakingQueueCollection(), rooms = getBattleRoomsCollection(), now = new Date();
         const first = await queue.findOne({ _id: firstTicket._id, status: 'waiting', expiresAt: { $gt: now } }, { session });
         const second = await queue.findOne({ _id: secondTicket._id, status: 'waiting', expiresAt: { $gt: now } }, { session });
-        if (!first || !second || first.userId === second.userId || first.subject !== second.subject || first.topic !== second.topic || first.questionCount !== second.questionCount || Math.abs(first.rating - second.rating) > Math.max(getAllowedRatingRange(first.queuedAt), getAllowedRatingRange(second.queuedAt))) return null;
+        if (!canPairTickets(first, second, now)) return null;
         const activeSeason = await getActiveBattleSeason(now), expiresAt = new Date(+now + 2 * 60 * 1000);
         for (const ticket of [first, second]) await transferBattleLease({ userId: ticket.userId, fromKind: 'queue', fromResource: ticket.userId, resourceId: roomCode, expiresAt, session });
         const claim = await queue.updateMany({ _id: { $in: [first._id, second._id] }, status: 'waiting' }, { $set: { status: 'matched', matchmakingId, roomCode, matchedAt: now, updatedAt: now } }, { session });
@@ -63,15 +101,52 @@ async function pair(firstTicket, secondTicket) {
   throw new Error('Unable to allocate matchmaking room');
 }
 export async function runMatchmakingPass({ limit = 25, canContinue = async () => true } = {}) {
+  const maxMatches = Math.max(1, Math.min(25, limit));
+  const scanLimit = limit < 25 ? Math.min(MATCHMAKING_SCAN_LIMIT, Math.max(25, maxMatches * 8)) : MATCHMAKING_SCAN_LIMIT;
   const queue = getBattleMatchmakingQueueCollection(), now = new Date();
-  const tickets = await queue.find({ status: 'waiting', expiresAt: { $gt: now } }).sort({ queuedAt: 1 }).limit(Math.max(1, Math.min(25, limit))).toArray(), matches = [];
-  for (const ticket of tickets) {
+  const tickets = await queue
+    .find(
+      { status: 'waiting', expiresAt: { $gt: now } },
+      { projection: { userId: 1, subject: 1, topic: 1, questionCount: 1, rating: 1, queuedAt: 1 } },
+    )
+    .sort({ queuedAt: 1 })
+    .limit(scanLimit)
+    .toArray();
+  const buckets = groupEligibleTickets(tickets);
+  const eligible = tickets.filter(ticket => canUseMatchmaking(ticket.userId));
+  const claimed = new Set(), matches = [];
+  let fallbackLookups = 0;
+  for (const first of eligible) {
+    if (matches.length >= maxMatches) break;
+    if (claimed.has(first.userId)) continue;
+    const candidates = (buckets.get(bucketKey(first)) || []).filter(
+      other => other.userId !== first.userId && !claimed.has(other.userId) && canPairTickets(first, other, now),
+    );
+    if (!candidates.length && (tickets.length < scanLimit || fallbackLookups >= maxMatches)) continue;
     if (!await canContinue()) break;
-    const first = await queue.findOne({ _id: ticket._id, status: 'waiting', expiresAt: { $gt: now } });
-    if (!first) continue;
-    const range = getAllowedRatingRange(first.queuedAt, now);
-    const second = await queue.findOne({ status: 'waiting', expiresAt: { $gt: now }, userId: { $ne: first.userId }, subject: first.subject, topic: first.topic, questionCount: first.questionCount, rating: { $gte: first.rating - range, $lte: first.rating + range } }, { sort: { queuedAt: 1 } });
-    if (second) { const match = await pair(first, second); if (match) matches.push(match); }
+    let matched = false;
+    for (const candidate of candidates.slice(0, 3)) {
+      const match = await pair(first, candidate);
+      if (match) {
+        claimed.add(first.userId);
+        claimed.add(candidate.userId);
+        matches.push(match);
+        matched = true;
+        break;
+      }
+    }
+    if (!matched && tickets.length >= scanLimit && fallbackLookups < maxMatches) {
+      fallbackLookups++;
+      const range = getAllowedRatingRange(first.queuedAt, now);
+      const second = await queue.findOne(
+        { status: 'waiting', expiresAt: { $gt: now }, userId: { $nin: [first.userId, ...claimed] }, subject: first.subject, topic: first.topic, questionCount: first.questionCount, rating: { $gte: first.rating - range, $lte: first.rating + range } },
+        { sort: { queuedAt: 1 } },
+      );
+      if (second && canUseMatchmaking(second.userId)) {
+        const match = await pair(first, second);
+        if (match) { claimed.add(first.userId); claimed.add(second.userId); matches.push(match); }
+      }
+    }
   }
   return matches;
 }

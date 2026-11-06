@@ -153,11 +153,11 @@ export async function redisSetJson(key, value, ttlSeconds, options = {}) {
   return storeCacheValue(key, value, ttlSeconds, 'json', JSON_CACHE_MAX_BYTES, options);
 }
 
-async function storeCacheValue(key, value, ttlSeconds, format, maxBytes, { lease } = {}) {
+async function storeCacheValue(key, value, ttlSeconds, format, maxBytes, { lease, encoded: preEncoded } = {}) {
   try {
     const redis = await getRedisClient();
     if (!redis) return false;
-    const encoded = encodeCacheValue(value, format, maxBytes);
+    const encoded = preEncoded && preEncoded.bytes <= maxBytes ? preEncoded : encodeCacheValue(value, format, maxBytes);
     if (!encoded || !Number.isSafeInteger(ttlSeconds) || ttlSeconds <= 0) return false;
     if (lease) return Boolean(await redis.eval(writeWithLease, {
       keys: [lease.lockKey, lease.fenceKey, redisKey(key)],
