@@ -7,12 +7,7 @@ export function normalizeSearchKey(value) {
     .replace(/[^a-z0-9]+/g, "");
 }
 
-export function normalizeQuizKey(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "");
-}
+export const normalizeQuizKey = normalizeSearchKey;
 
 export function matchesNormalizedTopic(question, normalizedTopic) {
   const candidates = [

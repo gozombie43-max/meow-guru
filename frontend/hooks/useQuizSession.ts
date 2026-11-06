@@ -2,7 +2,7 @@ import { getQuestionSessionRevision } from "@/features/quiz/api/questionWrites";
 import { API_BASE } from "@/lib/api-base";
 import { PUBLIC_QUESTION_QUERY } from '@/features/quiz/api/publicQuery';
 import { fetchWithRetry } from "@/lib/api/http";
-import type { Question } from "@/lib/api/questions";
+import type { Question } from "@/features/quiz/api/questions";
 import { useCallback, useMemo, useRef, useState } from "react";
 import useSWRInfinite from "swr/infinite";
 
