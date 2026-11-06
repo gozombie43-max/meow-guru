@@ -156,7 +156,7 @@ export function createTieredCache({
     })();
     pending.set(scoped, work);
     try { return await work; }
-    finally { if (pending.get(scoped) === work) pending.delete(scoped); }
+    finally { if (generation === currentGeneration) pending.delete(scoped); }
   }
 
   async function read(key, build, { allowStale = true, sharedChecked = false, cacheShared = true } = {}) {
