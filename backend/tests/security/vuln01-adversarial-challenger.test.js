@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from 'vitest';
 import express from 'express';
 import { once } from 'node:events';
-import { toPublicQuestionDTO, toQuizQuestionDTO, SENSITIVE_QUESTION_FIELDS } from '../../services/questions/quizQuestionDTO.js';
+import { toPublicQuestionDTO, toQuizQuestionDTO } from '../../services/questions/quizQuestionDTO.js';
 
 // Hoist mock references for isolation
 const { getQuestionsCollectionMock, getMockSlotsCollectionMock } = vi.hoisted(() => ({

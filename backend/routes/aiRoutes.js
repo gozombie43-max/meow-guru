@@ -149,10 +149,11 @@ Give a clear step-by-step explanation. Keep it concise.`;
     const explanation = await chatComplete(userPrompt, "o4-mini");
     res.json({ success: true, explanation });
   } catch (err) {
+    const statusCode = err?.statusCode || 502;
     runtimeLog.error('explain error:', err?.message || err);
-    res.status(err.statusCode || 502).json({
+    res.status(statusCode).json({
       success: false,
-      error: err.statusCode === 429 ? err.message : 'AI request failed. Please retry shortly.',
+      error: statusCode === 429 ? err?.message : 'AI request failed. Please retry shortly.',
     });
   }
 });

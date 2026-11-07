@@ -6,9 +6,6 @@ import {
   toPublicQuestionDTO,
   toQuizQuestionDTO,
   isSensitiveField,
-  sanitizeTranslations,
-  SENSITIVE_QUESTION_FIELDS,
-  quizQuestionProjection,
 } from '../../services/questions/quizQuestionDTO.js';
 
 // Hoist mock references for isolation
