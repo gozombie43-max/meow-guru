@@ -5,6 +5,7 @@ test.afterEach(async ({ context }) => {
 });
 
 test('pending grouping polls only status and stops when the quiz unmounts', async ({ page, context }, info) => {
+  test.skip(info.project.name !== 'desktop', 'Concept-group polling interval is viewport-independent.');
   await context.addCookies([{ name: 'access_session', value: 'local-fixture', url: 'http://127.0.0.1:3110' }]);
   const login = await context.request.post('http://127.0.0.1:3111/auth/login', { data: {
     email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!',

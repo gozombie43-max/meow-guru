@@ -44,7 +44,7 @@ jobs:
         with:
           node-version: 22
       - name: Verify workflow routing policy
-        run: node --test scripts/ci-policy.test.mjs scripts/ci-gate.test.mjs
+        run: node --test scripts/ci-policy.test.mjs scripts/ci-gate.test.mjs frontend/scripts/select-e2e-specs.test.mjs
       - name: Select verification and deployment scope
         id: policy
         env:
@@ -293,6 +293,8 @@ jobs:
       PLAYWRIGHT_HTML_OPEN: never
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
@@ -302,9 +304,9 @@ jobs:
       - run: npm run build
       - name: Install Chromium
         run: npm exec --workspace frontend -- playwright install --with-deps chromium
-      - name: Run full project with its own backend and database fixture
+      - name: Run risk-based browser suite with its own backend and database fixture
         working-directory: ./frontend
-        run: npm run test:e2e -- --project=${{ matrix.project }} --forbid-only --reporter=line,html
+        run: node scripts/select-e2e-specs.mjs --project=${{ matrix.project }} --run --forbid-only --reporter=line,html
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

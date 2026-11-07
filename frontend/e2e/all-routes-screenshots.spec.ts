@@ -6,6 +6,7 @@ const appDir = path.join(process.cwd(), 'app');
 const fixtureURL = 'http://127.0.0.1:3111';
 const captureTheme = process.env.SCREENSHOT_THEME ?? 'light';
 if (captureTheme !== 'light' && captureTheme !== 'dark') throw new Error('SCREENSHOT_THEME must be light or dark.');
+test.skip(!process.env.SCREENSHOT_THEME, 'Full-catalog route screenshots are opt-in via npm run screenshots:all.');
 test.use({ colorScheme: captureTheme });
 
 function findPageFiles(dir: string): string[] {

@@ -1,21 +1,16 @@
 import { test, expect } from '@playwright/test';
-import { randomUUID } from 'node:crypto';
-import { verifyFixtureEmail } from './helpers/verify-fixture-email';
+import { FIXTURE_BACKEND_URL, registerAndLoginIsolatedUser } from './helpers/auth-fixture';
 
 test('authenticated assessment survives reload and submits without leaking answers', async ({ page, context, request }, testInfo) => {
   // Confidential tests allow one attempt per user. Screenshot captures submit
   // the seeded user's attempt, so each assessment run needs its own account.
-  const credentials = { email: `assessment-${testInfo.project.name}-${randomUUID()}@example.test`, password: 'Browser-fixture-123!' };
-  const registration = await request.post('http://127.0.0.1:3111/auth/register', {
-    data: { name: 'Assessment Student', ...credentials },
-  });
-  expect(registration.ok(), 'Create an isolated assessment account').toBeTruthy();
-  await verifyFixtureEmail(request, credentials.email);
-  const login = await request.post('http://127.0.0.1:3111/auth/login', { data: credentials });
-  expect(login.ok()).toBeTruthy();
-  const refreshCookie = login.headers()['set-cookie'].split(';')[0].slice('refreshToken='.length);
+  const { refreshCookie } = await registerAndLoginIsolatedUser(
+    request,
+    `assessment-${testInfo.project.name}`,
+    'Assessment Student',
+  );
   await context.addCookies([
-    { name: 'refreshToken', value: refreshCookie, domain: '127.0.0.1', path: '/', httpOnly: true, sameSite: 'Lax' },
+    { name: 'refreshToken', value: refreshCookie!, domain: '127.0.0.1', path: '/', httpOnly: true, sameSite: 'Lax' },
     { name: 'access_session', value: 'local-navigation-fixture', domain: '127.0.0.1', path: '/' },
   ]);
   // Send browser API traffic to the disposable fixture, regardless of the build's
@@ -25,7 +20,7 @@ test('authenticated assessment survives reload and submits without leaking answe
     const path = new URL(route.request().url()).pathname.replace('/backend-api', '');
     if (path.endsWith('/start') && route.request().method() === 'POST') startup.posts++;
     if (/\/api\/mocktest\/attempt\/[^/]+$/.test(path) && route.request().method() === 'GET') startup.attemptReads++;
-    return route.fetch({ url: `http://127.0.0.1:3111${path}${new URL(route.request().url()).search}` }).then(response => route.fulfill({ response }));
+    return route.fetch({ url: `${FIXTURE_BACKEND_URL}${path}${new URL(route.request().url()).search}` }).then(response => route.fulfill({ response }));
   });
   const profile = page.waitForResponse(response => response.url().endsWith('/users/me') && response.ok());
   await page.goto('/mock-test/ssc-cgl/browser-test');

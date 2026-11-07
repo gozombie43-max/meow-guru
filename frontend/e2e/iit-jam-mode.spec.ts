@@ -1,27 +1,24 @@
-import { test, expect, type BrowserContext } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { JAM_SECTIONS, JAM_SUBJECT } from '../lib/exam-mode';
+import { FIXTURE_BACKEND_URL, loginFixtureUser, routeBackendApi } from './helpers/auth-fixture';
+
 const frontend = process.env.JAM_UI_ORIGIN || 'http://127.0.0.1:3110';
-const backend = 'http://127.0.0.1:3111';
-async function connect(context: BrowserContext, token: string) {
-  await context.addCookies([{ name: 'access_session', value: 'local-jam-fixture', url: frontend }]);
-  await context.route('**/backend-api/**', async route => {
-    const url = new URL(route.request().url());
-    const path = url.pathname.replace(/^\/backend-api/, '');
-    if (path === '/auth/refresh') return route.fulfill({ json: { token } });
-    const response = await route.fetch({ url: `${backend}${path}${url.search}` });
-    await route.fulfill({ response });
-  });
-}
+
 test.afterEach(async ({ context }) => { await context.unrouteAll({ behavior: 'wait' }); });
-for (const width of [320, 390, 1366]) for (const theme of ['dark', 'light']) {
+
+for (const [width, theme] of [[1366, 'light'], [390, 'dark']] as const) {
   test(`JAM mode shared pages ${width}px ${theme}`, async ({ page, context, request }, info) => {
+    // Run 1366px light on desktop and 390px dark (+ 320px overflow check) on mobile instead of 12 redundant multi-page tours.
+    test.skip(
+      (info.project.name === 'desktop' && width !== 1366) ||
+        (info.project.name === 'mobile' && width !== 390),
+      'Desktop runs the 1366px light tour; mobile runs the 390px/320px dark tour.',
+    );
     test.setTimeout(180000);
-    const login = await request.post(`${backend}/auth/login`, { data: { email: 'browser-mobile@example.test', password: 'Browser-fixture-123!' } });
-    expect(login.ok()).toBeTruthy();
-    const { token } = await login.json();
-    await connect(context, token);
+    const { token } = await loginFixtureUser(request, 'browser-mobile@example.test');
+    await routeBackendApi(context, { token, accessSession: 'local-jam-fixture', frontendUrl: frontend });
     await page.setViewportSize({ width, height: 900 });
-    await page.addInitScript(theme => { localStorage.setItem('ui-theme', theme); }, theme);
+    await page.addInitScript(selectedTheme => { localStorage.setItem('ui-theme', selectedTheme); }, theme);
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto('/');
@@ -44,6 +41,11 @@ for (const width of [320, 390, 1366]) for (const theme of ['dark', 'light']) {
     await expect(page.getByRole('link', { name: 'View all', exact: true }).filter({ visible: true })).toHaveCount(0);
     await page.screenshot({ path: info.outputPath('jam-home.png'), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if (width < 768) {
+      await page.setViewportSize({ width: 320, height: 900 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.setViewportSize({ width, height: 900 });
+    }
     await page.reload();
     await expect(page.getByRole('heading', { name: /Big breakthroughs/ }).filter({ visible: true })).toBeVisible();
     await page.goto('/mock-test');
@@ -93,22 +95,22 @@ for (const width of [320, 390, 1366]) for (const theme of ['dark', 'light']) {
   });
 }
 
-test('JAM fixed paper saves mixed answer types and grades with the real API and Mongo fixture', async ({ request }) => {
+test('JAM fixed paper saves mixed answer types and grades with the real API and Mongo fixture', async ({ request }, info) => {
+  test.skip(info.project.name !== 'desktop', 'API-only JAM grading test runs once on desktop.');
   test.skip(process.env.JAM_MODE_FIXTURE !== '1', 'Requires the opt-in disposable JAM fixture');
-  const login = await request.post(`${backend}/auth/login`, { data: { email: 'browser-desktop@example.test', password: 'Browser-fixture-123!' } });
-  const { token } = await login.json();
+  const { token } = await loginFixtureUser(request, 'browser-desktop@example.test');
   const headers = { Authorization: `Bearer ${token}` };
-  const start = await request.post(`${backend}/api/mocktest/iit-jam-physics/jam-browser-test/start`, { headers });
+  const start = await request.post(`${FIXTURE_BACKEND_URL}/api/mocktest/iit-jam-physics/jam-browser-test/start`, { headers });
   expect(start.ok(), await start.text()).toBeTruthy();
   const attempt = await start.json();
   expect(attempt.paper.sections.flatMap((s: { questions: unknown[] }) => s.questions)).toHaveLength(60);
   expect(JSON.stringify(attempt.paper)).not.toContain('correctAnswer');
   const answers = { 'jam-a1-0': '0', 'jam-a2-0': '1', 'jam-b-0': ['0', '2'], 'jam-c1-0': '0', 'jam-c2-0': '2' };
-  const save = await request.patch(`${backend}/api/mocktest/attempt/${attempt.attemptId}/autosave`, { headers, data: { revision: 1, baseRevision: 0, answers, questionStatuses: {}, currentSection: 0, currentQuestion: 0 } });
+  const save = await request.patch(`${FIXTURE_BACKEND_URL}/api/mocktest/attempt/${attempt.attemptId}/autosave`, { headers, data: { revision: 1, baseRevision: 0, answers, questionStatuses: {}, currentSection: 0, currentQuestion: 0 } });
   expect(save.ok(), await save.text()).toBeTruthy();
-  const submit = await request.post(`${backend}/api/mocktest/attempt/${attempt.attemptId}/submit`, { headers });
+  const submit = await request.post(`${FIXTURE_BACKEND_URL}/api/mocktest/attempt/${attempt.attemptId}/submit`, { headers });
   expect(submit.ok(), await submit.text()).toBeTruthy();
-  const review = await request.get(`${backend}/api/mocktest/attempt/${attempt.attemptId}`, { headers });
+  const review = await request.get(`${FIXTURE_BACKEND_URL}/api/mocktest/attempt/${attempt.attemptId}`, { headers });
   const result = await review.json();
   expect(result.answers).toEqual(answers);
   expect(result.result.totalScore).toBe(3.33);

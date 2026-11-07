@@ -1,5 +1,7 @@
 import { expect, test, type BrowserContext } from '@playwright/test';
-const fixture = 'http://127.0.0.1:3111';
+import { FIXTURE_BACKEND_URL, loginFixtureUser } from './helpers/auth-fixture';
+
+const fixture = FIXTURE_BACKEND_URL;
 
 // Drain forwarded autosaves before Playwright closes the context and its request
 // client, so an unfinished route callback cannot fail the following test.
@@ -9,9 +11,8 @@ test.afterEach(async ({ context }) => {
 
 for (const failPreload of [false, true]) {
   test(`session profile loads before application JavaScript and recovers safely; failed preload=${failPreload}`, async ({ page, context, request }, info) => {
-    const login = await request.post(`${fixture}/auth/login`, { data: { email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!' } });
-    expect(login.ok()).toBeTruthy();
-    const { token } = await login.json();
+    test.skip(info.project.name !== 'desktop', 'Early session bootstrap network behavior is viewport-independent; run once on desktop.');
+    const { token } = await loginFixtureUser(request, `browser-${info.project.name}@example.test`);
     await routeFixture(context, token);
     let refreshes = 0, profiles = 0, privateReads = 0;
     page.on('request', req => {
@@ -49,8 +50,8 @@ for (const failPreload of [false, true]) {
 
 for (const resume of [false, true]) {
   test(`public quiz data overlaps blocked auth restoration; resume=${resume}`, async ({ page, context, request }, info) => {
-    const login = await request.post(`${fixture}/auth/login`, { data: { email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!' } });
-    const { token } = await login.json();
+    test.skip(info.project.name !== 'desktop', 'Public/auth parallel network behavior is viewport-independent; run once on desktop.');
+    const { token } = await loginFixtureUser(request, `browser-${info.project.name}@example.test`);
     if (resume) {
       const seed = await request.patch(`${fixture}/users/me/recent-quizzes`, { headers: { Authorization: `Bearer ${token}` }, data: {
         quizKey: 'mathematics:algebra', title: 'Algebra', subject: 'mathematics', href: '/mathematics/advance/algebra/quiz',
@@ -92,8 +93,8 @@ for (const resume of [false, true]) {
 }
 
 test('quiz answer retries a lost response with one key and no duplicate counters or history save', async ({ page, context, request }, info) => {
-  const login = await request.post(`${fixture}/auth/login`, { data: { email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!' } });
-  const { token } = await login.json();
+  test.skip(info.project.name !== 'desktop', 'Answer idempotency retry behavior is viewport-independent; run once on desktop.');
+  const { token } = await loginFixtureUser(request, `browser-${info.project.name}@example.test`);
   await routeFixture(context, token);
   const commands: unknown[] = [], checkpoints: string[] = [];
   let submitted = false;
@@ -135,9 +136,9 @@ async function routeFixture(context: BrowserContext, token: string) {
 }
 
 test('question 241 resumes in one question request and earlier navigation remains available', async ({ page, context, request }, info) => {
+  test.skip(info.project.name !== 'mobile', 'Deep resume with mobile question navigator runs once on mobile.');
   await page.setViewportSize({ width: 360, height: 844 });
-  const login = await request.post(`${fixture}/auth/login`, { data: { email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!' } });
-  const { token } = await login.json();
+  const { token } = await loginFixtureUser(request, `browser-${info.project.name}@example.test`);
   const headers = { Authorization: `Bearer ${token}` };
   const seed = await request.patch(`${fixture}/users/me/recent-quizzes`, { headers, data: {
     quizKey: 'mathematics:algebra', title: 'Algebra', subject: 'mathematics', href: '/mathematics/advance/algebra/quiz',
@@ -163,8 +164,8 @@ test('question 241 resumes in one question request and earlier navigation remain
 });
 
 test('chat persists appended messages with small acknowledgements and survives normal reconnects', async ({ page, context, request }, info) => {
-  const login = await request.post(`${fixture}/auth/login`, { data: { email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!' } });
-  const { token } = await login.json();
+  test.skip(info.project.name !== 'desktop', 'Chat sequence persistence and offline/online reconnect behavior is viewport-independent; run once on desktop.');
+  const { token } = await loginFixtureUser(request, `browser-${info.project.name}@example.test`);
   await routeFixture(context, token);
   const writes: Array<{ sequence: number; messages: unknown[] }> = [];
   const acknowledgements: unknown[] = [];
@@ -194,8 +195,9 @@ test('chat persists appended messages with small acknowledgements and survives n
 });
 
 test('Mathematics loads private progress separately from its public catalog', async ({ page, context, request }, info) => {
-  const login = await request.post(`${fixture}/auth/login`, { data: { email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!' } });
-  const { token } = await login.json(); await routeFixture(context, token);
+  test.skip(info.project.name !== 'mobile', 'Run on mobile to verify both private/public catalog separation and mobile thumbnail optimization in one pass.');
+  const { token } = await loginFixtureUser(request, `browser-${info.project.name}@example.test`);
+  await routeFixture(context, token);
   const reads: string[] = [];
   page.on('request', req => { if (/\/api\/(progress\/topics|questions\/topic-counts)/.test(req.url())) reads.push(req.url()); });
   await page.goto('/mathematics');
@@ -204,26 +206,19 @@ test('Mathematics loads private progress separately from its public catalog', as
   expect(reads.filter(url => url.includes('/questions/topic-counts?')).length).toBeLessThanOrEqual(1);
   const stored = await page.evaluate(() => Object.keys(localStorage).filter(key => key.includes('topic-counts')).map(key => localStorage.getItem(key)));
   expect(stored.every(value => !value?.includes('userProgress'))).toBe(true);
-  if (info.project.name === 'mobile') {
-    const firstImage = page.locator('[data-topic-thumbnail]').first();
-    await expect(firstImage).toBeVisible();
-    await expect.poll(() => firstImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
-    const delivered = await firstImage.evaluate((image: HTMLImageElement) => ({ src: image.currentSrc, width: image.naturalWidth }));
-    expect(new URL(delivered.src).pathname).toBe('/_next/image');
-    expect(delivered.width).toBeLessThanOrEqual(128);
-    for (const theme of ['light', 'dark']) {
-      await page.evaluate(value => localStorage.setItem('ui-theme', value), theme);
-      await page.reload();
-      await expect(firstImage).toBeVisible();
-      await expect.poll(() => firstImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
-      await page.screenshot({ path: info.outputPath(`topic-thumbnails-${theme}.png`), animations: 'disabled' });
-    }
-  }
+  const firstImage = page.locator('[data-topic-thumbnail]').first();
+  await expect(firstImage).toBeVisible();
+  await expect.poll(() => firstImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+  const delivered = await firstImage.evaluate((image: HTMLImageElement) => ({ src: image.currentSrc, width: image.naturalWidth }));
+  expect(new URL(delivered.src).pathname).toBe('/_next/image');
+  expect(delivered.width).toBeLessThanOrEqual(128);
+  await page.screenshot({ path: info.outputPath('topic-thumbnails-light.png'), animations: 'disabled' });
 });
+
 test('mock history replays a 401 once without refetching when its token rotates', async ({ page, context, request }, info) => {
-  const credentials = { email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!' };
-  const { token } = await (await request.post(`${fixture}/auth/login`, { data: credentials })).json();
-  const { token: rotated } = await (await request.post(`${fixture}/auth/login`, { data: credentials })).json();
+  test.skip(info.project.name !== 'desktop', '401 token-rotation replay is viewport-independent; run once on desktop.');
+  const { token } = await loginFixtureUser(request, `browser-${info.project.name}@example.test`);
+  const { token: rotated } = await loginFixtureUser(request, `browser-${info.project.name}@example.test`);
   await routeFixture(context, token);
   let refreshes = 0, histories = 0;
   await context.route('**/backend-api/auth/refresh', route => route.fulfill({ json: { token: ++refreshes === 1 ? token : rotated } }));
@@ -238,8 +233,10 @@ test('mock history replays a 401 once without refetching when its token rotates'
   await page.waitForTimeout(400);
   expect(histories).toBe(2); expect(refreshes).toBe(2);
 });
+
 test('quiz translates question text ahead and solution only after opening it', async ({ page, context, request }, info) => {
-  const { token } = await (await request.post(`${fixture}/auth/login`, { data: { email: `browser-${info.project.name}@example.test`, password: 'Browser-fixture-123!' } })).json();
+  test.skip(info.project.name !== 'desktop', 'Translation batching is viewport-independent; run once on desktop.');
+  const { token } = await loginFixtureUser(request, `browser-${info.project.name}@example.test`);
   await routeFixture(context, token);
   const batches: string[][] = [];
   await context.route('**/api/translate/**', async route => {

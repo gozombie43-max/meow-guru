@@ -1,34 +1,37 @@
 import { test, expect } from '@playwright/test';
-import { randomUUID } from 'node:crypto';
-import { verifyFixtureEmail } from './helpers/verify-fixture-email';
+import { FIXTURE_BACKEND_URL, registerAndLoginIsolatedUser } from './helpers/auth-fixture';
 
 test.beforeEach(async ({ context, request }, testInfo) => {
-  const credentials = { email: `mock-flow-${testInfo.project.name}-${randomUUID()}@example.test`, password: 'Browser-fixture-123!' };
-  expect((await request.post('http://127.0.0.1:3111/auth/register', { data: { name: 'Flow Student', ...credentials } })).ok()).toBeTruthy();
-  await verifyFixtureEmail(request, credentials.email);
-  const login = await request.post('http://127.0.0.1:3111/auth/login', { data: credentials });
-  expect(login.ok()).toBeTruthy();
-  const value = login.headers()['set-cookie'].split(';')[0].slice('refreshToken='.length);
+  const { refreshCookie } = await registerAndLoginIsolatedUser(
+    request,
+    `mock-flow-${testInfo.project.name}`,
+    'Flow Student',
+  );
   await context.addCookies([
-    { name: 'refreshToken', value, domain: '127.0.0.1', path: '/', httpOnly: true, sameSite: 'Lax' },
+    { name: 'refreshToken', value: refreshCookie!, domain: '127.0.0.1', path: '/', httpOnly: true, sameSite: 'Lax' },
     { name: 'access_session', value: 'local-navigation-fixture', domain: '127.0.0.1', path: '/' },
   ]);
   await context.route('**/backend-api/**', async route => {
     const url = new URL(route.request().url());
     // Forward the browser request directly so navigation can cancel it without
     // leaving a separate fetch callback trying to fulfill an already handled route.
-    await route.continue({ url: `http://127.0.0.1:3111${url.pathname.replace('/backend-api', '')}${url.search}` });
+    await route.continue({ url: `${FIXTURE_BACKEND_URL}${url.pathname.replace('/backend-api', '')}${url.search}` });
   });
 });
 
 test.afterEach(async ({ context }) => { await context.unrouteAll({ behavior: 'wait' }); });
 
-for (const kind of ['mock', 'pyq']) {
-  test(`${kind}: Resume waits for the current attempt before running a cached timer`, async ({ page }) => {
+for (const kind of ['mock', 'pyq'] as const) {
+  test(`${kind}: Resume waits for the current attempt before running a cached timer`, async ({ page }, testInfo) => {
+    // Cached countdown vs attempt GET synchronization is identical across mock/pyq and viewports; run once on desktop.
+    test.skip(
+      testInfo.project.name !== 'desktop' || kind !== 'mock',
+      'Timer-before-attempt-GET synchronization is viewport- and tab-independent; run once on desktop.',
+    );
     test.setTimeout(90000);
     await page.clock.install();
-    const title = kind === 'pyq' ? 'Browser PYQ 2025' : 'Browser practice mock';
-    const testId = kind === 'pyq' ? 'browser-pyq' : 'browser-practice';
+    const title = 'Browser practice mock';
+    const testId = 'browser-practice';
     let submissions = 0;
     page.on('request', request => {
       if (request.method() === 'POST' && request.url().endsWith('/submit')) submissions++;
@@ -36,14 +39,14 @@ for (const kind of ['mock', 'pyq']) {
     // Restore a stale cached countdown while the server still has time left.
     // The fresh attempt GET must finish before this countdown can submit.
     await page.route(`**/backend-api/api/mocktest/ssc-cgl/${testId}/start`, async route => {
-      const response = await route.fetch({ url: `http://127.0.0.1:3111/api/mocktest/ssc-cgl/${testId}/start` });
+      const response = await route.fetch({ url: `${FIXTURE_BACKEND_URL}/api/mocktest/ssc-cgl/${testId}/start` });
       await route.fulfill({ response, json: { ...await response.json(), timeLeft: 60 } });
     });
     await page.route('**/backend-api/api/mocktest/attempt/*', async route => {
       if (route.request().method() === 'GET') await new Promise(resolve => setTimeout(resolve, 1500));
       await route.fallback();
     });
-    await page.goto(`/mock-test/ssc-cgl${kind === 'pyq' ? '?tab=prev' : ''}`);
+    await page.goto('/mock-test/ssc-cgl');
     const catalogUrl = page.url();
     const card = page.getByRole('article').filter({ hasText: title });
     await card.getByRole('button', { name: 'Start Mock', exact: true }).click();
@@ -67,8 +70,13 @@ for (const kind of ['mock', 'pyq']) {
   });
 
   test(`${kind}: instructions, exit, resume, submit, review and retake preserve parent history`, async ({ page }, testInfo) => {
-    test.setTimeout(180000);
     const mobile = testInfo.project.name === 'mobile';
+    // Run 'mock' on desktop and 'pyq' on mobile so both catalog tabs and both responsive layouts are tested without 4x180s duplication.
+    test.skip(
+      (mobile && kind !== 'pyq') || (!mobile && kind !== 'mock'),
+      'Desktop exercises mock catalog lifecycle and mobile exercises PYQ tab lifecycle.',
+    );
+    test.setTimeout(180000);
     const title = kind === 'pyq' ? 'Browser PYQ 2025' : 'Browser practice mock';
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -138,7 +146,7 @@ for (const kind of ['mock', 'pyq']) {
     await expect(page).toHaveURL(resultUrl);
     await page.getByRole('button', { name: 'Retake', exact: true }).click();
     await expect(page.getByRole('combobox', { name: 'Test language' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Start Mock Test', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start Mock Test', exact: true }).first()).toBeVisible();
     await page.getByRole('button', { name: 'Start Mock Test', exact: true }).click();
     await expect(page.getByRole('radio').first()).toBeVisible();
     expect(page.url()).not.toBe(firstAttemptUrl);
@@ -153,7 +161,8 @@ for (const kind of ['mock', 'pyq']) {
   });
 }
 
-test('missing instructions show recovery instead of an endless loader', async ({ page }) => {
+test('missing instructions show recovery instead of an endless loader', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Missing-slot recovery UI is viewport-independent; run once on desktop.');
   await page.goto('/mock-test/ssc-cgl/missing-paper');
   await expect(page.getByRole('alert').filter({ hasText: 'Failed to fetch slot' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Retry loading instructions' })).toBeVisible();

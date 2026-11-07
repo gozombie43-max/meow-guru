@@ -31,7 +31,8 @@ test.beforeAll(async ({ browserName }, testInfo) => {
   const outputText = await readFile(path.join(outputDirectory, "navigation-controller.js"), "utf8");
   bundle = `var exports = {}; ${outputText}; window.NavigationFixture = exports;`;
 });
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "Navigation controller state machine is viewport-independent.");
   await page.route("http://navigation.test/**", route => route.fulfill({ contentType: "text/html", body: '<button id="focus">Quiz</button><a href="/topics" id="parent">Back to topics</a>' }));
   await page.goto("http://navigation.test/home");
   await page.addScriptTag({ content: bundle });

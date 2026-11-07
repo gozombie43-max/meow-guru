@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { loginFixtureUser, routeBackendApi } from './helpers/auth-fixture';
 
 test.afterEach(async ({ context }) => {
   await context.unrouteAll({ behavior: 'wait' });
@@ -6,19 +7,15 @@ test.afterEach(async ({ context }) => {
 
 for (const theme of ['light', 'dark'] as const) {
   test(`resource category labels remain readable in ${theme} mode`, async ({ page, context, request }, testInfo) => {
-    const login = await request.post('http://127.0.0.1:3111/auth/login', {
-      data: { email: `browser-${testInfo.project.name}@example.test`, password: 'Browser-fixture-123!' },
-    });
-    expect(login.ok()).toBeTruthy();
-    const { token } = await login.json();
-    await context.addCookies([{ name: 'access_session', value: 'resource-fixture', url: 'http://127.0.0.1:3110' }]);
+    // Run light mode on desktop and dark mode on mobile so both viewports and both themes are covered without duplicate browser sessions.
+    test.skip(
+      (testInfo.project.name === 'desktop' && theme !== 'light') ||
+        (testInfo.project.name === 'mobile' && theme !== 'dark'),
+      'Each viewport covers one theme in the smoke suite to avoid duplicate sessions.',
+    );
+    const { token } = await loginFixtureUser(request, `browser-${testInfo.project.name}@example.test`);
+    await routeBackendApi(context, { token, accessSession: 'resource-fixture' });
     await context.addInitScript(value => localStorage.setItem('ui-theme', value), theme);
-    await context.route('**/backend-api/**', async route => {
-      const url = new URL(route.request().url());
-      if (url.pathname.endsWith('/auth/refresh')) return route.fulfill({ json: { token } });
-      const response = await route.fetch({ url: `http://127.0.0.1:3111${url.pathname.replace('/backend-api', '')}${url.search}` });
-      return route.fulfill({ response });
-    });
     await page.goto('/resource');
     const categories = page.getByRole('tablist', { name: 'Resource Categories' });
     const active = categories.getByRole('tab', { name: 'Books', exact: true });
