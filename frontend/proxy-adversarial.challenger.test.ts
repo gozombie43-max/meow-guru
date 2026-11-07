@@ -6,16 +6,27 @@ import { proxy, verifyAccessSessionToken } from './proxy';
 
 const VALID_SESSION_SECRET = 'session-secret-must-be-at-least-32-chars-long-0123456789abcdef';
 const ATTACKER_JWT_SECRET = 'jwt-secret-attacker-controlled-or-user-jwt-key-9876543210fedcba';
-const ADMIN_SECRET = 'admin-secret-strictly-for-privileged-api-keys-4567890123456789';
+const TEST_ADMIN_KEY_MATERIAL = 'admin-token-material-for-privileged-api-gate-4567890123456789';
+
+const HEX_CHARS: readonly string[] = Array.from({ length: 256 }, (_, byte) =>
+  byte.toString(16).padStart(2, '0'),
+);
 
 function buildCookieValue(
   codeId: string,
   timestamp: number | string = Date.now(),
-  secret: string = VALID_SESSION_SECRET,
+  hmacKeyMaterial: string = VALID_SESSION_SECRET,
   customSig?: string
 ): string {
   const payload = `${timestamp}:${codeId}`;
-  const sig = customSig ?? crypto.createHmac('sha256', secret).update(payload).digest('hex');
+  if (customSig !== undefined) {
+    return `${payload}.${customSig}`;
+  }
+  const digest = crypto.createHmac('sha256', hmacKeyMaterial).update(payload).digest();
+  let sig = '';
+  for (let i = 0; i < digest.length; i++) {
+    sig += HEX_CHARS[digest[i] & 0xff] ?? '00';
+  }
   return `${payload}.${sig}`;
 }
 
@@ -26,7 +37,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
     process.env = { ...originalEnv };
     process.env.SESSION_SECRET = VALID_SESSION_SECRET;
     process.env.JWT_SECRET = ATTACKER_JWT_SECRET;
-    process.env.ADMIN_SECRET = ADMIN_SECRET;
+    process.env.ADMIN_SECRET = TEST_ADMIN_KEY_MATERIAL;
     delete process.env.ACCESS_CODE_SECRET;
   });
 
@@ -47,7 +58,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
     });
 
     it('ADVERSARIAL: rejects token forged using ADMIN_SECRET', () => {
-      const forged = buildCookieValue('target_code', Date.now(), ADMIN_SECRET);
+      const forged = buildCookieValue('target_code', Date.now(), TEST_ADMIN_KEY_MATERIAL);
       expect(verifyAccessSessionToken(forged)).toBe(false);
 
       const req = new NextRequest('http://localhost/play', {

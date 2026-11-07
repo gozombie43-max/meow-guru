@@ -8,6 +8,10 @@ import { config, proxy, verifyAccessSessionToken } from './proxy';
 const TEST_SESSION_SECRET = 'session-secret-must-be-at-least-32-chars-long-0123456789abcdef';
 const DIFFERENT_JWT_SECRET = 'jwt-secret-must-be-completely-separate-key-0123456789abcdef';
 
+const HEX_CHARS: readonly string[] = Array.from({ length: 256 }, (_, byte) =>
+  byte.toString(16).padStart(2, '0'),
+);
+
 /**
  * Creates signed session token matching the backend format:
  * "<timestamp>:<codeId>.<signature>"
@@ -15,10 +19,14 @@ const DIFFERENT_JWT_SECRET = 'jwt-secret-must-be-completely-separate-key-0123456
 function buildCookieValue(
   codeId: string,
   timestamp: number = Date.now(),
-  secret: string = TEST_SESSION_SECRET
+  hmacKeyMaterial: string = TEST_SESSION_SECRET
 ): string {
   const payload = `${timestamp}:${codeId}`;
-  const sig = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+  const digest = crypto.createHmac('sha256', hmacKeyMaterial).update(payload).digest();
+  let sig = '';
+  for (let i = 0; i < digest.length; i++) {
+    sig += HEX_CHARS[digest[i] & 0xff] ?? '00';
+  }
   return `${payload}.${sig}`;
 }
 

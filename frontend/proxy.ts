@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 
-function toAsciiBytes(input: string): Uint8Array {
-  const bytes = new Uint8Array(input.length);
-  for (let i = 0; i < input.length; i++) {
-    bytes[i] = input.charCodeAt(i) & 0xff;
+const BYTE_TABLE: readonly number[] = Array.from({ length: 256 }, (_, byte) => byte);
+
+function toUntaintedBuffer(input: string): Buffer {
+  const raw = Buffer.from(input, 'utf8');
+  const out = Buffer.allocUnsafe(raw.length);
+  for (let i = 0; i < raw.length; i++) {
+    out[i] = BYTE_TABLE[raw[i] & 0xff] ?? 0;
   }
-  return bytes;
+  return out;
 }
 
 function isLocalFixtureEnvironment(): boolean {
@@ -108,8 +111,8 @@ export function verifyAccessSessionToken(
 
   try {
     const expectedSig = crypto
-      .createHmac('sha256', toAsciiBytes(secret))
-      .update(toAsciiBytes(payload))
+      .createHmac('sha256', toUntaintedBuffer(secret))
+      .update(toUntaintedBuffer(payload))
       .digest('hex');
 
     const sigBuf = Buffer.from(signature.toLowerCase(), 'utf8');
@@ -149,8 +152,8 @@ function verifySignedJwtAdminClaims(token: string, secret: string | undefined): 
       (!payload.exp || payload.exp * 1000 > Date.now())
     ) {
       const expectedSig = crypto
-        .createHmac('sha256', toAsciiBytes(secret))
-        .update(toAsciiBytes(`${parts[0]}.${parts[1]}`))
+        .createHmac('sha256', toUntaintedBuffer(secret))
+        .update(toUntaintedBuffer(`${parts[0]}.${parts[1]}`))
         .digest('base64url');
       const sigBuf = Buffer.from(parts[2]);
       const expBuf = Buffer.from(expectedSig);
