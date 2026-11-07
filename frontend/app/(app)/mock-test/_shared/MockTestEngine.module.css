@@ -18,7 +18,7 @@
 }
 
 .ready { animation: testAppear 160ms ease-out both; }
-@keyframes testAppear { from { opacity: 0; } to { opacity: 1; } }
+@keyframes testAppear { from { opacity: 0.01; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .ready { animation: none; }
 }

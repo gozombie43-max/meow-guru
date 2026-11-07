@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 
+function isLocalFixtureEnvironment(): boolean {
+  if (process.env.NODE_ENV !== 'production') {
+    return true;
+  }
+  const runtimeEnv = process.env as Record<string, string | undefined>;
+  return (
+    runtimeEnv['ALLOW_LOCAL_ACCESS_FIXTURES'] === '1' &&
+    !runtimeEnv['VERCEL'] &&
+    runtimeEnv['DEPLOYMENT_ENVIRONMENT'] !== 'production'
+  );
+}
+
 /**
  * Verifies a signed access session token: "<timestamp>:<codeId>.<signature>"
  * Enforces 24-hour expiration, format integrity, and constant-time HMAC-SHA256 verification.
@@ -13,9 +25,9 @@ export function verifyAccessSessionToken(
     return false;
   }
 
-  // Allow test fixture tokens exclusively in non-production environments
+  // Allow test fixture tokens exclusively in non-production / local fixture environments
   if (
-    process.env.NODE_ENV !== 'production' &&
+    isLocalFixtureEnvironment() &&
     (token.endsWith('-fixture') ||
       token.endsWith('-invite') ||
       token === 'remaining-performance' ||
@@ -73,7 +85,7 @@ export function verifyAccessSessionToken(
     configuredSecret ||
     process.env.SESSION_SECRET ||
     process.env.ACCESS_CODE_SECRET ||
-    (process.env.NODE_ENV !== 'production'
+    (isLocalFixtureEnvironment()
       ? 'test-session-secret-32-chars-long-security'
       : undefined);
 
@@ -154,7 +166,7 @@ function isValidAdminRequest(request: NextRequest): boolean {
     if (
       verifyAccessSessionToken(adminCookie, process.env.ADMIN_SECRET || process.env.SESSION_SECRET) ||
       verifySignedJwtAdminClaims(adminCookie, process.env.JWT_SECRET) ||
-      (process.env.NODE_ENV !== 'production' && adminCookie === 'active_verified_admin_session')
+      (isLocalFixtureEnvironment() && adminCookie === 'active_verified_admin_session')
     ) {
       return true;
     }
@@ -188,7 +200,7 @@ function isValidAdminRequest(request: NextRequest): boolean {
   }
 
   // 5. Non-production admin test fixture cookie
-  if (process.env.NODE_ENV !== 'production') {
+  if (isLocalFixtureEnvironment()) {
     const accessCookie = request.cookies.get('access_session')?.value;
     if (accessCookie && accessCookie.includes('admin')) {
       return true;

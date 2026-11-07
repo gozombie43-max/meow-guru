@@ -1,5 +1,6 @@
 import { requestResponse as fetch } from "@/shared/api/request";
 import { API_BASE } from '@/lib/api-base';
+import { consumeEarlyRouteData } from '@/lib/early-session';
 import type { MockTestSlot } from './exam-config';
 import type { LanguageText, QuizLanguage } from '@meow/contracts/exam-paper';
 import { ApiError } from '@/shared/api/error';
@@ -219,6 +220,19 @@ export async function adminSeedSlots(adminToken: string) {
 // ─── Test Attempt Endpoints ───────────────────────────────
 
 export async function startTest(examSlug: string, testId: string, token: string, startKey?: string, restart = false): Promise<MockAttempt & { attemptId: string }> {
+  if (!restart) {
+    const early = consumeEarlyRouteData<MockAttempt & { attemptId: string }>(
+      BASE,
+      `auth:POST:${BASE}/api/mocktest/${examSlug}/${testId}/start`,
+      token,
+    );
+    if (early) {
+      const preloaded = await early;
+      if (preloaded && typeof preloaded.attemptId === 'string' && preloaded.attemptId && preloaded.paper?.sections?.length) {
+        return preloaded;
+      }
+    }
+  }
   const res = await fetch(`${BASE}/api/mocktest/${examSlug}/${testId}/start`, {
     method: 'POST',
     headers: { ...getHeaders(token), ...(startKey ? { 'Idempotency-Key': startKey } : {}) },
@@ -258,6 +272,16 @@ export async function submitAttempt(attemptId: string, token: string) {
 }
 
 export async function getAttempt(attemptId: string, token: string, signal?: AbortSignal): Promise<MockAttempt> {
+  const early = consumeEarlyRouteData<MockAttempt>(
+    BASE,
+    `auth:GET:${BASE}/api/mocktest/attempt/${encodeURIComponent(attemptId)}`,
+    token,
+    signal,
+  );
+  if (early) {
+    const preloaded = await early;
+    if (preloaded) return preloaded;
+  }
   const res = await fetch(`${BASE}/api/mocktest/attempt/${attemptId}`, {
     signal,
     headers: getHeaders(token),

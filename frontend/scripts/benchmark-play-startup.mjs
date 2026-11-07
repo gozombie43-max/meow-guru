@@ -20,7 +20,7 @@ for (let restart = 1; restart <= restarts; restart++) {
   const port = basePort + restart;
   const child = spawn(process.execPath, [require.resolve('next/dist/bin/next'), 'start', '--hostname', '127.0.0.1', '--port', String(port)], {
     cwd: process.cwd(), windowsHide: true,
-    env: { ...process.env, API_URL: 'http://127.0.0.1:3111' },
+    env: { ...process.env, API_URL: 'http://127.0.0.1:3111', ALLOW_LOCAL_ACCESS_FIXTURES: '1' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let logs = '';

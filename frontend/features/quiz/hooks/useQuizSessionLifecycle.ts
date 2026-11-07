@@ -12,6 +12,8 @@ import useSWR from 'swr';
 import api from '@/shared/api/client';
 import { createResumeSaver } from '../model/resumeDelta';
 import { authSessionIdentity } from '@/lib/auth-session-identity';
+import { API_BASE } from '@/lib/api-base';
+import { consumeEarlyRouteData } from '@/lib/early-session';
 import { recordRecentFromRoute } from '@/lib/recent-study';
 import type { RecentQuizPayload } from '@/lib/userApi';
 import { serializeConceptSelection } from '../model/conceptSelection';
@@ -48,7 +50,16 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   }, [quizKey, resumeRequested, user?.recentQuizzes]);
   const { data: resumeDetail } = useSWR(resumeSummary && !resumeSummary.selectedAnswers
     ? `/users/me/recent-quizzes/${encodeURIComponent(quizKey)}` : null,
-    async (url: string) => (await api.get(url)).data.quiz as NonNullable<typeof resumeSummary>,
+    async (url: string) => {
+      if (token) {
+        const early = consumeEarlyRouteData<NonNullable<typeof resumeSummary>>(API_BASE, `auth:GET:${API_BASE}${url}`, token);
+        if (early) {
+          const preloaded = await early;
+          if (preloaded) return preloaded;
+        }
+      }
+      return (await api.get(url)).data.quiz as NonNullable<typeof resumeSummary>;
+    },
     { revalidateOnFocus: false });
   const resumeEntry = resumeSummary?.selectedAnswers ? resumeSummary : resumeDetail;
   const resumeAppliedRef = useRef(false);
