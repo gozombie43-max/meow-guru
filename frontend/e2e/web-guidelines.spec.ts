@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { loginFixtureUser, routeBackendApi } from './helpers/auth-fixture';
 
 test.afterEach(async ({ context }) => { await context.unrouteAll({ behavior: 'wait' }); });
 
@@ -34,7 +35,7 @@ test('sign-in supports skipping navigation, keyboard password controls, and asso
       expect(await field.evaluate(element => parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(16);
     }
   }
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
   await page.screenshot({ path: info.outputPath('sign-in-keyboard-validation.png'), fullPage: true });
   let releaseLogin!: () => void;
   const pendingLogin = new Promise<void>(resolve => { releaseLogin = resolve; });
@@ -53,20 +54,14 @@ test('sign-in supports skipping navigation, keyboard password controls, and asso
 });
 
 test('theme switching updates browser colors and keeps settings focus contained', async ({ page, context, request }, info) => {
-  const login = await request.post('http://127.0.0.1:3111/auth/login', {
-    data: { email: 'browser-mobile@example.test', password: 'Browser-fixture-123!' },
+  test.skip(info.project.name !== 'desktop', 'Theme color-scheme and ultrawide layout check runs once on desktop.');
+  const { token } = await loginFixtureUser(request, 'browser-mobile@example.test');
+  await routeBackendApi(context, {
+    token,
+    accessSession: 'web-guidelines-fixture',
+    frontendUrl: info.project.use.baseURL!,
   });
-  expect(login.ok()).toBeTruthy();
-  const { token } = await login.json();
-  await context.addCookies([{ name: 'access_session', value: 'web-guidelines-fixture', url: info.project.use.baseURL! }]);
   await context.addInitScript(() => { if (!localStorage.getItem('ui-theme')) localStorage.setItem('ui-theme', 'dark'); });
-  await context.route('**/backend-api/**', async route => {
-    const url = new URL(route.request().url());
-    const path = url.pathname.replace(/^\/backend-api/, '');
-    if (path === '/auth/refresh') return route.fulfill({ json: { token } });
-    const response = await route.fetch({ url: `http://127.0.0.1:3111${path}${url.search}` });
-    await route.fulfill({ response });
-  });
   await page.goto('/profile');
   await expect(page.locator('html')).toHaveCSS('color-scheme', 'dark');
   await expect(page.locator('meta[name="theme-color"]')).toHaveCount(1);
@@ -87,12 +82,10 @@ test('theme switching updates browser colors and keeps settings focus contained'
   await expect(dialog).toHaveCount(0);
   await expect(preferences).toBeFocused();
   await page.screenshot({ path: info.outputPath('profile-light-theme.png'), fullPage: true });
-  if (info.project.name === 'desktop') {
-    await page.setViewportSize({ width: 2560, height: 1080 });
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.screenshot({ path: info.outputPath('profile-ultrawide.png'), fullPage: true });
-    await page.setViewportSize({ width: 1366, height: 900 });
-  }
+  await page.setViewportSize({ width: 2560, height: 1080 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: info.outputPath('profile-ultrawide.png'), fullPage: true });
+  await page.setViewportSize({ width: 1366, height: 900 });
   await page.reload();
   await expect(page.locator('html')).toHaveCSS('color-scheme', 'light');
   await expect(page.locator('meta[name="theme-color"]')).toHaveCount(1);
@@ -108,18 +101,11 @@ test('theme switching updates browser colors and keeps settings focus contained'
 
 test('mobile carousel has three navigation controls and respects reduced motion', async ({ page, context, request }, info) => {
   test.skip(info.project.name !== 'mobile', 'The slideshow belongs to mobile Home');
-  const login = await request.post('http://127.0.0.1:3111/auth/login', {
-    data: { email: 'browser-mobile@example.test', password: 'Browser-fixture-123!' },
-  });
-  expect(login.ok()).toBeTruthy();
-  const { token } = await login.json();
-  await context.addCookies([{ name: 'access_session', value: 'web-motion-fixture', url: info.project.use.baseURL! }]);
-  await context.route('**/backend-api/**', async route => {
-    const url = new URL(route.request().url());
-    const path = url.pathname.replace(/^\/backend-api/, '');
-    if (path === '/auth/refresh') return route.fulfill({ json: { token } });
-    const response = await route.fetch({ url: `http://127.0.0.1:3111${path}${url.search}` });
-    await route.fulfill({ response });
+  const { token } = await loginFixtureUser(request, 'browser-mobile@example.test');
+  await routeBackendApi(context, {
+    token,
+    accessSession: 'web-motion-fixture',
+    frontendUrl: info.project.use.baseURL!,
   });
   await page.goto('/');
   const carousel = page.getByRole('region', { name: 'Daily study inspiration' });

@@ -20,6 +20,7 @@ test.afterEach(async ({ context, request }) => {
 });
 
 test('paper ZIP validates, uploads to storage and reloads linked question and option images', async ({ page, context, request }, info) => {
+  test.skip(info.project.name !== 'desktop', 'Admin paper image ZIP workflow runs once on desktop.');
   test.setTimeout(180000);
   const login = await request.post(`${backend}/auth/login`, { data: { email: 'browser-admin@example.test', password: 'Browser-fixture-123!' } });
   expect(login.ok()).toBeTruthy();

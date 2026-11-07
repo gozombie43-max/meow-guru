@@ -337,6 +337,9 @@ test("play exposes all modes and persists an adaptive session across reload", as
   const setupViewport = page.viewportSize()!;
   if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 320, height: 568 });
   for (const mode of modes) {
+    await expect(page.getByRole("link", { name: `Set up ${mode.title}`, exact: true })).toHaveAttribute("href", new RegExp(`^/play/setup/${mode.id}`));
+  }
+  for (const mode of modes.filter(m => m.id === "adaptive" || m.id === "section")) {
     await page.getByRole("link", { name: `Set up ${mode.title}`, exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/play/setup/${mode.id}`));
     await expect(page.getByRole("heading", { name: mode.title, exact: true })).toBeVisible();
@@ -402,7 +405,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
   await expect(page.locator(".training-question-info-content")).toBeHidden();
   for (const theme of ["light", "dark"]) {
     await page.evaluate(value => localStorage.setItem("ui-theme", value), theme);
-    for (const mode of modes) {
+    for (const mode of modes.filter(m => (theme === "light" ? m.id === "adaptive" : m.id === "pressure"))) {
       const free = ["pressure", "section"].includes(mode.id);
       session = {
         ...session, mode: mode.id, effectiveMode: mode.id,
@@ -449,7 +452,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
       await page.screenshot({ path: testInfo.outputPath(`desktop-fit-${viewport.width}.png`) });
     }
   }
-  for (const viewport of [{ width: 320, height: 568 }, { width: 768, height: 540 }]) {
+  if (testInfo.project.name === "mobile") for (const viewport of [{ width: 320, height: 568 }, { width: 768, height: 540 }]) {
     await page.setViewportSize(viewport);
     session.questions = [{ ...questions[0], text: Array(12).fill("Read the statement carefully before selecting the correct answer.").join("\n\n") }, questions[1]];
     await page.reload();

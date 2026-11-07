@@ -3,15 +3,17 @@ import type { useQuizFilters } from "@/features/quiz/hooks/useQuizFilters";
 import { useQuizResume } from "@/features/quiz/hooks/useQuizResume";
 import { useQuizSync } from "@/features/quiz/hooks/useQuizSync";
 import { useQuizTimer } from "@/features/quiz/hooks/useQuizTimer";
-import type { SessionResult,SubjectConfig } from "@/features/quiz/model/types";
+import type { SessionResult, SubjectConfig } from "@/features/quiz/model/types";
 import { useAuth } from "@/context/AuthContext";
-import { useCallback,useEffect,useMemo,useRef,useReducer } from "react";
+import { useCallback, useEffect, useMemo, useRef, useReducer } from "react";
 import { useQuizAnswerLifecycle } from "./useQuizAnswerLifecycle";
 import { initialQuizSession, quizSessionReducer } from "../model/sessionReducer";
 import useSWR from 'swr';
 import api from '@/shared/api/client';
 import { createResumeSaver } from '../model/resumeDelta';
 import { authSessionIdentity } from '@/lib/auth-session-identity';
+import { API_BASE } from '@/lib/api-base';
+import { consumeEarlyRouteData } from '@/lib/early-session';
 import { recordRecentFromRoute } from '@/lib/recent-study';
 import type { RecentQuizPayload } from '@/lib/userApi';
 import { serializeConceptSelection } from '../model/conceptSelection';
@@ -48,12 +50,43 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   }, [quizKey, resumeRequested, user?.recentQuizzes]);
   const { data: resumeDetail } = useSWR(resumeSummary && !resumeSummary.selectedAnswers
     ? `/users/me/recent-quizzes/${encodeURIComponent(quizKey)}` : null,
-    async (url: string) => (await api.get(url)).data.quiz as NonNullable<typeof resumeSummary>,
+    async (url: string) => {
+      if (token) {
+        const early = consumeEarlyRouteData<NonNullable<typeof resumeSummary>>(API_BASE, `auth:GET:${API_BASE}${url}`, token);
+        if (early) {
+          const preloaded = await early;
+          if (preloaded) return preloaded;
+        }
+      }
+      return (await api.get(url)).data.quiz as NonNullable<typeof resumeSummary>;
+    },
     { revalidateOnFocus: false });
   const resumeEntry = resumeSummary?.selectedAnswers ? resumeSummary : resumeDetail;
   const resumeAppliedRef = useRef(false);
 
-  const currentQ = questions[currentIndex]?.sessionPlaceholder ? undefined : questions[currentIndex];
+  const rawCurrentQ = questions[currentIndex]?.sessionPlaceholder ? undefined : questions[currentIndex];
+  const revealedCurrent = state.revealedByIndex?.[currentIndex];
+  const currentQ = useMemo(() => {
+    if (!rawCurrentQ || !revealedCurrent) return rawCurrentQ;
+    const correctAnswer = typeof revealedCurrent.correct === 'number' ? revealedCurrent.correct : rawCurrentQ.correctAnswer;
+    const solutionText = String(revealedCurrent.solution ?? "").trim();
+    const solutionImageMarkdown = revealedCurrent.solutionImage
+      ? `![solution](${revealedCurrent.solutionImage})`
+      : "";
+    const revealedSolution = solutionText
+      ? /!\[[^\]]*\]\([^)]+\)/.test(solutionText) || !solutionImageMarkdown
+        ? solutionText
+        : `${solutionText}\n\n${solutionImageMarkdown}`
+      : solutionImageMarkdown;
+    return {
+      ...rawCurrentQ,
+      correctAnswer,
+      answer: rawCurrentQ.options[correctAnswer] ?? rawCurrentQ.answer,
+      solution: revealedSolution || rawCurrentQ.solution,
+      translations: revealedCurrent.translations ?? rawCurrentQ.translations,
+    };
+  }, [rawCurrentQ, revealedCurrent]);
+
   useEffect(() => {
     if (!started || !questions[currentIndex]?.sessionPlaceholder || !ensureQuestion) return;
     void ensureQuestion(currentIndex).catch(() => dispatch({ type: 'ERROR', message: 'Could not load this question. Please try again.' }));

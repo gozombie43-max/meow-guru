@@ -13,7 +13,7 @@ function start(file, args = []) {
   const child = spawn(process.execPath, [file, ...args], {
     stdio: 'inherit',
     windowsHide: true,
-    env: { ...process.env, API_URL: 'http://127.0.0.1:3111' },
+    env: { ...process.env, API_URL: 'http://127.0.0.1:3111', ALLOW_LOCAL_ACCESS_FIXTURES: '1' },
   });
   children.push(child);
   child.on('exit', code => stop(code ?? 1));

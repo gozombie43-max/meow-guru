@@ -14,15 +14,49 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { b2Client, B2_BUCKET } from '../config/b2.js';
 
 import adminAuth from '../middleware/auth.js';
+import { uploadLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 100 * 1024 * 1024,
+    fileSize: 20 * 1024 * 1024,
+    files: 10,
   },
 });
+
+const uploadPdfFields = (req, res, next) => {
+  const middleware = upload.fields([
+    {
+      name: 'files',
+      maxCount: 5,
+    },
+    {
+      name: 'pdfs',
+      maxCount: 5,
+    },
+    {
+      name: 'pdf',
+      maxCount: 5,
+    },
+  ]);
+
+  middleware(req, res, (err) => {
+    if (!err) {
+      return next();
+    }
+    if (err instanceof multer.MulterError) {
+      const status = err.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
+      return res.status(status).json({
+        error: err.code === 'LIMIT_FILE_SIZE'
+          ? 'File size exceeds the 20 MB limit'
+          : err.message || 'Invalid file upload request',
+      });
+    }
+    return next(err);
+  });
+};
 
 // ───────────────────────────────────────────────────────
 // Helpers
@@ -123,20 +157,9 @@ router.post(
 
   adminAuth,
 
-  upload.fields([
-    {
-      name: 'files',
-      maxCount: 20,
-    },
-    {
-      name: 'pdfs',
-      maxCount: 20,
-    },
-    {
-      name: 'pdf',
-      maxCount: 20,
-    },
-  ]),
+  uploadLimiter,
+
+  uploadPdfFields,
 
   async (req, res) => {
     try {
@@ -170,7 +193,7 @@ router.post(
           .status(400)
           .json({
             error:
-              'At least one PDF, HTML, DOC, or DOCX file is required',
+              'At least one PDF, DOC, or DOCX file is required',
           });
       }
 
@@ -187,7 +210,7 @@ router.post(
           .status(400)
           .json({
             error:
-              'Only PDF, HTML, DOC, and DOCX files are allowed',
+              'Only valid PDF, DOC, and DOCX files are allowed',
           });
       }
 
@@ -341,6 +364,8 @@ router.get(
           blobPath
         );
 
+      const safeFileName = (blobPath.split('/').pop() || 'document.pdf').replace(/["\\]/g, '');
+
       /*
        * Equivalent of your previous
        * 2-hour Azure SAS URL.
@@ -355,6 +380,12 @@ router.get(
 
             Key:
               key,
+
+            ResponseContentType:
+              getContentType(blobPath, 'application/pdf'),
+
+            ResponseContentDisposition:
+              `inline; filename="${safeFileName}"`,
           }),
 
           {

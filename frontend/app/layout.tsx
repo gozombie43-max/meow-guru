@@ -3,7 +3,7 @@ import localFont from 'next/font/local';
 import { AuthProvider } from '@/context/AuthContext';
 import { MeowConvexProvider } from '@/components/MeowConvexProvider';
 import { VirtualKeyboardProvider } from '@/components/VirtualKeyboardProvider';
-import SelectionPopover from '@/components/SelectionPopover';
+import SelectionPopover from '@/components/SelectionPopoverLazy';
 import SkipToContent from '@/components/SkipToContent';
 import ThemeColor from '@/components/ThemeColor';
 import { API_BASE } from '@/lib/api-base';

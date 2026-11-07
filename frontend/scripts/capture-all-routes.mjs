@@ -48,6 +48,7 @@ const playwrightCLI = require.resolve('@playwright/test/cli');
 const captureEnv = {
   ...process.env,
   API_URL: 'http://127.0.0.1:3111',
+  ALLOW_LOCAL_ACCESS_FIXTURES: '1',
   NEXT_PUBLIC_API_URL: '/backend-api',
   NEXT_PUBLIC_SOCKET_URL: 'http://127.0.0.1:3111',
   SCREENSHOT_THEME: themes[0],

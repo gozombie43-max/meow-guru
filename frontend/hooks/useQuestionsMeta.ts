@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 import { fetchWithRetry } from '@/lib/api/http';
 import { API_BASE } from '@/lib/api-base';
+import { consumeEarlyRouteData } from '@/lib/early-session';
 import { PUBLIC_QUESTION_QUERY } from '@/features/quiz/api/publicQuery';
 
 interface QuestionsMeta {
@@ -17,6 +18,11 @@ interface QuestionsMeta {
 type GroupingStatus = Pick<QuestionsMeta, 'groupingStatus' | 'groupingFingerprint' | 'conceptGroups'> & { metadataChanged?: boolean };
 
 const fetcher = async (url: string): Promise<QuestionsMeta> => {
+  const early = consumeEarlyRouteData<QuestionsMeta>(API_BASE, `public:GET:${url}`, null);
+  if (early) {
+    const preloaded = await early;
+    if (preloaded) return preloaded;
+  }
   const res = await fetchWithRetry(url, {}, { auth: 'none' });
   if (!res.ok) throw new Error('Failed to fetch questions meta');
   return res.json();

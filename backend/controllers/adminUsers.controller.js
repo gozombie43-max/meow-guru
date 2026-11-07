@@ -33,6 +33,14 @@ function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function sendControllerError(res, err, fallbackMessage = 'Internal server error') {
+  const statusCode = Number(err?.statusCode) || 500;
+  const exposeMessage = statusCode < 500 || process.env.NODE_ENV !== 'production';
+  res.status(statusCode).json({
+    error: exposeMessage && err?.message ? err.message : fallbackMessage,
+  });
+}
+
 async function logAudit({ adminId, adminEmail, action, targetUserId, details, reason }) {
   try {
 
@@ -64,7 +72,7 @@ export async function getDashboardStats(req, res) {
     res.json({ totalUsers, activeToday, newThisWeek, suspendedCount });
   } catch (err) {
     runtimeLog.error('getDashboardStats error:', err);
-    res.status(err.statusCode || 500).json({ error: err.message });
+    sendControllerError(res, err);
   }
 }
 
@@ -81,8 +89,9 @@ export async function getUsers(req, res) {
     // Build filter
     const filter = { type: { $ne: 'email_lock' } };
 
-    if (search && search.trim()) {
-      const escaped = escapeRegex(search.trim());
+    const searchStr = typeof search === 'string' ? search.trim() : '';
+    if (searchStr) {
+      const escaped = escapeRegex(searchStr);
       filter.$or = [
         { name: { $regex: escaped, $options: 'i' } },
         { email: { $regex: escaped, $options: 'i' } },
@@ -90,7 +99,7 @@ export async function getUsers(req, res) {
       ];
     }
 
-    if (status && ['active', 'suspended', 'banned'].includes(status)) {
+    if (typeof status === 'string' && ['active', 'suspended', 'banned'].includes(status)) {
       if (status === 'active') {
         // Users without a status field are considered active
         filter.$and = [
@@ -102,7 +111,7 @@ export async function getUsers(req, res) {
       }
     }
 
-    if (role && ['user', 'student', 'moderator', 'admin', 'superadmin'].includes(role)) {
+    if (typeof role === 'string' && ['user', 'student', 'moderator', 'admin', 'superadmin'].includes(role)) {
       if (role === 'user') {
         // Match both "user" and legacy "student"
         filter.role = { $in: ['user', 'student'] };
@@ -111,7 +120,7 @@ export async function getUsers(req, res) {
       }
     }
 
-    if (push && ['android', 'none'].includes(push)) {
+    if (typeof push === 'string' && ['android', 'none'].includes(push)) {
       const registeredUserIds = await findAndroidUserIds();
       filter.id = push === 'android'
         ? { $in: registeredUserIds.map(String) }
@@ -120,7 +129,7 @@ export async function getUsers(req, res) {
 
     // Build sort
     let sortObj = { createdAt: -1 };
-    if (sort) {
+    if (typeof sort === 'string' && sort) {
       const desc = sort.startsWith('-');
       const field = desc ? sort.slice(1) : sort;
       if (['createdAt', 'name', 'lastLoginAt'].includes(field)) {
@@ -178,7 +187,7 @@ export async function getUsers(req, res) {
     });
   } catch (err) {
     runtimeLog.error('getUsers error:', err);
-    res.status(err.statusCode || 500).json({ error: err.message });
+    sendControllerError(res, err);
   }
 }
 
@@ -212,7 +221,7 @@ export async function getUserById(req, res) {
     });
   } catch (err) {
     runtimeLog.error('getUserById error:', err);
-    res.status(err.statusCode || 500).json({ error: err.message });
+    sendControllerError(res, err);
   }
 }
 
@@ -277,7 +286,7 @@ export async function getUserStats(req, res) {
     });
   } catch (err) {
     runtimeLog.error('getUserStats error:', err);
-    res.status(err.statusCode || 500).json({ error: err.message });
+    sendControllerError(res, err);
   }
 }
 
@@ -334,7 +343,7 @@ export async function updateUserRole(req, res) {
     res.json({ message: 'Role updated ✅', role: newRole });
   } catch (err) {
     runtimeLog.error('updateUserRole error:', err);
-    res.status(err.statusCode || 500).json({ error: err.message });
+    sendControllerError(res, err);
   }
 }
 
@@ -395,7 +404,7 @@ export async function updateUserStatus(req, res) {
     res.json({ message: `User ${status} ✅`, status });
   } catch (err) {
     runtimeLog.error('updateUserStatus error:', err);
-    res.status(err.statusCode || 500).json({ error: err.message });
+    sendControllerError(res, err);
   }
 }
 
@@ -442,7 +451,7 @@ export async function deleteUser(req, res) {
     res.json({ message: 'User deleted ✅' });
   } catch (err) {
     runtimeLog.error('deleteUser error:', err);
-    res.status(err.statusCode || 500).json({ error: err.message });
+    sendControllerError(res, err);
   }
 }
 
@@ -517,6 +526,6 @@ export async function sendNotification(req, res) {
     });
   } catch (err) {
     runtimeLog.error('sendNotification error:', err);
-    res.status(err.statusCode || 500).json({ error: err.message });
+    sendControllerError(res, err);
   }
 }

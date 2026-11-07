@@ -175,7 +175,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
 
   app.use('/auth', authLimiter, initAuthRoutes());
   app.use('/users', initUserRoutes());
-  app.use('/api/access-code', authLimiter, accessCodeRoutes);
+  app.use(['/api/access-code', '/api/access-codes'], authLimiter, accessCodeRoutes);
 
   // Keep user-invoked study tools on F1, but lazy-load them so they consume no
   // route/module startup cost until the user actually opens Tutor or Notes/PDF.

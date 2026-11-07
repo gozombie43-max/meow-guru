@@ -10,7 +10,7 @@ import { MobileQuizMetadata } from "./MobileQuizMetadata";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
-import { QuizSettingsModal } from "@/features/quiz/components/ui/QuizSettingsModal";
+const QuizSettingsModal = dynamic(() => import("@/features/quiz/components/ui/QuizSettingsModal").then(module => module.QuizSettingsModal), { loading: () => null });
 
 const SolutionBottomSheet = dynamic(
   () => import("@/features/quiz/components/ui/SolutionViews").then(module => module.SolutionBottomSheet),
@@ -123,6 +123,8 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
   // finish before focus is restored without downloading it on submission.
   const [solutionLoaded, setSolutionLoaded] = useState(false);
   if (isSolutionOpen && !solutionLoaded) setSolutionLoaded(true);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  if (isSettingsOpen && !settingsLoaded) setSettingsLoaded(true);
 
   if (!currentQ) return null;
 
@@ -156,7 +158,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           setIsSettingsOpen={setIsSettingsOpen}
         />
 
-        <QuizSettingsModal
+        {settingsLoaded && <QuizSettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
           onLeaveQuiz={() => {
@@ -179,8 +181,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           spacing={spacing}
           onSpacingChange={handleSetSpacing}
           textWeight={textWeight}
-          onTextWeightChange={handleSetTextWeight}
-        />
+          onTextWeightChange={handleSetTextWeight}/>}
 
         <MobileQuestionNavigator
           hasMore={navigation.hasMore}

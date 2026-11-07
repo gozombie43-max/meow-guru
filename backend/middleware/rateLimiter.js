@@ -163,8 +163,8 @@ export const globalLimiter =
       // Skip static uploads and image requests
       if (path.startsWith('/uploads') || url.startsWith('/uploads')) return true;
 
-      // Skip reading PDFs, notes, and streaming content
-      if (path.startsWith('/api/pdfs') || url.startsWith('/api/pdfs')) return true;
+      // Skip reading PDFs, notes, and streaming content for GET requests only
+      if (req.method === 'GET' && (path.startsWith('/api/pdfs') || url.startsWith('/api/pdfs'))) return true;
 
       return false;
     },

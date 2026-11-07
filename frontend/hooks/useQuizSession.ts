@@ -1,5 +1,6 @@
 import { getQuestionSessionRevision } from "@/features/quiz/api/questionWrites";
 import { API_BASE } from "@/lib/api-base";
+import { consumeEarlyRouteData } from "@/lib/early-session";
 import { PUBLIC_QUESTION_QUERY } from '@/features/quiz/api/publicQuery';
 import { fetchWithRetry } from "@/lib/api/http";
 import type { Question } from "@/features/quiz/api/questions";
@@ -15,6 +16,11 @@ interface SessionResponse {
 }
 
 const fetcher = async (url: string): Promise<SessionResponse> => {
+  const early = consumeEarlyRouteData<SessionResponse>(API_BASE, `public:GET:${url}`, null);
+  if (early) {
+    const preloaded = await early;
+    if (preloaded) return preloaded;
+  }
   const parsed = new URL(url, 'http://localhost');
   // Use the same SWR key and pagination parameters for both read transports.
   const useBody = url.length > 2000;

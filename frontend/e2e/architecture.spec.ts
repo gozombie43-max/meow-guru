@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-test('large mobile question palettes stay bounded and reach the last question in both themes', async ({ page, context }) => {
+test('large mobile question palettes stay bounded and reach the last question in both themes', async ({ page, context }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'Mobile question palette runs on the mobile project only.');
   await page.setViewportSize({ width: 390, height: 844 });
   await context.addCookies([{ name: 'access_session', value: 'architecture-fixture', domain: '127.0.0.1', path: '/' }]);
   await context.addInitScript(() => localStorage.setItem('quiz_hide_question_numbers', 'false'));
@@ -31,7 +32,8 @@ test('large mobile question palettes stay bounded and reach the last question in
   }
 });
 
-test('large desktop question palettes keep their last row reachable', async ({ page, context }) => {
+test('large desktop question palettes keep their last row reachable', async ({ page, context }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'Desktop question palette runs on the desktop project only.');
   await page.setViewportSize({ width: 1366, height: 900 });
   await context.addCookies([{ name: 'access_session', value: 'architecture-fixture', domain: '127.0.0.1', path: '/' }]);
   const questions = Array.from({ length: 500 }, (_, index) => ({ id: `desktop-large-${index}`, question: `Desktop fixture question ${index + 1}`, options: ['One', 'Two', 'Three', 'Four'], correctAnswer: 1, concept: 'Addition', exam: 'SSC CGL' }));

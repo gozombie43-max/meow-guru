@@ -21,7 +21,8 @@ test.describe('Question Bank Image ZIP Import E2E', () => {
     });
   });
 
-  test('policy document is publicly accessible and downloadable', async ({ request }) => {
+  test('policy document is publicly accessible and downloadable', async ({ request }, info) => {
+    test.skip(info.project.name !== 'desktop', 'Admin question-bank ZIP policy check runs once on desktop.');
     const response = await request.get(`${frontend}/docs/question-bank-image-zip-policy.md`);
     expect(response.ok(), 'Question Bank ZIP policy document should be publicly downloadable').toBeTruthy();
     const content = await response.text();
@@ -31,7 +32,8 @@ test.describe('Question Bank Image ZIP Import E2E', () => {
     expect(content).toContain('20 MiB');
   });
 
-  test('validates ZIP targets, reports errors on invalid archives, and executes transactional apply', async ({ page, context, request }, _info) => {
+  test('validates ZIP targets, reports errors on invalid archives, and executes transactional apply', async ({ page, context, request }, info) => {
+    test.skip(info.project.name !== 'desktop', 'Admin question-bank ZIP import workflow runs once on desktop.');
     test.setTimeout(180000);
 
     // 1. Authenticate as admin fixture

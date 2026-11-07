@@ -1,20 +1,21 @@
 import { expect, test } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
-
-const fixtureURL = 'http://127.0.0.1:3111';
+import { FIXTURE_BACKEND_URL, loginFixtureUser, routeBackendApi } from './helpers/auth-fixture';
 
 for (const theme of ['light', 'dark'] as const) {
   test(`AI Tutor hydrates and restores saved history (${theme})`, async ({ page, context, request }, testInfo) => {
-    const login = await request.post(`${fixtureURL}/auth/login`, {
-      data: { email: `browser-${testInfo.project.name}@example.test`, password: 'Browser-fixture-123!' },
-    });
-    expect(login.ok()).toBeTruthy();
-    const { token } = await login.json();
+    // Cover light theme on desktop (sidebar toggle) and dark theme on mobile (off-screen drawer + backdrop).
+    test.skip(
+      (testInfo.project.name === 'desktop' && theme !== 'light') ||
+        (testInfo.project.name === 'mobile' && theme !== 'dark'),
+      'Desktop covers light theme sidebar and mobile covers dark theme drawer without duplicate sessions.',
+    );
+    const { token } = await loginFixtureUser(request, `browser-${testInfo.project.name}@example.test`);
     const headers = { Authorization: `Bearer ${token}` };
     const chatId = randomUUID();
     const title = `Saved revision ${chatId}`;
     const content = `Review percentages ${chatId}`;
-    const saved = await request.put(`${fixtureURL}/users/me/ai-chats/${chatId}`, {
+    const saved = await request.put(`${FIXTURE_BACKEND_URL}/users/me/ai-chats/${chatId}`, {
       headers, data: { title, messages: [{ role: 'user', content }] },
     });
     expect(saved.ok(), 'Save chat with the real fixture handler').toBeTruthy();
@@ -27,18 +28,8 @@ for (const theme of ['light', 'dark'] as const) {
         apiFailures.push(`${response.status()} ${response.url()}`);
       }
     });
-    await context.addCookies([{ name: 'access_session', value: 'ai-chat-fixture', url: 'http://127.0.0.1:3110' }]);
+    await routeBackendApi(context, { token, accessSession: 'ai-chat-fixture' });
     await context.addInitScript(selectedTheme => localStorage.setItem('ui-theme', selectedTheme), theme);
-    await context.route('**/backend-api/**', async route => {
-      const url = new URL(route.request().url());
-      const path = url.pathname.replace(/^\/backend-api/, '');
-      if (path === '/auth/refresh') {
-        await route.fulfill({ json: { token } });
-      } else {
-        const response = await route.fetch({ url: `${fixtureURL}${path}${url.search}` });
-        await route.fulfill({ response });
-      }
-    });
 
     try {
       await page.goto('/ai-chat');
@@ -78,9 +69,9 @@ for (const theme of ['light', 'dark'] as const) {
       expect(browserErrors, 'No hydration or browser errors').toEqual([]);
       expect(apiFailures, 'No fixture API failures').toEqual([]);
     } finally {
-      const deleted = await request.delete(`${fixtureURL}/users/me/ai-chats/${chatId}`, { headers });
+      const deleted = await request.delete(`${FIXTURE_BACKEND_URL}/users/me/ai-chats/${chatId}`, { headers });
       expect(deleted.ok(), 'Remove the saved fixture chat').toBeTruthy();
-      const history = await request.get(`${fixtureURL}/users/me/ai-chats`, { headers });
+      const history = await request.get(`${FIXTURE_BACKEND_URL}/users/me/ai-chats`, { headers });
       expect(history.ok()).toBeTruthy();
       const { aiChats } = await history.json();
       expect(aiChats.some((chat: { id: string }) => chat.id === chatId)).toBeFalsy();

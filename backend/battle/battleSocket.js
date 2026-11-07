@@ -48,7 +48,7 @@ function scheduleAdvance(io, code, index, delay) {
   timer.unref();
   timers.add(timer);
 }
-const ROOM_CREATE_COOLDOWN_MS = 10_000; // per-socket room creation throttle
+const ROOM_CREATE_COOLDOWN_MS = 10_000; // per-user room creation throttle
 const answerBase = {
   code: z.string().transform(normalizeBattleCode).pipe(z.string().regex(battleCodePattern)),
   questionIndex: z.number().int().min(0).max(500),
@@ -63,17 +63,37 @@ const socialChallengeSchema = z.object({ targetUserId: z.string().min(1).max(200
 
 export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) {
   // Build an explicit origin allowlist for Socket.IO.
-  // Always includes the production Vercel frontend + localhost for dev.
-  // Falls back to the shared corsOrigin function if no FRONTEND_URL is set.
+  // Excludes localhost origins in production.
+  const isProduction = process.env.NODE_ENV === 'production';
   const socketCorsOrigins = [
-    'http://localhost:3000',
-    'http://localhost:5000',
+    ...(isProduction ? [] : ['http://localhost:3000', 'http://localhost:5000']),
     ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
   ];
 
+  const userCooldowns = new Map();
+  const consumedRematchTokens = new Map();
+  const getUserCooldownState = (userId) => {
+    const key = String(userId || '');
+    let state = userCooldowns.get(key);
+    if (!state) {
+      state = {
+        lastRoomCreateTime: 0,
+        lastInviteTime: 0,
+        lastRematchTime: 0,
+        lastAnswerEventAt: 0,
+      };
+      if (userCooldowns.size > 10_000) {
+        const oldestKey = userCooldowns.keys().next().value;
+        if (oldestKey !== undefined) userCooldowns.delete(oldestKey);
+      }
+      userCooldowns.set(key, state);
+    }
+    return state;
+  };
+
   const io = new Server(httpServer, {
     cors: {
-      origin: socketCorsOrigins,
+      origin: socketCorsOrigins.length > 0 ? socketCorsOrigins : (corsOrigin || false),
       methods: ['GET', 'POST'],
       credentials: true,
     },
@@ -137,10 +157,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     void recordActive();
     if (socket.user.sid) socket.join(`session:${socket.user.sid}`);
 
-    let lastRoomCreateTime = 0;
-    let lastInviteTime = 0;
-    let lastRematchTime = 0;
-    let lastAnswerEventAt = 0;
+    const userCooldown = getUserCooldownState(socket.user?.id || socket.id);
     onEvent('matchmaking:join', async (raw) => {
       if (!canUseMatchmaking(socket.user.id)) return socket.emit('matchmaking:error', { code: 'MATCHMAKING_UNAVAILABLE', message: 'Matchmaking is temporarily unavailable.' });
       const parsed = matchmakingSchema.safeParse(raw);
@@ -170,8 +187,8 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
       if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
       const parsed = socialChallengeSchema.safeParse(raw);
       if (!parsed.success || parsed.data.targetUserId === socket.user.id) return socket.emit('room:error', { message: 'Invalid battle invitation.' });
-      if (Date.now() - lastRoomCreateTime < ROOM_CREATE_COOLDOWN_MS) return socket.emit('room:error', { message: 'Please wait before sending another invitation.' });
-      lastRoomCreateTime = Date.now();
+      if (Date.now() - userCooldown.lastRoomCreateTime < ROOM_CREATE_COOLDOWN_MS) return socket.emit('room:error', { message: 'Please wait before sending another invitation.' });
+      userCooldown.lastRoomCreateTime = Date.now();
       try {
         const { targetUserId, subject, topic, questionCount } = parsed.data;
         const target = await getUsersCollection().findOne({ id: targetUserId, status: { $nin: ['banned', 'suspended'] } }, { projection: { id: 1 } });
@@ -262,11 +279,11 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     onEvent('room:create', async ({ playerName, subject = 'mathematics', topic = 'all', questionCount = 10 }) => {
       if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
       const now = Date.now();
-      if (now - lastRoomCreateTime < ROOM_CREATE_COOLDOWN_MS) {
+      if (now - userCooldown.lastRoomCreateTime < ROOM_CREATE_COOLDOWN_MS) {
         socket.emit('room:error', { message: 'Please wait before creating another room.' });
         return;
       }
-      lastRoomCreateTime = now;
+      userCooldown.lastRoomCreateTime = now;
 
       const parsed = matchmakingSchema.safeParse({ subject, topic, questionCount });
       if (!parsed.success) return socket.emit('room:error', { message: 'Invalid battle settings.' });
@@ -320,14 +337,14 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     // ── Invite opponent ──────────────────────────────────
     onEvent('room:invite', async ({ code, email }) => {
       const now = Date.now();
-      if (now - lastInviteTime < 10000) {
+      if (now - userCooldown.lastInviteTime < 10000) {
         socket.emit('room:inviteResult', {
           ok: false,
           message: 'Please wait before sending another invite.',
         });
         return;
       }
-      lastInviteTime = now;
+      userCooldown.lastInviteTime = now;
 
       const normalizedCode = normalizeBattleCode(code);
       const normalizedEmail = String(email ?? '').trim().toLowerCase();
@@ -385,10 +402,11 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
         ).slice(0, 40);
 
         const recipientUserId = recipient.id || String(recipient._id);
-        if (!await reserveRoomOpponent(normalizedCode, socket.user.id, recipientUserId)) {
+        if (room.allowedOpponentUserId && String(room.allowedOpponentUserId) !== String(recipientUserId)) {
           socket.emit('room:inviteResult', { ok: false, message: 'This room is already reserved or is no longer available.' });
           return;
         }
+
         const result = await sendPushToUser(recipientUserId, {
           title: `${hostName} challenged you ⚔️`,
           body: `Join the ${room.subject || 'quiz'} battle now.`,
@@ -407,6 +425,11 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
             ok: false,
             message: 'Invite could not be delivered.',
           });
+          return;
+        }
+
+        if (!await reserveRoomOpponent(normalizedCode, socket.user.id, recipientUserId)) {
+          socket.emit('room:inviteResult', { ok: false, message: 'This room is already reserved or is no longer available.' });
           return;
         }
 
@@ -430,7 +453,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
           socket.emit('battle:rematchResult', { ok: false, message: 'New battles are temporarily unavailable.' });
           return;
         }
-        if (Date.now() - lastRematchTime < 10_000) {
+        if (Date.now() - userCooldown.lastRematchTime < 10_000) {
           socket.emit('battle:rematchResult', {
             ok: false,
             message: 'Please wait before requesting another rematch.',
@@ -444,7 +467,20 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
           throw new Error('Invalid rematch owner');
         }
 
-        lastRematchTime = Date.now();
+        const now = Date.now();
+        for (const [key, exp] of consumedRematchTokens.entries()) {
+          if (exp <= now) consumedRematchTokens.delete(key);
+        }
+        const tokenKey = String(payload.jti || rematchToken);
+        if (consumedRematchTokens.has(tokenKey)) {
+          throw new Error('Rematch token already used');
+        }
+        consumedRematchTokens.set(
+          tokenKey,
+          payload.exp ? payload.exp * 1000 : now + 10 * 60 * 1000
+        );
+
+        userCooldown.lastRematchTime = now;
 
         const safePlayerName = String(playerName || socket.user?.name || 'A player').trim();
 
@@ -526,8 +562,8 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
 
     // ── Submit answer ────────────────────────────────────
     onEvent('game:answer', async (rawPayload) => {
-      if (Date.now() - lastAnswerEventAt < 150) return;
-      lastAnswerEventAt = Date.now();
+      if (Date.now() - userCooldown.lastAnswerEventAt < 150) return;
+      userCooldown.lastAnswerEventAt = Date.now();
       const parsed = answerPayloadSchema.safeParse(rawPayload);
       if (!parsed.success) {
         void recordBattleIntegritySignal({ dedupeKey: `invalid-answer-payload:${socket.user.id}:${new Date().toISOString().slice(0, 10)}`, userId: socket.user.id, signalType: 'invalid-answer-payload', severity: 'low', riskPoints: 5, details: { socketId: socket.id } }).catch(runtimeLog.error);

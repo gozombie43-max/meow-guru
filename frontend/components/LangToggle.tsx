@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils"; // or your cn utility
 import { useEffect, useRef, useState } from "react";
 
 type Lang = "en" | "hi" | "bn";
@@ -51,10 +50,10 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
 
   return (
     <div
-      className={cn(
+      className={[
         "lang-toggle inline-flex h-9 max-w-full select-none items-center rounded-[13px] border border-[var(--lang-toggle-border)] bg-[var(--lang-toggle-bg)] p-0.5 shadow-[inset_0_1px_0_var(--lang-toggle-highlight)]",
-        loading && "opacity-70"
-      )}
+        loading ? "opacity-70" : "",
+      ].filter(Boolean).join(" ")}
       aria-label="Question language"
     >
       <div ref={optionsRef} className="relative flex h-8 items-center">
@@ -73,10 +72,10 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
             <div key={code} className="contents">
               {index > 0 && (
                 <div
-                  className={cn(
+                  className={[
                     "lang-toggle-divider h-5 w-px shrink-0 bg-[var(--lang-toggle-divider)] transition-opacity duration-200",
-                    isAdjacentToActive && "opacity-0"
-                  )}
+                    isAdjacentToActive ? "opacity-0" : "",
+                  ].filter(Boolean).join(" ")}
                   aria-hidden="true"
                 />
               )}
@@ -86,13 +85,15 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
               }}
               onClick={() => onChange(code)}
               disabled={loading}
-              className={cn(
+              className={[
                 "lang-toggle-option relative z-10 h-8 min-w-[62px] rounded-[11px] bg-transparent px-2.5 text-[12px] font-medium leading-none outline-none transition-[color,transform] duration-300 ease-out active:scale-[0.98]",
-                active === code && "is-active",
-                loading && "cursor-not-allowed"
-              )}
+                active === code ? "is-active" : "",
+                loading ? "cursor-not-allowed" : "",
+              ].filter(Boolean).join(" ")}
             >
-              {label}
+              {code === "bn" && active !== "bn" ? (
+                <span style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Nirmala UI", sans-serif' }}>{label}</span>
+              ) : label}
             </button>
           </div>
           );

@@ -65,14 +65,17 @@ export default function AccessCodePage() {
 
       const data = await res.json();
 
-      if (data.valid) {
-        // Set the cookie on the frontend domain so proxy.ts can read it (expires in 24 hours)
-        document.cookie = 'access_session=1; path=/; max-age=86400';
+      if (data.valid && data.token) {
+        // Set the cryptographically signed session token on frontend domain for proxy verification (expires in 24 hours)
+        document.cookie = `access_session=${encodeURIComponent(data.token)}; path=/; max-age=86400; SameSite=Lax`;
         setSuccess(true);
         setLoading(false);
         // Brief success animation, then redirect
         setTimeout(() => {
-          router.replace('/');
+          const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+          const redirectTarget = params?.get('redirect') || '/';
+          // Sanitize redirect target to prevent open redirect
+          router.replace(redirectTarget.startsWith('/') && !redirectTarget.startsWith('//') ? redirectTarget : '/');
         }, 600);
       } else {
         const newAttempts = attempts + 1;

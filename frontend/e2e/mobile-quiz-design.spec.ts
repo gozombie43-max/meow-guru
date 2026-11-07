@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
-test("mobile quiz engine renders with reduced question boldness (400) and reduced metadata font size (12px)", async ({ page, context }) => {
+test("mobile quiz engine renders with reduced question boldness (400) and reduced metadata font size (12px)", async ({ page, context }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "Mobile quiz typography check runs on the mobile project only.");
   const appUrl = process.env.NAVIGATION_APP_URL || "http://127.0.0.1:3110";
   await page.setViewportSize({ width: 390, height: 844 });
   await context.addCookies([

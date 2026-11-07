@@ -10,10 +10,12 @@ import { useAuth } from '@/context/AuthContext';
 import { offlineTrainingEnabled, saveTrainingSnapshot, readTrainingSnapshot, readPendingTrainingAction, clearPendingTrainingAction } from '../offlineTraining';
 
 import { readStartResponse, clearStartResponse } from '@/lib/start-response-cache';
+import { API_BASE } from '@/lib/api-base';
+import { consumeEarlyRouteData } from '@/lib/early-session';
 import { useInvalidateTrainingDashboard } from '@/app/(app)/play/hooks/trainingQueries';
 
 export function useTrainingSession(id: string) {
-  const { user } = useAuth();
+  const { user, token, loading: authLoading } = useAuth();
   const userId = user?.id;
   const invalidateDashboard = useInvalidateTrainingDashboard();
   const readController = useRef<AbortController | null>(null);
@@ -57,10 +59,23 @@ export function useTrainingSession(id: string) {
       }
     }
     if (signal?.aborted) throw abortError();
+    if (!recoveryMessage && token) {
+      const early = consumeEarlyRouteData<TrainingSession>(
+        API_BASE,
+        `auth:GET:${API_BASE}/api/training/sessions/${encodeURIComponent(id)}`,
+        token,
+        signal,
+      );
+      if (early) {
+        const preloaded = await early;
+        if (signal?.aborted) throw abortError();
+        if (preloaded) return { data: preloaded, recoveryMessage };
+      }
+    }
     const response = await api.get<TrainingSession>(`/api/training/sessions/${id}`, { signal });
     if (signal?.aborted) throw abortError();
     return { data: response.data, recoveryMessage };
-  }, [id, userId, invalidateDashboard]);
+  }, [id, userId, token, invalidateDashboard]);
 
   const reload = useCallback(async () => {
     if (sendingRef.current) return;
@@ -90,6 +105,7 @@ export function useTrainingSession(id: string) {
   }, [fetchSavedSession, accept]);
 
   useEffect(() => {
+    if (authLoading) return;
     let active = true;
     const controller = new AbortController();
     readController.current = controller;
@@ -129,7 +145,7 @@ export function useTrainingSession(id: string) {
       controller.abort();
       readController.current?.abort();
     };
-  }, [id, userId, accept, fetchSavedSession, invalidateDashboard]);
+  }, [id, userId, authLoading, accept, fetchSavedSession, invalidateDashboard]);
 
   useEffect(() => {
     if (!offlineTrainingEnabled()) return;

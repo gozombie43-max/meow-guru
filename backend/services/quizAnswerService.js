@@ -37,6 +37,7 @@ export async function submitQuizAnswer(userId, command) {
         const readOptions = { session, projection: {
             id: 1, questionUid: 1, topic: 1, subject: 1, chapter: 1, concept: 1, difficulty: 1,
             letter: 1, word: 1, options: 1, correctAnswer: 1, correctLetter: 1, questionType: 1, optionRegions: 1,
+            solution: 1, solutionImage: 1, solutionImageWidth: 1, solutionImageHeight: 1, translations: 1,
           } };
         const question = command.questionAnchor
           ? await db.collection('questions').findOne({ _id: new ObjectId(command.questionAnchor),
@@ -86,7 +87,19 @@ export async function submitQuizAnswer(userId, command) {
             ...(embedded ? { recentQuizzes: { $literal: embedded } } : {}),
           } }], { session });
         if (!fence.matchedCount) throw fail('History storage changed; retry', 409);
-        const response = { ...progress, correct, concept, questionUid, submissionId: command.submissionId, resumeSaved: true };
+        const response = {
+          ...progress,
+          correct,
+          concept,
+          questionUid,
+          submissionId: command.submissionId,
+          resumeSaved: true,
+          ...(question.solution !== undefined ? { solution: question.solution } : {}),
+          ...(question.solutionImage !== undefined ? { solutionImage: question.solutionImage } : {}),
+          ...(question.solutionImageWidth !== undefined ? { solutionImageWidth: question.solutionImageWidth } : {}),
+          ...(question.solutionImageHeight !== undefined ? { solutionImageHeight: question.solutionImageHeight } : {}),
+          ...(question.translations !== undefined ? { translations: question.translations } : {}),
+        };
         await records.updateOne({ _id: id }, { $set: { status: 'completed', response, completedAt: new Date() } }, { session });
         return { response, replayed: false };
       });

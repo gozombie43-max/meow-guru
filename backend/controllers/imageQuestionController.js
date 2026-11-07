@@ -10,10 +10,58 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { b2Client, B2_BUCKET } from "../config/b2.js";
 
-
 const IMAGE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const QUESTION_PREFIX = "question-images";
 const SOLUTION_PREFIX = "solution-images";
+const MAX_IMAGE_PIXELS = 25_000_000;
+const MAX_IMAGE_DIMENSION = 6000;
+const ALLOWED_IMAGE_FORMATS = new Set(["jpeg", "png", "webp"]);
+const SAFE_IMAGE_KEY_REGEX =
+  /^(?:question-images|solution-images|notes\/images)\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]+\.(?:webp|png|jpe?g|gif)$/i;
+
+const isSafeImageKey = (key) =>
+  typeof key === "string" &&
+  SAFE_IMAGE_KEY_REGEX.test(key) &&
+  !key.split("/").includes("..");
+
+const decodeAndCompressImage = async (buffer, quality = 90) => {
+  try {
+    const image = sharp(buffer, {
+      limitInputPixels: MAX_IMAGE_PIXELS,
+      failOn: "warning",
+    });
+    const metadata = await image.metadata();
+    if (
+      !metadata.format ||
+      !ALLOWED_IMAGE_FORMATS.has(metadata.format) ||
+      (metadata.pages || 1) !== 1
+    ) {
+      throw new Error("Unsupported image format");
+    }
+    if (
+      !metadata.width ||
+      !metadata.height ||
+      metadata.width > MAX_IMAGE_DIMENSION ||
+      metadata.height > MAX_IMAGE_DIMENSION
+    ) {
+      throw new Error("Image dimensions exceeded");
+    }
+    const compressed = await image
+      .rotate()
+      .resize({ width: 1400, withoutEnlargement: true })
+      .webp({ quality })
+      .toBuffer();
+    const dimensions = await sharp(compressed).metadata();
+    return { compressed, dimensions };
+  } catch {
+    throw Object.assign(
+      new Error(
+        "Provide a valid, non-animated JPG, PNG or WebP image, up to 6000 pixels per side and 25 megapixels."
+      ),
+      { statusCode: 400 }
+    );
+  }
+};
 
 // Stable image URL helpers
 const imageIdFromKey = (key) =>
@@ -59,14 +107,7 @@ export const serveImage = async (req, res) => {
   try {
     const key = keyFromImageId(req.params.id);
 
-    if (
-      !key ||
-      !(
-        key.startsWith(`${QUESTION_PREFIX}/`) ||
-        key.startsWith(`${SOLUTION_PREFIX}/`) ||
-        key.startsWith("notes/images/")
-      )
-    ) {
+    if (!isSafeImageKey(key)) {
       return res.status(404).json({ error: "Image not found" });
     }
 
@@ -120,11 +161,10 @@ export const uploadImageQuestion = async (req, res) => {
     const questionId = `${normalizedTopic}_${Date.now()}`;
     assertQuestionExamMode({ subject, topic: normalizedTopic }, req.query.examMode);
 
-    const compressed = await sharp(file.buffer)
-      .resize({ width: 1400, withoutEnlargement: true })
-      .webp({ quality: 92 })
-      .toBuffer();
-    const dimensions = await sharp(compressed).metadata();
+    const { compressed, dimensions } = await decodeAndCompressImage(
+      file.buffer,
+      92
+    );
 
     /*
      * Existing Azure object: questionId/question.webp
@@ -210,11 +250,10 @@ export const bulkUpload = async (req, res) => {
             .toString(36)
             .slice(2, 6)}`;
 
-          const compressed = await sharp(file.buffer)
-            .resize({ width: 1400, withoutEnlargement: true })
-            .webp({ quality: 90 })
-            .toBuffer();
-          const dimensions = await sharp(compressed).metadata();
+          const { compressed, dimensions } = await decodeAndCompressImage(
+            file.buffer,
+            90
+          );
 
           const key = `${QUESTION_PREFIX}/${id}/question.webp`;
 
@@ -267,10 +306,7 @@ async function uploadStandaloneImage(req, res, prefix, kind) {
       .toString(36)
       .slice(2, 8)}`;
 
-    const compressed = await sharp(file.buffer)
-      .resize({ width: 1400, withoutEnlargement: true })
-      .webp({ quality: 90 })
-      .toBuffer();
+    const { compressed } = await decodeAndCompressImage(file.buffer, 90);
 
     const key = `${prefix}/${id}/${kind}.webp`;
 

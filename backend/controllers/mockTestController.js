@@ -40,6 +40,28 @@ const cleanAttempt = (doc) => {
   return clean;
 };
 
+const sanitizeSectionTimers = (raw) => {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return {};
+  }
+  return Object.fromEntries(
+    Object.entries(raw)
+      .filter(
+        ([key, value]) =>
+          typeof key === 'string' &&
+          key.length > 0 &&
+          key.length <= 64 &&
+          !key.startsWith('$') &&
+          !['__proto__', 'constructor', 'prototype'].includes(key) &&
+          typeof value === 'number' &&
+          Number.isFinite(value) &&
+          value >= 0 &&
+          value <= 86400,
+      )
+      .slice(0, 20),
+  );
+};
+
 function presentAttempt(doc) {
   const timing = sectionTiming(doc);
   const clean = { ...cleanAttempt(doc), ...(timing || {}), ...(timing && timing.timerSection !== doc.currentSection ? { currentQuestion: 0 } : {}) };
@@ -324,7 +346,7 @@ export const autosaveAttempt = async (req, res) => {
         ...(timing || {}),
         ...(req.body.language === 'en' || req.body.language === 'bn' ? { language: req.body.language } : {}),
         ...(doc.paper?.sections?.[currentSection]?.questions?.[currentQuestion] ? { currentQuestionId: doc.paper.sections[currentSection].questions[currentQuestion].id } : {}),
-        sectionTimers: req.body.sectionTimers && typeof req.body.sectionTimers === 'object' ? req.body.sectionTimers : {},
+        sectionTimers: sanitizeSectionTimers(req.body.sectionTimers),
         currentSection,
         currentQuestion,
         revision,

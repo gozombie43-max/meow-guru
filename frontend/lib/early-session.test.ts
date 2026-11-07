@@ -1,7 +1,7 @@
 // @vitest-environment node
 import vm from 'node:vm';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { consumeEarlyProfile, consumeEarlyRefresh, discardEarlySession, earlySessionScript } from './early-session';
+import { consumeEarlyProfile, consumeEarlyRefresh, consumeEarlyRouteData, discardEarlySession, earlySessionScript } from './early-session';
 
 const base = '/backend-api';
 const profile = { id: 'student', name: 'Student', email: 'student@example.test' };
@@ -170,5 +170,22 @@ describe('HTML session bootstrap', () => {
 
   it('escapes HTML-sensitive configuration in the serialized script', () => {
     expect(earlySessionScript('</script><script>example</script>')).not.toContain('</script>');
+  });
+
+  it('preloads training session route data in parallel with profile and hands it off once', async () => {
+    const { fetch, browser } = fixture();
+    Object.assign(browser, { location: { pathname: '/play/session/lighthouse-training', search: '' } });
+    fetch.mockReset().mockImplementation(async (url: string) => {
+      if (url.endsWith('/auth/refresh')) return response({ token: 'server-token' });
+      if (url.endsWith('/users/me')) return response(profile);
+      if (url.endsWith('/api/training/sessions/lighthouse-training')) return response({ id: 'lighthouse-training', status: 'active' });
+      return response({}, false);
+    });
+    vm.runInNewContext(earlySessionScript(base), { window: browser, Date, URLSearchParams });
+    await expect(consumeEarlyRefresh(base)).resolves.toBe('server-token');
+    await expect(consumeEarlyProfile(base, 'server-token', new AbortController().signal)).resolves.toEqual(profile);
+    const key = `auth:GET:${base}/api/training/sessions/lighthouse-training`;
+    await expect(consumeEarlyRouteData(base, key, 'server-token')).resolves.toEqual({ id: 'lighthouse-training', status: 'active' });
+    expect(consumeEarlyRouteData(base, key, 'server-token')).toBeNull();
   });
 });

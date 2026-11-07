@@ -44,7 +44,7 @@ jobs:
         with:
           node-version: 22
       - name: Verify workflow routing policy
-        run: node --test scripts/ci-policy.test.mjs scripts/ci-gate.test.mjs
+        run: node --test scripts/ci-policy.test.mjs scripts/ci-gate.test.mjs frontend/scripts/select-e2e-specs.test.mjs
       - name: Select verification and deployment scope
         id: policy
         env:
@@ -134,8 +134,8 @@ jobs:
 
       - name: Validate Prometheus rules
         run: |
-          docker run --rm --volume "$PWD/backend/observability:/rules:ro" --entrypoint /bin/promtool prom/prometheus:v3.5.0 check rules /rules/slo-rules.yml
-          docker run --rm --volume "$PWD/backend/observability:/rules:ro" --entrypoint /bin/promtool prom/prometheus:v3.5.0 test rules /rules/slo-rules.test.yml
+          docker run --rm --volume "$PWD/backend/observability:/rules:ro" --entrypoint /bin/promtool prom/prometheus:v3.5.0@sha256:63805ebb8d2b3920190daf1cb14a60871b16fd38bed42b857a3182bc621f4996 check rules /rules/slo-rules.yml
+          docker run --rm --volume "$PWD/backend/observability:/rules:ro" --entrypoint /bin/promtool prom/prometheus:v3.5.0@sha256:63805ebb8d2b3920190daf1cb14a60871b16fd38bed42b857a3182bc621f4996 test rules /rules/slo-rules.test.yml
 
       - name: Run Backend Tests (Vitest)
         working-directory: ./backend
@@ -203,6 +203,11 @@ jobs:
 
       - name: Audit Frontend Dependencies
         run: npm audit --workspace frontend --audit-level=high
+
+      - name: Audit Shared Contracts and Root Production Dependencies
+        run: |
+          npm audit --workspace @meow/contracts --audit-level=high
+          npm audit --omit=dev --audit-level=high
 
   build-and-analyze:
     name: Production Build & Bundle Report
@@ -288,6 +293,8 @@ jobs:
       PLAYWRIGHT_HTML_OPEN: never
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
@@ -297,9 +304,9 @@ jobs:
       - run: npm run build
       - name: Install Chromium
         run: npm exec --workspace frontend -- playwright install --with-deps chromium
-      - name: Run full project with its own backend and database fixture
+      - name: Run risk-based browser suite with its own backend and database fixture
         working-directory: ./frontend
-        run: npm run test:e2e -- --project=${{ matrix.project }} --forbid-only --reporter=line,html
+        run: node scripts/select-e2e-specs.mjs --project=${{ matrix.project }} --run --forbid-only --reporter=line,html
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -340,7 +347,7 @@ jobs:
         env:
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: |
-          npm exec --yes --package=@lhci/cli@0.15.1 -- lhci autorun
+          node scripts/run-lighthouse-ci.mjs
           node scripts/check-lighthouse-routes.mjs
       - name: Upload Lighthouse evidence, including failed assertions
         if: always()
