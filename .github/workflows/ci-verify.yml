@@ -345,7 +345,7 @@ jobs:
         env:
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: |
-          npm exec --yes --package=@lhci/cli@0.15.1 -- lhci autorun
+          node scripts/run-lighthouse-ci.mjs
           node scripts/check-lighthouse-routes.mjs
       - name: Upload Lighthouse evidence, including failed assertions
         if: always()
