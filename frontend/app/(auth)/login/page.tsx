@@ -88,8 +88,12 @@ function LoginContent() {
 
     await login(token);
     const searchParams = new URLSearchParams(window.location.search);
-    const redirectTarget = searchParams.get('redirect') || searchParams.get('next');
-    router.replace(redirectTarget || '/');
+    const rawTarget = (searchParams.get('redirect') || searchParams.get('next') || '').trim();
+    const safeTarget =
+      rawTarget.startsWith('/') && !rawTarget.startsWith('//') && !rawTarget.startsWith('/\\')
+        ? rawTarget
+        : '/';
+    router.replace(safeTarget);
   };
 
   const onSubmit = async (data: LoginFormData) => {

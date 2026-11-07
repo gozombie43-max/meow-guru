@@ -16,6 +16,8 @@ it('retains development and production health exemptions', () => {
   expect(authLimiter.skip({ ip: '127.0.0.1' })).toBe(true);
   vi.stubEnv('NODE_ENV', 'production');
   expect(globalLimiter.skip({ path: '/health', method: 'GET' })).toBe(true);
+  expect(globalLimiter.skip({ path: '/api/pdfs', method: 'GET' })).toBe(true);
+  expect(globalLimiter.skip({ path: '/api/pdfs', method: 'POST' })).toBe(false);
 });
 
 it('uses the distributed global limiter for training unless local ingress is enabled', () => {

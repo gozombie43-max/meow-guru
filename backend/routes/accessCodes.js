@@ -14,23 +14,39 @@ const router = express.Router();
 const isProd =
   process.env.NODE_ENV === 'production';
 
-const SESSION_SECRET =
-  process.env.JWT_SECRET ||
-  process.env.ADMIN_SECRET ||
-  'access-session-secret-fallback';
+/**
+ * Resolve isolated access session secret.
+ * Never fall back to JWT_SECRET, ADMIN_SECRET, or hardcoded strings.
+ */
+export const getSessionSecret = () => {
+  const secret = process.env.SESSION_SECRET || process.env.ACCESS_CODE_SECRET;
+  if (!secret) {
+    return undefined;
+  }
+  if (process.env.JWT_SECRET && secret === process.env.JWT_SECRET) {
+    // Strict key isolation: disallow JWT_SECRET reuse as access session secret
+    return undefined;
+  }
+  return secret;
+};
 
 /**
  * Creates:
  * "<timestamp>:<codeId>.<signature>"
  */
-const createSignedSessionToken = (codeId) => {
+export const createSignedSessionToken = (codeId) => {
+  const secret = getSessionSecret();
+  if (!secret) {
+    throw new Error('SESSION_SECRET or ACCESS_CODE_SECRET must be configured');
+  }
+
   const payload =
     `${Date.now()}:${codeId}`;
 
   const sig = crypto
     .createHmac(
       'sha256',
-      SESSION_SECRET
+      secret
     )
     .update(payload)
     .digest('hex');
@@ -40,9 +56,14 @@ const createSignedSessionToken = (codeId) => {
 
 /**
  * Verify signed access session.
- * Maximum validity: 24 hours.
+ * Maximum validity: 24 hours (with 5-minute clock drift tolerance).
  */
-const verifySignedSessionToken = (token) => {
+export const verifySignedSessionToken = (token) => {
+  const secret = getSessionSecret();
+  if (!secret) {
+    return false;
+  }
+
   if (
     !token ||
     typeof token !== 'string'
@@ -50,29 +71,61 @@ const verifySignedSessionToken = (token) => {
     return false;
   }
 
-  const parts = token.split('.');
+  let rawToken = token;
+  if (token.includes('%')) {
+    try {
+      rawToken = decodeURIComponent(token);
+    } catch {
+      return false;
+    }
+  }
+  const parts = rawToken.split('.');
 
   if (parts.length !== 2) {
     return false;
   }
 
   const [payload, sig] = parts;
+  if (!payload || !sig || sig.length !== 64 || !/^[0-9a-f]{64}$/i.test(sig)) {
+    return false;
+  }
+
+  const colonIdx = payload.indexOf(':');
+  if (colonIdx <= 0 || colonIdx === payload.length - 1) {
+    return false;
+  }
+
+  const timestampStr = payload.slice(0, colonIdx);
+  const timestamp =
+    parseInt(timestampStr, 10);
+
+  if (!Number.isFinite(timestamp)) {
+    return false;
+  }
+
+  const now = Date.now();
+  if (
+    now - timestamp > 24 * 60 * 60 * 1000 ||
+    timestamp - now > 5 * 60 * 1000
+  ) {
+    return false;
+  }
 
   const expectedSig = crypto
     .createHmac(
       'sha256',
-      SESSION_SECRET
+      secret
     )
     .update(payload)
     .digest('hex');
 
   const a = Buffer.from(
-    sig,
+    sig.toLowerCase(),
     'utf8'
   );
 
   const b = Buffer.from(
-    expectedSig,
+    expectedSig.toLowerCase(),
     'utf8'
   );
 
@@ -83,22 +136,9 @@ const verifySignedSessionToken = (token) => {
     return false;
   }
 
-  const [timestampStr] =
-    payload.split(':');
-
-  const timestamp =
-    parseInt(timestampStr, 10);
-
-  if (
-    !Number.isFinite(timestamp) ||
-    Date.now() - timestamp >
-      24 * 60 * 60 * 1000
-  ) {
-    return false;
-  }
-
   return true;
 };
+
 
 
 // ── POST /api/access-code/verify ───────────────────────
@@ -208,9 +248,10 @@ router.post(
 
       // ── Session token ─────────────────────────────────
 
+      const codeId = String(codeDoc.id || codeDoc._id || 'access');
       const sessionToken =
         createSignedSessionToken(
-          codeDoc.id
+          codeId
         );
 
 
@@ -239,6 +280,7 @@ router.post(
 
       return res.json({
         valid: true,
+        token: sessionToken,
       });
 
     } catch (err) {

@@ -12,6 +12,36 @@ import { retainNoteImages, scheduleNoteImageCleanup } from '../repositories/note
 
 const router = express.Router();
 
+const ALLOWED_NOTE_FIELDS = new Set([
+  "title",
+  "topic",
+  "type",
+  "body",
+  "content",
+  "summary",
+  "thumbnail",
+  "tags",
+  "subject",
+  "chapter",
+  "folder",
+  "status",
+  "isPinned",
+  "order",
+  "examMode",
+]);
+
+function pickAllowedNoteFields(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return {};
+  }
+  const result = {};
+  for (const [key, value] of Object.entries(input)) {
+    if (ALLOWED_NOTE_FIELDS.has(key) && value !== undefined) {
+      result[key] = value;
+    }
+  }
+  return result;
+}
 
 // ───────────────────────────────────────────────────────
 // Helpers
@@ -37,6 +67,7 @@ function sanitizeNote(note) {
   const {
     _id,
     _cosmosRid,
+    ownerUserId: _ownerUserId,
     ...clean
   } = note;
 
@@ -127,7 +158,7 @@ router.get("/:id", async (req, res) => {
         });
     }
 
-    return res.json(note);
+    return res.json(sanitizeNote(note));
 
   } catch (err) {
     runtimeLog.error(
@@ -157,15 +188,12 @@ router.post(
       const now =
         new Date().toISOString();
 
-      /*
-       * req.body comes first so clients
-       * cannot override our generated id
-       * or timestamps.
-       */
-      const note = {
-        ...req.body,
+      const allowedFields = pickAllowedNoteFields(req.body);
 
-        imageKeys: noteImageKeys(req.body?.body),
+      const note = {
+        ...allowedFields,
+
+        imageKeys: noteImageKeys(allowedFields.body),
 
         id:
           uuidv4(),
@@ -215,8 +243,6 @@ router.put(
       const id =
         String(req.params.id);
 
-
-
       const existing =
         await findNoteById(id, true);
 
@@ -229,17 +255,7 @@ router.put(
           });
       }
 
-      /*
-       * Never allow these internal/immutable
-       * properties to be overwritten.
-       */
-      const {
-        _id,
-        _cosmosRid,
-        id: _bodyId,
-        createdAt: _createdAt,
-        ...allowedUpdates
-      } = req.body || {};
+      const allowedUpdates = pickAllowedNoteFields(req.body);
 
       const updatedAt =
         new Date().toISOString();

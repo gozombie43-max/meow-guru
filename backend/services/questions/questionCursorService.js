@@ -1,6 +1,7 @@
 import { cachedQuestionPage } from './questionCache.js';
 import { questionExamModeCondition } from './questionExamMode.js';
 import { canonicalQuestionQuery } from './questionQueryIdentity.js';
+import { toPublicQuestionDTO } from './quizQuestionDTO.js';
 import { ObjectId } from 'mongodb';
 import { createHash } from 'node:crypto';
 import { readQuestionFacets } from './questionFacets.js';
@@ -118,7 +119,7 @@ async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
   const first = page[0];
   const hasPrevious = reverse ? moreInDirection : Boolean(params.cursor);
   const prevCursor = hasPrevious && first ? Buffer.from(JSON.stringify({ v: 1, f: fingerprint, _id: first._id.toString(), ...(sorted ? { id: first.id } : {}), fallback })).toString('base64url') : null;
-  const result = { count: total ?? page.length, total, questions: page.map(({ _id, ...row }) => row), nextCursor: last ? nextCursor : null, prevCursor, hasMore: hasMore && Boolean(last) };
+  const result = { count: total ?? page.length, total, questions: page.map(toPublicQuestionDTO), nextCursor: last ? nextCursor : null, prevCursor, hasMore: hasMore && Boolean(last) };
   if (params.includeFacets === 'true') result.facets = await readQuestionFacets(params.subject, params.examMode);
   return result;
 }

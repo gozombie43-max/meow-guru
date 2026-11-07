@@ -12,7 +12,18 @@ if (!['http:', 'https:'].includes(new URL(BACKEND_URL).protocol)) throw new Erro
 
 const nextConfig: NextConfig = {
   async headers() {
-    return [{ source: '/:path*', headers: [{ key: 'Content-Security-Policy-Report-Only', value: reportOnlyCsp(BACKEND_URL, process.env.NODE_ENV !== 'production') }] }];
+    const cspPolicy = reportOnlyCsp(BACKEND_URL, process.env.NODE_ENV !== 'production');
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'Content-Security-Policy', value: cspPolicy },
+          { key: 'Content-Security-Policy-Report-Only', value: cspPolicy },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
+    ];
   },
   images: {
     qualities: [75, 85],

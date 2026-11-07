@@ -1,3 +1,4 @@
+import { toPublicQuestionDTO } from './quizQuestionDTO.js';
 import { resolveQuestion } from './questionIdentity.js';
 import { parseQuestionExamMode, questionExamModeCondition } from './questionExamMode.js';
 import { canonicalQuestionQuery } from './questionQueryIdentity.js';
@@ -68,7 +69,7 @@ export async function fetchImageQuestions(
     .limit(parsedLimit)
     .toArray();
 
-  return { count: resources.length, questions: resources };
+  return { count: resources.length, questions: resources.map(toPublicQuestionDTO) };
 }
 
 const legacyReads = createSingleFlight();
@@ -305,7 +306,8 @@ export async function fetchQuestions(params) {
       total = await collection.countDocuments(effectiveFilter);
     }
 
-    const result = { count: total !== undefined ? total : resources.length, ...(total !== undefined ? { total } : {}), questions: resources };
+    const cleanedResources = resources.map(toPublicQuestionDTO);
+    const result = { count: total !== undefined ? total : cleanedResources.length, ...(total !== undefined ? { total } : {}), questions: cleanedResources };
     if (params.includeFacets === 'true') {
       // Compact filter choices, never full question documents. Keep choices stable
       // across pages so values outside the current page remain selectable.
@@ -453,9 +455,7 @@ export async function fetchQuestionById(id, topic = undefined, examMode = undefi
 
   const row = await resolveQuestion(collection, id, { topic, examMode });
   if (!row) return null;
-  const { _id, ...question } = row;
-
-  return question;
+  return toPublicQuestionDTO(row);
 }
 
 

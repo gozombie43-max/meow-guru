@@ -100,22 +100,60 @@ Return a JSON array like this:
 
 // ── 2. Generate Explanation for a Question ────────────
 router.post("/explain", async (req, res) => {
-  const { question, correctAnswer, options } = req.body;
+  const userId = String(req.user?.id || req.user?._id);
 
-  if (!question) return res.status(400).json({ error: "question is required" });
+  const rawQuestion = req.body?.question;
+  if (!rawQuestion || typeof rawQuestion !== "string" || !rawQuestion.trim()) {
+    return res.status(400).json({ error: "question is required" });
+  }
+
+  const question = rawQuestion.trim();
+  if (question.length > 4000) {
+    return res.status(413).json({ error: "Question text is too long" });
+  }
+
+  const rawOptions = req.body?.options;
+  let options = [];
+  if (rawOptions !== undefined && rawOptions !== null) {
+    if (!Array.isArray(rawOptions)) {
+      return res.status(400).json({ error: "options must be an array of strings" });
+    }
+    if (rawOptions.length > 10) {
+      return res.status(400).json({ error: "Too many options provided (maximum 10)" });
+    }
+    for (const opt of rawOptions) {
+      if (typeof opt !== "string" || opt.length > 1000) {
+        return res.status(400).json({ error: "Each option must be a string up to 1000 characters" });
+      }
+    }
+    options = rawOptions;
+  }
+
+  const correctAnswer = req.body?.correctAnswer;
+  let answerText = "";
+  if (typeof correctAnswer === "number" && Number.isInteger(correctAnswer) && correctAnswer >= 0 && correctAnswer < options.length) {
+    answerText = options[correctAnswer];
+  } else if (typeof correctAnswer === "string") {
+    answerText = correctAnswer.slice(0, 1000);
+  }
 
   const userPrompt = `Explain the solution to this SSC/CAT exam question in simple steps.
 Question: ${question}
-Options: ${options?.join(", ")}
-Correct Answer: ${options?.[correctAnswer]}
+Options: ${options.join(", ")}
+Correct Answer: ${answerText}
 
 Give a clear step-by-step explanation. Keep it concise.`;
 
   try {
+    await reserveTutorUsage(userId, { question, options, correctAnswer });
     const explanation = await chatComplete(userPrompt, "o4-mini");
     res.json({ success: true, explanation });
   } catch (err) {
-    res.status(err.statusCode || 502).json({ success: false, error: 'AI request failed. Please retry shortly.' });
+    runtimeLog.error('explain error:', err?.message || err);
+    res.status(err.statusCode || 502).json({
+      success: false,
+      error: err.statusCode === 429 ? err.message : 'AI request failed. Please retry shortly.',
+    });
   }
 });
 

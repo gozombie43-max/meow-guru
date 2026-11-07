@@ -48,8 +48,6 @@ export const titleFromBlobPath = (blobPath) =>
 
 export const allowedExtensions = new Set([
   '.pdf',
-  '.html',
-  '.htm',
   '.doc',
   '.docx',
 ]);
@@ -75,13 +73,6 @@ export const getContentType = (
     return 'application/pdf';
   }
 
-  if (
-    extension === '.html' ||
-    extension === '.htm'
-  ) {
-    return 'text/html; charset=utf-8';
-  }
-
   if (extension === '.doc') {
     return 'application/msword';
   }
@@ -96,15 +87,40 @@ export const getContentType = (
   );
 };
 
+export const verifyPdfMagicBytes = (buffer) => {
+  if (!Buffer.isBuffer(buffer) || buffer.length < 5) {
+    return false;
+  }
+  const header = buffer.subarray(0, Math.min(buffer.length, 1024)).toString('latin1');
+  return header.includes('%PDF-');
+};
+
+const ACTIVE_HTML_PATTERN = /<\s*(?:script|svg|html|iframe|object|embed)\b|<!doctype\s+html|javascript\s*:/i;
+
 export const isAllowedDocument = (file) => {
   const extension =
     getFileExtension(
       file?.originalname
     );
 
-  return allowedExtensions.has(
-    extension
-  );
+  if (!allowedExtensions.has(extension)) {
+    return false;
+  }
+
+  if (Buffer.isBuffer(file?.buffer)) {
+    const sample = file.buffer.subarray(0, Math.min(file.buffer.length, 4096)).toString('utf8');
+    if (ACTIVE_HTML_PATTERN.test(sample)) {
+      return false;
+    }
+  }
+
+  if (extension === '.pdf') {
+    if (!verifyPdfMagicBytes(file?.buffer)) {
+      return false;
+    }
+  }
+
+  return true;
 };
 
 export const getSafeFileName = (
