@@ -1,4 +1,5 @@
 import type { Difficulty, QuizQuestion, SessionResult } from '@/features/quiz/model/types';
+import type { QuizAnswerResponse } from './resumeDelta';
 import { nextDifficulty, recordAnswer } from './answerLifecycle';
 
 export type QuizPhase = 'idle' | 'running' | 'answered' | 'solution' | 'completed';
@@ -7,6 +8,7 @@ export interface QuizSessionState {
   currentIndex: number;
   selectedAnswers: Record<number, number>;
   submittedQuestions: Set<number>;
+  revealedByIndex?: Record<number, QuizAnswerResponse>;
   difficulty: Difficulty;
   streak: number;
   bestStreak: number;
@@ -19,13 +21,14 @@ export type QuizEvent =
   | { type: 'START' | 'CLEAR' | 'FINISH' | 'RESTART' }
   | { type: 'SELECT'; answer: number; optionCount: number }
   | { type: 'SUBMIT'; question: QuizQuestion; timeTaken: number }
+  | { type: 'REVEAL'; index: number; revealed: QuizAnswerResponse }
   | { type: 'NAVIGATE'; index: number; count: number }
   | { type: 'SOLUTION'; open: boolean }
   | { type: 'ERROR'; message: string }
   | { type: 'RESTORE'; snapshot: RestoreSession };
 
 export function initialQuizSession(): QuizSessionState {
-  return { phase: 'idle', currentIndex: 0, selectedAnswers: {}, submittedQuestions: new Set(), difficulty: 'medium', streak: 0, bestStreak: 0, results: [], submitError: '', restored: false };
+  return { phase: 'idle', currentIndex: 0, selectedAnswers: {}, submittedQuestions: new Set(), revealedByIndex: {}, difficulty: 'medium', streak: 0, bestStreak: 0, results: [], submitError: '', restored: false };
 }
 export function quizSessionReducer(state: QuizSessionState, event: QuizEvent): QuizSessionState {
   switch (event.type) {
@@ -52,6 +55,12 @@ export function quizSessionReducer(state: QuizSessionState, event: QuizEvent): Q
       const correct = selected === event.question.correctAnswer;
       const streak = correct ? state.streak + 1 : 0;
       return { ...state, phase: 'answered', submittedQuestions: new Set([...state.submittedQuestions, state.currentIndex]), results: recordAnswer(state.results, event.question, state.currentIndex, selected, event.timeTaken), difficulty: nextDifficulty(state.results, state.difficulty, correct), streak, bestStreak: Math.max(state.bestStreak, streak), submitError: '' };
+    }
+    case 'REVEAL': {
+      return {
+        ...state,
+        revealedByIndex: { ...(state.revealedByIndex ?? {}), [event.index]: event.revealed },
+      };
     }
     case 'NAVIGATE': {
       if (event.count <= 0) return state;

@@ -3,9 +3,9 @@ import type { useQuizFilters } from "@/features/quiz/hooks/useQuizFilters";
 import { useQuizResume } from "@/features/quiz/hooks/useQuizResume";
 import { useQuizSync } from "@/features/quiz/hooks/useQuizSync";
 import { useQuizTimer } from "@/features/quiz/hooks/useQuizTimer";
-import type { SessionResult,SubjectConfig } from "@/features/quiz/model/types";
+import type { SessionResult, SubjectConfig } from "@/features/quiz/model/types";
 import { useAuth } from "@/context/AuthContext";
-import { useCallback,useEffect,useMemo,useRef,useReducer } from "react";
+import { useCallback, useEffect, useMemo, useRef, useReducer } from "react";
 import { useQuizAnswerLifecycle } from "./useQuizAnswerLifecycle";
 import { initialQuizSession, quizSessionReducer } from "../model/sessionReducer";
 import useSWR from 'swr';
@@ -64,7 +64,29 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   const resumeEntry = resumeSummary?.selectedAnswers ? resumeSummary : resumeDetail;
   const resumeAppliedRef = useRef(false);
 
-  const currentQ = questions[currentIndex]?.sessionPlaceholder ? undefined : questions[currentIndex];
+  const rawCurrentQ = questions[currentIndex]?.sessionPlaceholder ? undefined : questions[currentIndex];
+  const revealedCurrent = state.revealedByIndex?.[currentIndex];
+  const currentQ = useMemo(() => {
+    if (!rawCurrentQ || !revealedCurrent) return rawCurrentQ;
+    const correctAnswer = typeof revealedCurrent.correct === 'number' ? revealedCurrent.correct : rawCurrentQ.correctAnswer;
+    const solutionText = String(revealedCurrent.solution ?? "").trim();
+    const solutionImageMarkdown = revealedCurrent.solutionImage
+      ? `![solution](${revealedCurrent.solutionImage})`
+      : "";
+    const revealedSolution = solutionText
+      ? /!\[[^\]]*\]\([^)]+\)/.test(solutionText) || !solutionImageMarkdown
+        ? solutionText
+        : `${solutionText}\n\n${solutionImageMarkdown}`
+      : solutionImageMarkdown;
+    return {
+      ...rawCurrentQ,
+      correctAnswer,
+      answer: rawCurrentQ.options[correctAnswer] ?? rawCurrentQ.answer,
+      solution: revealedSolution || rawCurrentQ.solution,
+      translations: revealedCurrent.translations ?? rawCurrentQ.translations,
+    };
+  }, [rawCurrentQ, revealedCurrent]);
+
   useEffect(() => {
     if (!started || !questions[currentIndex]?.sessionPlaceholder || !ensureQuestion) return;
     void ensureQuestion(currentIndex).catch(() => dispatch({ type: 'ERROR', message: 'Could not load this question. Please try again.' }));

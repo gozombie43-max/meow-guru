@@ -2,6 +2,7 @@
 import type { useQuizTimer } from "@/features/quiz/hooks/useQuizTimer";
 import type { QuizQuestion } from "@/features/quiz/model/types";
 import type { QuizAnswerCommand, RecentQuizPayload } from "@/lib/userApi";
+import type { QuizAnswerResponse } from "../model/resumeDelta";
 import { quizSessionReducer } from '../model/sessionReducer';
 import { useCallback, useRef, type Dispatch } from "react";
 import type { QuizSessionState, QuizEvent } from "../model/sessionReducer";
@@ -9,7 +10,7 @@ import type { QuizSessionState, QuizEvent } from "../model/sessionReducer";
 export function useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch, persistAnswer, snapshot, onAnswerSubmitted }: {
   currentQ: QuizQuestion | undefined; token: string | null;
   timer: ReturnType<typeof useQuizTimer>; state: QuizSessionState; dispatch: Dispatch<QuizEvent>;
-  persistAnswer: (command: Omit<QuizAnswerCommand, 'resume'>, snapshot: RecentQuizPayload) => Promise<void>;
+  persistAnswer: (command: Omit<QuizAnswerCommand, 'resume'>, snapshot: RecentQuizPayload) => Promise<QuizAnswerResponse | undefined>;
   snapshot: (state: QuizSessionState) => RecentQuizPayload; onAnswerSubmitted?: () => void;
 }) {
   const { currentIndex, selectedAnswers, submittedQuestions } = state;
@@ -37,7 +38,9 @@ export function useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch
       void persistAnswer({ questionId: currentQ.id, questionUid: currentQ.questionUid,
         questionAnchor: currentQ.sessionAnchor && /^[a-f0-9]{24}$/i.test(currentQ.sessionAnchor) ? currentQ.sessionAnchor : undefined,
         answer: selected, submissionId, questionIndex: currentIndex, timeTaken },
-      snapshot(quizSessionReducer(state, event))).catch(() => {
+      snapshot(quizSessionReducer(state, event))).then((revealed) => {
+        if (revealed) dispatch({ type: 'REVEAL', index: currentIndex, revealed });
+      }).catch(() => {
         dispatch({ type: 'ERROR', message: 'Could not sync this answer yet. Your next save will retry.' });
       });
     }

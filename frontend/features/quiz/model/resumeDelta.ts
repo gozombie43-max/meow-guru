@@ -5,6 +5,19 @@ import { createCoalescedSave } from '@/lib/coalesced-save';
 import { AUTH_TOKEN_CHANGED_EVENT, getAccessToken } from '@/lib/axios';
 import { authSessionIdentity } from '@/lib/auth-session-identity';
 
+export interface QuizAnswerResponse {
+  correct?: number;
+  isCorrect?: boolean;
+  solution?: string;
+  solutionImage?: string;
+  solutionImageWidth?: number;
+  solutionImageHeight?: number;
+  translations?: {
+    bn?: { question?: string; options?: string[]; solution?: string };
+    hi?: { question?: string; options?: string[]; solution?: string };
+  };
+}
+
 const sessions = new Set<WeakRef<{ identity: string | null; controller: AbortController }>>();
 if (typeof window !== 'undefined') window.addEventListener(AUTH_TOKEN_CHANGED_EVENT, event => {
   const next = authSessionIdentity((event as CustomEvent<string | null>).detail);
@@ -34,7 +47,12 @@ function snapshotsEqual(a: RecentQuizPayload, b: RecentQuizPayload) {
 
 export function createResumeSaver(identity: string | null, sessionKey: string) {
   let saved: RecentQuizPayload | undefined, generation = 0, tail = Promise.resolve();
-  const pending: Array<{ base: Omit<QuizAnswerCommand, 'resume'>; snapshot: RecentQuizPayload; command?: QuizAnswerCommand }> = [];
+  const pending: Array<{
+    base: Omit<QuizAnswerCommand, 'resume'>;
+    snapshot: RecentQuizPayload;
+    command?: QuizAnswerCommand;
+    onResolved?: (data?: QuizAnswerResponse) => void;
+  }> = [];
   const session = { identity, controller: new AbortController() };
   for (const ref of sessions) if (!ref.deref()) sessions.delete(ref);
   sessions.add(new WeakRef(session));
@@ -49,7 +67,8 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
       // Freeze the payload as well as the key across uncertain response retries.
       entry.command ??= { ...entry.base, resume: quizSnapshotDelta(saved, entry.snapshot) };
       if (session.controller.signal.aborted) throw new DOMException('Session changed', 'AbortError');
-      await submitQuizAnswer(entry.command, session.controller.signal);
+      const res = await submitQuizAnswer(entry.command, session.controller.signal);
+      entry.onResolved?.(res?.data as QuizAnswerResponse | undefined);
       saved = entry.snapshot;
       pending.shift();
     }
@@ -66,10 +85,17 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
   return {
     key: sessionKey,
     save(snapshot: RecentQuizPayload) { return saver.save({ snapshot, generation }); },
-    answer(base: Omit<QuizAnswerCommand, 'resume'>, snapshot: RecentQuizPayload) {
+    answer(base: Omit<QuizAnswerCommand, 'resume'>, snapshot: RecentQuizPayload): Promise<QuizAnswerResponse | undefined> {
       generation++;
-      pending.push({ base, snapshot });
-      return serialize(drainAnswers);
+      let latestResponse: QuizAnswerResponse | undefined;
+      pending.push({
+        base,
+        snapshot,
+        onResolved: (data) => {
+          latestResponse = data;
+        },
+      });
+      return serialize(drainAnswers).then(() => latestResponse);
     },
   };
 }
