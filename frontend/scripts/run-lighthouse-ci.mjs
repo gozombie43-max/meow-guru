@@ -1,6 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,7 +7,8 @@ const frontendRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const lhciArgs = args.length > 0 ? args : ['autorun'];
 
-const installDir = join(tmpdir(), 'meow-lhci-0.15.1-v1');
+// Store the scoped @lhci/cli runner inside the workspace cache rather than the shared OS temp directory.
+const installDir = join(frontendRoot, 'node_modules', '.cache', 'lhci-runner');
 const pkgPath = join(installDir, 'package.json');
 const cliEntry = join(installDir, 'node_modules', '@lhci', 'cli', 'src', 'cli.js');
 
@@ -34,25 +34,22 @@ const expectedManifest = JSON.stringify(
   2,
 );
 
-mkdirSync(installDir, { recursive: true });
-const currentManifest = existsSync(pkgPath) ? readFileSync(pkgPath, 'utf8') : '';
+mkdirSync(installDir, { recursive: true, mode: 0o700 });
+writeFileSync(pkgPath, expectedManifest, { mode: 0o600 });
 
-if (!existsSync(cliEntry) || currentManifest !== expectedManifest) {
-  writeFileSync(pkgPath, expectedManifest);
-  const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  const installResult = spawnSync(
-    npmCmd,
-    ['install', '--no-audit', '--no-fund', '--prefer-offline'],
-    {
-      cwd: installDir,
-      stdio: ['ignore', 'inherit', 'inherit'],
-      shell: process.platform === 'win32',
-    },
-  );
+const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const installResult = spawnSync(
+  npmCmd,
+  ['install', '--no-audit', '--no-fund', '--prefer-offline'],
+  {
+    cwd: installDir,
+    stdio: ['ignore', 'inherit', 'inherit'],
+    shell: process.platform === 'win32',
+  },
+);
 
-  if (installResult.status !== 0) {
-    process.exit(installResult.status ?? 1);
-  }
+if (installResult.status !== 0) {
+  process.exit(installResult.status ?? 1);
 }
 
 const env = { ...process.env };
@@ -60,7 +57,7 @@ if (!env.CHROME_PATH) {
   try {
     const { chromium } = await import('playwright-core');
     const pwChrome = chromium.executablePath();
-    if (pwChrome && existsSync(pwChrome)) {
+    if (pwChrome) {
       env.CHROME_PATH = pwChrome;
     }
   } catch {

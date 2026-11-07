@@ -24,7 +24,7 @@ vi.mock('../../middleware/rateLimiter.js', () => ({
   authLimiter: (_req, _res, next) => next(),
 }));
 
-function createSignedToken(codeId, timestamp, secret) {
+function buildCookieValue(codeId, timestamp, secret) {
   const payload = `${timestamp}:${codeId}`;
   const sig = crypto.createHmac('sha256', secret).update(payload).digest('hex');
   return `${payload}.${sig}`;
@@ -75,32 +75,32 @@ describe('Adversarial Challenge: Backend Access Code Verification & Endpoints', 
   describe('1. Direct Unit Adversarial Verification (verifySignedSessionToken)', () => {
     it('ADVERSARIAL: rejects token forged using JWT_SECRET', async () => {
       const { verifySignedSessionToken } = await import('../../routes/accessCodes.js');
-      const forged = createSignedToken('test_code', Date.now(), ATTACKER_JWT_SECRET);
+      const forged = buildCookieValue('test_code', Date.now(), ATTACKER_JWT_SECRET);
       expect(verifySignedSessionToken(forged)).toBe(false);
     });
 
     it('ADVERSARIAL: rejects token forged using ADMIN_SECRET', async () => {
       const { verifySignedSessionToken } = await import('../../routes/accessCodes.js');
-      const forged = createSignedToken('test_code', Date.now(), ADMIN_SECRET);
+      const forged = buildCookieValue('test_code', Date.now(), ADMIN_SECRET);
       expect(verifySignedSessionToken(forged)).toBe(false);
     });
 
     it('ADVERSARIAL: rejects token signed with empty/blank secret', async () => {
       const { verifySignedSessionToken } = await import('../../routes/accessCodes.js');
-      const forged = createSignedToken('test_code', Date.now(), '');
+      const forged = buildCookieValue('test_code', Date.now(), '');
       expect(verifySignedSessionToken(forged)).toBe(false);
     });
 
     it('ADVERSARIAL: rejects truncated 63-char signature', async () => {
       const { verifySignedSessionToken } = await import('../../routes/accessCodes.js');
-      const valid = createSignedToken('code', Date.now(), VALID_SESSION_SECRET);
+      const valid = buildCookieValue('code', Date.now(), VALID_SESSION_SECRET);
       const truncated = valid.slice(0, -1);
       expect(verifySignedSessionToken(truncated)).toBe(false);
     });
 
     it('ADVERSARIAL: rejects extended 65-char signature', async () => {
       const { verifySignedSessionToken } = await import('../../routes/accessCodes.js');
-      const valid = createSignedToken('code', Date.now(), VALID_SESSION_SECRET);
+      const valid = buildCookieValue('code', Date.now(), VALID_SESSION_SECRET);
       const extended = valid + 'a';
       expect(verifySignedSessionToken(extended)).toBe(false);
     });
@@ -133,20 +133,20 @@ describe('Adversarial Challenge: Backend Access Code Verification & Endpoints', 
     it('ADVERSARIAL: rejects token expired past 24 hours (24h + 1s)', async () => {
       const { verifySignedSessionToken } = await import('../../routes/accessCodes.js');
       const expiredMs = Date.now() - (24 * 60 * 60 * 1000 + 1000);
-      const token = createSignedToken('code', expiredMs, VALID_SESSION_SECRET);
+      const token = buildCookieValue('code', expiredMs, VALID_SESSION_SECRET);
       expect(verifySignedSessionToken(token)).toBe(false);
     });
 
     it('ADVERSARIAL: rejects future timestamp past 5-minute drift (5m + 1s)', async () => {
       const { verifySignedSessionToken } = await import('../../routes/accessCodes.js');
       const futureMs = Date.now() + (5 * 60 * 1000 + 1000);
-      const token = createSignedToken('code', futureMs, VALID_SESSION_SECRET);
+      const token = buildCookieValue('code', futureMs, VALID_SESSION_SECRET);
       expect(verifySignedSessionToken(token)).toBe(false);
     });
 
     it('ADVERSARIAL: accepts valid URL-encoded token', async () => {
       const { verifySignedSessionToken } = await import('../../routes/accessCodes.js');
-      const valid = createSignedToken('code', Date.now(), VALID_SESSION_SECRET);
+      const valid = buildCookieValue('code', Date.now(), VALID_SESSION_SECRET);
       expect(verifySignedSessionToken(encodeURIComponent(valid))).toBe(true);
     });
 
@@ -163,7 +163,7 @@ describe('Adversarial Challenge: Backend Access Code Verification & Endpoints', 
 
   describe('2. Endpoint Adversarial Testing: GET /api/access-code/check', () => {
     it('returns valid: false for token forged with JWT_SECRET', async () => {
-      const forged = createSignedToken('test_code', Date.now(), ATTACKER_JWT_SECRET);
+      const forged = buildCookieValue('test_code', Date.now(), ATTACKER_JWT_SECRET);
       const res = await fetch(`${baseUrl}/api/access-code/check`, {
         headers: { cookie: `access_session=${forged}` },
       });
@@ -173,7 +173,7 @@ describe('Adversarial Challenge: Backend Access Code Verification & Endpoints', 
     });
 
     it('returns valid: false for token forged with ADMIN_SECRET', async () => {
-      const forged = createSignedToken('test_code', Date.now(), ADMIN_SECRET);
+      const forged = buildCookieValue('test_code', Date.now(), ADMIN_SECRET);
       const res = await fetch(`${baseUrl}/api/access-code/check`, {
         headers: { cookie: `access_session=${forged}` },
       });
@@ -183,7 +183,7 @@ describe('Adversarial Challenge: Backend Access Code Verification & Endpoints', 
     });
 
     it('returns valid: false for token signed with blank secret', async () => {
-      const forged = createSignedToken('test_code', Date.now(), '');
+      const forged = buildCookieValue('test_code', Date.now(), '');
       const res = await fetch(`${baseUrl}/api/access-code/check`, {
         headers: { cookie: `access_session=${forged}` },
       });
@@ -194,7 +194,7 @@ describe('Adversarial Challenge: Backend Access Code Verification & Endpoints', 
 
     it('returns valid: false for 24h+1s expired token', async () => {
       const expiredMs = Date.now() - (24 * 60 * 60 * 1000 + 1000);
-      const expired = createSignedToken('test_code', expiredMs, VALID_SESSION_SECRET);
+      const expired = buildCookieValue('test_code', expiredMs, VALID_SESSION_SECRET);
       const res = await fetch(`${baseUrl}/api/access-code/check`, {
         headers: { cookie: `access_session=${expired}` },
       });

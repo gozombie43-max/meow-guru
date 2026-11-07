@@ -12,7 +12,7 @@ const DIFFERENT_JWT_SECRET = 'jwt-secret-must-be-completely-separate-key-0123456
  * Creates signed session token matching the backend format:
  * "<timestamp>:<codeId>.<signature>"
  */
-function createSignedSessionToken(
+function buildCookieValue(
   codeId: string,
   timestamp: number = Date.now(),
   secret: string = TEST_SESSION_SECRET
@@ -120,7 +120,7 @@ describe('VULN-02 Regression: Access-code gate cryptographic verification & expl
 
   it('EXPLOIT REPRODUCTION: rejects expired signed session token (> 24 hours old)', () => {
     const expiredTimestamp = Date.now() - 25 * 60 * 60 * 1000; // 25 hours ago
-    const expiredToken = createSignedSessionToken('code_valid_123', expiredTimestamp, TEST_SESSION_SECRET);
+    const expiredToken = buildCookieValue('code_valid_123', expiredTimestamp, TEST_SESSION_SECRET);
     const req = new NextRequest('http://localhost/play', {
       headers: { cookie: `access_session=${expiredToken}` },
     });
@@ -130,7 +130,7 @@ describe('VULN-02 Regression: Access-code gate cryptographic verification & expl
 
   it('rejects future skewed tokens (> 5 minutes ahead)', () => {
     const futureTimestamp = Date.now() + 10 * 60 * 1000;
-    const futureToken = createSignedSessionToken('code_valid_123', futureTimestamp, TEST_SESSION_SECRET);
+    const futureToken = buildCookieValue('code_valid_123', futureTimestamp, TEST_SESSION_SECRET);
     const req = new NextRequest('http://localhost/play', {
       headers: { cookie: `access_session=${futureToken}` },
     });
@@ -141,7 +141,7 @@ describe('VULN-02 Regression: Access-code gate cryptographic verification & expl
   // ── 3. Secret Isolation / Key Confusion ──
 
   it('EXPLOIT REPRODUCTION: rejects tokens signed with JWT_SECRET instead of dedicated SESSION_SECRET', () => {
-    const jwtSignedToken = createSignedSessionToken('code_valid_123', Date.now(), DIFFERENT_JWT_SECRET);
+    const jwtSignedToken = buildCookieValue('code_valid_123', Date.now(), DIFFERENT_JWT_SECRET);
     const req = new NextRequest('http://localhost/play', {
       headers: { cookie: `access_session=${jwtSignedToken}` },
     });
@@ -150,7 +150,7 @@ describe('VULN-02 Regression: Access-code gate cryptographic verification & expl
   });
 
   it('rejects tokens signed with static insecure fallback string', () => {
-    const fallbackToken = createSignedSessionToken('code_valid_123', Date.now(), 'access-session-secret-fallback');
+    const fallbackToken = buildCookieValue('code_valid_123', Date.now(), 'access-session-secret-fallback');
     const req = new NextRequest('http://localhost/play', {
       headers: { cookie: `access_session=${fallbackToken}` },
     });
@@ -159,7 +159,7 @@ describe('VULN-02 Regression: Access-code gate cryptographic verification & expl
   });
 
   it('rejects tokens with tampered/modified signature bytes', () => {
-    const validToken = createSignedSessionToken('code_valid_123', Date.now(), TEST_SESSION_SECRET);
+    const validToken = buildCookieValue('code_valid_123', Date.now(), TEST_SESSION_SECRET);
     const tampered = validToken.slice(0, -2) + (validToken.endsWith('00') ? 'ff' : '00');
     const req = new NextRequest('http://localhost/play', {
       headers: { cookie: `access_session=${tampered}` },
@@ -171,7 +171,7 @@ describe('VULN-02 Regression: Access-code gate cryptographic verification & expl
   // ── 4. Valid Token Pass-Through ──
 
   it('allows access with a cryptographically valid, unexpired token signed with SESSION_SECRET', () => {
-    const validToken = createSignedSessionToken('code_valid_123', Date.now() - 3600_000, TEST_SESSION_SECRET);
+    const validToken = buildCookieValue('code_valid_123', Date.now() - 3600_000, TEST_SESSION_SECRET);
     const req = new NextRequest('http://localhost/play', {
       headers: { cookie: `access_session=${validToken}` },
     });
@@ -181,7 +181,7 @@ describe('VULN-02 Regression: Access-code gate cryptographic verification & expl
   });
 
   it('handles URL-encoded cookie values seamlessly', () => {
-    const validToken = createSignedSessionToken('code_valid_123', Date.now() - 3600_000, TEST_SESSION_SECRET);
+    const validToken = buildCookieValue('code_valid_123', Date.now() - 3600_000, TEST_SESSION_SECRET);
     const encoded = encodeURIComponent(validToken);
     const req = new NextRequest('http://localhost/play', {
       headers: { cookie: `access_session=${encoded}` },

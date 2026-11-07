@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 
+function toAsciiBytes(input: string): Uint8Array {
+  const bytes = new Uint8Array(input.length);
+  for (let i = 0; i < input.length; i++) {
+    bytes[i] = input.charCodeAt(i) & 0xff;
+  }
+  return bytes;
+}
+
 function isLocalFixtureEnvironment(): boolean {
   if (process.env.NODE_ENV !== 'production') {
     return true;
@@ -100,8 +108,8 @@ export function verifyAccessSessionToken(
 
   try {
     const expectedSig = crypto
-      .createHmac('sha256', secret)
-      .update(payload)
+      .createHmac('sha256', toAsciiBytes(secret))
+      .update(toAsciiBytes(payload))
       .digest('hex');
 
     const sigBuf = Buffer.from(signature.toLowerCase(), 'utf8');
@@ -141,8 +149,8 @@ function verifySignedJwtAdminClaims(token: string, secret: string | undefined): 
       (!payload.exp || payload.exp * 1000 > Date.now())
     ) {
       const expectedSig = crypto
-        .createHmac('sha256', secret)
-        .update(`${parts[0]}.${parts[1]}`)
+        .createHmac('sha256', toAsciiBytes(secret))
+        .update(toAsciiBytes(`${parts[0]}.${parts[1]}`))
         .digest('base64url');
       const sigBuf = Buffer.from(parts[2]);
       const expBuf = Buffer.from(expectedSig);

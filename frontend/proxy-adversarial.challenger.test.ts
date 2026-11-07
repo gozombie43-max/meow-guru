@@ -8,7 +8,7 @@ const VALID_SESSION_SECRET = 'session-secret-must-be-at-least-32-chars-long-0123
 const ATTACKER_JWT_SECRET = 'jwt-secret-attacker-controlled-or-user-jwt-key-9876543210fedcba';
 const ADMIN_SECRET = 'admin-secret-strictly-for-privileged-api-keys-4567890123456789';
 
-function createSignedToken(
+function buildCookieValue(
   codeId: string,
   timestamp: number | string = Date.now(),
   secret: string = VALID_SESSION_SECRET,
@@ -36,7 +36,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
 
   describe('1. Forged Tokens with Alternative / Confused Secrets', () => {
     it('ADVERSARIAL: rejects token forged using JWT_SECRET', () => {
-      const forged = createSignedToken('target_code', Date.now(), ATTACKER_JWT_SECRET);
+      const forged = buildCookieValue('target_code', Date.now(), ATTACKER_JWT_SECRET);
       expect(verifyAccessSessionToken(forged)).toBe(false);
 
       const req = new NextRequest('http://localhost/play', {
@@ -47,7 +47,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
     });
 
     it('ADVERSARIAL: rejects token forged using ADMIN_SECRET', () => {
-      const forged = createSignedToken('target_code', Date.now(), ADMIN_SECRET);
+      const forged = buildCookieValue('target_code', Date.now(), ADMIN_SECRET);
       expect(verifyAccessSessionToken(forged)).toBe(false);
 
       const req = new NextRequest('http://localhost/play', {
@@ -58,7 +58,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
     });
 
     it('ADVERSARIAL: rejects token signed with empty/blank secret', () => {
-      const forged = createSignedToken('target_code', Date.now(), '');
+      const forged = buildCookieValue('target_code', Date.now(), '');
       expect(verifyAccessSessionToken(forged)).toBe(false);
 
       const req = new NextRequest('http://localhost/play', {
@@ -69,7 +69,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
     });
 
     it('ADVERSARIAL: rejects token signed with arbitrary random key', () => {
-      const forged = createSignedToken('target_code', Date.now(), 'completely-unknown-random-secret-key-xyz');
+      const forged = buildCookieValue('target_code', Date.now(), 'completely-unknown-random-secret-key-xyz');
       expect(verifyAccessSessionToken(forged)).toBe(false);
 
       const req = new NextRequest('http://localhost/play', {
@@ -80,14 +80,14 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
     });
 
     it('ADVERSARIAL: rejects token signed with legacy fallback string', () => {
-      const forged = createSignedToken('target_code', Date.now(), 'access-session-secret-fallback');
+      const forged = buildCookieValue('target_code', Date.now(), 'access-session-secret-fallback');
       expect(verifyAccessSessionToken(forged)).toBe(false);
     });
   });
 
   describe('2. Truncated, Extended, and Malformed Signatures', () => {
     it('ADVERSARIAL: rejects truncated 63-character hex signature (off-by-one under)', () => {
-      const valid = createSignedToken('valid_code', Date.now(), VALID_SESSION_SECRET);
+      const valid = buildCookieValue('valid_code', Date.now(), VALID_SESSION_SECRET);
       const dotIdx = valid.lastIndexOf('.');
       const payload = valid.slice(0, dotIdx);
       const truncatedSig = valid.slice(dotIdx + 1, -1); // 63 chars
@@ -101,7 +101,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
     });
 
     it('ADVERSARIAL: rejects extended 65-character hex signature (off-by-one over)', () => {
-      const valid = createSignedToken('valid_code', Date.now(), VALID_SESSION_SECRET);
+      const valid = buildCookieValue('valid_code', Date.now(), VALID_SESSION_SECRET);
       const dotIdx = valid.lastIndexOf('.');
       const payload = valid.slice(0, dotIdx);
       const extendedSig = valid.slice(dotIdx + 1) + 'a'; // 65 chars
@@ -136,7 +136,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
     });
 
     it('ADVERSARIAL: accepts valid uppercase hex signature', () => {
-      const valid = createSignedToken('valid_code', Date.now(), VALID_SESSION_SECRET);
+      const valid = buildCookieValue('valid_code', Date.now(), VALID_SESSION_SECRET);
       const dotIdx = valid.lastIndexOf('.');
       const payload = valid.slice(0, dotIdx);
       const upperSig = valid.slice(dotIdx + 1).toUpperCase();
@@ -196,7 +196,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
 
     it('ADVERSARIAL: rejects token exactly 24 hours + 1 second old (strict expiration boundary)', () => {
       const expiredMs = Date.now() - (24 * 60 * 60 * 1000 + 1000);
-      const expiredToken = createSignedToken('valid_code', expiredMs, VALID_SESSION_SECRET);
+      const expiredToken = buildCookieValue('valid_code', expiredMs, VALID_SESSION_SECRET);
       expect(verifyAccessSessionToken(expiredToken)).toBe(false);
 
       const res = proxy(new NextRequest('http://localhost/play', { headers: { cookie: `access_session=${expiredToken}` } }));
@@ -205,7 +205,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
 
     it('ADVERSARIAL: accepts token 23 hours and 59 minutes old (unexpired boundary)', () => {
       const unexpiredMs = Date.now() - (23 * 60 * 60 * 1000 + 59 * 60 * 1000);
-      const unexpiredToken = createSignedToken('valid_code', unexpiredMs, VALID_SESSION_SECRET);
+      const unexpiredToken = buildCookieValue('valid_code', unexpiredMs, VALID_SESSION_SECRET);
       expect(verifyAccessSessionToken(unexpiredToken)).toBe(true);
 
       const res = proxy(new NextRequest('http://localhost/play', { headers: { cookie: `access_session=${unexpiredToken}` } }));
@@ -215,7 +215,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
 
     it('ADVERSARIAL: rejects future timestamp past 5-minute clock drift boundary (5m + 1s)', () => {
       const futureMs = Date.now() + (5 * 60 * 1000 + 1000);
-      const futureToken = createSignedToken('valid_code', futureMs, VALID_SESSION_SECRET);
+      const futureToken = buildCookieValue('valid_code', futureMs, VALID_SESSION_SECRET);
       expect(verifyAccessSessionToken(futureToken)).toBe(false);
 
       const res = proxy(new NextRequest('http://localhost/play', { headers: { cookie: `access_session=${futureToken}` } }));
@@ -224,7 +224,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
 
     it('ADVERSARIAL: accepts future timestamp within 5-minute clock drift boundary (4 minutes)', () => {
       const futureMs = Date.now() + (4 * 60 * 1000);
-      const futureToken = createSignedToken('valid_code', futureMs, VALID_SESSION_SECRET);
+      const futureToken = buildCookieValue('valid_code', futureMs, VALID_SESSION_SECRET);
       expect(verifyAccessSessionToken(futureToken)).toBe(true);
     });
   });
@@ -255,7 +255,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
 
   describe('5. URL Encoding & Malformed Encoding Edge Cases', () => {
     it('ADVERSARIAL: accepts valid URL-encoded token (normal client cookie transmission)', () => {
-      const valid = createSignedToken('valid_code', Date.now(), VALID_SESSION_SECRET);
+      const valid = buildCookieValue('valid_code', Date.now(), VALID_SESSION_SECRET);
       const encoded = encodeURIComponent(valid);
       expect(verifyAccessSessionToken(encoded)).toBe(true);
 
@@ -298,7 +298,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
       process.env.SESSION_SECRET = 'identical-shared-secret-key-32-chars-long';
       process.env.JWT_SECRET = 'identical-shared-secret-key-32-chars-long';
 
-      const token = createSignedToken('code', Date.now(), 'identical-shared-secret-key-32-chars-long');
+      const token = buildCookieValue('code', Date.now(), 'identical-shared-secret-key-32-chars-long');
       // Must reject due to anti-confusion key isolation check
       expect(verifyAccessSessionToken(token)).toBe(false);
 
@@ -314,7 +314,7 @@ describe('Adversarial Challenge: VULN-02 Access-Code Gate & Secret Confusion', (
         delete process.env.SESSION_SECRET;
         delete process.env.ACCESS_CODE_SECRET;
 
-        const token = createSignedToken('code', Date.now(), 'some-secret');
+        const token = buildCookieValue('code', Date.now(), 'some-secret');
         expect(verifyAccessSessionToken(token)).toBe(false);
 
         const res = proxy(new NextRequest('http://localhost/play', { headers: { cookie: `access_session=${token}` } }));

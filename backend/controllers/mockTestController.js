@@ -44,26 +44,22 @@ const sanitizeSectionTimers = (raw) => {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return {};
   }
-  const clean = {};
-  let count = 0;
-  for (const [key, value] of Object.entries(raw)) {
-    if (count >= 20) break;
-    if (
-      typeof key === 'string' &&
-      key.length > 0 &&
-      key.length <= 64 &&
-      !key.startsWith('$') &&
-      !['__proto__', 'constructor', 'prototype'].includes(key) &&
-      typeof value === 'number' &&
-      Number.isFinite(value) &&
-      value >= 0 &&
-      value <= 86400
-    ) {
-      clean[key] = value;
-      count += 1;
-    }
-  }
-  return clean;
+  return Object.fromEntries(
+    Object.entries(raw)
+      .filter(
+        ([key, value]) =>
+          typeof key === 'string' &&
+          key.length > 0 &&
+          key.length <= 64 &&
+          !key.startsWith('$') &&
+          !['__proto__', 'constructor', 'prototype'].includes(key) &&
+          typeof value === 'number' &&
+          Number.isFinite(value) &&
+          value >= 0 &&
+          value <= 86400,
+      )
+      .slice(0, 20),
+  );
 };
 
 function presentAttempt(doc) {
