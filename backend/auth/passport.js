@@ -54,7 +54,7 @@ export const initPassport = () => {
             await findUserByEmail(email);
 
           const valid = await bcrypt.compare(password, user?.passwordHash || await dummyPasswordHash);
-          if (!user || user.authProvider === 'google' || !valid) {
+          if (!user || user.authProvider === 'google' || !user.passwordHash || !valid) {
             return done(null, false, { message: 'Invalid email or password' });
           }
 
@@ -178,9 +178,18 @@ export const initPassport = () => {
             }
           }
 
+          if (user.googleId && user.googleId !== profile.id) {
+            return done(new Error('Google account does not match linked identity'));
+          }
+
+          const wasUnverifiedLocal =
+            user.authProvider === 'local' && user.emailVerified === false;
+
           // ── Update Google profile if necessary ────────
 
           if (
+            wasUnverifiedLocal ||
+
             user.avatar !==
               googleAvatar ||
 
@@ -209,22 +218,47 @@ export const initPassport = () => {
                 googleAvatar ||
                 user.avatar ||
                 '',
+
+              ...(wasUnverifiedLocal
+                ? {
+                    authProvider: 'google',
+                    emailVerified: true,
+                    emailVerifiedAt: new Date(),
+                  }
+                : {}),
+            };
+
+            const updateDoc = {
+              $set: profileUpdates,
+              ...(wasUnverifiedLocal
+                ? {
+                    $unset: {
+                      passwordHash: '',
+                      emailVerificationTokenHash: '',
+                      emailVerificationExpiresAt: '',
+                      emailVerificationLastSentAt: '',
+                      passwordResetTokenHash: '',
+                      passwordResetExpiresAt: '',
+                      passwordResetLastSentAt: '',
+                    },
+                  }
+                : {}),
             };
 
             await users.updateOne(
               {
                 id: user.id,
               },
-              {
-                $set:
-                  profileUpdates,
-              }
+              updateDoc
             );
 
             user = {
               ...user,
               ...profileUpdates,
             };
+            if (wasUnverifiedLocal) {
+              delete user.passwordHash;
+            }
           }
 
 

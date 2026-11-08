@@ -22,6 +22,8 @@ export async function resolveEmailOtpAccount(email) {
   if (user.emailVerified !== true) {
     const result = await confirmOtpUserEmail(user.id, email);
     if (result.matchedCount !== 1) return null;
+    delete user.passwordHash;
+    user.emailVerified = true;
   }
   return user;
 }

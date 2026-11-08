@@ -58,6 +58,14 @@ export function confirmOtpUserEmail(userId, email) {
     { emailNormalized: email }, { email, emailNormalized: { $exists: false } },
   ] }, {
     $set: { emailVerified: true, emailVerifiedAt: new Date() },
-    $unset: { emailVerificationTokenHash: '', emailVerificationExpiresAt: '', emailVerificationLastSentAt: '' },
+    $unset: {
+      passwordHash: '',
+      emailVerificationTokenHash: '',
+      emailVerificationExpiresAt: '',
+      emailVerificationLastSentAt: '',
+      passwordResetTokenHash: '',
+      passwordResetExpiresAt: '',
+      passwordResetLastSentAt: '',
+    },
   });
 }
