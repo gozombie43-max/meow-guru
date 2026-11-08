@@ -223,16 +223,16 @@ export async function fetchQuestionsRevealWindow(rawItems) {
     return { reveals: {} };
   }
   const bounded = rawItems.slice(0, 8);
-  const reveals = {};
+  const revealsMap = new Map();
   const missing = [];
 
   for (const item of bounded) {
     if (!item || typeof item !== 'object') continue;
-    const clientKey = String(item.clientKey ?? item.questionUid ?? item.sessionAnchor ?? item.id ?? '');
-    if (!clientKey) continue;
+    const clientKey = String(item.clientKey ?? item.questionUid ?? item.sessionAnchor ?? item.id ?? '').trim();
+    if (!clientKey || clientKey.length > 128 || clientKey === '__proto__' || clientKey === 'constructor' || clientKey === 'prototype') continue;
     const cached = lookupCachedReveal(item);
     if (cached) {
-      reveals[clientKey] = cached;
+      revealsMap.set(clientKey, cached);
     } else {
       missing.push({ clientKey, item });
     }
@@ -269,7 +269,7 @@ export async function fetchQuestionsRevealWindow(rawItems) {
       for (const { clientKey, item } of missing) {
         const resolved = lookupCachedReveal(item);
         if (resolved) {
-          reveals[clientKey] = resolved;
+          revealsMap.set(clientKey, resolved);
         }
       }
       // Warm ahead the next 60 questions from the earliest anchor in the background
@@ -292,5 +292,5 @@ export async function fetchQuestionsRevealWindow(rawItems) {
     }
   }
 
-  return { reveals };
+  return { reveals: Object.fromEntries(revealsMap) };
 }
