@@ -11,8 +11,8 @@ export interface QuizSessionState {
   currentIndex: number;
   selectedAnswers: Record<number, number>;
   submittedQuestions: Set<number>;
-  revealedByIndex?: Record<number, QuizAnswerResponse>;
-  sessionGeneration?: number;
+  revealedByIndex: Record<number, QuizAnswerResponse>;
+  sessionGeneration: number;
   difficulty: Difficulty;
   streak: number;
   bestStreak: number;
@@ -53,7 +53,7 @@ export function quizSessionReducer(state: QuizSessionState, event: QuizEvent): Q
     case 'RESTART': return {
       ...initialQuizSession(),
       difficulty: state.difficulty,
-      sessionGeneration: (state.sessionGeneration ?? 0) + 1,
+      sessionGeneration: state.sessionGeneration + 1,
       restored: true,
     };
     case 'RESTORE': {
@@ -74,7 +74,7 @@ export function quizSessionReducer(state: QuizSessionState, event: QuizEvent): Q
         selectedAnswers: { ...selectedAnswers },
         submittedQuestions: submitted,
         revealedByIndex,
-        sessionGeneration: (state.sessionGeneration ?? 0) + 1,
+        sessionGeneration: state.sessionGeneration + 1,
         results: [...results],
         difficulty,
         phase: submitted.has(currentIndex) ? 'answered' : 'running',
@@ -100,25 +100,24 @@ export function quizSessionReducer(state: QuizSessionState, event: QuizEvent): Q
       const correct = selected === event.question.correctAnswer;
       const streak = correct ? state.streak + 1 : 0;
       const revealedByIndex = {
-        ...(state.revealedByIndex ?? {}),
+        ...state.revealedByIndex,
         [state.currentIndex]: {
-          ...state.revealedByIndex?.[state.currentIndex],
+          ...state.revealedByIndex[state.currentIndex],
           correct: event.question.correctAnswer,
           isCorrect: correct,
-          ...(event.question.solution ? { solution: event.question.solution } : {}),
-          ...(event.question.translations ? { translations: event.question.translations } : {}),
+          solution: event.question.solution,
+          translations: event.question.translations,
         },
       };
       return { ...state, phase: 'answered', submittedQuestions, revealedByIndex, results, difficulty: nextDifficulty(state.results, state.difficulty, correct), streak, bestStreak: Math.max(state.bestStreak, streak), submitError: '' };
     }
     case 'REVEAL': {
-      if (event.generation !== undefined && event.generation !== (state.sessionGeneration ?? 0)) return state;
+      if (event.generation !== undefined && event.generation !== state.sessionGeneration) return state;
       const row = state.results.find(entry => entry.questionIndex === event.index);
       // Ignore late responses that belong to a restarted or different question.
       if (!row || (event.questionId !== undefined && row.questionId !== event.questionId)) return state;
-      const existingReveal = state.revealedByIndex?.[event.index];
-      const mergedReveal: QuizAnswerResponse = existingReveal ? { ...existingReveal, ...event.revealed } : event.revealed;
-      const revealedByIndex = { ...(state.revealedByIndex ?? {}), [event.index]: mergedReveal };
+      const mergedReveal: QuizAnswerResponse = { ...state.revealedByIndex[event.index], ...event.revealed };
+      const revealedByIndex = { ...state.revealedByIndex, [event.index]: mergedReveal };
       const submitError = state.submitError.startsWith(ANSWER_RETRY_PREFIX) ? '' : state.submitError;
       const correctIndex = mergedReveal.correct;
       if (typeof correctIndex !== 'number' || correctIndex < 0) return { ...state, revealedByIndex, submitError };
@@ -139,7 +138,7 @@ export function quizSessionReducer(state: QuizSessionState, event: QuizEvent): Q
     case 'SOLUTION': return state.phase === 'idle' || state.phase === 'completed' ? state : { ...state, phase: event.open ? 'solution' : state.submittedQuestions.has(state.currentIndex) ? 'answered' : 'running' };
     case 'FINISH': return { ...state, phase: 'completed' };
     case 'ERROR': {
-      if (event.generation !== undefined && event.generation !== (state.sessionGeneration ?? 0)) return state;
+      if (event.generation !== undefined && event.generation !== state.sessionGeneration) return state;
       if (event.index !== undefined && event.index !== state.currentIndex) return state;
       return { ...state, submitError: event.message };
     }

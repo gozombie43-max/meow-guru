@@ -64,6 +64,19 @@ it('defers grading until the server reveals the answer key and restores revealed
   expect(state.bestStreak).toBe(1);
   expect(state.submitError).toBe('');
 
+  // Re-revealing an already graded question updates metadata without double-counting streak,
+  // and invalid/stale generation or index guards are ignored.
+  state = reduce(state, { type: 'REVEAL', index: 0, questionId: 1, generation: state.sessionGeneration, revealed: { correct: 1, isCorrect: true, solution: 'Updated explanation' } });
+  expect(state.streak).toBe(1);
+  expect(state.revealedByIndex[0]?.solution).toBe('Updated explanation');
+  state = reduce(state, { type: 'REVEAL', index: 0, questionId: 1, revealed: { correct: -1, isCorrect: false } });
+  expect(state.results[0].correct).toBe(1);
+  expect(reduce(state, { type: 'REVEAL', index: 0, generation: 99, revealed: { correct: 0, isCorrect: false } })).toBe(state);
+  expect(reduce(state, { type: 'ERROR', message: 'Stale gen', generation: 99 })).toBe(state);
+  expect(reduce(state, { type: 'ERROR', message: 'Other index', index: 5 })).toBe(state);
+  state = reduce(state, { type: 'ERROR', message: 'Current error', index: 0, generation: state.sessionGeneration });
+  expect(state.submitError).toBe('Current error');
+
   const resumed = reduce(initialQuizSession(), {
     type: 'RESTORE',
     snapshot: {
@@ -73,5 +86,5 @@ it('defers grading until the server reveals the answer key and restores revealed
       results: [{ questionId: 1, questionIndex: 0, selected: 1, correct: 1, isCorrect: true, timeTaken: 12, concept: 'math', difficulty: 'medium' }],
     },
   });
-  expect(resumed.revealedByIndex?.[0]).toEqual({ correct: 1, isCorrect: true });
+  expect(resumed.revealedByIndex[0]).toEqual({ correct: 1, isCorrect: true });
 });
