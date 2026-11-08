@@ -1,6 +1,6 @@
 # Remaining request-flow work
 
-Implemented and verified locally on 2026-10-08 from `9c9eb3ec`. This continues the [original audit](REQUEST_FLOW_AUDIT.md) and batches A-D. Actual Atlas measurements and production before/after waterfalls are pending the target URLs, Atlas project/cluster, dedicated account and monitoring access requested in chat. No deployment or production database writes have been performed.
+Implemented and verified locally on 2026-10-08 from `9c9eb3ec`. This continues the [original audit](./2026-10-08-request-flow-audit.md) and batches A-D. Actual Atlas measurements and production before/after waterfalls are pending the target URLs, Atlas project/cluster, dedicated account and monitoring access requested in chat. No deployment or production database writes have been performed.
 
 ## F3: separate concept-group polling
 
@@ -15,7 +15,7 @@ Quiz setup -> GET /api/questions/meta once -> cached metadata + fingerprint/stat
 
 The status route does not read questions, reconstruct full metadata, enqueue a job, or write Mongo. Malformed fingerprints fail before Mongo; missing records return 404 without initialization. Matching fingerprints fence late responses after topic changes. Shared completed results retain the existing immutable fingerprint contract; the grouping worker and validation remain intact. Pending requests for the same fingerprint coalesce within an API process.
 
-Sources: [public status route](backend/routes/questionRoutes.js), [projected read](backend/repositories/conceptGroupRepository.js), [frontend polling](frontend/hooks/useQuestionsMeta.ts). Real-Mongo integration tests and frontend timer tests cover completion, failure, cancellation and preserved totals.
+Sources: [public status route](../../../../backend/routes/questionRoutes.js), [projected read](../../../../backend/repositories/conceptGroupRepository.js), [frontend polling](../../../../frontend/hooks/useQuestionsMeta.ts). Real-Mongo integration tests and frontend timer tests cover completion, failure, cancellation and preserved totals.
 
 ## F16: read-only mock catalog
 
@@ -32,7 +32,7 @@ Open exam -> GET /api/mocktest/:exam/slots
 
 Migration retries preserve existing titles and fixed papers. Completed migration records prevent ordinary deployments from restoring intentionally deleted database rows. Static configuration still supplies the existing practice fallback when a catalog is empty; this preserves availability without making GET write. The existing authenticated admin seed endpoint remains an explicit operator action.
 
-Sources: [catalog service](backend/services/mock/mockSlotService.js), [migration 018](backend/migrations/018-default-mock-slots.js), [migration runner](backend/migrations/runner.js).
+Sources: [catalog service](../../../../backend/services/mock/mockSlotService.js), [migration 018](../../../../backend/migrations/018-default-mock-slots.js), [migration runner](../../../../backend/migrations/runner.js).
 
 ## F5: durable catalog presence before readiness
 
@@ -60,7 +60,7 @@ Initialization repairs missing durable records even when a local/Redis snapshot 
 
 This guarantees presence at successful initialization, not permanent availability during Mongo outages, deletion of metadata outside application paths, or more than 24 hours of failed refreshes. Public stale snapshots retain the existing 24-hour bound. Ordinary mutations retain usable prior data; freshness for non-mathematics subjects can lag until a public read or the 15-minute refresh. The cold aggregation cost moves to initialization rather than disappearing. Live release/startup behavior has not been tested on Azure.
 
-Sources: [catalog initializer and refresh](backend/services/questions/topicCountSnapshot.js), [startup](backend/index.js), [explicit initialization](backend/scripts/initialize-public-catalog.js), [mutation revision fence](backend/repositories/questionBankMutation.js), [production workflow](.github/workflows/main_quizguru-backend.yml), [staging workflow](.github/workflows/main_quizguru-backend-staging.yml).
+Sources: [catalog initializer and refresh](../../../../backend/services/questions/topicCountSnapshot.js), [startup](../../../../backend/index.js), [explicit initialization](../../../../backend/scripts/initialize-public-catalog.js), [mutation revision fence](../../../../backend/repositories/questionBankMutation.js), [production workflow](../../../../.github/workflows/main_quizguru-backend.yml), [staging workflow](../../../../.github/workflows/main_quizguru-backend-staging.yml).
 
 ## F1: measure before changing authorization
 
@@ -101,7 +101,7 @@ These are client-driver and application timings, not Atlas execution timings. Co
 
 Use Atlas [Namespace Insights](https://www.mongodb.com/docs/atlas/namespace-insights/) for `authSessions`/`users` collection latency alongside the same UTC measurement window and [process metrics](https://www.mongodb.com/docs/atlas/monitor-cluster-metrics/) for total cluster operations. Collection metrics include other users/profile activity. The fixed Mongo comment distinguishes these validation finds in available query records. The [Query Profiler](https://www.mongodb.com/docs/atlas/tutorial/query-profiler/) shows logged slow operations; its samples alone do not establish the p95 of every authorization read. Record the collection/server p95 and driver p95 separately.
 
-Sources: [Mongo monitoring](backend/infrastructure/mongoOperationMetrics.js), [request summaries](backend/infrastructure/logger.js), [authorization instrumentation](backend/auth/sessions.js), [metrics and authenticated instance identity](backend/infrastructure/metrics.js), [recording rules](backend/observability/slo-rules.yml).
+Sources: [Mongo monitoring](../../../../backend/infrastructure/mongoOperationMetrics.js), [request summaries](../../../../backend/infrastructure/logger.js), [authorization instrumentation](../../../../backend/auth/sessions.js), [metrics and authenticated instance identity](../../../../backend/infrastructure/metrics.js), [recording rules](../../../../backend/observability/slo-rules.yml).
 
 ## Reproducible capture tools
 
@@ -170,14 +170,14 @@ Local production-build captures used Edge with a temporary Mongo replica set, 25
 
 The capture uses document navigation for several opening actions, including dashboard reload, so these counts include cookie restoration/profile reads and do not describe warm SPA navigation. Setup navigation uses the router: training hub -> setup performed zero new API reads; training start and finish each used one request. Opening the solution and quiz AI panel performed zero API requests. The desktop mathematics render additionally caused one server-side catalog request with two metadata finds and no aggregation; it is included in the separate server-window totals, not browser API totals. Cache age and authorization coalescing explain differences between devices; the figures are not universal per-action counts.
 
-Artifacts: [desktop summary](REQUEST_FLOW_REMAINING_LOCAL_desktop_SUMMARY.json), [mobile summary](REQUEST_FLOW_REMAINING_LOCAL_mobile_SUMMARY.json), [desktop requests](REQUEST_FLOW_REMAINING_LOCAL_desktop.json), [mobile requests](REQUEST_FLOW_REMAINING_LOCAL_mobile.json), [sanitized physical request logs](REQUEST_FLOW_REMAINING_LOCAL_MONGO.jsonl).
+Local capture artifacts (`REQUEST_FLOW_REMAINING_LOCAL_desktop_SUMMARY.json`, `REQUEST_FLOW_REMAINING_LOCAL_mobile_SUMMARY.json`, `REQUEST_FLOW_REMAINING_LOCAL_desktop.json`, `REQUEST_FLOW_REMAINING_LOCAL_mobile.json`, `REQUEST_FLOW_REMAINING_LOCAL_MONGO.jsonl`) are generated on demand via `npm run test:request-flows` and excluded from Git tracking.
 
 | Paced authorization probe | HTTP requests | Authorization Mongo commands | Command rate | HTTP p95 | Driver p95 estimate |
 |---|---:|---:|---:|---:|---:|
 | Five rounds, concurrency 1 | 5 | 10 | 2.37/s | 26.12 ms | 4.80 ms |
 | Five rounds, concurrency 2 | 10 | 16 | 3.84/s | 23.54 ms | 4.80 ms |
 
-The sequential probe confirms the two warm validation reads; overlapping requests in the second probe shared some validation bursts. Driver p95 is histogram interpolation from very few successful commands, and the command rate reflects the deliberately paced window. Neither measures Atlas, sustained throughput, production latency, or capacity. Sources: [concurrency 1 probe](REQUEST_FLOW_REMAINING_AUTH_C1.json), [concurrency 2 probe](REQUEST_FLOW_REMAINING_AUTH_C2.json).
+The sequential probe confirms the two warm validation reads; overlapping requests in the second probe shared some validation bursts. Driver p95 is histogram interpolation from very few successful commands, and the command rate reflects the deliberately paced window. Neither measures Atlas, sustained throughput, production latency, or capacity. Local probe JSON outputs (`REQUEST_FLOW_REMAINING_AUTH_C1.json`, `REQUEST_FLOW_REMAINING_AUTH_C2.json`) are generated on demand via `npm run test:probe:authorization` and excluded from Git tracking.
 
 Completed local validation:
 

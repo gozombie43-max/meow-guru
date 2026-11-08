@@ -1,6 +1,6 @@
 # Request-flow Batch A
 
-Implemented locally on 2026-10-08 against checkout `8a65e94d`; changes are uncommitted. The original [request-flow audit](REQUEST_FLOW_AUDIT.md) records the pre-change baseline. Counts below exclude auth bootstrap, document/RSC requests, assets, retries, and unrelated catalogs.
+Implemented locally on 2026-10-08 against checkout `8a65e94d`; changes are uncommitted. The original [request-flow audit](../performance/2026-10-08-request-flow-audit.md) records the pre-change baseline. Counts below exclude auth bootstrap, document/RSC requests, assets, retries, and unrelated catalogs.
 
 ## Training startup: F8 and the create-response portion of F12
 
@@ -24,7 +24,7 @@ The normal quick hub-to-setup journey drops from six training requests to three.
 
 Both the setup page and the hub's mission start seed the returned full session. Creation handoffs last at most thirty seconds, hold at most twenty entries, clear on logout/session changes, and reject responses from an earlier session epoch. They are memory-only and consumed after successful loading. Training clock synchronization keeps the original receive time. A queued offline action takes priority even when create returns an existing active session.
 
-Sources: [shared queries](frontend/app/(app)/play/hooks/trainingQueries.ts), [hub creation](frontend/app/(app)/play/hooks/useTrainingSetup.ts), [setup creation](frontend/app/(app)/play/setup/[mode]/page.tsx), [session loading](frontend/components/training/session/hooks/useTrainingSession.ts), [write invalidation](frontend/components/training/session/hooks/useTrainingActions.ts), [handoff](frontend/lib/start-response-cache.ts).
+Sources: [shared queries](../../../../frontend/app/(app)/play/hooks/trainingQueries.ts), [hub creation](../../../../frontend/app/(app)/play/hooks/useTrainingSetup.ts), [setup creation](../../../../frontend/app/(app)/play/setup/[mode]/page.tsx), [session loading](../../../../frontend/components/training/session/hooks/useTrainingSession.ts), [write invalidation](../../../../frontend/components/training/session/hooks/useTrainingActions.ts), [handoff](../../../../frontend/lib/start-response-cache.ts).
 
 ## Mock startup: F15
 
@@ -44,7 +44,7 @@ The normal instructions-to-attempt journey drops from POST+GET to one POST, and 
 
 The attempt loader waits for completed auth restoration and a verified account before dispatching; token arrival followed by profile arrival does not produce two reload reads. Mock deadlines use the start response's original receive time, so navigation does not grant extra time. Existing answer hiding, confidential assessment policy, revision checks, autosave, and submission behavior remain in place.
 
-Sources: [instructions](frontend/app/(app)/mock-test/_shared/TestInstructions.tsx), [attempt loading](frontend/app/(app)/mock-test/_shared/MockTestEngine.tsx), [start keys](frontend/app/(app)/mock-test/_shared/startKey.ts), [start controller](backend/controllers/mockTestController.js), [paper builder](backend/services/mock/mockPaperService.js).
+Sources: [instructions](../../../../frontend/app/(app)/mock-test/_shared/TestInstructions.tsx), [attempt loading](../../../../frontend/app/(app)/mock-test/_shared/MockTestEngine.tsx), [start keys](../../../../frontend/app/(app)/mock-test/_shared/startKey.ts), [start controller](../../../../backend/controllers/mockTestController.js), [paper builder](../../../../backend/services/mock/mockPaperService.js).
 
 ## Gemini authentication: F6
 
@@ -65,7 +65,7 @@ Logout / different Meow session / rejected Meow authorization
 
 Completed Firebase sign-in is reused; concurrent authentication still coalesces and sign-in/sign-out remain serialized. The validation endpoint uses `protect`, the enclosing auth/global limiters, and `Cache-Control: no-store`. Meow JWT/session validation still occurs before every Gemini message, preserving immediate revocation/privilege checks. This removes repeated Firebase custom-token creation and custom sign-in, **not** the per-message Meow request or F1's Mongo guards. Same-session access-token rotation retains Firebase credentials; identity/session changes invalidate them. Firebase credentials stay in memory.
 
-Sources: [Firebase client auth](frontend/lib/firebase/auth.ts), [validation/token routes](backend/routes/firebaseAuth.routes.js), [local invalidation identity](frontend/lib/auth-session-identity.ts).
+Sources: [Firebase client auth](../../../../frontend/lib/firebase/auth.ts), [validation/token routes](../../../../backend/routes/firebaseAuth.routes.js), [local invalidation identity](../../../../frontend/lib/auth-session-identity.ts).
 
 Batch A does not change Mongo authorization guards, dashboard expiry reconciliation, quiz persistence, metadata grouping, history queries, public auth gates, translation, or general token-rotation/retry behavior.
 

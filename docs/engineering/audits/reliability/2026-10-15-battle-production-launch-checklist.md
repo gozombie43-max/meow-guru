@@ -32,7 +32,7 @@ npm run check:battle:readiness
 The first two commands use isolated test databases. The readiness command reads
 the configured database and never creates indexes or repairs records. Apply
 migrations 019/020 and run the guarded battle metadata backfill before rollout;
-see [COMPETITIVE_POLICY.md](COMPETITIVE_POLICY.md).
+see [battle-competitive-policy.md](../../architecture/battle-competitive-policy.md).
 
 The automated suite covers server replacement/reconnect, persisted reveals,
 answer secrecy, all JAM answer kinds, 20/100 real socket clients on two local

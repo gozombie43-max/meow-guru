@@ -2,7 +2,7 @@
 
 Reviewed 2026-10-08, checkout `8a65e94d`. This is a source trace with focused local regression checks, not an authenticated browser waterfall or production latency measurement. Rankings estimate impact from blocking dependencies, request frequency, payload size, and database operations. Cache warmth, Redis availability, feature flags, history migration, and navigation type change the actual counts.
 
-Batch A, Batch B, Batch C, and Batch D have since been implemented locally; see [Batch A implementation and updated flows](REQUEST_FLOW_BATCH_A.md), [Batch B implementation and updated flows](REQUEST_FLOW_BATCH_B.md), [Batch C implementation and updated flows](REQUEST_FLOW_BATCH_C.md), and [Batch D implementation and updated flows](REQUEST_FLOW_BATCH_D.md). Findings below retain the pre-change audit baseline.
+Batch A, Batch B, Batch C, and Batch D have since been implemented locally; see [Batch A implementation and updated flows](../archive/2026-10-08-request-flow-batch-a.md), [Batch B implementation and updated flows](../archive/2026-10-08-request-flow-batch-b.md), [Batch C implementation and updated flows](../archive/2026-10-08-request-flow-batch-c.md), and [Batch D implementation and updated flows](../archive/2026-10-08-request-flow-batch-d.md). Findings below retain the pre-change audit baseline.
 
 ## Transport and counting rules
 
@@ -14,7 +14,7 @@ Protected requests run JWT verification and `assertSession`. Its local cache doe
 
 Public question counts, metadata, and session pages have no `protect` middleware. Their frontend hooks wait for auth bootstrap under `ApplicationProviders`, even though the backend reads are public.
 
-Sources: [API base](frontend/lib/api-base.ts:1), [rewrite](frontend/next.config.ts:84), [page proxy](frontend/proxy.ts:16), [Express mounts](backend/app.js:140), [rate limits](backend/middleware/rateLimiter.js:153), [limiter fallback](backend/middleware/redisRateLimitStore.js:45), [session validation](backend/auth/sessions.js:140), [SWR auth gate](frontend/app/providers.tsx:19).
+Sources: [API base](../../../../frontend/lib/api-base.ts:1), [rewrite](../../../../frontend/next.config.ts:84), [page proxy](../../../../frontend/proxy.ts:16), [Express mounts](../../../../backend/app.js:140), [rate limits](../../../../backend/middleware/rateLimiter.js:153), [limiter fallback](../../../../backend/middleware/redisRateLimitStore.js:45), [session validation](../../../../backend/auth/sessions.js:140), [SWR auth gate](../../../../frontend/app/providers.tsx:19).
 
 ## All requested actions
 
@@ -82,7 +82,7 @@ The local hit costs two Mongo reads; a stable miss costs four, excluding endpoin
 
 This is an explicit revocation/privilege correctness contract, not an accidental missing cache check. The six local race tests confirm why the guards exist. First eliminate redundant frontend calls. A cheaper auth design must preserve cross-instance logout, suspension, and role changes; simply moving the cache check ahead of Mongo weakens the existing contract.
 
-Evidence: [authorization state](backend/auth/sessions.js:54), [readAuthorization](backend/auth/sessions.js:146), [protect](backend/middleware/protect.js:4), [profile read](backend/controllers/userController.js:61).
+Evidence: [authorization state](../../../../backend/auth/sessions.js:54), [readAuthorization](../../../../backend/auth/sessions.js:146), [protect](../../../../backend/middleware/protect.js:4), [profile read](../../../../backend/controllers/userController.js:61).
 
 ## F2 â€” Quiz answers fan out into multiple persistence paths
 
@@ -105,7 +105,7 @@ The migrated history path still reads the user's bounded history and writes the 
 
 The quiz POST sends `submissionId` in the body but no `Idempotency-Key`; `processUserAnswer` accepts but does not use that ID. The two writes therefore do not have one atomic/idempotent outcome. A single answer command could update the existing concept counters, question/topic progress, and needed resume delta while preserving their distinct meanings. Then save navigation position separately at a coarser interval.
 
-Evidence: [answer writes](frontend/features/quiz/hooks/useQuizAnswerLifecycle.ts:31), [600 ms save](frontend/features/quiz/hooks/useQuizSync.ts:61), [coalescing](frontend/lib/coalesced-save.ts:2), [history mutation](backend/repositories/userRepository.js:29), [separated history](backend/repositories/userHistoryRepository.js:30), [unused submission ID](backend/services/questionService.js:13), [optional idempotency](backend/middleware/idempotency.js:13).
+Evidence: [answer writes](../../../../frontend/features/quiz/hooks/useQuizAnswerLifecycle.ts:31), [600 ms save](../../../../frontend/features/quiz/hooks/useQuizSync.ts:61), [coalescing](../../../../frontend/lib/coalesced-save.ts:2), [history mutation](../../../../backend/repositories/userRepository.js:29), [separated history](../../../../backend/repositories/userHistoryRepository.js:30), [unused submission ID](../../../../backend/services/questionService.js:13), [optional idempotency](../../../../backend/middleware/idempotency.js:13).
 
 ## F3 â€” Metadata cache hits still touch Mongo twice for grouping
 
@@ -121,7 +121,7 @@ Quiz mount -> P GET /api/questions/meta
 
 The upsert runs even for already completed grouping records. Polling repeats the metadata endpoint and its grouping work, rather than fetching only status. Cache completed grouping by fingerprint, and use a narrower status endpoint while pending. Preserve queued-job deduplication; a repeated upsert here does not imply repeated AI generation.
 
-Evidence: [metadata composition](backend/services/questions/questionMetadataService.js:106), [grouping](backend/services/questions/conceptGroupService.js:43), [upsert/read](backend/repositories/conceptGroupRepository.js:4), [polling](frontend/hooks/useQuestionsMeta.ts:51).
+Evidence: [metadata composition](../../../../backend/services/questions/questionMetadataService.js:106), [grouping](../../../../backend/services/questions/conceptGroupService.js:43), [upsert/read](../../../../backend/repositories/conceptGroupRepository.js:4), [polling](../../../../frontend/hooks/useQuestionsMeta.ts:51).
 
 ## F4 â€” Mathematics fetches shared totals on both server and client
 
@@ -145,7 +145,7 @@ The endpoints differ, and shared caches generally prevent rebuilding totals twic
 
 `useTopicQuestionTotals` also puts the combined snapshot, including userProgress, in a module Map and localStorage keyed only by subject. Account-scoped SWR resets do not clear that fallback; it can show an earlier account's progress until revalidation. It is not a safe reason to suppress the private request.
 
-Evidence: [server page](frontend/app/(app)/mathematics/page.tsx:5), [public fetch](frontend/lib/server/publicCatalog.ts:8), [seed](frontend/components/subject-hub/CatalogSeed.tsx:7), [client revalidation/storage](frontend/hooks/useTopicQuestionTotals.ts:43), [sequential route](backend/routes/progress.routes.js:9), [generation reads](backend/infrastructure/durableProgressCache.js:14).
+Evidence: [server page](../../../../frontend/app/(app)/mathematics/page.tsx:5), [public fetch](../../../../frontend/lib/server/publicCatalog.ts:8), [seed](../../../../frontend/components/subject-hub/CatalogSeed.tsx:7), [client revalidation/storage](../../../../frontend/hooks/useTopicQuestionTotals.ts:43), [sequential route](../../../../backend/routes/progress.routes.js:9), [generation reads](../../../../backend/infrastructure/durableProgressCache.js:14).
 
 ## F5 â€” Cold mathematics counts block initial rendering
 
@@ -164,7 +164,7 @@ With all count caches cold this means 23 aggregations, potentially up to 46 on l
 
 Precompute snapshots after question-bank changes, or serve a validated stale public snapshot while rebuilding. Keep bounded concurrency instead of issuing 23 unrestricted database operations. Desktop mathematics separately loads mode counts for its selected topic; mobile explicitly disables that query. If the selected topic's counts were already primed, this is another request/cache lookup, not another required aggregation.
 
-Evidence: [snapshot builder](backend/services/questions/topicCountSnapshot.js:62), [count aggregation/fallback](backend/services/questions/questionMetadataService.js:40), [desktop gate](frontend/components/subject-hub/useSubjectHubView.tsx:148), [render wait](frontend/lib/server/publicCatalog.ts:8).
+Evidence: [snapshot builder](../../../../backend/services/questions/topicCountSnapshot.js:62), [count aggregation/fallback](../../../../backend/services/questions/questionMetadataService.js:40), [desktop gate](../../../../frontend/components/subject-hub/useSubjectHubView.tsx:148), [render wait](../../../../frontend/lib/server/publicCatalog.ts:8).
 
 ## F6 â€” Every Gemini message repeats custom authentication
 
@@ -182,7 +182,7 @@ In-flight auth is shared, but completed auth is not reused for later messages. T
 
 For the other tutor model, the browser uses P `/api/ai/tutor-chat`: F1 -> Redis generation limit -> Mongo AI lease -> daily usage reservation -> provider; lease release follows response completion. Opening the quiz panel itself does not start inference or load chat history.
 
-Evidence: [per-message sign-in](frontend/lib/firebase/auth.ts:43), [generation order](frontend/components/QuizChatbot/gemini.ts:50), [token route](backend/routes/firebaseAuth.routes.js:7), [model routing](frontend/features/tutor/api/tutorGateway.ts:9), [send handler](frontend/components/QuizChatbot/index.tsx:329), [AI admission](backend/middleware/aiAdmission.js:4).
+Evidence: [per-message sign-in](../../../../frontend/lib/firebase/auth.ts:43), [generation order](../../../../frontend/components/QuizChatbot/gemini.ts:50), [token route](../../../../backend/routes/firebaseAuth.routes.js:7), [model routing](../../../../frontend/features/tutor/api/tutorGateway.ts:9), [send handler](../../../../frontend/components/QuizChatbot/index.tsx:329), [AI admission](../../../../backend/middleware/aiAdmission.js:4).
 
 ## F7 â€” Standalone AI-chat summaries/details overfetch histories
 
@@ -202,7 +202,7 @@ Append messages -> P POST .../:id/messages
 
 Legacy storage reads the embedded history instead. Migrated storage has a `summaries` option but `getUser` does not use it for the list route. Query stored summary metadata directly for the list, scope detail reads to one conversation, and append only the new message rows with the existing sequence contract. This finding is for the full `/ai-chat` page, not the quiz tutor panel.
 
-Evidence: [frontend history](frontend/app/(app)/ai-chat/useAiChatHistory.ts:77), [summary/detail controllers](backend/controllers/userController.js:213), [getUser](backend/repositories/userRepository.js:9), [all-message read](backend/repositories/userHistoryRepository.js:8), [message replacement](backend/repositories/userHistoryRepository.js:18).
+Evidence: [frontend history](../../../../frontend/app/(app)/ai-chat/useAiChatHistory.ts:77), [summary/detail controllers](../../../../backend/controllers/userController.js:213), [getUser](../../../../backend/repositories/userRepository.js:9), [all-message read](../../../../backend/repositories/userHistoryRepository.js:8), [message replacement](../../../../backend/repositories/userHistoryRepository.js:18).
 
 ## F8 â€” Training setup refetches the hub's endpoints
 
@@ -219,7 +219,7 @@ Navigate /play/setup/M?exam=E                               ||
 
 There is no shared frontend cache for these hooks. Backend dashboard TTL is only five seconds and still queries expired sessions before cache lookup; each repeat pays auth/rate limits. Capabilities contains static policy/exam configuration. Reuse owner/exam-keyed SWR dashboard data, cache capabilities once per appropriate scope, and load a smaller setup catalog instead of the full learner dashboard where possible.
 
-Evidence: [hub hook mounts](frontend/app/(app)/play/PlayClient.tsx:118), [setup hooks](frontend/app/(app)/play/setup/[mode]/page.tsx:110), [disabled form](frontend/app/(app)/play/setup/[mode]/page.tsx:198), [capabilities hook](frontend/app/(app)/play/hooks/useTrainingCapabilities.ts:20), [dashboard hook](frontend/app/(app)/play/hooks/useTrainingDashboard.ts:22), [five-second cache](backend/services/training/dashboardCache.js:4).
+Evidence: [hub hook mounts](../../../../frontend/app/(app)/play/PlayClient.tsx:118), [setup hooks](../../../../frontend/app/(app)/play/setup/[mode]/page.tsx:110), [disabled form](../../../../frontend/app/(app)/play/setup/[mode]/page.tsx:198), [capabilities hook](../../../../frontend/app/(app)/play/hooks/useTrainingCapabilities.ts:20), [dashboard hook](../../../../frontend/app/(app)/play/hooks/useTrainingDashboard.ts:22), [five-second cache](../../../../backend/services/training/dashboardCache.js:4).
 
 ## F9 â€” Independent reads are unnecessarily sequential
 
@@ -250,7 +250,7 @@ Mission pool and due-question inputs are already available from intelligence/con
 
 Do **not** parallelize operations on a single Mongo transaction session. Finish-training learner reads/writes are deliberately sequential for that reason. HTTP requests cannot be parallelized when a later request needs the prior response's session/attempt ID.
 
-Evidence: [mission create](backend/services/training/application/createTrainingSession.js:69), [dashboard order](backend/services/training/application/getTrainingDashboard.js:25), [dashboard parallel group](backend/repositories/trainingRepository.js:137), [progress](backend/routes/progress.routes.js:13), [filtered count](backend/services/questions/questionSessionService.js:115), [dynamic paper](backend/services/mock/mockPaperService.js:228).
+Evidence: [mission create](../../../../backend/services/training/application/createTrainingSession.js:69), [dashboard order](../../../../backend/services/training/application/getTrainingDashboard.js:25), [dashboard parallel group](../../../../backend/repositories/trainingRepository.js:137), [progress](../../../../backend/routes/progress.routes.js:13), [filtered count](../../../../backend/services/questions/questionSessionService.js:115), [dynamic paper](../../../../backend/services/mock/mockPaperService.js:228).
 
 ## F10 â€” Effects refetch on token rotation and leave stale calls running
 
@@ -274,7 +274,7 @@ Training dashboard/capabilities depend on a stable readiness boolean, so a token
 
 Use authenticated owner/resource query keys, shared request deduplication, and cancellation for superseded reads. Cancellation after dispatch does not guarantee server work stops; earlier gating/deduplication is preferable. Development StrictMode is not proof of production duplication. `PlayLayout` waits for restoration on setup/session pages, so those pages do not inherently fetch once before auth and again after auth.
 
-Evidence: [mock history token dependency](frontend/app/(app)/mock-test/_shared/ExamLandingPage.tsx:120), [attempt loader dependencies](frontend/app/(app)/mock-test/_shared/MockTestEngine.tsx:91), [uncancelled training effects](frontend/app/(app)/play/hooks/useTrainingDashboard.ts:22), [Play auth gate](frontend/app/(app)/play/layout.tsx:24), [token event](frontend/lib/axios.ts:25).
+Evidence: [mock history token dependency](../../../../frontend/app/(app)/mock-test/_shared/ExamLandingPage.tsx:120), [attempt loader dependencies](../../../../frontend/app/(app)/mock-test/_shared/MockTestEngine.tsx:91), [uncancelled training effects](../../../../frontend/app/(app)/play/hooks/useTrainingDashboard.ts:22), [Play auth gate](../../../../frontend/app/(app)/play/layout.tsx:24), [token event](../../../../frontend/lib/axios.ts:25).
 
 ## F11 â€” Retry amplification exists at auth/provider boundaries
 
@@ -296,7 +296,7 @@ The 12-send bound is for persistent retryable profile failures, excluding auth-r
 
 SWR automatic error retries are disabled globally. `useTopicQuestionTotals.errorRetryCount=2` does not by itself re-enable `shouldRetryOnError`. Axios is the browser transport here, not an Axios retry loop wrapped in another fetch retry loop. Gemini's explicitly coded fallback is separate. Consolidate auth recovery budgets and keep controlled provider fallbacks with observable attempt counts.
 
-Evidence: [bootstrap outer retries](frontend/context/AuthContext.tsx:216), [transport retries/refresh](frontend/lib/axios.ts:90), [default retry policy](frontend/shared/api/policy.ts:12), [single refresh](frontend/lib/axios.ts:45), [SWR policy](frontend/app/providers.tsx:38), [Gemini attempts](frontend/components/QuizChatbot/gemini.ts:82).
+Evidence: [bootstrap outer retries](../../../../frontend/context/AuthContext.tsx:216), [transport retries/refresh](../../../../frontend/lib/axios.ts:90), [default retry policy](../../../../frontend/shared/api/policy.ts:12), [single refresh](../../../../frontend/lib/axios.ts:45), [SWR policy](../../../../frontend/app/providers.tsx:38), [Gemini attempts](../../../../frontend/components/QuizChatbot/gemini.ts:82).
 
 ## F12 â€” Training create re-transfers the session; finish has necessary transaction work
 
@@ -322,7 +322,7 @@ Hydrate the new route from an owner/session-scoped create response, or return on
 
 Expired-session reconciliation on every dashboard call protects timeout correctness but can make a cached dashboard unexpectedly expensive. Review whether a durable expiry worker plus a bounded freshness contract can move it off the request path. Keep scoring/learning commit atomic; transaction operations are not concurrency candidates.
 
-Evidence: [discarded create response](frontend/app/(app)/play/setup/[mode]/page.tsx:169), [session GET](frontend/components/training/session/hooks/useTrainingSession.ts:53), [create response](backend/controllers/trainingController.js:67), [completion transaction](backend/repositories/trainingRepository.js:261), [finish request](frontend/components/training/session/hooks/useTrainingActions.ts:51), [expiry before cache](backend/services/training/application/getTrainingDashboard.js:25).
+Evidence: [discarded create response](../../../../frontend/app/(app)/play/setup/[mode]/page.tsx:169), [session GET](../../../../frontend/components/training/session/hooks/useTrainingSession.ts:53), [create response](../../../../backend/controllers/trainingController.js:67), [completion transaction](../../../../backend/repositories/trainingRepository.js:261), [finish request](../../../../frontend/components/training/session/hooks/useTrainingActions.ts:51), [expiry before cache](../../../../backend/services/training/application/getTrainingDashboard.js:25).
 
 ## F13 â€” Translation prefetch includes solutions and unused future questions
 
@@ -341,7 +341,7 @@ Defer solution translation until needed; batch/pause or reduce future-question l
 
 Ordinary Next does not fetch a question. Session pages fetch 100 rows, prefetch the next cursor around five remaining rows, and preload the next image. Two effects trigger `fetchMore`, but its synchronous ref guard/SWR cache deduplicate concurrent calls. Resume anchor/window fetches are purposeful; jumping into an unloaded window incurs a real read.
 
-Evidence: [translation current/lookahead](frontend/hooks/useTranslatedQuestion.ts:89), [pending text cache](frontend/hooks/useTranslation.ts:31), [Next handler](frontend/app/api/translate/route.ts:4), [forwarder](frontend/lib/server/backend-proxy.ts:4), [dual pagination effects](frontend/features/quiz/hooks/useQuizController.tsx:87), [other trigger](frontend/features/quiz/hooks/useQuizSessionLifecycle.ts:65), [guard](frontend/hooks/useQuizSession.ts:101).
+Evidence: [translation current/lookahead](../../../../frontend/hooks/useTranslatedQuestion.ts:89), [pending text cache](../../../../frontend/hooks/useTranslation.ts:31), [Next handler](../../../../frontend/app/api/translate/route.ts:4), [forwarder](../../../../frontend/lib/server/backend-proxy.ts:4), [dual pagination effects](../../../../frontend/features/quiz/hooks/useQuizController.tsx:87), [other trigger](../../../../frontend/features/quiz/hooks/useQuizSessionLifecycle.ts:65), [guard](../../../../frontend/hooks/useQuizSession.ts:101).
 
 ## F14 â€” Prefetch causes RSC traffic, not client-effect API calls
 
@@ -361,7 +361,7 @@ Multiple event handlers can invoke prefetch for the same target; Next's router c
 
 Keep intent prefetch with one guarded target, and selectively disable speculative server catalog execution if production traces show meaningful unused traffic. Hover/focus speculation can also improve latency; its load ranking is lower than actual API duplication.
 
-Evidence: [mobile card](frontend/components/subject-hub/MobileTopicCard.tsx:109), [mobile row](frontend/components/subject-hub/MobileTopicRow.tsx:27), [math mode policy](frontend/features/quiz/components/TopicPracticeModes.client.tsx:88), [mock root](frontend/app/(app)/mock-test/page.tsx:368), [installed Next prefetch docs](node_modules/next/dist/docs/01-app/03-api-reference/02-components/link.md:294).
+Evidence: [mobile card](../../../../frontend/components/subject-hub/MobileTopicCard.tsx:109), historical mobile row (`frontend/components/subject-hub/MobileTopicRow.tsx:27`), [math mode policy](../../../../frontend/features/quiz/components/TopicPracticeModes.client.tsx:88), [mock root](../../../../frontend/app/(app)/mock-test/page.tsx:368), installed Next prefetch docs (`node_modules/next/dist/docs/01-app/03-api-reference/02-components/link.md:294`).
 
 ## F15 â€” Mock start duplicates slot reads and paper transfer
 
@@ -380,7 +380,7 @@ Pass the already loaded slot to the paper builder and seed the attempt screen fr
 
 This is not two automatic POSTs on the normal instructions path: it is POST then GET. Direct attempt entry without `resume` uses a sessionStorage key and backend start deduplication.
 
-Evidence: [instructions start](frontend/app/(app)/mock-test/_shared/TestInstructions.tsx:51), [attempt loader](frontend/app/(app)/mock-test/_shared/MockTestEngine.tsx:91), [slot read](backend/controllers/mockTestController.js:170), [second read](backend/services/mock/mockPaperService.js:169), [slot projection](backend/services/mock/mockSlotService.js:224).
+Evidence: [instructions start](../../../../frontend/app/(app)/mock-test/_shared/TestInstructions.tsx:51), [attempt loader](../../../../frontend/app/(app)/mock-test/_shared/MockTestEngine.tsx:91), [slot read](../../../../backend/controllers/mockTestController.js:170), [second read](../../../../backend/services/mock/mockPaperService.js:169), [slot projection](../../../../backend/services/mock/mockSlotService.js:224).
 
 ## F16 â€” Mock catalog loads full papers and can seed on read
 
@@ -395,7 +395,7 @@ Open exam catalog -> P GET /api/mocktest/E/slots
 
 The response is compact but the database read is not. Store small catalog metadata, including `hasFixedPaper`/questionCount, separately or use an appropriate projection/aggregation. Move default seeding to an explicit initialization/migration operation. Repeat catalog requests otherwise repeat full-paper reads; there is no shared slot cache in this path.
 
-Evidence: [catalog fetch/seeding](backend/services/mock/mockSlotService.js:8), [summary after read](backend/services/mock/mockModel.js:38), [client fetch](frontend/app/(app)/mock-test/_shared/ExamLandingPage.tsx:81).
+Evidence: [catalog fetch/seeding](../../../../backend/services/mock/mockSlotService.js:8), [summary after read](../../../../backend/services/mock/mockModel.js:38), [client fetch](../../../../frontend/app/(app)/mock-test/_shared/ExamLandingPage.tsx:81).
 
 ## F17 â€” Public question reads wait for private auth restoration
 
@@ -411,7 +411,7 @@ Cold topic/quiz route
 
 Counts and metadata do not depend on user identity and their Express routes are public. They could overlap restoration using an explicitly public query/cache policy. Set transport auth to `none` for that policy so speculative public requests do not cause another 401 restoration path. Preserve account separation for private queries and resume/filter initialization: a resumed session page needs saved filters/anchor before its first question-window request. Removing all gates without that distinction could create the very duplicate session reads this audit seeks to avoid.
 
-Evidence: [SWR loading gate](frontend/app/providers.tsx:19), [session enable condition](frontend/features/quiz/hooks/useQuizFilters.ts:109), [public routes](backend/routes/questionRoutes.js:48), [profile bootstrap](frontend/context/AuthContext.tsx:220).
+Evidence: [SWR loading gate](../../../../frontend/app/providers.tsx:19), [session enable condition](../../../../frontend/features/quiz/hooks/useQuizFilters.ts:109), [public routes](../../../../backend/routes/questionRoutes.js:48), [profile bootstrap](../../../../frontend/context/AuthContext.tsx:220).
 
 ## Verified non-problems and validation
 

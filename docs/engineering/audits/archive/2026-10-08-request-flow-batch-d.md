@@ -1,6 +1,6 @@
 # Request-flow Batch D
 
-Implemented locally on 2026-10-08 over checkout `8a65e94d`, preserving the uncommitted Batch A–C changes. Scope follows items 14–20 in the supplied plan. The original [audit](REQUEST_FLOW_AUDIT.md) remains a pre-change baseline.
+Implemented locally on 2026-10-08 over checkout `8a65e94d`, preserving the uncommitted Batch A–C changes. Scope follows items 14–20 in the supplied plan. The original [audit](../performance/2026-10-08-request-flow-audit.md) remains a pre-change baseline.
 
 ## Updated flows
 
@@ -24,7 +24,7 @@ Mock autosave retains its coalescer and revision through token rotation and send
 
 Training capabilities/dashboard use the existing owner/exam SWR keys plus a shared abortable read. One consumer leaving keeps a request alive for others. The final consumer leaving schedules cancellation after a microtask, allowing effect replay and immediate navigation to reacquire the same read. Training session reads and manual reloads cancel on navigation; dispatched offline actions keep their stable key and commit/recovery protocol.
 
-Sources: [mock engine](frontend/app/(app)/mock-test/_shared/MockTestEngine.tsx), [exam](frontend/app/(app)/mock-test/_shared/ExamLandingPage.tsx), [results](frontend/app/(app)/mock-test/_shared/ResultReport.tsx), [review](frontend/app/(app)/mock-test/_shared/ReviewEngine.tsx), [mock transport](frontend/app/(app)/mock-test/_shared/api.ts), [shared ownership](frontend/lib/use-abortable-resource.ts), [training queries](frontend/app/(app)/play/hooks/trainingQueries.ts), [session reads](frontend/components/training/session/hooks/useTrainingSession.ts).
+Sources: [mock engine](../../../../frontend/app/(app)/mock-test/_shared/MockTestEngine.tsx), [exam](../../../../frontend/app/(app)/mock-test/_shared/ExamLandingPage.tsx), [results](../../../../frontend/app/(app)/mock-test/_shared/ResultReport.tsx), [review](../../../../frontend/app/(app)/mock-test/_shared/ReviewEngine.tsx), [mock transport](../../../../frontend/app/(app)/mock-test/_shared/api.ts), [shared ownership](../../../../frontend/lib/use-abortable-resource.ts), [training queries](../../../../frontend/app/(app)/play/hooks/trainingQueries.ts), [session reads](../../../../frontend/components/training/session/hooks/useTrainingSession.ts).
 
 ### One profile retry budget: F11
 
@@ -42,7 +42,7 @@ New login / cleared auth / provider cleanup
 
 AuthContext no longer retries failed bootstrap in three outer rounds or refreshes again after transport's terminal 401. Persistent retryable profile failures have at most three profile sends instead of the audit's twelve; this bound excludes cookie exchange and a possible 401 replay. Provider cleanup cancels in-flight profile work. Account changes additionally fence late profile responses so an old bootstrap cannot replace a newly logged-in owner. Existing shared refresh coordination and mutation retry rules remain in the transport.
 
-Sources: [AuthContext](frontend/context/AuthContext.tsx), [transport](frontend/lib/axios.ts), [retry policy](frontend/shared/api/policy.ts).
+Sources: [AuthContext](../../../../frontend/context/AuthContext.tsx), [transport](../../../../frontend/lib/axios.ts), [retry policy](../../../../frontend/shared/api/policy.ts).
 
 ### Deferred solution translation and smaller lookahead: F13
 
@@ -58,7 +58,7 @@ Open solution after submission -> translate missing current solution
 
 Native translations, coding/numeric token protection, and English behavior remain supported. The first untranslated solution can take a provider round trip after opening; this deliberately trades speculative AI work for demand-driven work. Effect cleanup stops further lookahead and ignores obsolete UI results. An already dispatched shared translation batch remains active for its other consumers and can still consume provider quota.
 
-Sources: [translation hook](frontend/hooks/useTranslatedQuestion.ts), [quiz integration](frontend/features/quiz/hooks/useQuizController.tsx), [shared translation](frontend/hooks/useTranslation.ts).
+Sources: [translation hook](../../../../frontend/hooks/useTranslatedQuestion.ts), [quiz integration](../../../../frontend/features/quiz/hooks/useQuizController.tsx), [shared translation](../../../../frontend/hooks/useTranslation.ts).
 
 ### Guarded route intent: F14
 
@@ -71,7 +71,7 @@ Topic pointer-enter / focus / touch-start -> prefetchOnce(href)
 
 Both mobile card variants share a bounded 256-target guard. Coming-soon cards keep their existing gate. Default Link prefetch policies elsewhere remain unchanged. This reduces redundant router invocations; actual HTTP savings depend on Next's own cache/deduplication and whether the route executes server work.
 
-Sources: [intent guard](frontend/lib/intent-prefetch.ts), [card](frontend/components/subject-hub/MobileTopicCard.tsx), [row](frontend/components/subject-hub/MobileTopicRow.tsx).
+Sources: [intent guard](../../../../frontend/lib/intent-prefetch.ts), [card](../../../../frontend/components/subject-hub/MobileTopicCard.tsx), historical row (`frontend/components/subject-hub/MobileTopicRow.tsx`).
 
 ### Public catalog and private progress separated: F4
 
@@ -93,7 +93,7 @@ The combined `/api/progress/topics` endpoint remains for compatibility. The new 
 
 Private progress uses owner/subject SWR memory keys and never enters subject-only storage. Public `v4` storage whitelists totals/revision/timestamp; reading old `v3` migrates only public fields and deletes the combined entry. Switching accounts or logging out immediately drops displayed private progress. These changes apply to all four subject hubs using the shared hook. Public freshness still depends on the existing Next/source-cache policy; the seed does not prove a production end-to-end staleness bound.
 
-Sources: [private endpoint](backend/routes/progress.routes.js), [catalog seed](frontend/components/subject-hub/CatalogSeed.tsx), [split hook](frontend/hooks/useTopicQuestionTotals.ts), [durable cache](backend/infrastructure/durableProgressCache.js).
+Sources: [private endpoint](../../../../backend/routes/progress.routes.js), [catalog seed](../../../../frontend/components/subject-hub/CatalogSeed.tsx), [split hook](../../../../frontend/hooks/useTopicQuestionTotals.ts), [durable cache](../../../../backend/infrastructure/durableProgressCache.js).
 
 ### Dashboard expiry reconciliation on cache misses: F12
 
@@ -110,7 +110,7 @@ Reconciliation moves inside the strict cache builder. Redis loss still falls bac
 
 This is bounded request-driven recovery, not a new worker or automatic live refresh on an idle page. During a rolling deployment, an older process can publish the previous five-second cache format; a shared entry from that version can survive until its existing TTL. Mongo authorization/revision validation and transaction sequencing remain intact.
 
-Sources: [dashboard application](backend/services/training/application/getTrainingDashboard.js), [deadline policy](backend/services/training/dashboardCache.js), [optional cache deadline](backend/infrastructure/durableProgressCache.js), [frontend reuse](frontend/app/(app)/play/hooks/trainingQueries.ts).
+Sources: [dashboard application](../../../../backend/services/training/application/getTrainingDashboard.js), [deadline policy](../../../../backend/services/training/dashboardCache.js), [optional cache deadline](../../../../backend/infrastructure/durableProgressCache.js), [frontend reuse](../../../../frontend/app/(app)/play/hooks/trainingQueries.ts).
 
 ## Impact and verification boundaries
 

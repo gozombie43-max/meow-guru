@@ -1,6 +1,6 @@
 # Request-flow remediation — Batch B
 
-Implemented locally on 2026-10-08, on top of the uncommitted Batch A changes and checkout `8a65e94d`. Scope follows the supplied Batch B: scoped AI-chat persistence, one idempotent quiz-answer command, completed concept-group caching, and mock catalog projection. [The original audit](REQUEST_FLOW_AUDIT.md) retains the pre-change baseline; [Batch A](REQUEST_FLOW_BATCH_A.md) records its separate startup changes.
+Implemented locally on 2026-10-08, on top of the uncommitted Batch A changes and checkout `8a65e94d`. Scope follows the supplied Batch B: scoped AI-chat persistence, one idempotent quiz-answer command, completed concept-group caching, and mock catalog projection. [The original audit](../performance/2026-10-08-request-flow-audit.md) retains the pre-change baseline; [Batch A](./2026-10-08-request-flow-batch-a.md) records its separate startup changes.
 
 ## Updated flows
 
@@ -47,7 +47,7 @@ One saver coordinates answer commands and checkpoints for each quiz and auth-ses
 
 Navigation/selection/completion checkpoints remain intentional requests. Legacy endpoints remain compatible with older clients; their optional, separate idempotency middleware is not the new command's atomic protocol. Failed commands remain retryable in the current saver, and existing local resume storage remains in place; this change does not introduce a durable offline command outbox across reloads. Idempotency guarantees are bounded by record retention.
 
-Sources: [command contract](contracts/progress.js), [answer route](backend/routes/questionRoutes.js), [transaction service](backend/services/quizAnswerService.js), [progress transaction helper](backend/repositories/questionProgressRepository.js), [resume persistence](backend/repositories/userHistoryRepository.js), [shared answer normalization](contracts/questions.js), [answer lifecycle](frontend/features/quiz/hooks/useQuizAnswerLifecycle.ts), [save queue/deltas](frontend/features/quiz/model/resumeDelta.ts).
+Sources: [command contract](../../../../contracts/progress.js), [answer route](../../../../backend/routes/questionRoutes.js), [transaction service](../../../../backend/services/quizAnswerService.js), [progress transaction helper](../../../../backend/repositories/questionProgressRepository.js), [resume persistence](../../../../backend/repositories/userHistoryRepository.js), [shared answer normalization](../../../../contracts/questions.js), [answer lifecycle](../../../../frontend/features/quiz/hooks/useQuizAnswerLifecycle.ts), [save queue/deltas](../../../../frontend/features/quiz/model/resumeDelta.ts).
 
 ### AI-chat histories: F7
 
@@ -81,7 +81,7 @@ Older separated rows numbered each retained window from zero. Their first append
 
 Embedded histories still require bounded array mutation for writes. No automatic migration is enabled. Format checks and transaction owner checks remain correctness work; the main benefit is avoiding unrelated message hydration and repeated message replacement.
 
-Sources: [scoped repository](backend/repositories/aiChatRepository.js), [controllers](backend/controllers/userController.js), [summary representation](backend/services/userHistory.js), [legacy CAS](backend/repositories/userRepository.js), [position convention](backend/repositories/userHistoryRepository.js), [existing indexes](backend/migrations/017-user-history.js).
+Sources: [scoped repository](../../../../backend/repositories/aiChatRepository.js), [controllers](../../../../backend/controllers/userController.js), [summary representation](../../../../backend/services/userHistory.js), [legacy CAS](../../../../backend/repositories/userRepository.js), [position convention](../../../../backend/repositories/userHistoryRepository.js), [existing indexes](../../../../backend/migrations/017-user-history.js).
 
 ### Concept-group metadata: F3
 
@@ -100,7 +100,7 @@ Pending polling -> same metadata endpoint -> one fresh grouping status read
 
 Completed grouping data is immutable for its fingerprint. Its local cache is isolated per Mongo database, bounded to 200 entries/10 MiB with a 1 MiB entry limit, and registered with shared local-cache clearing. Concurrent same-fingerprint reads share one in-flight promise; pending reads have a capacity bound. Completed requests no longer upsert existing records or re-read them on each warm metadata hit. Polling and queued-job semantics remain unchanged; changed concepts/scope/version produce a different fingerprint.
 
-Source: [grouping repository](backend/repositories/conceptGroupRepository.js).
+Source: [grouping repository](../../../../backend/repositories/conceptGroupRepository.js).
 
 ### Mock catalog: F16
 
@@ -116,7 +116,7 @@ Empty catalog -> existing default-slot seeding -> same compact catalog query
 
 Fixed-paper arrays no longer cross the Mongo driver into Express merely to be discarded. Counts/flags remain correct for fixed, empty, and dynamic papers. Mongo still reads its source documents and computes array lengths; this is not a covered-index claim or measured disk-I/O reduction. Empty-catalog seeding and full-paper detail/start reads retain their existing behavior.
 
-Sources: [catalog query](backend/services/mock/mockSlotService.js), [summary compatibility](backend/services/mock/mockModel.js).
+Sources: [catalog query](../../../../backend/services/mock/mockSlotService.js), [summary compatibility](../../../../backend/services/mock/mockModel.js).
 
 ## Expected impact
 

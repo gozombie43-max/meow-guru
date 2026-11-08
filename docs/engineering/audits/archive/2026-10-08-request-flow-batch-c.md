@@ -1,6 +1,6 @@
 # Request-flow Batch C
 
-Implemented locally on 2026-10-08 over checkout `8a65e94d`, preserving the uncommitted Batch A/B work. Scope follows items 10–13 in the supplied batch plan: Mathematics precomputation, public catalog stale-while-revalidate, safe Mongo concurrency, and public question reads during auth restoration. The original [audit](REQUEST_FLOW_AUDIT.md) remains a pre-change baseline.
+Implemented locally on 2026-10-08 over checkout `8a65e94d`, preserving the uncommitted Batch A/B work. Scope follows items 10–13 in the supplied batch plan: Mathematics precomputation, public catalog stale-while-revalidate, safe Mongo concurrency, and public question reads during auth restoration. The original [audit](../performance/2026-10-08-request-flow-audit.md) remains a pre-change baseline.
 
 ## Updated flows
 
@@ -35,7 +35,7 @@ Only this **public catalog** can serve a previous bank revision. Express bounds 
 
 Private progress still calls the strict snapshot reader. Question pages, scoring, auth validation, and durable progress generation checks retain their existing consistency rules. No initial snapshot means the first request can still wait for a rebuild, especially if it races startup warmup. The rebuild still has 23 Mathematics topic queries and legacy fallbacks; this batch moves their cost away from eligible public rendering requests rather than claiming fewer aggregations.
 
-Sources: [snapshot readers and prewarm](backend/services/questions/topicCountSnapshot.js), [API startup](backend/index.js), [public route](backend/routes/questionRoutes.js), [existing write refresh](backend/services/questions/questionMetadataCache.js), [Next fetch](frontend/lib/server/publicCatalog.ts).
+Sources: [snapshot readers and prewarm](../../../../backend/services/questions/topicCountSnapshot.js), [API startup](../../../../backend/index.js), [public route](../../../../backend/routes/questionRoutes.js), [existing write refresh](../../../../backend/services/questions/questionMetadataCache.js), [Next fetch](../../../../frontend/lib/server/publicCatalog.ts).
 
 ### Mission preparation: F9
 
@@ -51,7 +51,7 @@ POST /api/training/sessions -> auth/rate limits
 
 Due-question inputs depend on intelligence/configuration, not on completion of the pool read. Exposure still waits for both candidate sets. Non-mission modes keep the due read as an empty local result. Existing selection, stage metrics, hydration, and transactions retain their responsibilities.
 
-Source: [mission create](backend/services/training/application/createTrainingSession.js).
+Source: [mission create](../../../../backend/services/training/application/createTrainingSession.js).
 
 ### Dashboard history: F9
 
@@ -66,7 +66,7 @@ GET /api/training/dashboard -> auth
 
 History starts when metadata resolves, overlapping the remaining dashboard reads. Metadata is read once. Compact history still requires ready durable learner state and the existing feature flag. The expiry reconciliation before cache lookup remains a Batch D concern.
 
-Sources: [repository dependency](backend/repositories/trainingRepository.js), [dashboard composition](backend/services/training/application/getTrainingDashboard.js).
+Sources: [repository dependency](../../../../backend/repositories/trainingRepository.js), [dashboard composition](../../../../backend/services/training/application/getTrainingDashboard.js).
 
 ### Topic progress and filtered quiz page: F4/F9
 
@@ -85,7 +85,7 @@ includeTotal=false -> page only; normal cursor pages still omit totals
 
 Progress remains owner-scoped and generation-checked. Resumed anchor lookup/counting remains ordered because it determines the page offset. No transaction session is shared by these concurrent reads. Combining private progress with totals in one response remains intentional until Batch D's separate payload change.
 
-Sources: [progress route](backend/routes/progress.routes.js), [session reader](backend/services/questions/questionSessionService.js).
+Sources: [progress route](../../../../backend/routes/progress.routes.js), [session reader](../../../../backend/services/questions/questionSessionService.js).
 
 ### Dynamic mock paper: F9
 
@@ -99,7 +99,7 @@ Mock start -> loaded slot/configuration
 
 Concurrency is capped at three section reads per paper. Each section builds a local answer key, and ordered merging preserves the prior precedence for repeated IDs. Fixed papers follow their existing path. Failed dynamic section reads retain the existing warning/partial-paper behavior.
 
-Source: [paper builder](backend/services/mock/mockPaperService.js).
+Source: [paper builder](../../../../backend/services/mock/mockPaperService.js).
 
 ### Public question loading and resume safety: F17
 
@@ -121,7 +121,7 @@ Cold ?resume=1 quiz:
 
 Only counts, metadata, and identity-independent question sessions opt out of the global auth fetch gate. Private queries still wait and caches still reset on account changes/logout. Public responses stay in the existing SWR cache when bootstrap assigns its initial owner, suppressing a second read. Resume initialization gates its question window separately. Start/local-resume actions retain auth readiness so fetching earlier cannot silently skip authenticated answer persistence.
 
-Sources: [SWR gate and ownership](frontend/app/providers.tsx), [explicit public policy](frontend/features/quiz/api/publicQuery.ts), [counts](frontend/hooks/useQuestionCounts.ts), [metadata](frontend/hooks/useQuestionsMeta.ts), [session transport](frontend/hooks/useQuizSession.ts), [resume window gate](frontend/features/quiz/hooks/useQuizFilters.ts), [action readiness](frontend/features/quiz/hooks/useQuizSessionLifecycle.ts).
+Sources: [SWR gate and ownership](../../../../frontend/app/providers.tsx), [explicit public policy](../../../../frontend/features/quiz/api/publicQuery.ts), [counts](../../../../frontend/hooks/useQuestionCounts.ts), [metadata](../../../../frontend/hooks/useQuestionsMeta.ts), [session transport](../../../../frontend/hooks/useQuizSession.ts), [resume window gate](../../../../frontend/features/quiz/hooks/useQuizFilters.ts), [action readiness](../../../../frontend/features/quiz/hooks/useQuizSessionLifecycle.ts).
 
 ## Expected impact
 

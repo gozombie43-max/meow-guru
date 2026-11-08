@@ -141,6 +141,6 @@ conditional skips for opt-in fixtures, representative dynamic routes, and
 environment-specific tests. The test-generated tracked screenshot was restored.
 At this CI-split checkpoint, Lighthouse collection had not been rerun. The
 subsequent local performance implementation, fresh measurements, and verification
-are recorded in [PERFORMANCE_VERIFICATION.md](./PERFORMANCE_VERIFICATION.md).
+are recorded in [2026-10-21-lighthouse-and-render-path-audit.md](../performance/2026-10-21-lighthouse-and-render-path-audit.md).
 GitHub workflow execution and Azure deployment have not been rerun. No commit,
 push, production migration, or cloud setting change was made.

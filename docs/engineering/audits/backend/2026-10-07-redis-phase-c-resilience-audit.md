@@ -1,6 +1,6 @@
 # Redis operational resilience — Phase C
 
-Phase C implementation and disposable local fault testing follow [Phase A](REDIS_CORRECTNESS_REMEDIATION.md) and [Phase B](REDIS_PHASE_B_HARDENING.md). Real deployed staging/provider failover remains a release gate. No production Redis, Atlas data, deployment configuration, or infrastructure topology was changed.
+Phase C implementation and disposable local fault testing follow [Phase A](../archive/2026-10-07-redis-phase-a-correctness-remediation.md) and [Phase B](../archive/2026-10-07-redis-phase-b-hardening.md). Real deployed staging/provider failover remains a release gate. No production Redis, Atlas data, deployment configuration, or infrastructure topology was changed.
 
 ## Implemented behavior
 

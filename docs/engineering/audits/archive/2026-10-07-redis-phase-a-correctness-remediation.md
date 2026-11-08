@@ -1,6 +1,6 @@
 # Redis correctness remediation — Phase A
 
-Scope: the seven verified bugs from the Redis audit, as prioritized in the supplied recommendation. Phase B hardening is recorded separately in [REDIS_PHASE_B_HARDENING.md](REDIS_PHASE_B_HARDENING.md). Phase C implementation/local fault evidence is recorded in [REDIS_PHASE_C_RESILIENCE.md](REDIS_PHASE_C_RESILIENCE.md); deployed staging gates remain outstanding. No deployment, production data migration, or Redis server configuration change was performed.
+Scope: the seven verified bugs from the Redis audit, as prioritized in the supplied recommendation. Phase B hardening is recorded separately in [2026-10-07-redis-phase-b-hardening.md](./2026-10-07-redis-phase-b-hardening.md). Phase C implementation/local fault evidence is recorded in [2026-10-07-redis-phase-c-resilience-audit.md](../backend/2026-10-07-redis-phase-c-resilience-audit.md); deployed staging gates remain outstanding. No deployment, production data migration, or Redis server configuration change was performed.
 
 ## Implemented behavior
 

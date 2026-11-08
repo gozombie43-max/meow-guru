@@ -51,7 +51,7 @@ Test Redis was disposable, bound to loopback, and stopped by the harness; a list
 - Cache fences protect publication on the installed standalone Redis client. Redis Cluster and cross-slot Lua behavior are not supported/proven by this change.
 - Question revision pointers retain their existing ten-second refresh window. Missed events can delay question-content updates within that window. Learner progress, authorization and notifications use durable correctness checks instead. External writes that do not advance application revisions remain bounded by cache/snapshot age rather than immediate consistency.
 - Fences expire and counters can reset after flush/restore. UUID owner checks still reject a displaced builder; Redis cache/persistence is not a durable source of learner progress or notification revisions.
-- [Phase C](REDIS_PHASE_C_RESILIENCE.md) implements queue admission, optional startup isolation, topology validation and local outage/recovery tests. Actual provider eviction/persistence guarantees and deployed staging remain release gates. The optional cache command circuit does not govern BullMQ's separate durable client.
+- [Phase C](../backend/2026-10-07-redis-phase-c-resilience-audit.md) implements queue admission, optional startup isolation, topology validation and local outage/recovery tests. Actual provider eviction/persistence guarantees and deployed staging remain release gates. The optional cache command circuit does not govern BullMQ's separate durable client.
 
 ## STAGING TEST REQUIRED
 
