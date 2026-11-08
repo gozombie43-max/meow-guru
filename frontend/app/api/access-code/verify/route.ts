@@ -19,6 +19,27 @@ function parseTokenClaims(token: unknown): { timestamp: number; codeId: string }
   return { timestamp: Date.now(), codeId: 'access' };
 }
 
+function resolveTrustedForwardedFor(req: Request): string | null {
+  const isTrustedProxy =
+    process.env.VERCEL === '1' || process.env.TRUST_PROXY === 'true';
+  if (!isTrustedProxy) {
+    return null;
+  }
+  const realIp = req.headers.get('x-real-ip')?.trim();
+  if (realIp) {
+    return realIp;
+  }
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  if (!forwardedFor) {
+    return null;
+  }
+  const hops = forwardedFor
+    .split(',')
+    .map((ip) => ip.trim())
+    .filter(Boolean);
+  return hops.at(-1) || null;
+}
+
 export async function POST(req: Request) {
   let body: { code?: string };
   try {
@@ -28,14 +49,14 @@ export async function POST(req: Request) {
   }
 
   const backendUrl = (process.env.API_URL || 'http://localhost:10000').replace(/\/+$/, '');
-  const forwardedFor = req.headers.get('x-forwarded-for');
+  const trustedClientIp = resolveTrustedForwardedFor(req);
 
   try {
     const backendRes = await fetch(`${backendUrl}/api/access-code/verify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(forwardedFor ? { 'x-forwarded-for': forwardedFor } : {}),
+        ...(trustedClientIp ? { 'x-forwarded-for': trustedClientIp } : {}),
       },
       body: JSON.stringify({ code: body.code }),
       cache: 'no-store',
@@ -51,12 +72,12 @@ export async function POST(req: Request) {
       const { timestamp, codeId } = parseTokenClaims(data.token);
       const frontendToken = createAccessSessionToken(codeId, timestamp) || data.token || '';
       const response = NextResponse.json(
-        { ...data, valid: true, token: frontendToken },
+        { valid: true },
         { status: backendRes.status }
       );
       if (frontendToken) {
         response.cookies.set('access_session', frontendToken, {
-          httpOnly: false,
+          httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
           path: '/',

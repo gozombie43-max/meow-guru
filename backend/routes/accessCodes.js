@@ -4,10 +4,32 @@ import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import express from 'express';
 import crypto from 'crypto';
 
-import { findActiveAccessCode, consumeAccessCode } from '../repositories/accessCodeRepository.js';
+import * as accessCodeRepo from '../repositories/accessCodeRepository.js';
 
 import { validateBody } from '../middleware/validation.js';
 import { accessCodeVerifySchema } from '../schemas/apiSchemas.js';
+
+const { findActiveAccessCode, consumeAccessCode } = accessCodeRepo;
+
+const getAccessCodeLockoutState = (...args) =>
+  'getAccessCodeLockoutState' in accessCodeRepo && typeof accessCodeRepo.getAccessCodeLockoutState === 'function'
+    ? Promise.resolve(accessCodeRepo.getAccessCodeLockoutState(...args))
+    : Promise.resolve({ locked: false, attempts: 0, retryAfterSeconds: 0 });
+
+const recordAccessCodeFailure = (...args) =>
+  'recordAccessCodeFailure' in accessCodeRepo && typeof accessCodeRepo.recordAccessCodeFailure === 'function'
+    ? Promise.resolve(accessCodeRepo.recordAccessCodeFailure(...args))
+    : Promise.resolve({ locked: false, attempts: 1, retryAfterSeconds: 0 });
+
+const clearAccessCodeFailures = (...args) =>
+  'clearAccessCodeFailures' in accessCodeRepo && typeof accessCodeRepo.clearAccessCodeFailures === 'function'
+    ? Promise.resolve(accessCodeRepo.clearAccessCodeFailures(...args))
+    : Promise.resolve();
+
+function resolveAccessClientKey(req) {
+  const rawIp = String(req.ip || req.socket?.remoteAddress || 'unknown').trim();
+  return rawIp.replace(/^::ffff:/, '') || 'unknown';
+}
 
 const router = express.Router();
 
@@ -152,6 +174,18 @@ router.post(
 
   async (req, res) => {
     try {
+      const clientKey = resolveAccessClientKey(req);
+      const lockoutState = await getAccessCodeLockoutState(clientKey);
+      if (lockoutState.locked) {
+        if (lockoutState.retryAfterSeconds) {
+          res.set('Retry-After', String(lockoutState.retryAfterSeconds));
+        }
+        return res.status(429).json({
+          valid: false,
+          error: 'Too many failed access code attempts. Please try again later.',
+        });
+      }
+
       const { code } = req.body;
 
       const trimmed =
@@ -166,6 +200,7 @@ router.post(
         await findActiveAccessCode(trimmed);
 
       if (!codeDoc) {
+        await recordAccessCodeFailure(clientKey);
         return res
           .status(401)
           .json({
@@ -183,6 +218,7 @@ router.post(
         new Date(codeDoc.expiresAt) <
           new Date()
       ) {
+        await recordAccessCodeFailure(clientKey);
         return res
           .status(401)
           .json({
@@ -209,6 +245,7 @@ router.post(
         maxUses > 0 &&
         currentUsed >= maxUses
       ) {
+        await recordAccessCodeFailure(clientKey);
         return res
           .status(401)
           .json({
@@ -245,6 +282,7 @@ router.post(
           });
       }
 
+      await clearAccessCodeFailures(clientKey);
 
       // ── Session token ─────────────────────────────────
 

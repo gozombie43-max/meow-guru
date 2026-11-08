@@ -60,9 +60,8 @@ export default function AccessCodePage() {
 
       const data = await res.json();
 
-      if (data.valid && data.token) {
-        // Set the cryptographically signed session token on frontend domain for proxy verification (expires in 24 hours)
-        document.cookie = `access_session=${encodeURIComponent(data.token)}; path=/; max-age=86400; SameSite=Lax`;
+      if (res.ok && data.valid) {
+        // The signed session token is set via HttpOnly cookie by /api/access-code/verify
         setSuccess(true);
         setLoading(false);
         // Brief success animation, then redirect
@@ -74,11 +73,12 @@ export default function AccessCodePage() {
           window.location.replace(safeTarget);
         }, 600);
       } else {
-        const newAttempts = attempts + 1;
+        const isServerLocked = res.status === 429;
+        const newAttempts = isServerLocked ? 3 : attempts + 1;
         setAttempts(newAttempts);
         if (newAttempts >= 3) {
           localStorage.setItem('accessCodeBlockUntil', (Date.now() + 24 * 60 * 60 * 1000).toString());
-          setError('Maximum attempts reached. Try again in 24 hours.');
+          setError(data.error || 'Maximum attempts reached. Try again in 24 hours.');
         } else {
           setError(data.error || 'Invalid access code');
         }
@@ -293,4 +293,3 @@ export default function AccessCodePage() {
   if (!mounted) return null;
   return createPortal(content, document.body);
 }
-

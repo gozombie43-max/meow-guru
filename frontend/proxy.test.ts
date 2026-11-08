@@ -306,4 +306,40 @@ describe('VULN-02 Regression: Access-code gate cryptographic verification & expl
       envRecord.NODE_ENV = origNodeEnv;
     }
   });
+
+  it('FINDING-05: rejects admin JWT lacking exp claim or using non-HS256 alg header', () => {
+    // 1. Valid HMAC signature, but missing exp claim
+    const hs256Header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const noExpPayload = Buffer.from(JSON.stringify({ id: 'admin_1', role: 'admin' })).toString('base64url');
+    const noExpSig = crypto
+      .createHmac('sha256', DIFFERENT_JWT_SECRET)
+      .update(`${hs256Header}.${noExpPayload}`)
+      .digest('base64url');
+    const noExpToken = `${hs256Header}.${noExpPayload}.${noExpSig}`;
+
+    const resNoExp = proxy(
+      new NextRequest('http://localhost/play', {
+        headers: { authorization: `Bearer ${noExpToken}` },
+      })
+    );
+    expect(resNoExp.headers.get('location')).toBe('http://localhost/access-code?redirect=%2Fplay');
+
+    // 2. Valid HMAC signature and valid exp, but header alg is not HS256
+    const badAlgHeader = Buffer.from(JSON.stringify({ alg: 'HS512', typ: 'JWT' })).toString('base64url');
+    const validExpPayload = Buffer.from(
+      JSON.stringify({ id: 'admin_1', role: 'admin', exp: Math.floor(Date.now() / 1000) + 3600 })
+    ).toString('base64url');
+    const badAlgSig = crypto
+      .createHmac('sha256', DIFFERENT_JWT_SECRET)
+      .update(`${badAlgHeader}.${validExpPayload}`)
+      .digest('base64url');
+    const badAlgToken = `${badAlgHeader}.${validExpPayload}.${badAlgSig}`;
+
+    const resBadAlg = proxy(
+      new NextRequest('http://localhost/play', {
+        headers: { authorization: `Bearer ${badAlgToken}` },
+      })
+    );
+    expect(resBadAlg.headers.get('location')).toBe('http://localhost/access-code?redirect=%2Fplay');
+  });
 });

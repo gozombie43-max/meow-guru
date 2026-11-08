@@ -12,6 +12,15 @@ function toUntaintedBuffer(input: string): Buffer {
   return out;
 }
 
+function constantTimeStringEqual(a: string, b: string): boolean {
+  const bufA = toUntaintedBuffer(a);
+  const bufB = toUntaintedBuffer(b);
+  if (bufA.length !== bufB.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
 function isLocalFixtureEnvironment(): boolean {
   if (process.env.NODE_ENV !== 'production') {
     return true;
@@ -201,10 +210,17 @@ function verifySignedJwtAdminClaims(token: string, secret: string | undefined): 
     return false;
   }
   try {
+    const header = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
+    if (!header || header.alg !== 'HS256') {
+      return false;
+    }
     const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
     if (
+      payload &&
       (payload.role === 'admin' || payload.role === 'superadmin') &&
-      (!payload.exp || payload.exp * 1000 > Date.now())
+      typeof payload.exp === 'number' &&
+      Number.isFinite(payload.exp) &&
+      payload.exp * 1000 > Date.now()
     ) {
       const expectedSig = crypto
         .createHmac('sha256', toUntaintedBuffer(secret))
@@ -256,11 +272,11 @@ function isValidAdminRequest(request: NextRequest): boolean {
     }
   }
 
-  // 4. Admin Secret Header
+  // 4. Admin Secret Header (constant-time comparison)
   const adminSecret = process.env.ADMIN_SECRET;
   if (adminSecret) {
     const adminKey = request.headers.get('x-admin-key') || request.headers.get('x-admin-secret');
-    if (adminKey && adminKey === adminSecret) {
+    if (adminKey && constantTimeStringEqual(adminKey, adminSecret)) {
       return true;
     }
   }
