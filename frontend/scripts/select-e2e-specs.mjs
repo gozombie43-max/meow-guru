@@ -100,6 +100,9 @@ const RISK_RULES = [
   },
 ];
 
+const E2E_HARNESS_PATTERN =
+  /^(?:frontend\/(?:e2e\/helpers\/|playwright\.config\.|scripts\/select-e2e-specs\.mjs$)|backend\/scripts\/browser-fixture\.js$)/;
+
 export function selectE2ESpecs({
   project = 'desktop',
   eventName = 'pull_request',
@@ -120,31 +123,25 @@ export function selectE2ESpecs({
   if (
     isFullSuiteEvent ||
     !Array.isArray(changedFiles) ||
-    changedFiles.length === 0
+    changedFiles.length === 0 ||
+    changedFiles.some(file => E2E_HARNESS_PATTERN.test(file))
   ) {
     return [...allowedPool];
   }
 
   const selected = new Set(CRITICAL_SMOKE_SPECS.filter(spec => allowedSet.has(spec)));
-  let matchedAppRule = false;
 
   for (const file of changedFiles) {
     for (const rule of RISK_RULES) {
       if (rule.pattern.test(file)) {
-        matchedAppRule = true;
         for (const spec of rule.specs) {
           if (allowedSet.has(spec)) selected.add(spec);
         }
       }
     }
-  }
-
-  if (!matchedAppRule) {
-    for (const file of changedFiles) {
-      if (file.startsWith('frontend/e2e/') && file.endsWith('.spec.ts')) {
-        const relSpec = file.slice('frontend/'.length);
-        if (allowedSet.has(relSpec)) selected.add(relSpec);
-      }
+    if (file.startsWith('frontend/e2e/') && file.endsWith('.spec.ts')) {
+      const relSpec = file.slice('frontend/'.length);
+      if (allowedSet.has(relSpec)) selected.add(relSpec);
     }
   }
 

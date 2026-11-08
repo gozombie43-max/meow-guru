@@ -73,3 +73,31 @@ test('pull requests with authentication or session bootstrap changes add session
   const desktop = selectE2ESpecs({ project: 'desktop', eventName: 'pull_request', changedFiles });
   assert.deepEqual(desktop, [...CRITICAL_SMOKE_SPECS, 'e2e/remaining-performance.spec.ts']);
 });
+
+test('pull requests that modify both application files and E2E spec files always include the modified specs', () => {
+  const changedFiles = ['frontend/proxy.ts', 'frontend/e2e/home-hero-carousel.spec.ts'];
+  const mobile = selectE2ESpecs({ project: 'mobile', eventName: 'pull_request', changedFiles });
+  assert.deepEqual(mobile, [
+    ...CRITICAL_SMOKE_SPECS,
+    'e2e/home-hero-carousel.spec.ts',
+    'e2e/remaining-performance.spec.ts',
+  ]);
+});
+
+test('pull requests that modify shared E2E harness files run the full curated project suite', () => {
+  for (const changedFile of [
+    'frontend/e2e/helpers/auth-fixture.ts',
+    'frontend/playwright.config.ts',
+    'frontend/scripts/select-e2e-specs.mjs',
+    'backend/scripts/browser-fixture.js',
+  ]) {
+    assert.deepEqual(
+      selectE2ESpecs({ project: 'desktop', eventName: 'pull_request', changedFiles: [changedFile] }),
+      DESKTOP_FULL_SPECS,
+    );
+    assert.deepEqual(
+      selectE2ESpecs({ project: 'mobile', eventName: 'pull_request', changedFiles: [changedFile] }),
+      MOBILE_FULL_SPECS,
+    );
+  }
+});
