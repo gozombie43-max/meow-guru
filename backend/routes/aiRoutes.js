@@ -81,7 +81,7 @@ router.post('/diagram', async (req, res, next) => {
     const statusCode = error?.statusCode || 502;
     return res.status(statusCode).json({
       success: false,
-      error: statusCode === 429 ? error.message : 'AI request failed. Please retry shortly.',
+      error: statusCode === 429 ? error?.message : 'AI request failed. Please retry shortly.',
     });
   }
 
@@ -242,7 +242,7 @@ router.post('/tutor-chat', (req, res, next) => {
       const statusCode = err?.statusCode || 502;
       return res.status(statusCode).json({
         success: false,
-        error: statusCode < 500 ? err.message : 'AI request failed. Please retry shortly.',
+        error: statusCode < 500 ? err?.message : 'AI request failed. Please retry shortly.',
       });
     }
   }
@@ -250,20 +250,22 @@ router.post('/tutor-chat', (req, res, next) => {
   try {
     reservation = await reserveTutorUsage(userId, input);
   } catch (err) {
+    const statusCode = err?.statusCode || 502;
     runtimeLog.error('tutor-chat error:', err?.message || err);
-    return res.status(err.statusCode || 502).json({
+    return res.status(statusCode).json({
       success: false,
-      error: err.statusCode === 429 ? err.message : 'AI request failed. Please retry shortly.',
+      error: statusCode === 429 ? err?.message : 'AI request failed. Please retry shortly.',
     });
   }
   try {
     res.json(tutorReplySchema.parse(await tutorChat(input)));
   } catch (err) {
     await releaseTutorUsage(reservation, { userId, input }).catch(() => {});
+    const statusCode = err?.statusCode || 502;
     runtimeLog.error('tutor-chat error:', err?.message || err);
-    res.status(err.statusCode || 502).json({
+    res.status(statusCode).json({
       success: false,
-      error: err.statusCode === 429 ? err.message : 'AI request failed. Please retry shortly.',
+      error: statusCode === 429 ? err?.message : 'AI request failed. Please retry shortly.',
     });
   }
 });

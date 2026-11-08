@@ -29,12 +29,20 @@ export const sanitizeQuestionTopicSlug = (topic) => {
   if (typeof topic === "string" && UNSAFE_TOPIC_PATH_REGEX.test(topic)) {
     throw Object.assign(new Error("Invalid topic"), { statusCode: 400 });
   }
-  const slug = String(topic || "")
+  const normalized = String(topic || "")
     .trim()
+    .slice(0, 120)
     .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, "_")
-    .replace(/^[_-]+|[_-]+$/g, "");
-  return slug || "visual_reasoning";
+    .replace(/[^a-z0-9_-]+/g, "_");
+  let start = 0;
+  let end = normalized.length;
+  while (start < end && (normalized[start] === "_" || normalized[start] === "-")) {
+    start += 1;
+  }
+  while (end > start && (normalized[end - 1] === "_" || normalized[end - 1] === "-")) {
+    end -= 1;
+  }
+  return normalized.slice(start, end) || "visual_reasoning";
 };
 
 const decodeAndCompressImage = async (buffer, quality = 90) => {

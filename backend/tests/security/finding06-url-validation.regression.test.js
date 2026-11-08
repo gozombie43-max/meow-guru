@@ -5,10 +5,11 @@
  * boundary (POST /api/exam-updates) and the service boundary (publishExamUpdate)
  * that only same-origin internal routes and http(s) source URLs are accepted.
  */
-vi.mock('../../auth/sessions.js', () => ({ assertSession: async decoded => decoded }));
 import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from 'vitest';
 import express from 'express';
 import { signToken } from '../../auth/jwt.js';
+
+vi.mock('../../auth/sessions.js', () => ({ assertSession: async decoded => decoded }));
 
 const mockInsertOne = vi.fn();
 const mockUpdateOne = vi.fn();
