@@ -100,4 +100,14 @@ jobs:
           fi
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
-        with: { name: canary-decision, path: '*.json', if-no-files-found: ignore }
+        with:
+          name: canary-decision
+          path: |
+            canary-health.json
+            previous-production-health.json
+            observations.json
+            decision.json
+            production-health.json
+            rollback-production-health.json
+            restored-production-health.json
+          if-no-files-found: ignore
