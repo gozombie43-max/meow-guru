@@ -18,11 +18,24 @@ const MAX_IMAGE_DIMENSION = 6000;
 const ALLOWED_IMAGE_FORMATS = new Set(["jpeg", "png", "webp"]);
 const SAFE_IMAGE_KEY_REGEX =
   /^(?:question-images|solution-images|notes\/images)\/(?:[A-Za-z0-9_-]+\/)*[A-Za-z0-9_.-]+\.(?:webp|png|jpe?g|gif)$/i;
+const UNSAFE_TOPIC_PATH_REGEX = /(?:^|[\\/])\.\.(?:[\\/]|$)|[\\/\x00-\x1f\x7f]/;
 
-const isSafeImageKey = (key) =>
+export const isSafeImageKey = (key) =>
   typeof key === "string" &&
   SAFE_IMAGE_KEY_REGEX.test(key) &&
   !key.split("/").includes("..");
+
+export const sanitizeQuestionTopicSlug = (topic) => {
+  if (typeof topic === "string" && UNSAFE_TOPIC_PATH_REGEX.test(topic)) {
+    throw Object.assign(new Error("Invalid topic"), { statusCode: 400 });
+  }
+  const slug = String(topic || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "_")
+    .replace(/^[_-]+|[_-]+$/g, "");
+  return slug || "visual_reasoning";
+};
 
 const decodeAndCompressImage = async (buffer, quality = 90) => {
   try {
@@ -89,6 +102,9 @@ const buildImageUrl = (key) => {
 };
 
 const uploadToB2 = async ({ key, body, contentType }) => {
+  if (!isSafeImageKey(key)) {
+    throw Object.assign(new Error("Invalid image storage key"), { statusCode: 400 });
+  }
   await b2Client.send(
     new PutObjectCommand({
       Bucket: B2_BUCKET,
@@ -150,6 +166,7 @@ export const uploadImageQuestion = async (req, res) => {
       quizName,
     } = req.body;
 
+    const safeTopicSlug = sanitizeQuestionTopicSlug(topic);
     const normalizedTopic =
       typeof topic === "string" && topic.trim()
         ? topic.trim()
@@ -158,7 +175,7 @@ export const uploadImageQuestion = async (req, res) => {
       typeof chapter === "string" && chapter.trim()
         ? chapter.trim()
         : normalizedTopic;
-    const questionId = `${normalizedTopic}_${Date.now()}`;
+    const questionId = `${safeTopicSlug}_${Date.now()}`;
     assertQuestionExamMode({ subject, topic: normalizedTopic }, req.query.examMode);
 
     const { compressed, dimensions } = await decodeAndCompressImage(
@@ -224,13 +241,15 @@ export const uploadImageQuestion = async (req, res) => {
     });
   } catch (err) {
     runtimeLog.error("uploadImageQuestion:", err);
-    return res.status(err.statusCode || 500).json({ error: err.message });
+    const status = err.statusCode || 500;
+    return res.status(status).json({ error: status < 500 ? err.message : "Failed to upload image question" });
   }
 };
 
 // POST /api/upload/bulk-image
 export const bulkUpload = async (req, res) => {
   try {
+    sanitizeQuestionTopicSlug(req.body.topic);
     const routing = { subject: req.body.subject, topic: req.body.topic || 'visual_reasoning', quizName: req.body.quizName };
     assertQuestionExamMode(routing, req.query.examMode);
     const files = Array.isArray(req.files) ? req.files : [];
@@ -290,7 +309,8 @@ export const bulkUpload = async (req, res) => {
     });
   } catch (err) {
     runtimeLog.error("bulkUpload:", err);
-    return res.status(err.statusCode || 500).json({ error: err.message });
+    const status = err.statusCode || 500;
+    return res.status(status).json({ error: status < 500 ? err.message : "Failed to bulk upload images" });
   }
 };
 
@@ -320,7 +340,8 @@ async function uploadStandaloneImage(req, res, prefix, kind) {
     return res.json({ url, key });
   } catch (err) {
     runtimeLog.error(`upload ${kind} image:`, err);
-    return res.status(err.statusCode || 500).json({ error: err.message });
+    const status = err.statusCode || 500;
+    return res.status(status).json({ error: status < 500 ? err.message : `Failed to upload ${kind} image` });
   }
 }
 

@@ -1,7 +1,21 @@
 import { randomUUID } from 'node:crypto';
 import { getMongoDB, getNotesCollection } from '../config/mongodb.js';
+import { isNoteImageKey } from '../services/notes/imageKeys.js';
 const images = () => getMongoDB().collection('noteImages');
 const hours = value => value * 60 * 60 * 1000;
+
+export function extractPendingNoteImageOwner(key) {
+  const match = typeof key === 'string'
+    ? key.match(/^notes\/images\/pending\/([A-Za-z0-9_-]+)\/[A-Za-z0-9_.-]+\.(?:webp|png|jpe?g|gif)$/i)
+    : null;
+  if (!match) return null;
+  try {
+    return Buffer.from(match[1], 'base64url').toString('utf8');
+  } catch {
+    return null;
+  }
+}
+
 export const noteImageInventoryCursor = () => getMongoDB().collection('runtimeMaintenance').findOne({ _id: 'note-image-inventory' });
 export const saveNoteImageInventoryCursor = (token, optionsOrDate = null) => {
   const normalizeDate = d => {
@@ -40,16 +54,59 @@ export function trackPendingNoteImage(key, userId, now = new Date()) {
   return images().insertOne({ _id: key, userId: String(userId), state: 'pending', createdAt: now, cleanupAfter: new Date(+now + hours(48)) });
 }
 
-export async function retainNoteImages(keys, now = new Date()) {
+export async function retainNoteImages(keys, optionsOrNow = new Date(), maybeNow = new Date()) {
+  let userId = null;
+  let existingKeysSet = new Set();
+  let now = new Date();
+
+  if (optionsOrNow instanceof Date || typeof optionsOrNow === 'number') {
+    now = new Date(optionsOrNow);
+  } else if (typeof optionsOrNow === 'string') {
+    userId = optionsOrNow;
+    now = maybeNow instanceof Date ? maybeNow : new Date();
+  } else if (optionsOrNow && typeof optionsOrNow === 'object') {
+    userId = optionsOrNow.userId ? String(optionsOrNow.userId) : null;
+    existingKeysSet = new Set(Array.isArray(optionsOrNow.existingKeys) ? optionsOrNow.existingKeys : []);
+    now = optionsOrNow.now instanceof Date ? optionsOrNow.now : new Date();
+  }
+
   for (const key of keys) {
+    if (!isNoteImageKey(key)) {
+      throw Object.assign(new Error('Invalid note image key.'), { statusCode: 400 });
+    }
+
+    const isAlreadyAttachedToNote = existingKeysSet.has(key);
+    if (userId && !isAlreadyAttachedToNote) {
+      const pathOwner = extractPendingNoteImageOwner(key);
+      if (pathOwner && pathOwner !== String(userId)) {
+        throw Object.assign(new Error('Cannot attach a pending note image uploaded by another user.'), { statusCode: 403 });
+      }
+    }
+
     try {
+      const filter = {
+        _id: key,
+        state: { $ne: 'deleting' },
+        ...(userId && !isAlreadyAttachedToNote
+          ? { $or: [{ userId: { $exists: false } }, { userId: null }, { userId: String(userId) }] }
+          : {}),
+      };
       // A cleanup claim and a save cannot acquire the same object concurrently.
-      await images().updateOne({ _id: key, state: { $ne: 'deleting' } }, {
+      await images().updateOne(filter, {
         $set: { state: 'attached', cleanupAfter: new Date(+now + hours(48)) },
-        $setOnInsert: { createdAt: now },
+        $setOnInsert: {
+          createdAt: now,
+          ...(userId ? { userId: String(userId) } : {}),
+        },
       }, { upsert: true });
     } catch (error) {
       if (error.code !== 11000) throw error;
+      if (userId && !isAlreadyAttachedToNote) {
+        const existingDoc = await images().findOne({ _id: key });
+        if (existingDoc && existingDoc.userId && existingDoc.userId !== String(userId)) {
+          throw Object.assign(new Error('Cannot attach a pending note image uploaded by another user.'), { statusCode: 403 });
+        }
+      }
       throw Object.assign(new Error('A note image is being cleaned up. Upload it again before saving.'), { statusCode: 409 });
     }
   }

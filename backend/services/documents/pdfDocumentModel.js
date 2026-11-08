@@ -1,9 +1,22 @@
-
-
 export const B2_PDF_PREFIX = String(
   process.env.B2_PDF_PREFIX || 'quiz-pdfs'
 )
   .replace(/^\/+|\/+$/g, '');
+
+export const ALLOWED_DOCUMENT_CATEGORIES = new Set([
+  'notes',
+  'formula',
+  'extra',
+  'dpp',
+]);
+
+export const RESERVED_DOCUMENT_PREFIXES = new Set([
+  'question-images',
+  'solution-images',
+  'notes',
+  'quiz-pdfs',
+  'tutor-jobs',
+]);
 
 export const nameCollator = new Intl.Collator(
   undefined,
@@ -24,12 +37,7 @@ export const normalizeCategory = (category) => {
   const normalized =
     normalizeTopic(category || 'notes');
 
-  return [
-    'notes',
-    'formula',
-    'extra',
-    'dpp',
-  ].includes(normalized)
+  return ALLOWED_DOCUMENT_CATEGORIES.has(normalized)
     ? normalized
     : 'notes';
 };
@@ -153,6 +161,60 @@ export const getSafeFileName = (
     : `${resolvedName}.pdf`;
 };
 
+export const isDocumentBlob = (
+  blobPath
+) => {
+  if (typeof blobPath !== 'string' || !blobPath) {
+    return false;
+  }
+
+  if (
+    blobPath.startsWith('/') ||
+    blobPath.endsWith('/') ||
+    blobPath.includes('\\') ||
+    blobPath.includes('//') ||
+    /[\x00-\x1F\x7F]/.test(blobPath)
+  ) {
+    return false;
+  }
+
+  const segments = blobPath.split('/');
+  if (
+    (segments.length !== 2 && segments.length !== 3) ||
+    segments.some((segment) => !segment || segment === '.' || segment === '..')
+  ) {
+    return false;
+  }
+
+  const topic = segments[0];
+  if (
+    !/^[a-z0-9-]+$/.test(topic) ||
+    RESERVED_DOCUMENT_PREFIXES.has(topic) ||
+    topic === B2_PDF_PREFIX
+  ) {
+    return false;
+  }
+
+  if (
+    segments.length === 3 &&
+    !ALLOWED_DOCUMENT_CATEGORIES.has(segments[1])
+  ) {
+    return false;
+  }
+
+  const fileName = segments[segments.length - 1];
+  if (
+    fileName.startsWith('.') ||
+    /[<>:"|?*\x00-\x1F\\/]/.test(fileName)
+  ) {
+    return false;
+  }
+
+  return allowedExtensions.has(
+    getFileExtension(fileName)
+  );
+};
+
 export const getPdfId = (blobPath) =>
   `pdf-${Buffer
     .from(blobPath, 'utf8')
@@ -161,31 +223,42 @@ export const getPdfId = (blobPath) =>
 export const getBlobPathFromPdfId = (
   id
 ) => {
-  if (!id?.startsWith('pdf-')) {
+  if (typeof id !== 'string' || !id.startsWith('pdf-')) {
+    return null;
+  }
+
+  const encoded = id.slice(4);
+  if (!encoded || !/^[A-Za-z0-9_-]+$/.test(encoded)) {
     return null;
   }
 
   try {
-    return Buffer
+    const decoded = Buffer
       .from(
-        id.slice(4),
+        encoded,
         'base64url'
       )
       .toString('utf8');
+
+    return isDocumentBlob(decoded) ? decoded : null;
   } catch {
     return null;
   }
 };
 
-export const isDocumentBlob = (
-  blobPath
-) =>
-  allowedExtensions.has(
-    getFileExtension(blobPath)
-  );
-
-export const getB2Key = (blobPath) =>
-  `${B2_PDF_PREFIX}/${blobPath}`;
+export const getB2Key = (blobPath) => {
+  const normalized = String(blobPath || '');
+  if (
+    !normalized ||
+    normalized.startsWith('/') ||
+    normalized.includes('\\') ||
+    normalized.includes('//') ||
+    normalized.split('/').some((seg) => seg === '.' || seg === '..')
+  ) {
+    throw Object.assign(new Error('Invalid document storage path'), { statusCode: 400 });
+  }
+  return `${B2_PDF_PREFIX}/${normalized}`;
+};
 
 export const getLogicalPath = (key) => {
   const prefix =
@@ -209,11 +282,16 @@ export const getPdfPath = (
   category = 'notes',
   fileName
 ) => {
+  const normalizedTopic = normalizeTopic(topic);
+  if (!normalizedTopic || RESERVED_DOCUMENT_PREFIXES.has(normalizedTopic)) {
+    throw Object.assign(new Error('Invalid topic'), { statusCode: 400 });
+  }
+
   const normalizedCategory =
     normalizeCategory(category);
 
   return (
-    `${topic}/` +
+    `${normalizedTopic}/` +
     `${normalizedCategory}/` +
     `${getSafeFileName(fileName)}`
   );
