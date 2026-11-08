@@ -80,7 +80,11 @@ function presentAttempt(doc) {
 
 export const fetchCatalogSummary = async (_req, res) => {
   try { res.json({ exams: await readMockCatalogSummary() }); }
-  catch (error) { res.status(error.statusCode || 500).json({ error: error.statusCode ? error.message : 'Could not load paper counts' }); }
+  catch (error) {
+    const status = error.statusCode || 500;
+    if (status >= 500) runtimeLog.error('Fetch catalog summary error:', error);
+    res.status(status).json({ error: error.statusCode && status !== 500 ? error.message : 'Could not load paper counts' });
+  }
 };
 
 export const fetchExamSlots = async (req, res) => {
@@ -104,7 +108,8 @@ export const fetchExamSlots = async (req, res) => {
     res.json({ slots });
   } catch (err) {
     runtimeLog.error('Fetch slots error:', err);
-    res.status(err.statusCode || 500).json({ error: err.statusCode ? err.message : 'Failed to fetch mock test slots' });
+    const status = err.statusCode || 500;
+    res.status(status).json({ error: err.statusCode && status !== 500 ? err.message : 'Failed to fetch mock test slots' });
   }
 };
 
@@ -134,7 +139,8 @@ export const adminCreateSlot = async (req, res) => {
     res.status(201).json({ success: true, slot: createdSlot });
   } catch (err) {
     runtimeLog.error('Admin create slot error:', err);
-    res.status(500).json({ error: err.message || 'Failed to create mock slot' });
+    const status = err.statusCode || 500;
+    res.status(status).json({ error: status < 500 ? err.message : 'Failed to create mock slot' });
   }
 };
 
@@ -147,7 +153,8 @@ export const adminUpdateSlot = async (req, res) => {
     res.json({ success: true, slot: updatedSlot });
   } catch (err) {
     runtimeLog.error('Admin update slot error:', err);
-    res.status(500).json({ error: err.message || 'Failed to update mock slot' });
+    const status = err.statusCode || 500;
+    res.status(status).json({ error: status < 500 ? err.message : 'Failed to update mock slot' });
   }
 };
 
@@ -160,7 +167,8 @@ export const adminDeleteSlot = async (req, res) => {
     res.json(result);
   } catch (err) {
     runtimeLog.error('Admin delete slot error:', err);
-    res.status(500).json({ error: err.message || 'Failed to delete mock slot' });
+    const status = err.statusCode || 500;
+    res.status(status).json({ error: status < 500 ? err.message : 'Failed to delete mock slot' });
   }
 };
 
@@ -189,7 +197,8 @@ export const adminUploadPaper = async (req, res) => {
     res.status(201).json(result);
   } catch (err) {
     runtimeLog.error('Admin upload paper error:', err);
-    res.status(err.statusCode || 500).json({ error: err.message || 'Failed to upload mock test / PYQ paper' });
+    const status = err.statusCode || 500;
+    res.status(status).json({ error: status < 500 ? err.message : 'Failed to upload mock test / PYQ paper' });
   }
 };
 
@@ -272,7 +281,8 @@ export const startMockTest = async (req, res) => {
     return res.status(201).json(presentAttempt(doc));
   } catch (err) {
     runtimeLog.error('Start test error:', err);
-    return res.status(err.statusCode || 500).json({ error: err.statusCode ? err.message : 'Failed to start test' });
+    const status = err.statusCode || 500;
+    return res.status(status).json({ error: status < 500 ? err.message : 'Failed to start test' });
   }
 };
 

@@ -3,6 +3,7 @@ import { optionalAuth, protect } from '../middleware/protect.js';
 import { fetchTopicCountSnapshot } from '../services/questions/topicCountSnapshot.js';
 import { readUserTopicProgress } from '../repositories/questionProgressRepository.js';
 import { cachedTopicProgress } from '../services/questions/topicProgressCache.js';
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 
 const router = express.Router();
 
@@ -20,7 +21,9 @@ router.get('/topics/private', protect, async (req, res) => {
     res.set('Cache-Control', 'private, no-store');
     res.json({ subject, userProgress });
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message });
+    const status = err.statusCode || 500;
+    if (status >= 500) runtimeLog.error('GET /api/progress/topics/private error:', err);
+    res.status(status).json({ error: status < 500 ? err.message : 'Failed to fetch topic progress' });
   }
 });
 
@@ -51,7 +54,9 @@ router.get('/topics', optionalAuth, async (req, res) => {
       userProgress: progressMap
     });
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message });
+    const status = err.statusCode || 500;
+    if (status >= 500) runtimeLog.error('GET /api/progress/topics error:', err);
+    res.status(status).json({ error: status < 500 ? err.message : 'Failed to fetch topic progress' });
   }
 });
 

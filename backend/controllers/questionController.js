@@ -1,6 +1,19 @@
 // controllers/questionController.js
 import * as questionService from '../services/questionService.js';
 import { questionAnswerRequestSchema } from '@meow/contracts/questions';
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
+
+function sendQuestionError(res, err, fallbackMessage = 'Internal server error') {
+  const status = err?.statusCode || err?.status || 500;
+  if (status >= 500) {
+    runtimeLog.error('Question controller error:', err);
+  }
+  const exposeMessage = Boolean((err?.statusCode || err?.status) && status !== 500);
+  return res.status(status).json({
+    error: exposeMessage ? err.message : fallbackMessage,
+    ...(exposeMessage && err?.code ? { code: err.code } : {}),
+  });
+}
 
 // ── Helpers (kept from your original for req parsing) ─
 function buildRichText(textValue, imagePath) {
@@ -129,7 +142,7 @@ const addQuestion = async (req, res) => {
     res.status(201).json({ message: 'Question added ✅', question: resource });
 
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to add question');
   }
 };
 
@@ -167,7 +180,7 @@ const exportQuestions = async (req, res) => {
     res.set('X-Question-Count', String(count));
     return res.send(body);
   } catch (err) {
-    return res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to export questions');
   }
 };
 
@@ -178,7 +191,7 @@ const getQuestions = async (req, res) => {
     res.set("Cache-Control", "no-store, max-age=0");
     res.json(result);
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to fetch questions');
   }
 };
 
@@ -189,7 +202,7 @@ const getQuestionCounts = async (req, res) => {
     res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
     res.json(counts);
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to fetch question counts');
   }
 };
 
@@ -206,7 +219,7 @@ const generatePracticeTest = async (req, res) => {
       questions:      questions,
     });
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to generate practice test');
   }
 };
 
@@ -220,7 +233,7 @@ const runAnalysis = async (req, res) => {
     const analysis = await questionService.analyzeAnswers(answers);
     res.json(analysis);
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to analyze answers');
   }
 };
 
@@ -237,7 +250,7 @@ const getQuestionById = async (req, res) => {
     res.set("Cache-Control", "no-store, max-age=0");
     res.json(question);
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to fetch question');
   }
 };
 
@@ -248,7 +261,7 @@ const updateQuestion = async (req, res) => {
     if (!updated) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Updated ✅', question: updated });
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to update question');
   }
 };
 
@@ -259,7 +272,7 @@ const deleteQuestion = async (req, res) => {
     if (!success) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Deleted ✅' });
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to delete question');
   }
 };
 
@@ -280,7 +293,7 @@ const bulkCreateQuestions = async (req, res) => {
 
     return res.json({ inserted, failed, total: questions.length, results: results.map((result, index) => ({ index, status: result.status, ...(result.status === 'fulfilled' ? { id: result.value.id } : { error: result.reason }) })) });
   } catch (err) {
-    return res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to bulk create questions');
   }
 };
 
@@ -298,7 +311,7 @@ const bulkDeleteQuestions = async (req, res) => {
     });
     return res.json({ message: `Deleted ${result.deleted} questions`, ...result });
   } catch (err) {
-    return res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to bulk delete questions');
   }
 };
 
@@ -313,7 +326,7 @@ const checkDuplicates = async (req, res) => {
     const duplicates = await questionService.checkDuplicates(questions, req.query.examMode);
     return res.json({ results: duplicates });
   } catch (err) {
-    return res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to check duplicates');
   }
 };
 
@@ -324,7 +337,7 @@ const getImageQuestions = async (req, res) => {
     const result = await questionService.fetchImageQuestions(topic, limit);
     res.json(result);
   } catch (err) {
-    res.status(err.statusCode || err.status || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to fetch image questions');
   }
 };
 
@@ -335,7 +348,7 @@ const getQuestionsSession = async (req, res) => {
     res.set('Cache-Control', req.method === 'POST' ? 'no-store' : 'public, max-age=10, stale-while-revalidate=30');
     res.json(result);
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to fetch questions session');
   }
 };
 
@@ -346,7 +359,7 @@ const getQuestionsMeta = async (req, res) => {
     res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
     res.json(result);
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to fetch questions metadata');
   }
 };
 
@@ -367,7 +380,7 @@ const submitAnswer = async (req, res) => {
     );
     res.json(result);
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message, ...(err.code ? { code: err.code } : {}) });
+    return sendQuestionError(res, err, 'Failed to submit answer');
   }
 }
 
