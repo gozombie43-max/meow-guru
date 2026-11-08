@@ -1,4 +1,4 @@
-import { registerSchema, unregisterSchema, broadcastSchema, scheduleSchema, retryScheduleSchema, engagementSchema } from '@meow/contracts/notifications';
+import { registerSchema, unregisterSchema, broadcastSchema, scheduleSchema, retryScheduleSchema, engagementSchema, isSafeInternalRoute } from '@meow/contracts/notifications';
 import { ObjectId } from "mongodb";
 import { sendPushToAllUsers } from "../services/pushNotificationService.js";
 import * as repo from "../repositories/notificationRepository.js";
@@ -284,7 +284,8 @@ export const retryScheduledNotification = async (req, res, next) => {
     const result = await repo.insertScheduledNotification({
       title: original.title,
       body: original.body,
-      route: original.route || "/",
+      // FINDING-06: legacy records may predate route validation; never re-send an unsafe route.
+      route: isSafeInternalRoute(original.route) ? original.route : "/",
       sendAt,
       status: "pending",
       retryOf: original._id,

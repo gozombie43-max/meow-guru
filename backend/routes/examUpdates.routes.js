@@ -3,6 +3,11 @@ import express from "express";
 import { z } from "zod";
 
 import {
+  safeInternalRouteSchema,
+  safeHttpUrlSchema,
+} from "@meow/contracts/notifications";
+
+import {
   protect,
 } from "../middleware/protect.js";
 
@@ -50,14 +55,14 @@ const schema =
         .min(1)
         .max(500),
 
+    // FINDING-06: only same-origin internal paths; no //host, javascript:, data:, etc.
     route:
-      z.string()
-        .trim()
+      safeInternalRouteSchema
         .optional(),
 
+    // FINDING-06: z.string().url() accepts javascript:/data:/file:; restrict to http(s).
     sourceUrl:
-      z.string()
-        .url()
+      safeHttpUrlSchema
         .optional()
         .nullable(),
   });
