@@ -68,7 +68,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: [build, verification]
-    environment: quizguru-backend-staging
     permissions:
       id-token: write
       contents: read
