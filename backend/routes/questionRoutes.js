@@ -10,6 +10,7 @@ import { protect } from "../middleware/protect.js";
 import { quizAnswerCommandSchema } from '@meow/contracts/progress';
 import { submitQuizAnswer } from '../services/quizAnswerService.js';
 import { fetchConceptGroupingStatus } from '../services/questions/conceptGroupService.js';
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 
 const router = express.Router();
 const upload = multer({
@@ -55,7 +56,9 @@ router.get('/topic-counts', async (req, res) => {
     res.set('Vercel-CDN-Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     res.json(snapshot);
   } catch (error) {
-    res.status(error.statusCode || 500).json({ error: error.message });
+    const status = error.statusCode || 500;
+    if (status >= 500) runtimeLog.error('GET /api/questions/topic-counts error:', error);
+    res.status(status).json({ error: status < 500 ? error.message : 'Failed to fetch topic counts' });
   }
 });
 router.get('/counts', questionController.getQuestionCounts);
@@ -71,7 +74,9 @@ router.get('/concept-groups/:fingerprint', async (req, res) => {
     res.set('Cache-Control', 'no-store');
     res.json(await fetchConceptGroupingStatus(req.params.fingerprint));
   } catch (error) {
-    res.status(error.statusCode || 500).json({ error: error.message });
+    const status = error.statusCode || 500;
+    if (status >= 500) runtimeLog.error('GET /api/questions/concept-groups error:', error);
+    res.status(status).json({ error: status < 500 ? error.message : 'Failed to fetch concept groups' });
   }
 });
 router.post('/answer', protect, async (req, res) => {
@@ -84,7 +89,12 @@ router.post('/answer', protect, async (req, res) => {
     if (result.replayed) res.set('Idempotency-Replayed', 'true');
     return res.json(result.response);
   } catch (error) {
-    return res.status(error.statusCode || 500).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
+    const status = error.statusCode || 500;
+    if (status >= 500) runtimeLog.error('POST /api/questions/answer error:', error);
+    return res.status(status).json({
+      error: status < 500 ? error.message : 'Failed to submit quiz answer',
+      ...(status < 500 && error.code ? { code: error.code } : {}),
+    });
   }
 });
 

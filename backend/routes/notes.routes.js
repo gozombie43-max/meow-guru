@@ -205,7 +205,7 @@ router.post(
           now,
       };
 
-      await retainNoteImages(note.imageKeys);
+      await retainNoteImages(note.imageKeys, { userId: req.user?.id });
       await insertNote(note);
 
       return res
@@ -224,7 +224,7 @@ router.post(
         .status(err.statusCode || 500)
         .json({
           error:
-            err.statusCode ? err.message : "Failed to create note",
+            err.statusCode && err.statusCode < 500 ? err.message : "Failed to create note",
         });
     }
   }
@@ -260,11 +260,15 @@ router.put(
       const updatedAt =
         new Date().toISOString();
 
+      const existingImageKeys = noteImageKeys(existing.body);
       allowedUpdates.imageKeys = noteImageKeys(Object.hasOwn(allowedUpdates, 'body') ? allowedUpdates.body : existing.body);
-      await retainNoteImages(allowedUpdates.imageKeys);
+      await retainNoteImages(allowedUpdates.imageKeys, {
+        userId: req.user?.id,
+        existingKeys: existingImageKeys,
+      });
       await patchNoteDocument(existing._id, { ...allowedUpdates, updatedAt });
 
-      const removed = noteImageKeys(existing.body).filter(key => !allowedUpdates.imageKeys.includes(key));
+      const removed = existingImageKeys.filter(key => !allowedUpdates.imageKeys.includes(key));
       await scheduleNoteImageCleanup(removed);
 
       const updated = {
@@ -293,7 +297,7 @@ router.put(
         .status(err.statusCode || 500)
         .json({
           error:
-            err.statusCode ? err.message : "Failed to update note",
+            err.statusCode && err.statusCode < 500 ? err.message : "Failed to update note",
         });
     }
   }

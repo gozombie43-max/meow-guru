@@ -9,8 +9,11 @@ on:
 concurrency:
   group: backend-production-promotion
   cancel-in-progress: false
+permissions:
+  contents: read
 jobs:
   promote:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: backend-canary
     permissions: { contents: read, id-token: write }
@@ -20,6 +23,12 @@ jobs:
       SLOT: ${{ vars.CANARY_AZURE_SLOT }}
       OBSERVATIONS_URL: ${{ vars.CANARY_OBSERVATIONS_URL }}
     steps:
+      - name: Enforce main branch for canary promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "$GITHUB_REF" = "refs/heads/main" ] ||
+            { echo "::error::Canary promotion must run from refs/heads/main"; exit 1; }
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with: { node-version: '22.x' }
@@ -100,4 +109,14 @@ jobs:
           fi
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
-        with: { name: canary-decision, path: '*.json', if-no-files-found: ignore }
+        with:
+          name: canary-decision
+          path: |
+            canary-health.json
+            previous-production-health.json
+            observations.json
+            decision.json
+            production-health.json
+            rollback-production-health.json
+            restored-production-health.json
+          if-no-files-found: ignore

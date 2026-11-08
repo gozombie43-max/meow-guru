@@ -2,6 +2,7 @@ import multer from 'multer';
 import { ZIP_LIMITS } from '../services/uploads/safeZip.js';
 import { parseQuestionExamMode } from '../services/questions/questionExamMode.js';
 import * as questionImageZipService from '../services/questions/questionImageZip.js';
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -149,9 +150,12 @@ export async function handleQuestionBankImageZip(req, res) {
     return res.json(outcome);
   } catch (error) {
     const status = error.statusCode || error.status || 500;
-    const message = error.statusCode || error.status
+    if (status >= 500) {
+      runtimeLog.error('Question Bank image ZIP import error:', error);
+    }
+    const message = status < 500 || status === 503
       ? error.message
-      : (error.message || 'Could not import Question Bank image ZIP. Reload questions to check state before retrying.');
+      : 'Could not import Question Bank image ZIP. Reload questions to check state before retrying.';
     return res.status(status).json({ error: message });
   } finally {
     // 8. Guaranteed mutex release

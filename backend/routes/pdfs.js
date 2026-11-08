@@ -141,7 +141,6 @@ router.get(
         .status(500)
         .json({
           error:
-            err.message ||
             'Failed to fetch PDFs',
         });
     }
@@ -324,7 +323,6 @@ router.post(
         .status(500)
         .json({
           error:
-            err.message ||
             'Failed to upload files',
         });
     }
@@ -408,7 +406,6 @@ router.get(
         .status(500)
         .json({
           error:
-            err.message ||
             'Failed to open PDF',
         });
     }

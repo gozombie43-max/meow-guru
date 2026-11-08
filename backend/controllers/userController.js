@@ -17,6 +17,19 @@ import {
   isValidTimezone,
   DEFAULT_DAILY_REMINDER_TIME,
 } from '../services/dailyPracticeReminderService.js';
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
+
+function sendUserError(res, err, fallbackMessage = 'Internal server error') {
+  const status = err?.statusCode || err?.status || 500;
+  if (status >= 500) {
+    runtimeLog.error('User controller error:', err);
+  }
+  const exposeMessage = Boolean((err?.statusCode || err?.status) && status !== 500);
+  return res.status(status).json({
+    error: exposeMessage ? err.message : fallbackMessage,
+    ...(exposeMessage && err?.code ? { code: err.code } : {}),
+  });
+}
 
 const DEFAULT_NOTIFICATION_PREFERENCES = {
   enabled: true,
@@ -68,7 +81,7 @@ export const getMe = async (req, res) => {
     safeUser.role = safeUser.role || req.user.role || 'user';
     res.json(safeUser);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendUserError(res, err, 'Failed to fetch user profile');
   }
 };
 
@@ -98,7 +111,7 @@ export const updateProfile = async (req, res) => {
     safeUser.role = safeUser.role || req.user.role || 'user';
     res.json({ message: 'Profile updated ✅', user: safeUser });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendUserError(res, err, 'Failed to update profile');
   }
 };
 
@@ -156,7 +169,7 @@ export const updateBookmarks = async (req, res) => {
     
     res.json({ message: 'Bookmarks updated ✅', bookmarks, bookmarkEntries });
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message, code: err.code });
+    return sendUserError(res, err, 'Failed to update bookmarks');
   }
 };
 
@@ -167,7 +180,7 @@ export const updateProgress = async (req, res) => {
     if (!updatedUser) return res.status(404).json({ error: 'User not found' });
     res.json({ message: 'Progress updated ✅', progress: updatedUser.progress || {} });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return sendUserError(res, err, 'Failed to update progress');
   }
 };
 
@@ -178,7 +191,9 @@ export const getRecentQuiz = async (req, res) => {
     const quiz = user.recentQuizzes?.find(entry => entry.quizKey === req.params.quizKey);
     if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
     return res.json({ quiz });
-  } catch (error) { return res.status(500).json({ error: error.message }); }
+  } catch (error) {
+    return sendUserError(res, error, 'Failed to fetch recent quiz');
+  }
 };
 
 export const updateRecentQuizzes = async (req, res) => {
@@ -190,7 +205,9 @@ export const updateRecentQuizzes = async (req, res) => {
     });
     if (!recentQuizzes) return res.status(404).json({ error: 'User not found' });
     return res.json({ saved: true });
-  } catch (error) { return res.status(error.statusCode || 500).json({ error: error.message }); }
+  } catch (error) {
+    return sendUserError(res, error, 'Failed to update recent quizzes');
+  }
 };
 
 export const updateUsage = async (req, res) => {
@@ -207,7 +224,7 @@ export const updateUsage = async (req, res) => {
     await trackStudyUsage(user.id, activeSeconds, effectiveTimezone, dateKey);
     return res.json({ message: 'Usage tracked ✅', dateKey });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendUserError(res, error, 'Failed to track study usage');
   }
 };
 
@@ -215,7 +232,7 @@ export const getAiChats = async (req, res) => {
   try {
     res.json({ aiChats: await listAiChatSummaries(req.user.id) });
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message });
+    return sendUserError(res, err, 'Failed to fetch AI chats');
   }
 };
 
@@ -224,7 +241,9 @@ export const getAiChat = async (req, res) => {
     const chat = await readAiChat(req.user.id, req.params.chatId);
     if (!chat) return res.status(404).json({ error: 'Chat not found' });
     return res.json({ aiChat: { ...chat, revision: chat.revision ?? chat.messages.length } });
-  } catch (error) { return res.status(error.statusCode || 500).json({ error: error.message }); }
+  } catch (error) {
+    return sendUserError(res, error, 'Failed to fetch AI chat');
+  }
 };
 
 const appendMessagesSchema = z.object({
@@ -239,7 +258,9 @@ export const appendAiMessages = async (req, res) => {
   try {
     const revision = await appendAiChatMessages(req.user.id, req.params.chatId, parsed.data);
     return res.json({ saved: true, revision });
-  } catch (error) { return res.status(error.statusCode || 500).json({ error: error.message }); }
+  } catch (error) {
+    return sendUserError(res, error, 'Failed to append AI chat messages');
+  }
 };
 
 export const updateAiChat = async (req, res) => {
@@ -270,7 +291,7 @@ export const updateAiChat = async (req, res) => {
     await writeAiChat(req.user.id, chatId, entry);
     res.json({ saved: true, revision: safeMessages.length });
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message });
+    return sendUserError(res, err, 'Failed to update AI chat');
   }
 };
 
@@ -282,7 +303,7 @@ export const deleteAiChat = async (req, res) => {
     await writeAiChat(req.user.id, chatId);
     res.json({ saved: true });
   } catch (err) {
-    res.status(err.statusCode || 500).json({ error: err.message });
+    return sendUserError(res, err, 'Failed to delete AI chat');
   }
 };
 
@@ -297,7 +318,7 @@ export const getNotificationPreferences = async (req, res) => {
     };
     return res.json({ preferences });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendUserError(res, error, 'Failed to fetch notification preferences');
   }
 };
 
@@ -322,7 +343,7 @@ export const updateNotificationPreferences = async (req, res) => {
 
     return res.json({ ok: true, preferences });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendUserError(res, error, 'Failed to update notification preferences');
   }
 };
 
@@ -346,7 +367,7 @@ export const getDailyPracticeReminder = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendUserError(res, error, 'Failed to fetch daily practice reminder');
   }
 };
 
@@ -372,7 +393,7 @@ export const updateDailyPracticeReminder = async (req, res) => {
     await updateUser(user.id, { dailyPracticeReminder: reminder });
     return res.json({ ok: true, reminder });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendUserError(res, error, 'Failed to update daily practice reminder');
   }
 };
 
@@ -383,7 +404,7 @@ export const getStudyGoal = async (req, res) => {
 
     return res.json({ dailyGoalMinutes: user.dailyGoalMinutes ?? 30 });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendUserError(res, error, 'Failed to fetch study goal');
   }
 };
 
@@ -401,6 +422,6 @@ export const updateStudyGoal = async (req, res) => {
 
     return res.json({ ok: true, dailyGoalMinutes: parsed.data.dailyGoalMinutes });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendUserError(res, error, 'Failed to update study goal');
   }
 };

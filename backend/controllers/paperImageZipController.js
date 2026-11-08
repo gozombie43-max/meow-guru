@@ -1,6 +1,7 @@
 import multer from 'multer';
 import { ZIP_LIMITS } from '../services/uploads/safeZip.js';
 import { importPaperImageZip } from '../services/mock/paperImageZip.js';
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: ZIP_LIMITS.compressedBytes, files: 1, fields: 2, fieldSize: 1024, parts: 3 } }).single('zipFile');
 let processing = false;
@@ -24,5 +25,9 @@ export async function adminPaperImageZip(req, res) {
     if (expectedUpdatedAt !== null && typeof expectedUpdatedAt !== 'string') return res.status(400).json({ error: 'Invalid paper version. Reload the paper.' });
     res.json(await importPaperImageZip({ buffer: req.file.buffer, examSlug: req.query.examSlug, slotId: req.params.slotId,
       examMode: req.query.examMode, expectedUpdatedAt, validateOnly: req.body.action === 'validate' }));
-  } catch (error) { res.status(error.statusCode || 500).json({ error: error.statusCode ? error.message : 'Could not import ZIP. Reload the paper to check its state before retrying.' }); }
+  } catch (error) {
+    const status = error.statusCode || 500;
+    if (status >= 500) runtimeLog.error('Admin paper image ZIP import error:', error);
+    res.status(status).json({ error: status < 500 || status === 503 ? error.message : 'Could not import ZIP. Reload the paper to check its state before retrying.' });
+  }
 }

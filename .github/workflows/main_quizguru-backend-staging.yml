@@ -4,17 +4,21 @@ on:
   workflow_dispatch:
     inputs:
       sync_questions:
-        description: 'Refresh staging question bank from production questions only'
+        description: 'Refresh staging question bank from isolated staging seed source (main branch only)'
         required: true
-        default: true
+        default: false
         type: boolean
 
 concurrency:
   group: quizguru-backend-staging
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   verification:
+    if: github.ref == 'refs/heads/main'
     # Reusable CI declares a production deployment job; this is its permission ceiling.
     # verification_only prevents that job from running in this staging workflow.
     permissions:
@@ -27,10 +31,17 @@ jobs:
     secrets: inherit
 
   build:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
+      - name: Enforce main branch for staging deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "$GITHUB_REF" = "refs/heads/main" ] ||
+            { echo "::error::Staging backend deployment must run from refs/heads/main"; exit 1; }
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -54,8 +65,10 @@ jobs:
           if-no-files-found: error
 
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: [build, verification]
+    environment: quizguru-backend-staging
     permissions:
       id-token: write
       contents: read
@@ -64,9 +77,13 @@ jobs:
       STAGING_APP_SERVICE_PLAN: quizguru-stage-plan
       STAGING_MONGODB_DB: quizDB_staging
       STAGING_MONGODB_EXPECTED_HOST: quizguru-staging.c8bkump.mongodb.net
-      PRODUCTION_RESOURCE_GROUP: Meowguru_group
-      PRODUCTION_APP_NAME: quizguru-backend
     steps:
+      - name: Enforce main branch for staging Azure OIDC session
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "$GITHUB_REF" = "refs/heads/main" ] ||
+            { echo "::error::Staging deployment must run from refs/heads/main"; exit 1; }
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: staging-node-app
@@ -91,9 +108,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_39C048B2FF59452F9613463239824624 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0994BCA96630443BB4B8D46319B867CD }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_115D8A1EAFB5485E96F15FA5CD4BB615 }}
+          client-id: ${{ secrets.STAGING_AZURE_CLIENT_ID || secrets.AZUREAPPSERVICE_CLIENTID_39C048B2FF59452F9613463239824624 }}
+          tenant-id: ${{ secrets.STAGING_AZURE_TENANT_ID || secrets.AZUREAPPSERVICE_TENANTID_0994BCA96630443BB4B8D46319B867CD }}
+          subscription-id: ${{ secrets.STAGING_AZURE_SUBSCRIPTION_ID || secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_115D8A1EAFB5485E96F15FA5CD4BB615 }}
       - name: Verify Azure RBAC for staging resource group
         shell: bash
         run: |
@@ -218,49 +235,29 @@ jobs:
           echo "RESOURCE_GROUP=$AZURE_RESOURCE_GROUP" >> "$GITHUB_ENV"
           echo "STAGING_APP_NAME=$app_name" >> "$GITHUB_ENV"
           echo "STAGING_APP_HOST=$host" >> "$GITHUB_ENV"
-      - name: Resolve production question source
-        if: ${{ inputs.sync_questions }}
+      - name: Refuse question sync from untrusted non-main branch
+        if: ${{ inputs.sync_questions && github.ref != 'refs/heads/main' }}
+        shell: bash
+        run: |
+          echo "::error::Refusing to run staging question sync from non-main ref ($GITHUB_REF)."
+          exit 1
+      - name: Resolve isolated staging question seed source
+        if: ${{ inputs.sync_questions && github.ref == 'refs/heads/main' }}
         shell: bash
         env:
-          ACTIONS_MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          ACTIONS_MONGODB_DB: ${{ vars.MONGODB_DB }}
+          STAGING_QUESTION_SOURCE_URI: ${{ secrets.STAGING_QUESTION_SOURCE_MONGODB_URI }}
+          STAGING_QUESTION_SOURCE_DB: ${{ vars.STAGING_QUESTION_SOURCE_MONGODB_DB }}
         run: |
           set -euo pipefail
-          source_uri="${ACTIONS_MONGODB_URI:-}"
-          source_db="${ACTIONS_MONGODB_DB:-}"
+          source_uri="${STAGING_QUESTION_SOURCE_URI:-}"
+          source_db="${STAGING_QUESTION_SOURCE_DB:-quizDB_seed}"
 
           if [ -z "$source_uri" ] || [ "$source_uri" = "null" ]; then
-            error_file="$(mktemp)"
-            if ! source_uri="$(az webapp config appsettings list \
-              --name "$PRODUCTION_APP_NAME" \
-              --resource-group "$PRODUCTION_RESOURCE_GROUP" \
-              --query "[?name=='MONGODB_URI'].value | [0]" \
-              --output tsv 2>"$error_file")"; then
-              cat "$error_file" >&2 || true
-              rm -f "$error_file"
-              echo "::error title=Production question source unavailable::MONGODB_URI is not set as a repository secret and the GitHub OIDC principal could not read it from '$PRODUCTION_APP_NAME'. The production deployment identity must retain read access to that Web App, or set repository secret MONGODB_URI."
-              exit 1
-            fi
-            rm -f "$error_file"
-          fi
-
-          if [ -z "$source_db" ] || [ "$source_db" = "null" ]; then
-            source_db="$(az webapp config appsettings list \
-              --name "$PRODUCTION_APP_NAME" \
-              --resource-group "$PRODUCTION_RESOURCE_GROUP" \
-              --query "[?name=='MONGODB_DB'].value | [0]" \
-              --output tsv 2>/dev/null || true)"
-          fi
-          if [ -z "$source_db" ] || [ "$source_db" = "null" ]; then
-            source_db="quizDB"
-          fi
-
-          if [ -z "$source_uri" ] || [ "$source_uri" = "null" ]; then
-            echo '::error title=Production question source unavailable::Resolved production MONGODB_URI is empty'
+            echo '::error title=Staging question seed source unavailable::Set repository secret STAGING_QUESTION_SOURCE_MONGODB_URI (never production MONGODB_URI).'
             exit 1
           fi
           if [[ "$source_db" =~ [Ss][Tt][Aa][Gg][Ii][Nn][Gg] ]]; then
-            echo "::error::Refusing production question source database with staging-like name: $source_db"
+            echo "::error::Refusing question seed source database with staging target name: $source_db"
             exit 1
           fi
 
@@ -268,12 +265,12 @@ jobs:
           echo "SOURCE_MONGODB_URI=$source_uri" >> "$GITHUB_ENV"
           echo "SOURCE_MONGODB_DB=$source_db" >> "$GITHUB_ENV"
       - name: Refresh staging question bank
-        if: ${{ inputs.sync_questions }}
+        if: ${{ inputs.sync_questions && github.ref == 'refs/heads/main' }}
         working-directory: release
         env:
           STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
         run: node backend/scripts/sync-training-staging-questions.js
-      - name: Clear production question source from runner environment
+      - name: Clear staging question seed source from runner environment
         if: ${{ always() && inputs.sync_questions }}
         shell: bash
         run: |

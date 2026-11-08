@@ -6,16 +6,53 @@ import {
   sendPushToAllUsers,
 } from "./pushNotificationService.js";
 
+import {
+  isSafeInternalRoute,
+  isSafeHttpUrl,
+} from "@meow/contracts/notifications";
+
+/**
+ * FINDING-06 defense-in-depth: callers other than the HTTP route (scripts,
+ * workers) must not be able to persist or push unsafe navigation targets.
+ */
+function resolveSafeRoute(route, examSlug) {
+  if (route !== undefined && route !== null && route !== "") {
+    if (!isSafeInternalRoute(route)) {
+      const error = new Error("Invalid exam update route");
+      error.statusCode = 400;
+      throw error;
+    }
+    return route;
+  }
+  return `/exam-updates/${encodeURIComponent(String(examSlug))}`;
+}
+
+function resolveSafeSourceUrl(sourceUrl) {
+  if (sourceUrl === undefined || sourceUrl === null || sourceUrl === "") return null;
+  if (!isSafeHttpUrl(sourceUrl)) {
+    const error = new Error("Invalid exam update source URL");
+    error.statusCode = 400;
+    throw error;
+  }
+  return sourceUrl;
+}
+
 export async function publishExamUpdate({
   examSlug,
   type,
   title,
   message,
-  route,
-  sourceUrl = null,
+  route: requestedRoute,
+  sourceUrl: requestedSourceUrl = null,
   createdByUserId = null,
   createdByEmail = null,
 }) {
+  const route =
+    resolveSafeRoute(requestedRoute, examSlug);
+
+  const sourceUrl =
+    resolveSafeSourceUrl(requestedSourceUrl);
+
   const updates =
     getExamUpdatesCollection();
 
@@ -44,9 +81,7 @@ export async function publishExamUpdate({
       title,
       message,
 
-      route:
-        route ||
-        `/exam-updates/${examSlug}`,
+      route,
 
       sourceUrl,
 
@@ -84,9 +119,7 @@ export async function publishExamUpdate({
         body:
           message,
 
-        route:
-          route ||
-          `/exam-updates/${examSlug}`,
+        route,
 
         category:
           "examUpdates",

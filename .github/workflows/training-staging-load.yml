@@ -20,9 +20,14 @@ concurrency:
   group: staging-training-load
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   load:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: quizguru-backend-staging
     permissions:
       id-token: write
       contents: read
@@ -30,6 +35,12 @@ jobs:
       AZURE_RESOURCE_GROUP: Meowguru_staging_group
       STAGING_MONGODB_DB: quizDB_staging
     steps:
+      - name: Enforce main branch for staging load test
+        shell: bash
+        run: |
+          set -euo pipefail
+          [ "$GITHUB_REF" = "refs/heads/main" ] ||
+            { echo "::error::Staging load test must run from refs/heads/main"; exit 1; }
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -50,9 +61,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_39C048B2FF59452F9613463239824624 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0994BCA96630443BB4B8D46319B867CD }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_115D8A1EAFB5485E96F15FA5CD4BB615 }}
+          client-id: ${{ secrets.STAGING_AZURE_CLIENT_ID || secrets.AZUREAPPSERVICE_CLIENTID_39C048B2FF59452F9613463239824624 }}
+          tenant-id: ${{ secrets.STAGING_AZURE_TENANT_ID || secrets.AZUREAPPSERVICE_TENANTID_0994BCA96630443BB4B8D46319B867CD }}
+          subscription-id: ${{ secrets.STAGING_AZURE_SUBSCRIPTION_ID || secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_115D8A1EAFB5485E96F15FA5CD4BB615 }}
       - name: Resolve and attest staging target
         run: |
           set -euo pipefail

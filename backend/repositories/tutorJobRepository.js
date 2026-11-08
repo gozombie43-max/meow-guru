@@ -11,6 +11,7 @@ export const beginTutorUpload = (id, owner, now = new Date()) => jobs().findOneA
   $or: [{ uploadUntil: { $exists: false } }, { uploadUntil: { $lte: now } }],
 }, { $set: { uploadOwner: owner, uploadUntil: new Date(+now + 60000) } }, { returnDocument: 'after' });
 export const releaseTutorUpload = (id, owner) => jobs().updateOne({ _id: id, uploadOwner: owner }, { $unset: { uploadOwner: '', uploadUntil: '' } });
+export const deleteStagedTutorJob = (id, owner) => jobs().deleteOne({ _id: id, status: 'staging', uploadOwner: owner });
 export const queueStagedTutorJob = (id, owner) => jobs().updateOne({ _id: id, status: 'staging', uploadOwner: owner }, { $set: { status: 'queued', availableAt: new Date() }, $unset: { uploadOwner: '', uploadUntil: '' } });
 
 export function claimTutorInputCleanup(now = new Date()) {

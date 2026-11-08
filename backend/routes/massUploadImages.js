@@ -1,6 +1,7 @@
 import { validateEntry, findImageInZip } from './../services/uploads/questionImageArchive.js';
 import { createQuestion } from "../services/questions/questionWriteService.js";
 import { assertQuestionExamMode } from '../services/questions/questionExamMode.js';
+import { runtimeLog } from '../infrastructure/runtimeLog.js';
 // routes/massUploadImages.js
 
 import express from "express";
@@ -368,10 +369,13 @@ router.post(
               });
 
             } catch (error) {
+              runtimeLog.error("massUploadImages entry error:", error);
               errors.push({
                 filename,
                 error:
-                  error.message,
+                  error?.statusCode && error.statusCode < 500
+                    ? error.message
+                    : "Failed to process image entry",
               });
             }
           })
