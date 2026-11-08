@@ -63,6 +63,19 @@ export const submitQuizAnswer = (command: QuizAnswerCommand, signal?: AbortSigna
     headers: { 'Idempotency-Key': command.submissionId }, signal,
   });
 
+export interface PrefetchRevealItem {
+  clientKey: string;
+  id?: string | number;
+  questionUid?: string;
+  sessionAnchor?: string;
+}
+
+export const prefetchQuestionReveals = (items: PrefetchRevealItem[], signal?: AbortSignal) =>
+  api.post('/api/questions/prefetch-reveal', { items }, {
+    apiPolicy: { auth: 'none' },
+    signal,
+  });
+
 export interface NotificationPreferences {
   enabled: boolean;
 

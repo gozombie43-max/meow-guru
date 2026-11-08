@@ -159,6 +159,7 @@ export function useQuizSync({
     const stateToSave = {
       selectedAnswers,
       submittedQuestions: Array.from(submittedQuestions),
+      results,
       currentIndex,
       mode,
       questionAnchor: questions[currentIndex]?.sessionAnchor,
@@ -183,6 +184,7 @@ export function useQuizSync({
     questions.length,
     selectedAnswers,
     submittedQuestions,
+    results,
     currentIndex,
     mode,
     conceptFilter,

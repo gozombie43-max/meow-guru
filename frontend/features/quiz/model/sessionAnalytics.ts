@@ -16,12 +16,13 @@ export function buildSessionAnalytics(results: SessionResult[]): {
   stats: SessionStats;
   weakConcepts: WeakConcept[];
 } {
-  const correct = results.filter((result) => result.isCorrect).length;
-  const wrong = results.filter(
+  const graded = results.filter((result) => result.correct >= 0);
+  const correct = graded.filter((result) => result.isCorrect).length;
+  const wrong = graded.filter(
     (result) => !result.isCorrect && result.selected !== null
   ).length;
   const attempted = results.length;
-  const accuracy = attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
+  const accuracy = graded.length > 0 ? Math.round((correct / graded.length) * 100) : 0;
   const avgTime =
     attempted > 0
       ? Math.round(
@@ -31,7 +32,7 @@ export function buildSessionAnalytics(results: SessionResult[]): {
       : 0;
 
   const conceptStats = new Map<string, { correct: number; total: number }>();
-  for (const result of results) {
+  for (const result of graded) {
     const current = conceptStats.get(result.concept) ?? { correct: 0, total: 0 };
     current.total += 1;
     if (result.isCorrect) current.correct += 1;

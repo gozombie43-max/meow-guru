@@ -233,15 +233,18 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
 
           <section className="ios-series-options" aria-label="Answer options">
             {displayedOptions.slice(0, 4).map((option, index) => {
+              // Grade only once the server has revealed the answer key.
+              const isRevealed = isCurrentSubmitted && currentQ.correctAnswer >= 0;
               const isCorrect =
-                isCurrentSubmitted && index === currentQ.correctAnswer;
+                isRevealed && index === currentQ.correctAnswer;
               const isWrong =
-                isCurrentSubmitted &&
+                isRevealed &&
                 selectedAnswer === index &&
                 index !== currentQ.correctAnswer;
               const isSelected = selectedAnswer === index;
               const isUserAnswer = isCurrentSubmitted && isSelected;
-              const isDimmed = isCurrentSubmitted && !isCorrect && !isWrong;
+              const isChecking = isUserAnswer && !isRevealed;
+              const isDimmed = isRevealed && !isCorrect && !isWrong;
               return (
                 <button data-ui-button="state"
                   key={`${currentQ.id}-${index}`}
@@ -249,7 +252,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
                   disabled={isCurrentSubmitted}
                   aria-pressed={isSelected}
                   onClick={() => handleSelectAnswer(index)}
-                  className={`ios-series-option ${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""} ${isUserAnswer ? "is-user-answer" : ""} ${isDimmed ? "is-dimmed" : ""}`}
+                  className={`ios-series-option ${isSelected && !isCurrentSubmitted ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""} ${isUserAnswer ? "is-user-answer" : ""} ${isDimmed ? "is-dimmed" : ""}`}
                 >
                   <span className="ios-series-option-letter">
                     {String.fromCharCode(65 + index)}
@@ -278,6 +281,10 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
                           />
                         )}
                       </>
+                    ) : isChecking ? (
+                      <span className="ios-series-your-answer" role="status">
+                        Checking…
+                      </span>
                     ) : null}
                   </span>
                 </button>

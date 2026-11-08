@@ -1,10 +1,11 @@
 "use client";
 import { useCallback, useState } from 'react';
-import type { Difficulty } from '@/features/quiz/model/types';
+import type { Difficulty, SessionResult } from '@/features/quiz/model/types';
 
 export interface ResumeData {
   selectedAnswers?: Record<number, number>;
   submittedQuestions?: number[];
+  results?: SessionResult[];
   currentIndex?: number;
   questionAnchor?: string;
   conceptFilter?: string;
@@ -20,6 +21,7 @@ export function isResumeData(value: unknown): value is ResumeData {
   if (row.questionAnchor !== undefined && typeof row.questionAnchor !== 'string') return false;
   if (row.selectedAnswers !== undefined && (!row.selectedAnswers || typeof row.selectedAnswers !== 'object' || Array.isArray(row.selectedAnswers) || !Object.entries(row.selectedAnswers).every(([key, value]) => index(Number(key)) && index(value)))) return false;
   if (row.submittedQuestions !== undefined && (!Array.isArray(row.submittedQuestions) || !row.submittedQuestions.every(index))) return false;
+  if (row.results !== undefined && !Array.isArray(row.results)) return false;
   if (row.selectedClassificationConcepts !== undefined && (!Array.isArray(row.selectedClassificationConcepts) || !row.selectedClassificationConcepts.every(value => typeof value === 'string'))) return false;
   if (row.difficulty !== undefined && !['easy', 'medium', 'hard'].includes(String(row.difficulty))) return false;
   return ['conceptFilter', 'examFilter'].every(key => row[key] === undefined || typeof row[key] === 'string');

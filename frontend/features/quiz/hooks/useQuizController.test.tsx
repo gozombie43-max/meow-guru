@@ -8,9 +8,12 @@ const mocks = vi.hoisted(() => ({
   authLoading: false,
   questions: [] as QuizQuestion[],
   hasMore: false,
+  isFetchingMore: false,
   fetchMore: vi.fn(),
+  ensureQuestion: vi.fn().mockResolvedValue(undefined),
   start: vi.fn(), stop: vi.fn(), progress: vi.fn().mockResolvedValue({}),
   refreshUser: vi.fn(), recentQuizzes: [] as Record<string, unknown>[], submitQuizAnswer: vi.fn().mockResolvedValue({}),
+  prefetchQuestionReveals: vi.fn().mockResolvedValue({}),
 }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => mocks.params }));
 vi.mock('@/hooks/useAppNavigation', () => ({ useBackLayer: vi.fn(), useQuizLeaveGuard: vi.fn() }));
@@ -19,8 +22,25 @@ vi.mock('@/hooks/useMediaQuery', () => ({ useMediaQuery: () => false }));
 vi.mock('@/features/quiz/components/QuizThemeProvider', () => ({ useQuizTheme: () => 'light', useQuizThemeControls: () => ({ toggleTheme: vi.fn() }) }));
 vi.mock('@/features/quiz/components/useQuizPreferences', () => ({ useQuizPreferences: () => ({}) }));
 vi.mock('@/hooks/useTranslatedQuestion', () => ({ useTranslatedQuestion: () => ({}) }));
-vi.mock('@/lib/userApi', () => ({ updateProgress: mocks.progress, submitQuizAnswer: mocks.submitQuizAnswer, saveRecentQuiz: vi.fn().mockResolvedValue({}) }));
-vi.mock('@/features/quiz/hooks/useQuizFilters', () => ({ useQuizFilters: () => ({ questions: mocks.questions, hasMore: mocks.hasMore, fetchMore: mocks.fetchMore, selectedClassificationConcepts: new Set(), setConceptFilter: vi.fn(), setExamFilter: vi.fn(), setSelectedClassificationConcepts: vi.fn() }) }));
+vi.mock('@/lib/userApi', () => ({
+  updateProgress: mocks.progress,
+  submitQuizAnswer: mocks.submitQuizAnswer,
+  prefetchQuestionReveals: mocks.prefetchQuestionReveals,
+  saveRecentQuiz: vi.fn().mockResolvedValue({}),
+}));
+vi.mock('@/features/quiz/hooks/useQuizFilters', () => ({
+  useQuizFilters: () => ({
+    questions: mocks.questions,
+    hasMore: mocks.hasMore,
+    isFetchingMore: mocks.isFetchingMore,
+    fetchMore: mocks.fetchMore,
+    ensureQuestion: mocks.ensureQuestion,
+    selectedClassificationConcepts: new Set(),
+    setConceptFilter: vi.fn(),
+    setExamFilter: vi.fn(),
+    setSelectedClassificationConcepts: vi.fn(),
+  }),
+}));
 vi.mock('@/features/quiz/hooks/useQuizBookmarks', () => ({ useQuizBookmarks: () => ({}) }));
 vi.mock('@/features/quiz/hooks/useQuizKeyboard', () => ({ useQuizKeyboard: vi.fn() }));
 vi.mock('@/features/quiz/hooks/useQuizSync', () => ({ useQuizSync: vi.fn() }));
@@ -28,12 +48,23 @@ vi.mock('@/features/quiz/hooks/useQuizTimer', () => ({ useQuizTimer: () => ({ ti
 
 const subjectConfig: SubjectConfig = { subjectId: 'math', subjectLabel: 'Math', cssClassName: 'math', topicConcepts: {}, classificationCategories: [], getClassificationCategoryId: () => '' };
 const question = (id: number): QuizQuestion => ({ id, concept: 'percentages', formula: '', question: 'One plus one?', options: ['1', '2'], correctAnswer: 1, answer: '2', difficulty: 'medium', estimatedTime: 60, year: '', exam: '', solution: '2' });
+const unrevealedQuestion = (id: number, overrides: Partial<QuizQuestion> = {}): QuizQuestion => ({
+  ...question(id),
+  correctAnswer: -1,
+  answer: '',
+  solution: '',
+  ...overrides,
+});
 const setup = () => renderHook(() => useQuizController({ subjectConfig, title: 'Percentages', slug: 'percentages' }));
 
 beforeEach(() => {
   vi.clearAllMocks(); localStorage.clear(); mocks.params = new URLSearchParams();
   mocks.authLoading = false;
+  mocks.isFetchingMore = false;
   mocks.questions = [question(1), question(2)]; mocks.hasMore = false; mocks.recentQuizzes = [];
+  mocks.submitQuizAnswer.mockResolvedValue({});
+  mocks.prefetchQuestionReveals.mockResolvedValue({});
+  mocks.ensureQuestion.mockResolvedValue(undefined);
 });
 
 describe('quiz controller public behavior', () => {
@@ -65,6 +96,126 @@ describe('quiz controller public behavior', () => {
     expect(mocks.submitQuizAnswer).toHaveBeenCalledTimes(1);
     expect(mocks.submitQuizAnswer.mock.calls[0][0]).toMatchObject({ questionId: 1, answer: 1, timeTaken: 15,
       resume: { selectedAnswers: { 0: 1 }, submittedQuestions: [0] } });
+  });
+
+  it('reveals the server answer key without flashing option A when session questions omit correctAnswer', async () => {
+    mocks.questions = [unrevealedQuestion(1), unrevealedQuestion(2)];
+    let resolveAnswer!: (value: unknown) => void;
+    mocks.submitQuizAnswer.mockReturnValueOnce(new Promise(resolve => { resolveAnswer = resolve; }));
+
+    const { result } = setup();
+    act(() => result.current.handleStart());
+    act(() => result.current.handleSelectAnswer(1));
+    act(() => result.current.handleSubmitCurrent());
+
+    // While in flight, correctAnswer remains -1 (pending) rather than defaulting to 0.
+    expect(result.current.currentQ?.correctAnswer).toBe(-1);
+    expect(result.current.questions[0].correctAnswer).toBe(-1);
+    expect(result.current.results[0]).toMatchObject({ selected: 1, correct: -1, isCorrect: false });
+
+    await act(async () => {
+      resolveAnswer({ data: { correct: 1, isCorrect: true, solution: '1 + 1 = 2' } });
+    });
+
+    expect(result.current.currentQ?.correctAnswer).toBe(1);
+    expect(result.current.questions[0].correctAnswer).toBe(1);
+    expect(result.current.results[0]).toMatchObject({ selected: 1, correct: 1, isCorrect: true });
+    expect(result.current.stats).toMatchObject({ correct: 1, wrong: 0, accuracy: 100 });
+    expect(result.current.bestStreak).toBe(1);
+  });
+
+  it('instantly reveals the cached right option in 0ms on Submit without waiting for submitQuizAnswer', async () => {
+    mocks.questions = [unrevealedQuestion(1), unrevealedQuestion(2), unrevealedQuestion(3)];
+    mocks.prefetchQuestionReveals.mockResolvedValueOnce({
+      data: {
+        reveals: {
+          '1': { correct: 1, solution: 'Prefetched solution 1' },
+          '2': { correct: 0, solution: 'Prefetched solution 2' },
+          '3': { correct: 1, solution: 'Prefetched solution 3' },
+        },
+      },
+    });
+    // Keep submitQuizAnswer pending to prove Submit reveals immediately from the LRU cache.
+    mocks.submitQuizAnswer.mockReturnValue(new Promise(() => {}));
+
+    const { result } = setup();
+    await act(async () => {});
+    act(() => result.current.handleStart());
+
+    // Before submit, unsubmitted question still hides correctAnswer (-1).
+    expect(result.current.currentQ?.correctAnswer).toBe(-1);
+
+    act(() => result.current.handleSelectAnswer(0));
+    const t0 = performance.now();
+    act(() => result.current.handleSubmitCurrent());
+    const submitLatencyMs = performance.now() - t0;
+
+    // Immediately on the same synchronous Submit turn (0ms network wait), right/wrong is revealed.
+    expect(submitLatencyMs).toBeLessThan(20);
+    expect(result.current.currentQ?.correctAnswer).toBe(1);
+    expect(result.current.currentQ?.solution).toBe('Prefetched solution 1');
+    expect(result.current.questions[0].correctAnswer).toBe(1);
+    expect(result.current.results[0]).toMatchObject({ selected: 0, correct: 1, isCorrect: false });
+    expect(result.current.stats).toMatchObject({ correct: 0, wrong: 1, accuracy: 0 });
+  });
+
+  it('handles rapid navigation, out-of-order reveals, and instant cached back-navigation under 50ms', async () => {
+    mocks.questions = [unrevealedQuestion(1), unrevealedQuestion(2), unrevealedQuestion(3)];
+    let resolveQ1!: (value: unknown) => void;
+    let resolveQ2!: (value: unknown) => void;
+    mocks.submitQuizAnswer
+      .mockReturnValueOnce(new Promise(resolve => { resolveQ1 = resolve; }))
+      .mockReturnValueOnce(new Promise(resolve => { resolveQ2 = resolve; }));
+
+    const { result } = setup();
+    act(() => result.current.handleStart());
+
+    // Submit Q1 (index 0) and immediately navigate to Q2 (index 1) while Q1 is still in flight.
+    act(() => result.current.handleSelectAnswer(1));
+    act(() => result.current.handleSubmitCurrent());
+    act(() => result.current.handleNext());
+    expect(result.current.currentIndex).toBe(1);
+
+    // Submit Q2 (index 1) and navigate to Q3 (index 2).
+    act(() => result.current.handleSelectAnswer(0));
+    act(() => result.current.handleSubmitCurrent());
+    act(() => result.current.handleNext());
+    expect(result.current.currentIndex).toBe(2);
+
+    // Resolve Q1 and Q2 while user is viewing Q3.
+    await act(async () => {
+      resolveQ1({ data: { correct: 1, isCorrect: true, solution: 'Sol 1' } });
+      resolveQ2({ data: { correct: 1, isCorrect: false, solution: 'Sol 2' } });
+    });
+
+    expect(result.current.currentIndex).toBe(2);
+    expect(result.current.stats).toMatchObject({ correct: 1, wrong: 1, accuracy: 50 });
+    expect(result.current.bestStreak).toBe(1);
+
+    // Navigate back to Q2 and Q1: cached results and solutions are available immediately in < 50ms.
+    const t0 = performance.now();
+    act(() => result.current.handlePrev());
+    expect(result.current.currentIndex).toBe(1);
+    expect(result.current.currentQ?.correctAnswer).toBe(1);
+    expect(result.current.currentQ?.solution).toBe('Sol 2');
+
+    act(() => result.current.handlePrev());
+    expect(result.current.currentIndex).toBe(0);
+    expect(result.current.currentQ?.correctAnswer).toBe(1);
+    expect(result.current.currentQ?.solution).toBe('Sol 1');
+    expect(performance.now() - t0).toBeLessThan(50);
+  });
+
+  it('prefetches the next 2 placeholder questions in the background without blocking current navigation', () => {
+    mocks.questions = [
+      unrevealedQuestion(1),
+      unrevealedQuestion(2, { sessionPlaceholder: true }),
+      unrevealedQuestion(3, { sessionPlaceholder: true }),
+    ];
+    const { result } = setup();
+    act(() => result.current.handleStart());
+    expect(mocks.ensureQuestion).toHaveBeenCalledWith(1);
+    expect(mocks.ensureQuestion).toHaveBeenCalledWith(2);
   });
 
   it('sends one answer command for repeated submit calls before rerender', async () => {
@@ -104,8 +255,17 @@ describe('quiz controller public behavior', () => {
     expect(result.current.showAnalytics).toBe(true);
   });
 
-  it('offers and restores the existing local resume format', () => {
-    localStorage.setItem('math_quiz_resume_percentages_concept', JSON.stringify({ selectedAnswers: { 0: 1 }, submittedQuestions: [0], currentIndex: 1 }));
+  it('offers and restores the existing local resume format including revealed results', () => {
+    localStorage.setItem(
+      'math_quiz_resume_percentages_concept',
+      JSON.stringify({
+        selectedAnswers: { 0: 1 },
+        submittedQuestions: [0],
+        results: [{ questionId: 1, questionIndex: 0, selected: 1, correct: 1, isCorrect: true, timeTaken: 10, concept: 'percentages', difficulty: 'medium' }],
+        currentIndex: 1,
+      }),
+    );
+    mocks.questions = [unrevealedQuestion(1), unrevealedQuestion(2)];
     const { result } = setup();
     act(() => result.current.handleStart());
     expect(result.current.resumeData).not.toBeNull();
@@ -113,6 +273,7 @@ describe('quiz controller public behavior', () => {
     act(() => result.current.handleResume());
     expect(result.current.currentIndex).toBe(1);
     expect(result.current.submittedQuestions.has(0)).toBe(true);
+    expect(result.current.questions[0].correctAnswer).toBe(1);
     expect(result.current.started).toBe(true);
   });
 

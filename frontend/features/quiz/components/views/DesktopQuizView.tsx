@@ -254,22 +254,24 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
                 aria-label="Answer options"
               >
                 {displayedOptions.slice(0, 4).map((option, index) => {
+                  // Grade only once the server has revealed the answer key.
+                  const isRevealed = isCurrentSubmitted && currentQ.correctAnswer >= 0;
                   const isCorrect =
-                    isCurrentSubmitted && index === currentQ.correctAnswer;
+                    isRevealed && index === currentQ.correctAnswer;
                   const isWrong =
-                    isCurrentSubmitted &&
+                    isRevealed &&
                     selectedAnswer === index &&
                     index !== currentQ.correctAnswer;
                   const isSelected = selectedAnswer === index;
                   const isUserAnswer = isCurrentSubmitted && isSelected;
-                  const isDimmed = isCurrentSubmitted && !isCorrect && !isWrong;
+                  const isDimmed = isRevealed && !isCorrect && !isWrong;
                   return (
                     <button data-ui-button="state"
                       key={`${currentQ.id}-${index}`}
                       type="button"
                       disabled={isCurrentSubmitted}
                       onClick={() => handleSelectAnswer(index)}
-                      className={`mac-series-option ${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""} ${isUserAnswer ? "is-user-answer" : ""} ${isDimmed ? "is-dimmed" : ""}`}
+                      className={`mac-series-option ${isSelected && !isCurrentSubmitted ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""} ${isUserAnswer ? "is-user-answer" : ""} ${isDimmed ? "is-dimmed" : ""}`}
                     >
                       <span className="mac-series-option-letter">
                         {String.fromCharCode(65 + index)}
@@ -281,7 +283,7 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
                         <span className="mac-series-option-status">
                           {isUserAnswer && (
                             <span className="mac-series-your-answer">
-                              Your answer
+                              {isCorrect || isWrong ? "Your answer" : "Checking…"}
                             </span>
                           )}
                           {isCorrect && (
