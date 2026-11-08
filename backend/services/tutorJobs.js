@@ -1,8 +1,19 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { insertTutorJob, findStagedTutorJob, queueStagedTutorJob, findTutorJob, cancelOwnedTutorJob, trackTutorObject, beginTutorUpload, releaseTutorUpload } from '../repositories/tutorJobRepository.js';
-import { acquireTutorSlot, releaseTutorSlot, reserveTutorUsage } from '../repositories/tutorQuotaRepository.js';
+import * as tutorQuotaRepo from '../repositories/tutorQuotaRepository.js';
 import { putObject } from '../infrastructure/objectStorage.js';
 import { traceCarrier } from '../infrastructure/tracing.js';
+
+const acquireTutorSlot = (...args) => tutorQuotaRepo.acquireTutorSlot(...args);
+const releaseTutorSlot = (...args) =>
+  'releaseTutorSlot' in tutorQuotaRepo && typeof tutorQuotaRepo.releaseTutorSlot === 'function'
+    ? Promise.resolve(tutorQuotaRepo.releaseTutorSlot(...args))
+    : Promise.resolve(undefined);
+const reserveTutorUsage = (...args) => tutorQuotaRepo.reserveTutorUsage(...args);
+const releaseTutorUsage = (...args) =>
+  'releaseTutorUsage' in tutorQuotaRepo && typeof tutorQuotaRepo.releaseTutorUsage === 'function'
+    ? Promise.resolve(tutorQuotaRepo.releaseTutorUsage(...args))
+    : Promise.resolve(false);
 
 export async function enqueueTutorJob(userId, input, file, idempotencyKey) {
   if (idempotencyKey && !/^[a-zA-Z0-9_-]{8,100}$/.test(idempotencyKey)) throw Object.assign(new Error('Invalid Idempotency-Key'), { statusCode: 400 });
@@ -15,13 +26,18 @@ export async function enqueueTutorJob(userId, input, file, idempotencyKey) {
     if (doc.status !== 'staging') return doc;
   } else {
     const slot = await acquireTutorSlot(userId, 'queued');
+    let reservation;
     try {
-      await reserveTutorUsage(userId, input, file.buffer.length, new Date(), `${id}:${payloadHash}`);
       const now = new Date();
-      doc = { _id: id, kind: 'tutor', userId, payloadHash, input, attachmentKey: `tutor-jobs/${id}/${randomUUID()}/attachment`, attachment: { originalname: file.originalname, mimetype: file.mimetype }, queueSlot: slot, trace: traceCarrier(), status: 'staging', attempts: 0, createdAt: now, availableAt: now, expiresAt: new Date(+now + 7 * 86400000) };
+      reservation = await reserveTutorUsage(userId, input, file.buffer.length, now, `${id}:${payloadHash}`);
+      doc = { _id: id, kind: 'tutor', userId, payloadHash, input, attachmentKey: `tutor-jobs/${id}/${randomUUID()}/attachment`, attachment: { originalname: file.originalname, mimetype: file.mimetype }, attachmentBytes: file.buffer.length, quotaReservation: reservation, queueSlot: slot, trace: traceCarrier(), status: 'staging', attempts: 0, createdAt: now, availableAt: now, expiresAt: new Date(+now + 7 * 86400000) };
       await insertTutorJob(doc);
     } catch (error) {
-      if (error.code !== 11000) { await releaseTutorSlot(slot); throw error; }
+      if (error.code !== 11000) {
+        if (reservation) await releaseTutorUsage(reservation, { userId, input, attachmentBytes: file.buffer.length, reservationId: `${id}:${payloadHash}` }).catch(() => {});
+        await releaseTutorSlot(slot);
+        throw error;
+      }
       await releaseTutorSlot(slot);
       doc = await findStagedTutorJob(userId, id);
       if (doc?.payloadHash !== payloadHash) throw Object.assign(new Error('Idempotency key was used with different input'), { statusCode: 409 });
@@ -36,7 +52,34 @@ export async function enqueueTutorJob(userId, input, file, idempotencyKey) {
     await trackTutorObject(id, key, new Date(+doc.expiresAt + 3600000));
     await putObject(key, file.buffer, file.mimetype);
     await queueStagedTutorJob(id, uploadOwner);
+  } catch (error) {
+    await releaseTutorUsage(doc.quotaReservation, {
+      userId,
+      input,
+      attachmentBytes: file.buffer.length,
+      now: doc.createdAt,
+      reservationId: `${id}:${payloadHash}`,
+    }).catch(() => {});
+    if (doc.queueSlot) await releaseTutorSlot(doc.queueSlot).catch(() => {});
+    throw error;
   } finally { await releaseTutorUpload(id, uploadOwner); }
   return findStagedTutorJob(userId, id);
 }
-export { findTutorJob as getTutorJob, cancelOwnedTutorJob as cancelTutorJob };
+
+export async function cancelTutorJob(userId, id) {
+  const existing = await findStagedTutorJob(userId, id);
+  const cancelled = await cancelOwnedTutorJob(userId, id);
+  if (cancelled && existing) {
+    await releaseTutorUsage(existing.quotaReservation, {
+      userId,
+      input: existing.input,
+      attachmentBytes: existing.attachmentBytes || 0,
+      now: existing.createdAt,
+      reservationId: existing.payloadHash ? `${existing._id}:${existing.payloadHash}` : undefined,
+    }).catch(() => {});
+    if (existing.queueSlot) await releaseTutorSlot(existing.queueSlot).catch(() => {});
+  }
+  return cancelled;
+}
+
+export { findTutorJob as getTutorJob };

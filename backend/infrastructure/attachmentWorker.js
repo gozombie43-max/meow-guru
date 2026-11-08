@@ -3,8 +3,18 @@ import { randomUUID } from 'node:crypto';
 import { getMongoDB } from '../config/mongodb.js';
 import { claimJob, renewJob, completeJob, failJob } from './durableQueue.js';
 import { purgeObjectVersions } from './objectStorage.js';
-import { acquireTutorSlot, releaseTutorSlot } from '../repositories/tutorQuotaRepository.js';
+import * as tutorQuotaRepo from '../repositories/tutorQuotaRepository.js';
 import { listExpiredTutorObjects, forgetTutorObject, claimTutorInputCleanup, finishTutorInputCleanup } from '../repositories/tutorJobRepository.js';
+
+const acquireTutorSlot = (...args) => tutorQuotaRepo.acquireTutorSlot(...args);
+const releaseTutorSlot = (...args) =>
+  'releaseTutorSlot' in tutorQuotaRepo && typeof tutorQuotaRepo.releaseTutorSlot === 'function'
+    ? Promise.resolve(tutorQuotaRepo.releaseTutorSlot(...args))
+    : Promise.resolve(undefined);
+const releaseTutorUsage = (...args) =>
+  'releaseTutorUsage' in tutorQuotaRepo && typeof tutorQuotaRepo.releaseTutorUsage === 'function'
+    ? Promise.resolve(tutorQuotaRepo.releaseTutorUsage(...args))
+    : Promise.resolve(false);
 import { logger } from './logger.js';
 import { getReleaseId } from './releaseInfo.js';
 import { withTrace, withTraceCarrier } from './tracing.js';
@@ -99,6 +109,15 @@ async function processJobs(db, jobs) {
           await purgeObjectVersions(old.attachmentKey || old.inputKey);
           await forgetTutorObject(old.attachmentKey || old.inputKey);
           if (old.queueSlot) await releaseTutorSlot(old.queueSlot);
+          if (old.status === 'failed' || old.status === 'cancelled') {
+            await releaseTutorUsage(old.quotaReservation, {
+              userId: old.userId,
+              input: old.input,
+              attachmentBytes: old.attachmentBytes || 0,
+              now: old.createdAt,
+              reservationId: old.payloadHash ? `${old._id}:${old.payloadHash}` : undefined,
+            }).catch(() => {});
+          }
           await finishTutorInputCleanup(old);
         } catch {
           logger.warn({ jobId: old._id }, 'attachment input cleanup will retry');
@@ -148,6 +167,16 @@ async function processJobs(db, jobs) {
         }, 'attachment job finished');
       } catch {
         await failJob(jobs, job);
+        const updated = await jobs.findOne({ _id: job._id }, { projection: { status: 1 } });
+        if (updated?.status === 'failed') {
+          await releaseTutorUsage(job.quotaReservation, {
+            userId: job.userId,
+            input: job.input,
+            attachmentBytes: job.attachmentBytes || 0,
+            now: job.createdAt,
+            reservationId: job.payloadHash ? `${job._id}:${job.payloadHash}` : undefined,
+          }).catch(() => {});
+        }
         logger.warn({ jobId: job._id, attempt: job.attempts }, 'attachment job failed');
       } finally {
         clearInterval(heartbeat);

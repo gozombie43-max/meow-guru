@@ -14,10 +14,18 @@ import { aiLimiter } from '../middleware/rateLimiter.js';
 import { aiAdmission, acquireAiLease, releaseAiLease } from '../middleware/aiAdmission.js';
 import { tutorRequestSchema, tutorReplySchema, tutorJobResponseSchema } from '@meow/contracts/tutor';
 import { validateTutorAttachment, MAX_TUTOR_ATTACHMENT_BYTES } from '../services/uploads/tutorAttachment.js';
-import { reserveTutorUsage } from '../repositories/tutorQuotaRepository.js';
+import * as tutorQuotaRepo from '../repositories/tutorQuotaRepository.js';
 import { imageBudget } from '../infrastructure/dependencyBoundary.js';
 
+const reserveTutorUsage = (...args) => tutorQuotaRepo.reserveTutorUsage(...args);
+const releaseTutorUsage = (...args) =>
+  'releaseTutorUsage' in tutorQuotaRepo && typeof tutorQuotaRepo.releaseTutorUsage === 'function'
+    ? Promise.resolve(tutorQuotaRepo.releaseTutorUsage(...args))
+    : Promise.resolve(false);
+
 const router = express.Router();
+const ALLOWED_GENERATION_DIFFICULTIES = new Set(['easy', 'medium', 'hard', 'mixed']);
+
 // Establish the authenticated identity before generation quotas and admission.
 router.use(protect);
 // Polling and cancellation are inexpensive and do not consume generation quota.
@@ -61,23 +69,58 @@ function wakeTutorAttachmentWorker() {
 }
 
 router.post('/diagram', async (req, res, next) => {
+  const userId = String(req.user?.id || req.user?._id);
   const question = typeof req.body?.question === 'string' ? req.body.question.trim() : '';
   if (!question) return res.status(400).json({ error: 'Question text is required' });
   if (question.length > 4000) return res.status(413).json({ error: 'Question text is too long' });
-  try { res.json(await generateDiagram(question, diagramPrompt)); }
-  catch (error) { next(error); }
+
+  let reservation;
+  try {
+    reservation = await reserveTutorUsage(userId, { question });
+  } catch (error) {
+    const statusCode = error?.statusCode || 502;
+    return res.status(statusCode).json({
+      success: false,
+      error: statusCode === 429 ? error.message : 'AI request failed. Please retry shortly.',
+    });
+  }
+
+  try {
+    return res.json(await generateDiagram(question, diagramPrompt));
+  } catch (error) {
+    await releaseTutorUsage(reservation, { userId, input: { question } }).catch(() => {});
+    return next(error);
+  }
 });
 
 // ── 1. Generate Questions ─────────────────────────────
 router.post("/generate-questions", adminAuth, idempotency('ai.question.generate'), async (req, res) => {
-  const { topic, difficulty = "medium", count = 5 } = req.body;
+  const { topic, difficulty = "medium", count = 5 } = req.body || {};
 
-  if (!topic) return res.status(400).json({ error: "topic is required" });
+  if (!topic || typeof topic !== "string" || !topic.trim()) {
+    return res.status(400).json({ error: "topic is required" });
+  }
+  const normalizedTopic = topic.trim();
+  if (normalizedTopic.length > 200) {
+    return res.status(400).json({ error: "topic must be at most 200 characters" });
+  }
+
+  const normalizedDifficulty = typeof difficulty === "string"
+    ? difficulty.trim().toLowerCase()
+    : "";
+  if (!ALLOWED_GENERATION_DIFFICULTIES.has(normalizedDifficulty)) {
+    return res.status(400).json({ error: "difficulty must be easy, medium, hard, or mixed" });
+  }
+
+  const parsedCount = Number(count);
+  if (!Number.isInteger(parsedCount) || parsedCount < 1 || parsedCount > 20) {
+    return res.status(400).json({ error: "count must be an integer between 1 and 20" });
+  }
 
   const systemPrompt = `You are an expert SSC CGL and CAT exam question creator.
 Always respond with valid JSON only. No markdown, no explanation.`;
 
-  const userPrompt = `Generate ${count} MCQ questions on topic: "${topic}", difficulty: "${difficulty}".
+  const userPrompt = `Generate ${parsedCount} MCQ questions on topic: "${normalizedTopic}", difficulty: "${normalizedDifficulty}".
 Return a JSON array like this:
 [
   {
@@ -85,8 +128,8 @@ Return a JSON array like this:
     "options": ["A) option1", "B) option2", "C) option3", "D) option4"],
     "correctAnswer": 0,
     "explanation": "why this answer is correct",
-    "topic": "${topic}",
-    "difficulty": "${difficulty}"
+    "topic": "${normalizedTopic}",
+    "difficulty": "${normalizedDifficulty}"
   }
 ]`;
 
@@ -144,11 +187,23 @@ Correct Answer: ${answerText}
 
 Give a clear step-by-step explanation. Keep it concise.`;
 
+  let reservation;
   try {
-    await reserveTutorUsage(userId, { question, options, correctAnswer });
+    reservation = await reserveTutorUsage(userId, { question, options, correctAnswer });
+  } catch (err) {
+    const statusCode = err?.statusCode || 502;
+    runtimeLog.error('explain error:', err?.message || err);
+    return res.status(statusCode).json({
+      success: false,
+      error: statusCode === 429 ? err?.message : 'AI request failed. Please retry shortly.',
+    });
+  }
+
+  try {
     const explanation = await chatComplete(userPrompt, "o4-mini");
     res.json({ success: true, explanation });
   } catch (err) {
+    await releaseTutorUsage(reservation, { userId, input: { question, options, correctAnswer } }).catch(() => {});
     const statusCode = err?.statusCode || 502;
     runtimeLog.error('explain error:', err?.message || err);
     res.status(statusCode).json({
@@ -177,17 +232,39 @@ router.post('/tutor-chat', (req, res, next) => {
   if (!input.context || (!input.message && !req.file)) return res.status(400).json({ error: 'context and message or attachment are required' });
   if (JSON.stringify(input).length > 200000) return res.status(413).json({ error: 'Chat context is too large' });
   if (req.file) {
-    const attachment = await imageBudget.execute(() => validateTutorAttachment(req.file));
-    const job = await enqueueTutorJob(userId, input, attachment, req.get('Idempotency-Key'));
-    wakeTutorAttachmentWorker();
-    return res.status(202).json(tutorJobResponseSchema.parse({ success: true, jobId: job._id, status: job.status }));
+    try {
+      const attachment = await imageBudget.execute(() => validateTutorAttachment(req.file));
+      const job = await enqueueTutorJob(userId, input, attachment, req.get('Idempotency-Key'));
+      wakeTutorAttachmentWorker();
+      return res.status(202).json(tutorJobResponseSchema.parse({ success: true, jobId: job._id, status: job.status }));
+    } catch (err) {
+      runtimeLog.error('tutor-chat attachment error:', err?.message || err);
+      const statusCode = err?.statusCode || 502;
+      return res.status(statusCode).json({
+        success: false,
+        error: statusCode < 500 ? err.message : 'AI request failed. Please retry shortly.',
+      });
+    }
   }
+  let reservation;
   try {
-    await reserveTutorUsage(userId, input);
-    res.json(tutorReplySchema.parse(await tutorChat(input)));
+    reservation = await reserveTutorUsage(userId, input);
   } catch (err) {
     runtimeLog.error('tutor-chat error:', err?.message || err);
-    res.status(err.statusCode || 502).json({ success: false, error: err.statusCode === 429 ? err.message : 'AI request failed. Please retry shortly.' });
+    return res.status(err.statusCode || 502).json({
+      success: false,
+      error: err.statusCode === 429 ? err.message : 'AI request failed. Please retry shortly.',
+    });
+  }
+  try {
+    res.json(tutorReplySchema.parse(await tutorChat(input)));
+  } catch (err) {
+    await releaseTutorUsage(reservation, { userId, input }).catch(() => {});
+    runtimeLog.error('tutor-chat error:', err?.message || err);
+    res.status(err.statusCode || 502).json({
+      success: false,
+      error: err.statusCode === 429 ? err.message : 'AI request failed. Please retry shortly.',
+    });
   }
 });
 router.get('/tutor-jobs/:id', async (req, res) => {
@@ -205,14 +282,20 @@ router.delete('/tutor-jobs/:id', async (req, res) => {
 
 // ── 3. Tag a Question ─────────────────────────────────
 router.post("/tag-question", adminAuth, async (req, res) => {
-  const { question } = req.body;
+  const { question } = req.body || {};
 
-  if (!question) return res.status(400).json({ error: "question is required" });
+  if (!question || typeof question !== "string" || !question.trim()) {
+    return res.status(400).json({ error: "question is required" });
+  }
+  const normalizedQuestion = question.trim();
+  if (normalizedQuestion.length > 4000) {
+    return res.status(413).json({ error: "Question text is too long" });
+  }
 
   const systemPrompt = `You are an expert SSC CGL exam analyst. Return JSON only.`;
 
   const userPrompt = `Analyze this SSC exam question and return tags.
-Question: ${question}
+Question: ${normalizedQuestion}
 Return JSON:
 {
   "subject": "",

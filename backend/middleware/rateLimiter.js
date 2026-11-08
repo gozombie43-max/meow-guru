@@ -1,6 +1,7 @@
 import { RedisRateLimitStore } from "./redisRateLimitStore.js";
 import { MongoRateLimitStore } from './mongoRateLimitStore.js';
 import { isLocalEnvironment } from '../config/environment.js';
+import { verifyToken } from '../auth/jwt.js';
 // middleware/rateLimiter.js
 
 import rateLimit, {
@@ -70,7 +71,7 @@ function normalizeClientIp(ip) {
  * ipKeyGenerator is retained so IPv6 addresses
  * are handled correctly by express-rate-limit.
  */
-function requestIpKey(req) {
+export function requestIpKey(req) {
   const normalizedIp =
     normalizeClientIp(
       req.ip ||
@@ -98,12 +99,27 @@ const isDevOrLocal = () => {
 
 /**
  * Prefer authenticated user identity where available.
+ * If route-level auth middleware has not run yet, verify the Bearer token
+ * signature and claims synchronously so user-scoped limiters key by user ID.
  * Otherwise fall back to normalized client IP.
  */
-const userKeyGenerator = (req) =>
-  req.user?.id ||
-  req.user?._id ||
-  requestIpKey(req);
+export const userKeyGenerator = (req) => {
+  if (req.user?.id || req.user?._id) {
+    return String(req.user.id || req.user._id);
+  }
+  const authHeader = req.headers?.authorization;
+  if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+    try {
+      const decoded = verifyToken(authHeader.slice(7).trim());
+      if (decoded?.id || decoded?._id) {
+        return String(decoded.id || decoded._id);
+      }
+    } catch {
+      // Invalid or expired tokens fall back to client IP keying.
+    }
+  }
+  return requestIpKey(req);
+};
 
 const isTrainingRequest = req => {
   const path = req.path || '';
