@@ -67,7 +67,7 @@ export function useTranslatedQuestion<T extends TranslatableQuestion>(
   const sourceTexts = plan.source;
   const key = JSON.stringify([activeLang, sourceTexts, questionContext]);
 
-  const upcomingKey = JSON.stringify(upcomingQuestions.slice(0, 2)
+  const upcomingKey = JSON.stringify(upcomingQuestions.slice(0, 1)
     .filter((q) => q.questionType !== "image_mcq")
     .filter((q) => {
        if (activeLang === "en") return false;
