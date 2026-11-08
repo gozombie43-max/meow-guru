@@ -722,10 +722,10 @@ describe('Adversarial Challenge 4: Cross-Exam-Mode Scoping & Collision Targeting
       files: { 'images/bad_topic.png': 'SAMPLE_PNG' },
     });
 
-    // In accordance with PROJECT.md architecture R1:
+    // In accordance with docs/engineering/audits/security/2026-11-07-security-hardening-project-plan.md (formerly PROJECT.md) architecture R1:
     // "Question lookup, exam mode scoping (assertQuestionExamMode)..."
     // Targeting jam_bad_topic MUST be rejected because it fails assertQuestionExamMode!
-    // This assertion tests for compliance with PROJECT.md:
+    // This assertion tests for compliance with docs/engineering/audits/security/2026-11-07-security-hardening-project-plan.md:
     await expect(
       processQuestionBankImageZip({
         buffer: zip,

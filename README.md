@@ -43,7 +43,12 @@ Meow Guru is a modern web-based quiz application designed for structured exam pr
 
 ---
 
-## 📂 Project Structure (Basic)
+## 📂 Project Structure & Engineering Documentation
+
+- `contracts/` — Shared `@meow/contracts` Zod schemas and TypeScript contracts
+- `backend/` — Express 5 API, MongoDB & Redis services, Socket.IO battle engine, and background workers ([backend/README.md](./backend/README.md))
+- `frontend/` — Next.js 16 web application ([frontend/README.md](./frontend/README.md), [frontend/design.md](./frontend/design.md))
+- `docs/engineering/` — [Central Engineering Documentation Hub](./docs/engineering/README.md) & [Central Audit Index](./docs/engineering/audits/README.md)
 
 
 ---

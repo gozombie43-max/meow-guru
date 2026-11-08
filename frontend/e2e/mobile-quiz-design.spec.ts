@@ -91,5 +91,5 @@ test("mobile quiz engine renders with reduced question boldness (400) and reduce
   expect(timerFontSize).toBe("12px");
 
   // Capture Screenshot for visual confirmation
-  await page.screenshot({ path: "mobile-quiz-verified.png" });
+  await page.screenshot({ path: testInfo.outputPath("mobile-quiz-verified.png") });
 });

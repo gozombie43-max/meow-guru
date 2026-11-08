@@ -25,9 +25,10 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
-# Local browser traces and raw reports can contain session data.
-output/**/e2e*-artifacts/
-output/**/e2e*-results.json
+# Local browser traces, verification dumps, and raw benchmark outputs
+/output/
+/REQUEST_FLOW_*.json
+/REQUEST_FLOW_*.jsonl
 
 # Logs
 *.log
