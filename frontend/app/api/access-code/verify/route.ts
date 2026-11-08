@@ -40,7 +40,21 @@ function resolveTrustedForwardedFor(req: Request): string | null {
   return hops.at(-1) || null;
 }
 
+const ACCESS_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+
 export async function POST(req: Request) {
+  const originHeader = req.headers.get('origin');
+  if (originHeader) {
+    try {
+      const requestOrigin = new URL(req.url).origin;
+      if (originHeader !== requestOrigin) {
+        return NextResponse.json({ valid: false, error: 'Untrusted request origin' }, { status: 403 });
+      }
+    } catch {
+      return NextResponse.json({ valid: false, error: 'Untrusted request origin' }, { status: 403 });
+    }
+  }
+
   let body: { code?: string };
   try {
     body = (await req.json()) as { code?: string };
@@ -70,6 +84,10 @@ export async function POST(req: Request) {
 
     if (backendRes.ok && data?.valid) {
       const { timestamp, codeId } = parseTokenClaims(data.token);
+      const remainingSeconds = Math.floor((timestamp + ACCESS_SESSION_TTL_MS - Date.now()) / 1000);
+      if (remainingSeconds <= 0) {
+        return NextResponse.json({ valid: false, error: 'Access session expired' }, { status: 401 });
+      }
       const frontendToken = createAccessSessionToken(codeId, timestamp) || data.token || '';
       const response = NextResponse.json(
         { valid: true },
@@ -81,7 +99,7 @@ export async function POST(req: Request) {
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
           path: '/',
-          maxAge: 24 * 60 * 60,
+          maxAge: Math.min(24 * 60 * 60, remainingSeconds),
         });
       }
       return response;

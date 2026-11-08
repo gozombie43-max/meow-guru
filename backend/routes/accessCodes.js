@@ -8,6 +8,24 @@ import * as accessCodeRepo from '../repositories/accessCodeRepository.js';
 
 import { validateBody } from '../middleware/validation.js';
 import { accessCodeVerifySchema } from '../schemas/apiSchemas.js';
+import { isTrustedOrigin } from '../auth/requestOrigin.js';
+
+function verifyBrowserOrigin(req, res, next) {
+  let origin = req.headers.origin;
+  if (!origin && req.headers.referer) {
+    try {
+      origin = new URL(req.headers.referer).origin;
+    } catch {
+      return res.status(403).json({ valid: false, error: 'Untrusted request origin' });
+    }
+  }
+  if (origin || req.headers['sec-fetch-site'] === 'cross-site') {
+    if (!isTrustedOrigin(origin)) {
+      return res.status(403).json({ valid: false, error: 'Untrusted request origin' });
+    }
+  }
+  return next();
+}
 
 const { findActiveAccessCode, consumeAccessCode } = accessCodeRepo;
 
@@ -167,6 +185,7 @@ export const verifySignedSessionToken = (token) => {
 
 router.post(
   '/verify',
+  verifyBrowserOrigin,
 
   validateBody(
     accessCodeVerifySchema
@@ -362,6 +381,7 @@ router.get(
 
 router.post(
   '/logout',
+  verifyBrowserOrigin,
   (req, res) => {
     res.clearCookie(
       'access_session',

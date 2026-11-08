@@ -73,7 +73,7 @@ export async function releaseTutorUsage(reservationOrUserId, fallback = {}) {
   const collection = getMongoDB().collection('tutorDailyUsage');
   if (reservationId) {
     const result = await collection.updateOne(
-      { _id: id, requestIds: reservationId },
+      { _id: id, requestIds: reservationId, requests: { $gt: 0 } },
       {
         $inc: {
           requests: -1,

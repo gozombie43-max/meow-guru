@@ -3,6 +3,7 @@ import { findUserByEmail, normalizeAccountEmail, authUserProjection } from '../r
 
 import passport from 'passport';
 import { oauthStateStore } from './oauthState.js';
+import { revokeUserSessions } from './sessions.js';
 const dummyPasswordHash = bcrypt.hash('invalid-account-password', 12);
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
@@ -245,19 +246,38 @@ export const initPassport = () => {
                 : {}),
             };
 
-            await users.updateOne(
+            const updateResult = await users.updateOne(
               {
                 id: user.id,
+                ...(wasUnverifiedLocal ? { emailVerified: { $ne: true } } : {}),
               },
               updateDoc
             );
 
-            user = {
-              ...user,
-              ...profileUpdates,
-            };
-            if (wasUnverifiedLocal) {
-              delete user.passwordHash;
+            if (wasUnverifiedLocal && updateResult.matchedCount === 0) {
+              // Concurrent verification completed first; link Google profile without clobbering verified state
+              await users.updateOne(
+                { id: user.id },
+                {
+                  $set: {
+                    name: profileUpdates.name,
+                    googleId: profileUpdates.googleId,
+                    avatar: profileUpdates.avatar,
+                  },
+                }
+              );
+              user = await findUserByEmail(email);
+            } else {
+              if (wasUnverifiedLocal) {
+                await revokeUserSessions(user.id, 'unverified-account-claimed');
+              }
+              user = {
+                ...user,
+                ...profileUpdates,
+              };
+              if (wasUnverifiedLocal) {
+                delete user.passwordHash;
+              }
             }
           }
 

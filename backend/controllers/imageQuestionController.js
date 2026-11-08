@@ -23,7 +23,7 @@ const UNSAFE_TOPIC_PATH_REGEX = /(?:^|[\\/])\.\.(?:[\\/]|$)|[\\/\x00-\x1f\x7f]/;
 export const isSafeImageKey = (key) =>
   typeof key === "string" &&
   SAFE_IMAGE_KEY_REGEX.test(key) &&
-  !key.split("/").includes("..");
+  !key.split("/").some((segment) => !segment || segment.startsWith(".") || segment.includes(".."));
 
 export const sanitizeQuestionTopicSlug = (topic) => {
   if (typeof topic === "string" && UNSAFE_TOPIC_PATH_REGEX.test(topic)) {
@@ -80,9 +80,16 @@ const decodeAndCompressImage = async (buffer, quality = 90) => {
 const imageIdFromKey = (key) =>
   Buffer.from(key, "utf8").toString("base64url");
 
-const keyFromImageId = (id) => {
+export const keyFromImageId = (id) => {
+  if (typeof id !== "string" || id.length === 0 || id.length > 512 || !/^[A-Za-z0-9_-]+$/.test(id)) {
+    return null;
+  }
   try {
-    return Buffer.from(String(id), "base64url").toString("utf8");
+    const decoded = Buffer.from(id, "base64url").toString("utf8");
+    if (!decoded || Buffer.from(decoded, "utf8").toString("base64url") !== id) {
+      return null;
+    }
+    return decoded;
   } catch {
     return null;
   }

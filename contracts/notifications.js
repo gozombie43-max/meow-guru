@@ -6,23 +6,70 @@ import { z } from 'zod';
  * "/", must not be protocol-relative ("//host"), and must not contain whitespace,
  * quotes, angle brackets or backslashes (which browsers normalise to "/").
  */
-export const SAFE_INTERNAL_ROUTE_REGEX = /^\/(?!\/)[^\s"'<>\\]*$/;
+export const SAFE_INTERNAL_ROUTE_REGEX = /^\/(?!\/)[^\x00-\x1f\x7f\s"'<>\\]*$/;
 export const MAX_INTERNAL_ROUTE_LENGTH = 512;
 export const MAX_EXTERNAL_URL_LENGTH = 2048;
 const SAFE_URL_PROTOCOLS = new Set(['http:', 'https:']);
 
 /** @param {unknown} value */
 export function isSafeInternalRoute(value) {
-  return typeof value === 'string'
-    && value.length <= MAX_INTERNAL_ROUTE_LENGTH
-    && SAFE_INTERNAL_ROUTE_REGEX.test(value);
+  if (
+    typeof value !== 'string' ||
+    value.length === 0 ||
+    value.length > MAX_INTERNAL_ROUTE_LENGTH ||
+    !SAFE_INTERNAL_ROUTE_REGEX.test(value) ||
+    /^\/(?:%2f|%5c)/i.test(value)
+  ) {
+    return false;
+  }
+
+  const rawPathname = value.split('?')[0].split('#')[0];
+  if (rawPathname.split('/').includes('..')) {
+    return false;
+  }
+
+  let current = value;
+  for (let i = 0; i < 2; i += 1) {
+    let decoded;
+    try {
+      decoded = decodeURIComponent(current);
+    } catch {
+      return false;
+    }
+    if (
+      !decoded.startsWith('/') ||
+      decoded.startsWith('//') ||
+      decoded.startsWith('/\\') ||
+      /^\/(?:%2f|%5c)/i.test(decoded) ||
+      /[\x00-\x1f\x7f]/.test(decoded)
+    ) {
+      return false;
+    }
+    if (decoded === current) break;
+    current = decoded;
+  }
+
+  return true;
 }
 
 /** @param {unknown} value */
 export function isSafeHttpUrl(value) {
-  if (typeof value !== 'string' || value.length > MAX_EXTERNAL_URL_LENGTH) return false;
+  if (
+    typeof value !== 'string' ||
+    value.length === 0 ||
+    value.length > MAX_EXTERNAL_URL_LENGTH ||
+    /[\x00-\x1f\x7f]/.test(value)
+  ) {
+    return false;
+  }
   try {
-    return SAFE_URL_PROTOCOLS.has(new URL(value).protocol);
+    const parsed = new URL(value);
+    return (
+      SAFE_URL_PROTOCOLS.has(parsed.protocol) &&
+      Boolean(parsed.hostname) &&
+      !parsed.username &&
+      !parsed.password
+    );
   } catch {
     return false;
   }
@@ -31,7 +78,8 @@ export function isSafeHttpUrl(value) {
 export const safeInternalRouteSchema = z.string()
   .trim()
   .max(MAX_INTERNAL_ROUTE_LENGTH)
-  .regex(SAFE_INTERNAL_ROUTE_REGEX, 'Route must be a safe internal path starting with /');
+  .regex(SAFE_INTERNAL_ROUTE_REGEX, 'Route must be a safe internal path starting with /')
+  .refine(isSafeInternalRoute, 'Route must be a safe internal path starting with /');
 
 export const safeHttpUrlSchema = z.string()
   .trim()

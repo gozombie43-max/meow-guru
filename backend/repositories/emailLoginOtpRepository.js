@@ -54,10 +54,15 @@ export function invalidateEmailLoginChallenge(email, challengeId) {
 }
 
 export function confirmOtpUserEmail(userId, email) {
-  return getUsersCollection().updateOne({ id: userId, $or: [
-    { emailNormalized: email }, { email, emailNormalized: { $exists: false } },
-  ] }, {
+  return getUsersCollection().updateOne({
+    id: userId,
+    emailVerified: { $ne: true },
+    $or: [
+      { emailNormalized: email }, { email, emailNormalized: { $exists: false } },
+    ],
+  }, {
     $set: { emailVerified: true, emailVerifiedAt: new Date() },
+    $inc: { authRevision: 1 },
     $unset: {
       passwordHash: '',
       emailVerificationTokenHash: '',

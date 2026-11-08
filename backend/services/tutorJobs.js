@@ -1,9 +1,14 @@
 import { createHash, randomUUID } from 'node:crypto';
+import * as tutorJobRepo from '../repositories/tutorJobRepository.js';
 import { insertTutorJob, findStagedTutorJob, queueStagedTutorJob, findTutorJob, cancelOwnedTutorJob, trackTutorObject, beginTutorUpload, releaseTutorUpload } from '../repositories/tutorJobRepository.js';
 import * as tutorQuotaRepo from '../repositories/tutorQuotaRepository.js';
 import { putObject } from '../infrastructure/objectStorage.js';
 import { traceCarrier } from '../infrastructure/tracing.js';
 
+const deleteStagedTutorJob = (...args) =>
+  'deleteStagedTutorJob' in tutorJobRepo && typeof tutorJobRepo.deleteStagedTutorJob === 'function'
+    ? Promise.resolve(tutorJobRepo.deleteStagedTutorJob(...args))
+    : Promise.resolve(undefined);
 const acquireTutorSlot = (...args) => tutorQuotaRepo.acquireTutorSlot(...args);
 const releaseTutorSlot = (...args) =>
   'releaseTutorSlot' in tutorQuotaRepo && typeof tutorQuotaRepo.releaseTutorSlot === 'function'
@@ -24,6 +29,17 @@ export async function enqueueTutorJob(userId, input, file, idempotencyKey) {
   if (doc) {
     if (doc.payloadHash !== payloadHash) throw Object.assign(new Error('Idempotency key was used with different input'), { statusCode: 409 });
     if (doc.status !== 'staging') return doc;
+    if (doc.quotaRefunded) {
+      const slot = await acquireTutorSlot(userId, 'queued');
+      try {
+        doc.quotaReservation = await reserveTutorUsage(userId, input, file.buffer.length, new Date(), `${id}:${payloadHash}`);
+        doc.queueSlot = slot;
+        doc.quotaRefunded = false;
+      } catch (error) {
+        await releaseTutorSlot(slot).catch(() => {});
+        throw error;
+      }
+    }
   } else {
     const slot = await acquireTutorSlot(userId, 'queued');
     let reservation;
@@ -53,6 +69,8 @@ export async function enqueueTutorJob(userId, input, file, idempotencyKey) {
     await putObject(key, file.buffer, file.mimetype);
     await queueStagedTutorJob(id, uploadOwner);
   } catch (error) {
+    doc.quotaRefunded = true;
+    await deleteStagedTutorJob(id, uploadOwner).catch(() => {});
     await releaseTutorUsage(doc.quotaReservation, {
       userId,
       input,

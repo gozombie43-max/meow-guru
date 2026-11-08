@@ -40,17 +40,24 @@ export async function recordAccessCodeFailure(clientKey, now = new Date()) {
   const expiresAt = new Date(now.getTime() + windowMs);
   const col = getMongoDB().collection('accessCodeLockouts');
 
-  const existing = await col.findOne({ _id: key });
-  if (existing && existing.expiresAt && new Date(existing.expiresAt) <= now) {
-    await col.deleteOne({ _id: key });
-  }
-
+  const expiredExpr = { $lte: [{ $ifNull: ['$expiresAt', new Date(0)] }, now] };
   const updated = await col.findOneAndUpdate(
     { _id: key },
-    {
-      $inc: { attempts: 1 },
-      $setOnInsert: { createdAt: now, expiresAt },
-    },
+    [
+      {
+        $set: {
+          attempts: {
+            $cond: [expiredExpr, 1, { $add: [{ $ifNull: ['$attempts', 0] }, 1] }],
+          },
+          createdAt: {
+            $cond: [expiredExpr, now, { $ifNull: ['$createdAt', now] }],
+          },
+          expiresAt: {
+            $cond: [expiredExpr, expiresAt, { $ifNull: ['$expiresAt', expiresAt] }],
+          },
+        },
+      },
+    ],
     { upsert: true, returnDocument: 'after' },
   );
 

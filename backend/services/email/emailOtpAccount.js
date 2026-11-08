@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { revokeUserSessions } from '../../auth/sessions.js';
 import { findUserByEmail, insertRegisteredUser } from '../../repositories/authRegistrationRepository.js';
 import { confirmOtpUserEmail } from '../../repositories/emailLoginOtpRepository.js';
 
@@ -21,9 +22,16 @@ export async function resolveEmailOtpAccount(email) {
   if (!user || ['suspended', 'banned'].includes(user.status)) return null;
   if (user.emailVerified !== true) {
     const result = await confirmOtpUserEmail(user.id, email);
-    if (result.matchedCount !== 1) return null;
-    delete user.passwordHash;
-    user.emailVerified = true;
+    if (result.matchedCount === 1) {
+      await revokeUserSessions(user.id, 'unverified-account-claimed');
+      delete user.passwordHash;
+      user.emailVerified = true;
+    } else {
+      user = await findUserByEmail(email);
+      if (!user || user.emailVerified !== true || ['suspended', 'banned'].includes(user.status)) {
+        return null;
+      }
+    }
   }
   return user;
 }
