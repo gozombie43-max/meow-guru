@@ -24,6 +24,98 @@ function isLocalFixtureEnvironment(): boolean {
   );
 }
 
+function deriveAccessSessionSecret(adminSecret: string | undefined): string | undefined {
+  if (!adminSecret || (process.env.JWT_SECRET && adminSecret === process.env.JWT_SECRET)) {
+    return undefined;
+  }
+  return crypto
+    .createHmac('sha256', toUntaintedBuffer(adminSecret))
+    .update(toUntaintedBuffer('meow-access-session-derived-secret-v1'))
+    .digest('hex');
+}
+
+function getCandidateAccessSecrets(configuredSecret?: string): string[] {
+  const candidates: string[] = [];
+  const primary =
+    configuredSecret ||
+    process.env.SESSION_SECRET ||
+    process.env.ACCESS_CODE_SECRET ||
+    (isLocalFixtureEnvironment()
+      ? 'test-session-secret-32-chars-long-security'
+      : undefined);
+
+  if (primary && (!process.env.JWT_SECRET || primary !== process.env.JWT_SECRET)) {
+    candidates.push(primary);
+  }
+
+  if (!configuredSecret) {
+    const derived = deriveAccessSessionSecret(process.env.ADMIN_SECRET);
+    if (derived && !candidates.includes(derived)) {
+      candidates.push(derived);
+    }
+  }
+
+  return candidates;
+}
+
+/**
+ * Signs an access session token `<timestamp>:<codeId>.<signature>` using the
+ * frontend's configured session secret (or domain-separated ADMIN_SECRET key).
+ */
+export function createAccessSessionToken(
+  codeId: string,
+  timestamp: number = Date.now(),
+  configuredSecret?: string
+): string | null {
+  const safeCodeId = String(codeId || 'access').trim();
+  if (!safeCodeId || !Number.isFinite(timestamp) || timestamp <= 0) {
+    return null;
+  }
+  const [secret] = getCandidateAccessSecrets(configuredSecret);
+  if (!secret) {
+    return null;
+  }
+  const payload = `${Math.trunc(timestamp)}:${safeCodeId}`;
+  const sig = crypto
+    .createHmac('sha256', toUntaintedBuffer(secret))
+    .update(toUntaintedBuffer(payload))
+    .digest('hex');
+  return `${payload}.${sig}`;
+}
+
+function verifyPayloadSignatureWithSecret(
+  payload: string,
+  signature: string,
+  secret: string
+): boolean {
+  try {
+    const expectedSig = crypto
+      .createHmac('sha256', toUntaintedBuffer(secret))
+      .update(toUntaintedBuffer(payload))
+      .digest('hex');
+
+    const sigBuf = Buffer.from(signature.toLowerCase(), 'utf8');
+    const expectedBuf = Buffer.from(expectedSig.toLowerCase(), 'utf8');
+
+    if (sigBuf.length !== expectedBuf.length) {
+      return false;
+    }
+
+    if (typeof crypto.timingSafeEqual === 'function') {
+      return crypto.timingSafeEqual(sigBuf, expectedBuf);
+    }
+
+    // Constant-time fallback
+    let diff = 0;
+    for (let i = 0; i < sigBuf.length; i++) {
+      diff |= sigBuf[i] ^ expectedBuf[i];
+    }
+    return diff === 0;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Verifies a signed access session token: "<timestamp>:<codeId>.<signature>"
  * Enforces 24-hour expiration, format integrity, and constant-time HMAC-SHA256 verification.
@@ -92,49 +184,12 @@ export function verifyAccessSessionToken(
     return false;
   }
 
-  const secret =
-    configuredSecret ||
-    process.env.SESSION_SECRET ||
-    process.env.ACCESS_CODE_SECRET ||
-    (isLocalFixtureEnvironment()
-      ? 'test-session-secret-32-chars-long-security'
-      : undefined);
-
-  if (!secret) {
+  const secrets = getCandidateAccessSecrets(configuredSecret);
+  if (secrets.length === 0) {
     return false;
   }
 
-  // Cryptographic isolation: disallow JWT_SECRET reuse
-  if (process.env.JWT_SECRET && secret === process.env.JWT_SECRET) {
-    return false;
-  }
-
-  try {
-    const expectedSig = crypto
-      .createHmac('sha256', toUntaintedBuffer(secret))
-      .update(toUntaintedBuffer(payload))
-      .digest('hex');
-
-    const sigBuf = Buffer.from(signature.toLowerCase(), 'utf8');
-    const expectedBuf = Buffer.from(expectedSig.toLowerCase(), 'utf8');
-
-    if (sigBuf.length !== expectedBuf.length) {
-      return false;
-    }
-
-    if (typeof crypto.timingSafeEqual === 'function') {
-      return crypto.timingSafeEqual(sigBuf, expectedBuf);
-    }
-
-    // Constant-time fallback
-    let diff = 0;
-    for (let i = 0; i < sigBuf.length; i++) {
-      diff |= sigBuf[i] ^ expectedBuf[i];
-    }
-    return diff === 0;
-  } catch {
-    return false;
-  }
+  return secrets.some(secret => verifyPayloadSignatureWithSecret(payload, signature, secret));
 }
 
 function verifySignedJwtAdminClaims(token: string, secret: string | undefined): boolean {

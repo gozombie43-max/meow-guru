@@ -2,8 +2,6 @@
 import { requestResponse as fetch } from "@/shared/api/request";
 
 
-import { API_BASE } from '@/lib/api-base';
-import { useRouter } from 'next/navigation';
 import { useCallback,useEffect,useRef,useState,useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './page.module.css';
@@ -11,7 +9,6 @@ import styles from './page.module.css';
 const CODE_LENGTH = 4;
 
 export default function AccessCodePage() {
-  const router = useRouter();
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(''));
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -56,7 +53,7 @@ export default function AccessCodePage() {
     setError('');
 
     try {
-      const res = await fetch(`${API_BASE}/api/access-code/verify`, {
+      const res = await fetch('/api/access-code/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -75,7 +72,8 @@ export default function AccessCodePage() {
           const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
           const redirectTarget = params?.get('redirect') || '/';
           // Sanitize redirect target to prevent open redirect
-          router.replace(redirectTarget.startsWith('/') && !redirectTarget.startsWith('//') ? redirectTarget : '/');
+          const safeTarget = redirectTarget.startsWith('/') && !redirectTarget.startsWith('//') ? redirectTarget : '/';
+          window.location.replace(safeTarget);
         }, 600);
       } else {
         const newAttempts = attempts + 1;
@@ -99,7 +97,7 @@ export default function AccessCodePage() {
       triggerShake();
       setLoading(false);
     }
-  }, [router, triggerShake, attempts]);
+  }, [triggerShake, attempts]);
 
   const handleChange = useCallback(
     (index: number, value: string) => {
