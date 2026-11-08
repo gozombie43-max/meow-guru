@@ -294,6 +294,14 @@ describe('VULN-02 Regression: Access-code gate cryptographic verification & expl
       // Tokens forged with raw ADMIN_SECRET must still be rejected
       const rawAdminForged = buildCookieValue('8481', Date.now(), process.env.ADMIN_SECRET);
       expect(verifyAccessSessionToken(rawAdminForged)).toBe(false);
+
+      // Stale/invalid access_session cookies are deleted on redirect so HttpOnly cookies do not block re-verification
+      const staleReq = new NextRequest('http://localhost/', {
+        headers: { cookie: `access_session=${encodeURIComponent(rawAdminForged)}` },
+      });
+      const staleRes = proxy(staleReq);
+      expect(staleRes.status).toBe(307);
+      expect(staleRes.headers.get('set-cookie')).toContain('access_session=;');
     } finally {
       envRecord.NODE_ENV = origNodeEnv;
     }

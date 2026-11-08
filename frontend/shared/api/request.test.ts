@@ -107,4 +107,17 @@ describe('shared request contract', () => {
     await fetchResponse('https://backend.example/api', { headers: { Authorization: 'Bearer incoming-request' } });
     expect(new Headers(fetch.mock.calls[0][1]?.headers).get('authorization')).toBe('Bearer incoming-request');
   });
+
+  it('treats /api/access-code/verify as a trusted first-party endpoint with credentials enabled', async () => {
+    api.defaults.adapter = async config => {
+      expect(config.withCredentials).toBe(true);
+      return response(config, 200, '{"valid":true}');
+    };
+    const res = await requestResponse('/api/access-code/verify', {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({ code: '8481' }),
+    });
+    expect(res.status).toBe(200);
+  });
 });

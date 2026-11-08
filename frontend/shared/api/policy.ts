@@ -46,7 +46,7 @@ export function isFirstPartyApi(url: string) {
   const base = new URL(API_BASE, window.location.origin);
   const target = new URL(url, window.location.origin);
   const proxyPath = target.pathname.replace(/\/$/, '');
-  if (target.origin === window.location.origin && ['/api/translate', '/api/diagram', '/api/tts', '/api/upload-image'].includes(proxyPath)) return true;
+  if (target.origin === window.location.origin && ['/api/translate', '/api/diagram', '/api/tts', '/api/upload-image', '/api/access-code/verify'].includes(proxyPath)) return true;
   const prefix = base.pathname.replace(/\/$/, '');
   return target.origin === base.origin && (target.pathname === prefix || target.pathname.startsWith(`${prefix}/`));
 }
