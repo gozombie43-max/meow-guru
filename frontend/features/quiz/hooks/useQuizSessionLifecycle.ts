@@ -10,7 +10,9 @@ import { useQuizAnswerLifecycle } from "./useQuizAnswerLifecycle";
 import { initialQuizSession, quizSessionReducer } from "../model/sessionReducer";
 import useSWR from 'swr';
 import api from '@/shared/api/client';
-import { createResumeSaver } from '../model/resumeDelta';
+import { createResumeSaver, type QuizAnswerResponse } from '../model/resumeDelta';
+import { QuizLruCache } from '../model/quizLruCache';
+import { useQuizPrefetch } from './useQuizPrefetch';
 import { authSessionIdentity } from '@/lib/auth-session-identity';
 import { API_BASE } from '@/lib/api-base';
 import { consumeEarlyRouteData } from '@/lib/early-session';
@@ -25,7 +27,7 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   closePalette: () => void;
 }) {
   const jumpId = Number.parseInt(jumpIdRaw ?? "", 10);
-  const { questions, hasMore, fetchMore, conceptFilter, setConceptFilter, examFilter, setExamFilter,
+  const { questions, hasMore, isFetchingMore, fetchMore, conceptFilter, setConceptFilter, examFilter, setExamFilter,
     selectedClassificationConcepts, setSelectedClassificationConcepts, ensureQuestion } = filters;
   const [state, dispatch] = useReducer(quizSessionReducer, undefined, initialQuizSession);
   const { currentIndex, selectedAnswers, submittedQuestions, difficulty, results } = state;
@@ -42,6 +44,27 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   const quizKey = `${subjectConfig.subjectId}:${slug}`;
   const practiceBase = routeBase ?? `/${subjectConfig.subjectId}/${slug}`;
   const quizHref = `${practiceBase}/quiz`;
+  const identity = authSessionIdentity(token);
+
+  // Bounded in-memory LRU cache scoped to this session and user identity.
+  const cache = useMemo(
+    () => new QuizLruCache(undefined, `${identity ?? 'anon'}:${quizKey}:${mode}`),
+    [identity, quizKey, mode],
+  );
+  useEffect(() => () => cache.clear(), [cache]);
+
+  const handleRevealPrefetched = useCallback((index: number, questionId: string | number, revealed: QuizAnswerResponse) => {
+    if (submittedQuestions.has(index)) {
+      const q = questions[index];
+      cache.setAnswerResult(index, questionId, revealed, q && !q.sessionPlaceholder ? q : undefined);
+      dispatch({ type: 'REVEAL', index, questionId, revealed });
+    }
+  }, [cache, questions, submittedQuestions, dispatch]);
+
+  const getPrefetchedReveal = useCallback((index: number, questionId?: string | number) => {
+    return cache.getPrefetchedReveal(index, questionId);
+  }, [cache]);
+
   const resumeSummary = useMemo(() => {
     if (!resumeRequested) return null;
     return (
@@ -64,36 +87,54 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   const resumeEntry = resumeSummary?.selectedAnswers ? resumeSummary : resumeDetail;
   const resumeAppliedRef = useRef(false);
 
+  // Background prefetch of next 2 questions (content, answer keys/solutions, window pages, and images) + LRU warming.
+  useQuizPrefetch({
+    started,
+    showAnalytics,
+    currentIndex,
+    questions,
+    hasMore,
+    isFetchingMore,
+    fetchMore,
+    ensureQuestion,
+    cache,
+    onRevealPrefetched: handleRevealPrefetched,
+  });
+
   const rawCurrentQ = questions[currentIndex]?.sessionPlaceholder ? undefined : questions[currentIndex];
   const revealedCurrent = state.revealedByIndex?.[currentIndex];
-  const currentQ = useMemo(() => {
-    if (!rawCurrentQ || !revealedCurrent) return rawCurrentQ;
-    const correctAnswer = typeof revealedCurrent.correct === 'number' ? revealedCurrent.correct : rawCurrentQ.correctAnswer;
-    const solutionText = String(revealedCurrent.solution ?? "").trim();
-    const solutionImageMarkdown = revealedCurrent.solutionImage
-      ? `![solution](${revealedCurrent.solutionImage})`
-      : "";
-    const revealedSolution = solutionText
-      ? /!\[[^\]]*\]\([^)]+\)/.test(solutionText) || !solutionImageMarkdown
-        ? solutionText
-        : `${solutionText}\n\n${solutionImageMarkdown}`
-      : solutionImageMarkdown;
-    return {
-      ...rawCurrentQ,
-      correctAnswer,
-      answer: rawCurrentQ.options[correctAnswer] ?? rawCurrentQ.answer,
-      solution: revealedSolution || rawCurrentQ.solution,
-      translations: revealedCurrent.translations ?? rawCurrentQ.translations,
-    };
-  }, [rawCurrentQ, revealedCurrent]);
+  const currentQ = useMemo(
+    () => cache.getQuestion(currentIndex, rawCurrentQ, revealedCurrent),
+    [cache, currentIndex, rawCurrentQ, revealedCurrent],
+  );
+
+  // Apply server-revealed answer keys across the list so palettes grade every
+  // submitted question accurately and reuse cached merged questions.
+  const revealedByIndex = state.revealedByIndex;
+  const gradedQuestions = useMemo(() => {
+    const entries = Object.entries(revealedByIndex ?? {});
+    if (!entries.length) return questions;
+    const next = questions.slice();
+    for (const [key, revealed] of entries) {
+      const index = Number(key);
+      const question = next[index];
+      if (question && !question.sessionPlaceholder) {
+        next[index] = cache.peekMergedQuestion(index, question, revealed);
+      }
+    }
+    return next;
+  }, [questions, revealedByIndex, cache]);
 
   useEffect(() => {
     if (!started || !questions[currentIndex]?.sessionPlaceholder || !ensureQuestion) return;
-    void ensureQuestion(currentIndex).catch(() => dispatch({ type: 'ERROR', message: 'Could not load this question. Please try again.' }));
-  }, [started, currentIndex, questions, ensureQuestion]);
-  useEffect(() => {
-    if (started && !showAnalytics && hasMore && currentIndex >= questions.length - 3) void fetchMore();
-  }, [started, showAnalytics, hasMore, currentIndex, questions.length, fetchMore]);
+    if (cache.hasQuestion(currentIndex)) return;
+    let active = true;
+    void ensureQuestion(currentIndex).catch(() => {
+      if (active) dispatch({ type: 'ERROR', message: 'Could not load this question. Please try again.' });
+    });
+    return () => { active = false; };
+  }, [started, currentIndex, questions, ensureQuestion, cache]);
+
   const initialization = state.restored;
   const anchorIndex = resumeEntry?.questionAnchor ? questions.findIndex(question => question.sessionAnchor === resumeEntry.questionAnchor) : -1;
   const savedIndex = anchorIndex >= 0 ? anchorIndex : resumeEntry?.currentIndex ?? 0;
@@ -105,16 +146,18 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     if (initialization || !(readyResume || (!resumeRequested && targetIndex >= 0))) return;
     const index = readyResume ? Math.max(0, Math.min(savedIndex, questions.length - 1)) : targetIndex;
     const savedSubmitted = readyResume ? resumeEntry.submittedQuestions ?? [] : [];
+    const savedResults = readyResume && Array.isArray(resumeEntry.results) ? resumeEntry.results as SessionResult[] : [];
+    cache.hydrateFromResults(savedResults, questions);
     // One atomic transition synchronizes asynchronously loaded server session data.
     dispatch({ type: 'RESTORE', snapshot: { currentIndex: index,
       selectedAnswers: readyResume ? resumeEntry.selectedAnswers ?? {} : {},
       submittedQuestions: savedSubmitted,
-      results: readyResume && Array.isArray(resumeEntry.results) ? resumeEntry.results as SessionResult[] : [],
+      results: savedResults,
     } });
     resumeAppliedRef.current = Boolean(readyResume);
     stopTimer();
     if (!savedSubmitted.includes(index)) startTimer();
-  }, [initialization, readyResume, resumeRequested, targetIndex, savedIndex, questions.length, resumeEntry, startTimer, stopTimer]);
+  }, [initialization, readyResume, resumeRequested, targetIndex, savedIndex, questions, resumeEntry, startTimer, stopTimer, cache]);
   useEffect(() => {
     if (initialization || !hasMore || questions.length === 0) return;
     if ((resumeRequested && resumeEntry?.status !== "completed" && savedIndex >= questions.length)
@@ -125,7 +168,6 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     concept: serializeConceptSelection(Array.from(selectedClassificationConcepts)) || undefined,
     letter: Array.from(filters.selectedLetters ?? []).join(',') || undefined,
   }), [examFilter, selectedClassificationConcepts, filters.selectedLetters]);
-  const identity = authSessionIdentity(token);
   const saver = useMemo(() => createResumeSaver(identity, `${quizKey}:${mode}`), [identity, quizKey, mode]);
   const snapshot = useCallback((next: typeof state): RecentQuizPayload => ({
     quizKey, title, subject: subjectConfig.subjectId, slug, href: quizHref, mode,
@@ -137,7 +179,22 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   const handleAnswerSubmitted = useCallback(() => {
     recordRecentFromRoute(subjectConfig.subjectId, practiceBase);
   }, [subjectConfig.subjectId, practiceBase]);
-  const answers = useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch, persistAnswer: saver.answer, snapshot, onAnswerSubmitted: handleAnswerSubmitted });
+  const handleAnswerRevealed = useCallback((index: number, questionId: string | number, revealed: QuizAnswerResponse) => {
+    const q = questions[index];
+    cache.setAnswerResult(index, questionId, revealed, q && !q.sessionPlaceholder ? q : undefined);
+  }, [cache, questions]);
+  const answers = useQuizAnswerLifecycle({
+    currentQ,
+    token,
+    timer,
+    state,
+    dispatch,
+    persistAnswer: saver.answer,
+    snapshot,
+    getPrefetchedReveal,
+    onAnswerSubmitted: handleAnswerSubmitted,
+    onAnswerRevealed: handleAnswerRevealed,
+  });
   useQuizSync({
     saver,
     token,
@@ -176,6 +233,9 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     if (resumeData) {
       filters.setResumeWindow?.({ index: resumeData.currentIndex, anchor: resumeData.questionAnchor,
         filters: { exam: resumeData.examFilter, concept: serializeConceptSelection(resumeData.selectedClassificationConcepts ?? []) } });
+      if (Array.isArray(resumeData.results)) {
+        cache.hydrateFromResults(resumeData.results, questions);
+      }
       dispatch({ type: 'RESTORE', snapshot: resumeData });
       if (resumeData.conceptFilter) setConceptFilter(resumeData.conceptFilter);
       if (resumeData.examFilter) setExamFilter(resumeData.examFilter);
@@ -191,6 +251,7 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
 
   function handleRestartFromPopup() {
     if (authLoading) return;
+    cache.clear();
     filters.setResumeWindow?.({ index: 0 });
     clearResume();
     dispatch({ type: 'START' });
@@ -213,12 +274,16 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
       dispatch({ type: 'NAVIGATE', index: safeIndex, count: questions.length });
       if (started && !showAnalytics && !submittedQuestions.has(safeIndex)) startTimer();
     };
-    if (questions[safeIndex]?.sessionPlaceholder && ensureQuestion) {
-      void ensureQuestion(safeIndex).then(navigate).catch(() => dispatch({ type: 'ERROR', message: 'Could not load this question. Please try again.' }));
+    if (!cache.hasQuestion(safeIndex) && questions[safeIndex]?.sessionPlaceholder && ensureQuestion) {
+      void ensureQuestion(safeIndex).then(navigate).catch(() => {
+        if (request === navigationRequest.current) {
+          dispatch({ type: 'ERROR', message: 'Could not load this question. Please try again.' });
+        }
+      });
       return;
     }
     navigate();
-  }, [questions, ensureQuestion, stopTimer, started, showAnalytics, submittedQuestions, startTimer, dispatch]);
+  }, [questions, ensureQuestion, stopTimer, started, showAnalytics, submittedQuestions, startTimer, dispatch, cache]);
   const goToQuestion = useCallback((number: number) => showQuestion(number - 1), [showQuestion]);
   const handlePrev = useCallback(() => { if (currentIndex > 0) showQuestion(currentIndex - 1); }, [currentIndex, showQuestion]);
   function handleNext() {
@@ -231,10 +296,13 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     }
   }
   function handleRestart() {
-    stopTimer(); answers.resetAnswers(); closePalette();
+    stopTimer();
+    cache.clear();
+    answers.resetAnswers();
+    closePalette();
   }
   const navigation = { showQuestion, goToQuestion, handlePrev, handleNext };
-  return { ...answers, ...navigation, ...timer, currentIndex, started, showAnalytics,
+  return { ...answers, ...navigation, ...timer, currentIndex, started, showAnalytics, gradedQuestions,
     isSolutionOpen, setIsSolutionOpen, currentQ, user, token, quizHref,
     resumeData, handleStart, handleResume, handleRestartFromPopup, handleCancelResume, handleRestart };
 }

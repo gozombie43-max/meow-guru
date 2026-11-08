@@ -352,6 +352,18 @@ const getQuestionsSession = async (req, res) => {
   }
 };
 
+// ── POST /api/questions/prefetch-reveal ───────────────
+const prefetchQuestionsReveal = async (req, res) => {
+  try {
+    const items = Array.isArray(req.body?.items) ? req.body.items : [];
+    const result = await questionService.fetchQuestionsRevealWindow(items);
+    res.set('Cache-Control', 'private, max-age=60');
+    res.json(result);
+  } catch (err) {
+    return sendQuestionError(res, err, 'Failed to prefetch question reveals');
+  }
+};
+
 // ── GET /api/questions/meta ──────────────────────────
 const getQuestionsMeta = async (req, res) => {
   try {
@@ -400,5 +412,6 @@ export default {
   checkDuplicates,
   getImageQuestions,
   getQuestionsSession,
+  prefetchQuestionsReveal,
   getQuestionsMeta,
 };

@@ -45,3 +45,33 @@ it('handles selection, scoring, solution, navigation and completion without conf
   state = reduce(state, { type: 'RESTART' });
   expect(state.phase).toBe('idle'); expect(state.results).toEqual([]); expect(state.restored).toBe(true);
 });
+it('defers grading until the server reveals the answer key and restores revealed keys on resume', () => {
+  const unrevealed = { ...question, correctAnswer: -1 };
+  let state = reduce(initialQuizSession(), { type: 'START' });
+  state = reduce(state, { type: 'SELECT', answer: 1, optionCount: 2 });
+  state = reduce(state, { type: 'SUBMIT', question: unrevealed, timeTaken: 12 });
+  expect(state.phase).toBe('answered');
+  expect(state.results[0]).toMatchObject({ selected: 1, correct: -1, isCorrect: false });
+  expect(state.streak).toBe(0);
+  expect(state.bestStreak).toBe(0);
+
+  state = reduce(state, { type: 'ERROR', message: 'Checking your answer… it will retry automatically when the connection recovers.' });
+  expect(reduce(state, { type: 'REVEAL', index: 0, questionId: 999, revealed: { correct: 1, isCorrect: true } })).toBe(state);
+
+  state = reduce(state, { type: 'REVEAL', index: 0, questionId: 1, revealed: { correct: 1, isCorrect: true, solution: 'Because 1+1=2' } });
+  expect(state.results[0]).toMatchObject({ selected: 1, correct: 1, isCorrect: true });
+  expect(state.streak).toBe(1);
+  expect(state.bestStreak).toBe(1);
+  expect(state.submitError).toBe('');
+
+  const resumed = reduce(initialQuizSession(), {
+    type: 'RESTORE',
+    snapshot: {
+      currentIndex: 0,
+      selectedAnswers: { 0: 1 },
+      submittedQuestions: [0],
+      results: [{ questionId: 1, questionIndex: 0, selected: 1, correct: 1, isCorrect: true, timeTaken: 12, concept: 'math', difficulty: 'medium' }],
+    },
+  });
+  expect(resumed.revealedByIndex?.[0]).toEqual({ correct: 1, isCorrect: true });
+});

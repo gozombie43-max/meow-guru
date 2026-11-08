@@ -39,11 +39,14 @@ export async function submitQuizAnswer(userId, command) {
             letter: 1, word: 1, options: 1, correctAnswer: 1, correctLetter: 1, questionType: 1, optionRegions: 1,
             solution: 1, solutionImage: 1, solutionImageWidth: 1, solutionImageHeight: 1, translations: 1,
           } };
-        const question = command.questionAnchor
+        let question = command.questionAnchor
           ? await db.collection('questions').findOne({ _id: new ObjectId(command.questionAnchor),
             ...(command.questionUid ? { questionUid: command.questionUid } : {}) }, readOptions)
-          : await resolveQuestion(db.collection('questions'), command.questionId,
+          : null;
+        if (!question) {
+          question = await resolveQuestion(db.collection('questions'), command.questionId,
             { questionUid: command.questionUid, topic: command.topic }, readOptions);
+        }
         if (!question) throw fail('Question not found', 404);
         const imageKeys = Object.keys(question.optionRegions || {});
         const options = Array.isArray(question.options) && question.options.length ? question.options.map(String)

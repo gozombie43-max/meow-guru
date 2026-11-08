@@ -23,13 +23,28 @@ it('sends one command and suppresses the equivalent delayed history save', async
   expect(mocks.checkpoint.mock.calls[0][1]).toMatchObject({ delta: true, currentIndex: 1, selectedAnswers: {}, submittedQuestions: [], results: [] });
 });
 it('freezes input and submission key after an uncertain outcome before retrying', async () => {
-  mocks.answer.mockRejectedValueOnce(new Error('Lost response')).mockResolvedValue({});
+  mocks.answer.mockRejectedValueOnce(new Error('Lost response')).mockResolvedValue({ data: { correct: 1, isCorrect: true } });
   const saver = createResumeSaver('token', 'quiz');
-  await expect(saver.answer(answer(), snapshot())).rejects.toThrow('Lost response');
+  const onResolved = vi.fn();
+  await expect(saver.answer(answer(), snapshot(), { onResolved })).rejects.toThrow('Lost response');
+  expect(onResolved).not.toHaveBeenCalled();
   await saver.save(snapshot(1));
   expect(mocks.answer).toHaveBeenCalledTimes(2);
   expect(mocks.answer.mock.calls[1][0]).toBe(mocks.answer.mock.calls[0][0]);
+  expect(onResolved).toHaveBeenCalledWith({ correct: 1, isCorrect: true });
   expect(mocks.checkpoint.mock.calls[0][1]).toMatchObject({ currentIndex: 1, selectedAnswers: {}, submittedQuestions: [] });
+});
+it('automatically flushes queued offline answers and reveals results on online transition', async () => {
+  mocks.answer.mockRejectedValueOnce(new Error('Network offline')).mockResolvedValue({ data: { correct: 2, isCorrect: false } });
+  const saver = createResumeSaver('token', 'quiz-online');
+  const onResolved = vi.fn();
+  await expect(saver.answer(answer(), snapshot(), { onResolved })).rejects.toThrow('Network offline');
+  window.dispatchEvent(new Event('online'));
+  await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(mocks.answer).toHaveBeenCalledTimes(2);
+  expect(onResolved).toHaveBeenCalledWith({ correct: 2, isCorrect: false });
 });
 it('orders independent answer commands and sends only the second resume delta', async () => {
   const wait = deferred(); mocks.answer.mockReturnValueOnce(wait.promise);

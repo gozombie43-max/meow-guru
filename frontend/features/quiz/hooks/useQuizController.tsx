@@ -4,7 +4,6 @@ import { buildSessionAnalytics } from "@/features/quiz/model/sessionAnalytics";
 import type { SubjectConfig } from "@/features/quiz/model/types";
 import {
   normalizeMode,
-  prefetchQuestionImage,
 } from "@/features/quiz/model/utils";
 import { useTranslatedQuestion } from "@/hooks/useTranslatedQuestion";
 import { useSearchParams } from "next/navigation";
@@ -82,7 +81,7 @@ export function useQuizController({
     user, token, quizHref, resumeData, handleStart, handleResume, handleRestartFromPopup,
     handleCancelResume, handleRestart, selectedAnswers, submittedQuestions, selectedAnswer,
     bestStreak, results, submitError, handleSelectAnswer, handleSubmitCurrent, handleClearResponse,
-    showQuestion, goToQuestion, handlePrev, handleNext, timerRef, maxTime } = useQuizSessionLifecycle({
+    showQuestion, goToQuestion, handlePrev, handleNext, timerRef, maxTime, gradedQuestions } = useQuizSessionLifecycle({
       subjectConfig, title, slug, mode, routeBase, resumeRequested, jumpIdRaw, filters, closePalette,
     });
   const quizKey = `${subjectConfig.subjectId}:${slug}`;
@@ -90,14 +89,13 @@ export function useQuizController({
 
   useEffect(() => { scrollActiveQuestion(); }, [currentIndex, scrollActiveQuestion]);
 
-  useEffect(() => {
-    if (hasMore && !isFetchingMore && currentIndex >= questions.length - 5) {
-      fetchMore();
-    }
-  }, [currentIndex, questions.length, hasMore, isFetchingMore, fetchMore]);
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const isImageQuestion = currentQ?.questionType === "image_mcq";
   const hasQuestionText = Boolean(currentQ?.question?.trim());
+  const upcomingQuestions = useMemo(
+    () => questions.slice(currentIndex + 1, currentIndex + 3),
+    [questions, currentIndex],
+  );
   const {
     activeLang,
     setActiveLang,
@@ -105,14 +103,13 @@ export function useQuizController({
     displayedQuestion,
     displayedOptions,
     displayedSolution,
-  } = useTranslatedQuestion(currentQ, isImageQuestion, questions.slice(currentIndex + 1, currentIndex + 2), `${subjectConfig.subjectId} ${slug}`, isSolutionOpen && submittedQuestions.has(currentIndex));
-
-  useEffect(() => {
-    const next = questions[currentIndex + 1];
-    if (next?.questionImage) {
-      prefetchQuestionImage(next.questionImage);
-    }
-  }, [currentIndex, questions]);
+  } = useTranslatedQuestion(
+    currentQ,
+    isImageQuestion,
+    upcomingQuestions,
+    `${subjectConfig.subjectId} ${slug}`,
+    isSolutionOpen && submittedQuestions.has(currentIndex),
+  );
 
   const openSolution = useCallback(() => setIsSolutionOpen(true), [setIsSolutionOpen]);
   const closeSolution = useCallback(() => setIsSolutionOpen(false), [setIsSolutionOpen]);
@@ -156,7 +153,7 @@ export function useQuizController({
     stats,
     bestStreak,
     results,
-    questions,
+    questions: gradedQuestions,
     conceptOptions,
     conceptColours,
     weakConcepts,

@@ -54,7 +54,9 @@ export function extractYear(exam: string): string {
 }
 
 export function resolveCorrectIndex(question: ApiQuestion, options: string[]): number {
-  return quizCorrectIndex(question, options) ?? 0;
+  // Session payloads omit the answer key; -1 means "not revealed yet" so the UI
+  // never grades against a guessed option before the server responds.
+  return quizCorrectIndex(question, options) ?? -1;
 }
 
 export function buildConceptColours(concepts: string[]): Record<string, ConceptColour> {
@@ -222,7 +224,7 @@ export function getQuestionStatus({
 
   if (index === currentIndex) return "current";
   if (selected === undefined || !question) return "not-answered";
-  if (!submittedQuestions.has(index) || question.sessionPlaceholder) return "answered";
+  if (!submittedQuestions.has(index) || question.sessionPlaceholder || question.correctAnswer < 0) return "answered";
   if (selected === question.correctAnswer) return "correct";
   return "wrong";
 }

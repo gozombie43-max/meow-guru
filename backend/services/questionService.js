@@ -4,7 +4,7 @@ export { buildQuestionsCacheKey, questionCountsCache, questionsQueryCache, inval
 export { fetchQuestionCounts,fetchQuestionsMeta } from './questions/questionMetadataService.js';
 export { isStudyModeRecord,matchesNormalizedTopic,normalizeQuizKey,normalizeSearchKey } from './questions/questionNormalizer.js';
 export { analyzeAnswers,exportQuestions,fetchAllQueryResults,fetchImageQuestions,fetchPracticeTest,fetchQuestionById,fetchQuestions } from './questions/questionReadService.js';
-export { fetchQuestionsSession } from './questions/questionSessionService.js';
+export { fetchQuestionsSession, fetchQuestionsRevealWindow } from './questions/questionSessionService.js';
 export { checkDuplicates,createQuestion,createQuestionsBulk,modifyQuestion,removeQuestion,removeQuestionsBulk } from './questions/questionWriteService.js';
 
 import { findAnsweredQuestion, recordQuestionAnswer } from '../repositories/questionProgressRepository.js';
