@@ -58,7 +58,10 @@ test('mobile Home hero cycles three cards, supports keyboard/swipe, and fits 390
   // Native scroll events (also used by touch swipes) keep the current dot in sync.
   await carousel.locator('[aria-live]').evaluate(track => track.scrollTo({ left: 0, behavior: 'instant' }));
   await expect(dot(1)).toHaveAttribute('aria-current', 'true');
-  await dot(2).focus();
+  await dot(1).focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(dot(2)).toHaveAttribute('aria-current', 'true');
+  await expect.poll(async () => Math.abs((await carousel.getByRole('group', { name: '2 of 3' }).boundingBox())!.x - (await carousel.boundingBox())!.x)).toBeLessThan(2);
   await page.keyboard.press('ArrowRight');
   await expect(dot(3)).toHaveAttribute('aria-current', 'true');
   await expect.poll(async () => Math.abs((await carousel.getByRole('group', { name: '3 of 3' }).boundingBox())!.x - (await carousel.boundingBox())!.x)).toBeLessThan(2);
