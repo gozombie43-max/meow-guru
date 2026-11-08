@@ -325,7 +325,11 @@ export function proxy(request: NextRequest) {
       if (target && target !== '/' && target !== '/access-code') {
         accessCodeUrl.searchParams.set('redirect', target);
       }
-      return NextResponse.redirect(accessCodeUrl);
+      const redirectResponse = NextResponse.redirect(accessCodeUrl);
+      if (accessSession) {
+        redirectResponse.cookies.delete('access_session');
+      }
+      return redirectResponse;
     }
   }
 

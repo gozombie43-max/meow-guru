@@ -1,6 +1,4 @@
 'use client';
-import { requestResponse as fetch } from "@/shared/api/request";
-
 
 import { useCallback,useEffect,useRef,useState,useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
