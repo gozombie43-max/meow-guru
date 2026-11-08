@@ -264,22 +264,25 @@ describe('Production Hardening Adversarial Verification (Checks 1–7)', () => {
         'utf8'
       );
 
-      // Staging workflows must never reference production resource group or production DB secret
+      // Staging workflows must never reference production resource group or production DB secret,
+      // and must preserve the ref:refs/heads/main OIDC subject claim (no environment: override)
       for (const [name, content] of [
         ['main_quizguru-backend-staging.yml', stagingDeploy],
         ['training-staging-load.yml', stagingLoad],
       ]) {
         expect(content, name).toContain("if: github.ref == 'refs/heads/main'");
-        expect(content, name).toContain('environment: quizguru-backend-staging');
+        expect(content, name).toContain('[ "$GITHUB_REF" = "refs/heads/main" ]');
+        expect(content, name).not.toMatch(/^\s*environment:/m);
         expect(content, name).toContain('AZURE_RESOURCE_GROUP: Meowguru_staging_group');
         expect(content, name).not.toContain('Meowguru_group');
         expect(content, name).not.toMatch(/secrets\.MONGODB_URI\b/);
         expect(content, name).toContain('secrets.STAGING_AZURE_CLIENT_ID');
       }
 
-      // Production deploy and canary promotion must require refs/heads/main and protected environments
+      // Production deploy must require refs/heads/main and preserve the ref:refs/heads/main OIDC subject claim
       expect(prodDeploy).toContain("if: github.ref == 'refs/heads/main'");
-      expect(prodDeploy).toContain('environment: quizguru-backend');
+      expect(prodDeploy).toContain('[ "$GITHUB_REF" = "refs/heads/main" ]');
+      expect(prodDeploy).not.toMatch(/^\s*environment:/m);
       expect(canaryPromote).toContain("if: github.ref == 'refs/heads/main'");
       expect(canaryPromote).toContain('environment: backend-canary');
     });
