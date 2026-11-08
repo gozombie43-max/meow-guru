@@ -3,7 +3,7 @@ import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import crypto from 'node:crypto';
 import { unstable_doesMiddlewareMatch } from 'next/experimental/testing/server';
-import { config, proxy, verifyAccessSessionToken } from './proxy';
+import { config, proxy, verifyAccessSessionToken, createAccessSessionToken } from './proxy';
 
 const TEST_SESSION_SECRET = 'session-secret-must-be-at-least-32-chars-long-0123456789abcdef';
 const DIFFERENT_JWT_SECRET = 'jwt-secret-must-be-completely-separate-key-0123456789abcdef';
@@ -269,5 +269,33 @@ describe('VULN-02 Regression: Access-code gate cryptographic verification & expl
 
   it('exports verifyAccessSessionToken for external callers', () => {
     expect(typeof verifyAccessSessionToken).toBe('function');
+  });
+
+  it('signs and verifies access session tokens via derived ADMIN_SECRET key when SESSION_SECRET is unset in production (Vercel)', () => {
+    const envRecord = process.env as Record<string, string | undefined>;
+    const origNodeEnv = envRecord.NODE_ENV;
+    try {
+      envRecord.NODE_ENV = 'production';
+      delete process.env.SESSION_SECRET;
+      delete process.env.ACCESS_CODE_SECRET;
+      process.env.ADMIN_SECRET = 'vercel-admin-secret-at-least-32-chars-long';
+
+      const token = createAccessSessionToken('8481');
+      expect(typeof token).toBe('string');
+      expect(verifyAccessSessionToken(token)).toBe(true);
+
+      const req = new NextRequest('http://localhost/', {
+        headers: { cookie: `access_session=${encodeURIComponent(token!)}` },
+      });
+      const res = proxy(req);
+      expect(res.headers.get('location')).toBeNull();
+      expect(res.headers.get('x-middleware-next')).toBe('1');
+
+      // Tokens forged with raw ADMIN_SECRET must still be rejected
+      const rawAdminForged = buildCookieValue('8481', Date.now(), process.env.ADMIN_SECRET);
+      expect(verifyAccessSessionToken(rawAdminForged)).toBe(false);
+    } finally {
+      envRecord.NODE_ENV = origNodeEnv;
+    }
   });
 });
