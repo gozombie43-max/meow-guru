@@ -2265,9 +2265,19 @@
   z-index: -1;
   border-radius: 999px;
   background: var(--hdr-pill-bg);
-  box-shadow: inset 0 0 0 1px var(--hdr-pill-ring);
   pointer-events: none;
   transition: background-color 200ms ease, box-shadow 200ms ease;
+}
+
+/* Language toggle keeps a subtle border ring */
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle.lang-toggle::before {
+  box-shadow: inset 0 0 0 1px var(--hdr-pill-ring);
+}
+
+/* Settings circle and question count pill have no border */
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) :is(.ios-series-palette-trigger, .ios-series-settings-trigger)::before {
+  box-shadow: none !important;
+  border: 0 !important;
 }
 
 /* Language capsule: 3px inset slider centred in the 36px track. */
@@ -2344,7 +2354,7 @@
 }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-settings-trigger.is-active::before {
   background: var(--hdr-pill-active-bg);
-  box-shadow: inset 0 0 0 1px var(--hdr-pill-active-ring);
+  box-shadow: none !important;
 }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-settings-trigger.is-active svg {
   transform: rotate(45deg);
