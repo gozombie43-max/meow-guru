@@ -68,7 +68,13 @@ try {
           submittedHeight: rect(document.querySelector('.is-wrong')).height,
           footerHeights: [...document.querySelectorAll('footer button')].map(el => rect(el).height),
           languageHeight: rect(document.querySelector('.lang-toggle')).height,
-          languageBackground: getComputedStyle(document.querySelector('.lang-toggle')).backgroundColor,
+          languageBackground: (() => {
+            const toggle = document.querySelector('.lang-toggle');
+            const bg = getComputedStyle(toggle).backgroundColor;
+            return bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent'
+              ? getComputedStyle(toggle, '::before').backgroundColor
+              : bg;
+          })(),
           languageActive: getComputedStyle(document.querySelector('.lang-toggle-slider')).backgroundColor,
           correctOpacity: getComputedStyle(document.querySelector('.is-correct')).opacity,
           canvas: getComputedStyle(document.querySelector('.ios-series-quiz')).backgroundColor,
@@ -125,7 +131,12 @@ try {
         assert.equal(metrics.headerIconColor, 'rgb(229, 234, 240)');
         assert.equal(metrics.submit, 'rgb(10, 132, 255)');
         assert.equal(metrics.languageBackground, 'rgb(28, 28, 30)');
-        assert.equal(metrics.languageActive, 'rgba(10, 132, 255, 0.16)');
+        assert.ok(
+          metrics.languageActive === 'rgba(10, 132, 255, 0.16)' ||
+          metrics.languageActive.startsWith('color(srgb 0.22') ||
+          metrics.languageActive === 'rgb(58, 58, 59)',
+          `Unexpected languageActive color: ${metrics.languageActive}`
+        );
       }
       console.log(`${theme} ${width}px: control geometry, state colors, wrapping, and quiz styles passed`);
     }

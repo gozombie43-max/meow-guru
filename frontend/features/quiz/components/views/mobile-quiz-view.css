@@ -2249,7 +2249,7 @@
   --hdr-pill-active-text: var(--quiz-text-primary);
 }
 
-.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) :is(.ios-series-palette-trigger, .ios-series-settings-trigger) {
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) :is(.lang-toggle.lang-toggle, .ios-series-palette-trigger, .ios-series-settings-trigger) {
   position: relative;
   isolation: isolate;
   border: 0 !important;
@@ -2258,19 +2258,51 @@
   background-clip: border-box !important;
   -webkit-tap-highlight-color: transparent;
 }
-.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) :is(.ios-series-palette-trigger, .ios-series-settings-trigger)::before {
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) :is(.lang-toggle.lang-toggle, .ios-series-palette-trigger, .ios-series-settings-trigger)::before {
   content: "";
   position: absolute;
   inset: 4px 0;
   z-index: -1;
   border-radius: 999px;
   background: var(--hdr-pill-bg);
-  box-shadow: inset 0 0 0 1px var(--hdr-pill-ring);
+  box-shadow: none !important;
+  border: 0 !important;
   pointer-events: none;
-  transition: background-color 200ms ease, box-shadow 200ms ease;
+  transition: background-color 200ms ease;
 }
 
-
+/* Language capsule: 3px inset slider centred in the 36px track. */
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle.lang-toggle {
+  height: 44px !important; min-height: 44px !important;
+  padding: 0 3px !important; overflow: visible;
+}
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle > div {
+  height: 44px !important;
+}
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-slider {
+  top: 7px !important; height: 30px !important;
+  border-radius: 999px !important;
+  background: var(--hdr-pill-active-bg) !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+.ios-series-quiz[data-theme="light"] .lang-toggle-slider {
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.08) !important;
+}
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-option {
+  height: 44px !important; line-height: 1 !important;
+  color: var(--quiz-text-secondary) !important;
+  font-weight: 500 !important;
+}
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-option.is-active {
+  color: var(--hdr-pill-active-text) !important;
+  font-weight: 600 !important;
+}
+@media (hover: hover) {
+  .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-option:not(.is-active):hover {
+    color: var(--quiz-text-primary) !important;
+  }
+}
 
 /* Question-count pill: same capsule, roomy padding, tabular digits. */
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-palette-trigger {
@@ -2314,7 +2346,7 @@
 }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-settings-trigger.is-active::before {
   background: var(--hdr-pill-active-bg);
-  box-shadow: inset 0 0 0 1px var(--hdr-pill-active-ring);
+  box-shadow: none !important;
 }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-settings-trigger.is-active svg {
   transform: rotate(45deg);
