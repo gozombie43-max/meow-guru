@@ -142,26 +142,27 @@
   pointer-events: none;
 }
 
-/* Compact pinned search bar */
+/* Compact pinned search bar — pill style, subtle grey, no border */
 .chapterSearch {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  height: 38px;
-  min-height: 38px;
-  max-height: 38px;
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
   flex-shrink: 0;
-  padding: 0 10px 0 12px;
+  padding: 0 12px 0 14px;
   margin: 8px 0;
-  border: 1px solid var(--geo-border, rgba(255, 255, 255, 0.06));
-  border-radius: 10px;
-  background: var(--geo-surface, #1c1c1e);
+  border: none !important;
+  border-radius: 9999px !important;
+  background: #1c1c1f;
   color: var(--geo-text, #e5eaf0);
   box-sizing: border-box;
   cursor: text;
-  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+  box-shadow: none !important;
+  transition: background-color 150ms ease, box-shadow 150ms ease;
 }
 
 .mobileSearchIcon {
@@ -172,8 +173,9 @@
 }
 
 .chapterSearch:focus-within {
-  border-color: var(--geo-accent, #0a84ff);
-  box-shadow: 0 0 0 2px var(--geo-accent-soft, rgba(10, 132, 255, 0.14));
+  background: #232328;
+  border: none !important;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.12) !important;
 }
 
 .chapterSearch:focus-within .mobileSearchIcon {
@@ -517,9 +519,16 @@
 }
 
 :global(html.theme-light) .chapterSearch {
-  background: var(--light-surface, #ffffff);
-  border-color: var(--light-border, #e1e4e8);
+  background: var(--light-surface-muted, #edf1f6) !important;
+  border: none !important;
   color: var(--light-text, #242830);
+  box-shadow: none !important;
+}
+
+:global(html.theme-light) .chapterSearch:focus-within {
+  background: #e5e5ea !important;
+  border: none !important;
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.08) !important;
 }
 
 :global(html.theme-light) .chapterSearchInput {

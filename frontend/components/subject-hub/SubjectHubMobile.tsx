@@ -1,9 +1,10 @@
 "use client";
 
 import defaultStyles from "@/components/SubjectHub.module.css";
-import { ArrowLeft, ArrowUpDown, Check, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowLeft, ArrowUpDown, Check, ChevronDown, SlidersHorizontal } from "lucide-react";
 import { useRef } from "react";
 import { MobileTopicCard } from "./MobileTopicCard";
+import { MobileSearchBar } from "./MobileSearchBar";
 import type { SubjectHubView } from "./useSubjectHubView";
 
 export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
@@ -129,48 +130,14 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
       )}
 
       <div data-hub-part="mobileBody" className={defaultStyles.mobileBody}>
-        {/* Compact Pinned Search Bar */}
-        <div
-          role="search"
-          data-hub-part="mobileSearchRow"
-          className={`${defaultStyles.mobileSearchRow} ${defaultStyles.oledSearchRow}`}
-        >
-          <Search className={defaultStyles.mobileSearchIcon} size={15} aria-hidden="true" />
-          <input
-            ref={searchInputRef}
-            type="search"
-            spellCheck={false}
-            autoCapitalize="none"
-            autoCorrect="off"
-            autoComplete="off"
-            data-custom-focus
-            data-mobile-chapter-search
-            enterKeyHint="search"
-            className={defaultStyles.mobileSearchInput}
-            placeholder={config.mobileSearchPlaceholder || "Search topics"}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label="Search topics"
-          />
-          {searchQuery ? (
-            <div className={defaultStyles.mobileSearchRightActions}>
-              <button
-                type="button"
-                data-custom-focus
-                data-ui-interaction="none"
-                className={defaultStyles.mobileSearchClearBtn}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  setSearchQuery("");
-                  searchInputRef.current?.focus();
-                }}
-                aria-label="Clear Search"
-              >
-                <X size={13} />
-              </button>
-            </div>
-          ) : null}
-        </div>
+        {/* Mobile Search Row — shared pill-style search bar pinned above scrollable list */}
+        <MobileSearchBar
+          inputRef={searchInputRef}
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder={config.mobileSearchPlaceholder || "Search topics"}
+          ariaLabel="Search topics"
+        />
 
         {/* Metadata & Sort Bar */}
         {(() => {
