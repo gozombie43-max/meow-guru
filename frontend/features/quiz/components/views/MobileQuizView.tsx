@@ -8,7 +8,8 @@ import RichContent from "@/components/RichContent";
 import { useAppNavigation } from "@/hooks/useAppNavigation";
 import { MobileQuizMetadata } from "./MobileQuizMetadata";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useQuestionSwipe } from "./useQuestionSwipe";
 
 const QuizSettingsModal = dynamic(() => import("@/features/quiz/components/ui/QuizSettingsModal").then(module => module.QuizSettingsModal), { loading: () => null });
 
@@ -126,6 +127,28 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   if (isSettingsOpen && !settingsLoaded) setSettingsLoaded(true);
 
+  // Direction of the latest move, so the next question enters from the side
+  // the user is travelling towards (buttons, palette and swipes alike).
+  const [lastIndex, setLastIndex] = useState(currentIndex);
+  const [enterDirection, setEnterDirection] = useState<"forward" | "backward" | "none">("none");
+  if (currentIndex !== lastIndex) {
+    setEnterDirection(currentIndex > lastIndex ? "forward" : "backward");
+    setLastIndex(currentIndex);
+  }
+
+  const contentRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  useQuestionSwipe({
+    containerRef: contentRef,
+    stageRef,
+    enabled: Boolean(currentQ) && !isPaletteOpen && !isSettingsOpen && !isSolutionOpen,
+    canPrev: currentIndex > 0,
+    canNext: currentIndex < questions.length - 1,
+    onPrev: handlePrev,
+    onNext: handleNext,
+    onNextUnavailable: navigation.hasMore ? handleNext : undefined,
+  });
+
   if (!currentQ) return null;
 
   return (
@@ -198,7 +221,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           submittedQuestions={submittedQuestions}
         />
 
-        <main className="ios-series-content">
+        <main ref={contentRef} className="ios-series-content">
           <div className="ios-series-meta-row">
             <MobileQuizMetadata
               key={currentQ.id}
@@ -215,8 +238,13 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
             />
           </div>
 
+          <div
+            key={`ios-stage-${currentQ.id}`}
+            ref={stageRef}
+            className="ios-series-stage"
+            data-enter={enterDirection}
+          >
           <section
-            key={`ios-question-${currentQ.id}`}
             className="ios-series-question-card"
           >
             {hasQuestionText && (
@@ -293,6 +321,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           </section>
 
           {submitError && <p className="ios-series-error">{submitError}</p>}
+          </div>
         </main>
 
         <MobileQuizFooter
