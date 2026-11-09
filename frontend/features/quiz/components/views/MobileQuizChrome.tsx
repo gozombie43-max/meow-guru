@@ -54,7 +54,7 @@ export function MobileQuizHeader({ activeLang, currentIndex, questions, hasMore,
           <span className="ios-series-palette-num">{total !== null ? (
               <>
                 <span className="ios-series-palette-current">{questionNumber}</span>
-                <span className="ios-series-palette-sep" aria-hidden="true">/</span>
+                {' '}<span className="ios-series-palette-sep" aria-hidden="true">/</span>{' '}
                 <span className="ios-series-palette-total">{total}</span>
               </>
             ) : `Question ${questionNumber}`}</span>
