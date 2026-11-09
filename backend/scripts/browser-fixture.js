@@ -109,30 +109,6 @@ app.use('/api/notes', (await import('../routes/notes.routes.js')).default);
 app.use('/api/upload-note-image', (await import('../routes/uploadNoteImage.js')).default);
 app.use('/api/upload', (await import('../routes/imageUpload.js')).default);
 app.get('/live', (_req, res) => res.json({ ok: true }));
-// Lighthouse runs 18 independent audits with the same initial fixture cookie; allow it to refresh without reuse rejection.
-app.post('/auth/refresh', async (req, res, next) => {
-  try {
-    const raw = req.cookies?.refreshToken;
-    if (raw) {
-      const { verifyRefreshToken } = await import('../auth/jwt.js');
-      let decoded;
-      try { decoded = verifyRefreshToken(raw); } catch {}
-      if (decoded?.id === 'browser-lighthouse') {
-        const { createSession } = await import('../auth/sessions.js');
-        const user = await db.collection('users').findOne({ id: 'browser-lighthouse' });
-        const { token, refreshToken } = await createSession(user);
-        res.cookie('refreshToken', refreshToken, {
-          httpOnly: true,
-          sameSite: 'lax',
-          path: '/',
-          maxAge: Math.max(0, verifyRefreshToken(refreshToken).exp * 1000 - Date.now()),
-        });
-        return res.json({ token });
-      }
-    }
-  } catch {}
-  next();
-});
 // Use real refresh rotation so each browser keeps its own identity and attempts.
 app.use('/auth', auth); app.use('/api/mocktest', mocktest);
 app.use('/api/training', (await import('../routes/training.js')).default);
