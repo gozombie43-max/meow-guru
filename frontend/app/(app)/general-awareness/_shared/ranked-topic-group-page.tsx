@@ -4,6 +4,7 @@
 
 import TopicThumbnail from "@/components/subject-hub/TopicThumbnail";
 import ChapterThumbnail from "./ChapterThumbnail";
+import { MobileSearchBar } from "@/components/subject-hub/MobileSearchBar";
 import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
 import { prefetchQuestionCounts } from "@/hooks/useQuestionCounts";
 import { useRecentChapter } from "@/lib/recent-study";
@@ -278,48 +279,14 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
           </header>
 
           <div data-hub-part="mobileBody" className={hubStyles.mobileBody}>
-            {/* Mobile Search Row — pinned above the scrollable chapter list */}
-            <div
-              role="search"
-              data-hub-part="mobileSearchRow"
-              className={styles.chapterSearch}
-            >
-              <Search size={15} className={styles.mobileSearchIcon} aria-hidden="true" />
-              <input
-                ref={mobileSearchInputRef}
-                type="search"
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="none"
-                spellCheck={false}
-                className={styles.chapterSearchInput}
-                data-custom-focus
-                data-mobile-chapter-search
-                enterKeyHint="search"
-                placeholder="Search chapters"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                aria-label={`Search ${group.label} chapters`}
-              />
-              {query && (
-                <div className={styles.chapterSearchActions}>
-                  <button
-                    type="button"
-                    data-custom-focus
-                    data-ui-interaction="none"
-                    className={styles.clearSearchBtn}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => {
-                      setQuery("");
-                      mobileSearchInputRef.current?.focus();
-                    }}
-                    aria-label="Clear Search"
-                  >
-                    <X size={13} />
-                  </button>
-                </div>
-              )}
-            </div>
+            {/* Mobile Search Row — shared pill-style search bar pinned above scrollable list */}
+            <MobileSearchBar
+              inputRef={mobileSearchInputRef}
+              value={query}
+              onChange={setQuery}
+              placeholder="Search chapters"
+              ariaLabel={`Search ${group.label} chapters`}
+            />
 
             {/* Elevated chapter list with brand accents and attempted progress */}
             <div
