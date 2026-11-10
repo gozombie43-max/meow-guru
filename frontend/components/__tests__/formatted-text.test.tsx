@@ -13,6 +13,13 @@ describe('formatted-text utilities', () => {
     expect(hasMarkdownBold('Spaced ** not bold ** and __ not bold __')).toBe(false);
   });
 
+  it('formats markdown bold nodes directly with formatMarkdownBold', () => {
+    const nodes = formatMarkdownBold('**bold** text');
+    const { container } = render(<>{nodes}</>);
+    expect(container.textContent).toBe('bold text');
+    expect(container.querySelector('strong')?.textContent).toBe('bold');
+  });
+
   it('renders double asterisk bold as strong tag', () => {
     const { container } = render(<>{renderFormattedProse('Calculate the **area** of the triangle.')}</>);
     expect(container.textContent).toBe('Calculate the area of the triangle.');
