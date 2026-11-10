@@ -85,6 +85,25 @@ describe('SolutionBottomSheet Component', () => {
     expect(screen.getByRole('button', { name: /Back to quiz/i })).toBeInTheDocument();
   });
 
+  it('renders markdown bolding (**text** and __text__) in worked solutions', () => {
+    const { container } = renderWithTheme(
+      <SolutionBottomSheet
+        isOpen={true}
+        solution={"**Step 1:** Calculate pattern.\n__Note:__ Formula is $a^2 + b^2$."}
+        questionNumber={1}
+        correctOptionIndex={0}
+        correctOptionText="Option A"
+        onClose={mockOnClose}
+      />
+    );
+
+    const strongs = container.querySelectorAll('strong');
+    expect(strongs.length).toBeGreaterThanOrEqual(2);
+    const strongTexts = Array.from(strongs).map(s => s.textContent);
+    expect(strongTexts).toContain('Step 1:');
+    expect(strongTexts).toContain('Note:');
+  });
+
   it('calls onClose when Back button is clicked', () => {
     renderWithTheme(
       <SolutionBottomSheet

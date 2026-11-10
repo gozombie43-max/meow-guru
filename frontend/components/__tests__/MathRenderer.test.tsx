@@ -114,4 +114,28 @@ x &= \pm 2
     expect(container.textContent).toBe(text);
     expect(container.querySelector('.katex, mfrac')).toBeNull();
   });
+
+  it('renders markdown bolding in synchronous plain text', () => {
+    const { container } = render(<MathRenderer text="**Important:** Check your answer." />);
+    expect(container.textContent).toBe('Important: Check your answer.');
+    const strong = container.querySelector('strong');
+    expect(strong).not.toBeNull();
+    expect(strong?.textContent).toBe('Important:');
+  });
+
+  it('renders markdown bolding alongside math equations', () => {
+    const { container } = render(<MathRendererContent text="**Step 1:** Solve $x^2 = 16$." />);
+    expect(container.textContent).toContain('Step 1: Solve');
+    const strong = container.querySelector('strong');
+    expect(strong).not.toBeNull();
+    expect(strong?.textContent).toBe('Step 1:');
+    expect(container.querySelector('.katex')).not.toBeNull();
+  });
+
+  it('renders markdown bolding wrapping math parts', () => {
+    const { container } = render(<MathRendererContent text="**Note: $x > 0$**" />);
+    const strong = container.querySelector('strong');
+    expect(strong).not.toBeNull();
+    expect(strong?.querySelector('.katex')).not.toBeNull();
+  });
 });
