@@ -80,4 +80,31 @@ describe('MathText Component', () => {
     expect(container.textContent).toBe(text);
     expect(container.querySelector('[role="math"], .katex, mfrac')).toBeNull();
   });
+
+  it('renders markdown bold with double asterisks (**text**)', () => {
+    const { container } = render(<MathText text="Which of the following is **not** a prime number?" />);
+    expect(container.textContent).toBe('Which of the following is not a prime number?');
+    const strong = container.querySelector('strong');
+    expect(strong).not.toBeNull();
+    expect(strong?.textContent).toBe('not');
+    expect(strong?.className).toContain('font-bold');
+  });
+
+  it('renders markdown bold with double underscores (__text__)', () => {
+    const { container } = render(<MathText text="Select the __correct__ answer." />);
+    expect(container.textContent).toBe('Select the correct answer.');
+    const strong = container.querySelector('strong');
+    expect(strong).not.toBeNull();
+    expect(strong?.textContent).toBe('correct');
+    expect(strong?.className).toContain('font-bold');
+  });
+
+  it('renders markdown bold alongside math equations', async () => {
+    const { container } = render(<MathText text="**Given:** $x = 5$ and $y = 10$, find **$x + y$**." />);
+    await waitFor(() => expect(container.querySelectorAll('.katex')).toHaveLength(3));
+    const strongs = container.querySelectorAll('strong');
+    expect(strongs).toHaveLength(2);
+    expect(strongs[0].textContent).toBe('Given:');
+    expect(strongs[1].querySelector('.katex')).not.toBeNull();
+  });
 });

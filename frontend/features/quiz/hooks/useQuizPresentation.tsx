@@ -102,18 +102,43 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
   }, []);
 
   const renderQuestionLine = useCallback((line: string) => {
-    const chunks = line.split(/'([^']+)'/g);
-    return chunks.map((chunk, index) => {
-      const key = `question-chunk-${index}`;
-      if (index % 2 === 1) {
-        return (
-          <span key={key} className="quote-highlight">
-            <MathText text={`'${chunk}'`} />
+    const regex = /(?:\*\*'([^']+)'\*\*|__'([^']+)'__|'([^']+)')/g;
+    const nodes: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    let tokenIndex = 0;
+
+    while ((match = regex.exec(line)) !== null) {
+      if (match.index > lastIndex) {
+        const textBefore = line.slice(lastIndex, match.index);
+        nodes.push(<MathText key={`q-chunk-${tokenIndex++}`} text={textBefore} />);
+      }
+
+      const boldQuoted = match[1] ?? match[2];
+      if (boldQuoted !== undefined) {
+        nodes.push(
+          <strong key={`q-chunk-${tokenIndex++}`} className="font-bold">
+            <span className="quote-highlight">
+              <MathText text={`'${boldQuoted}'`} />
+            </span>
+          </strong>
+        );
+      } else {
+        const quoted = match[3];
+        nodes.push(
+          <span key={`q-chunk-${tokenIndex++}`} className="quote-highlight">
+            <MathText text={`'${quoted}'`} />
           </span>
         );
       }
-      return <MathText key={key} text={chunk} />;
-    });
+      lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < line.length) {
+      nodes.push(<MathText key={`q-chunk-${tokenIndex++}`} text={line.slice(lastIndex)} />);
+    }
+
+    return nodes;
   }, []);
 
   return { activeRailBtnRef, activeMacBtnRef, examDetailsRef, isIos, isMac, theme, toggleTheme,

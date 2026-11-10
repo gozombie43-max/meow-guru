@@ -3,6 +3,7 @@
 import { hasSlashOutsideUrls } from './content-urls';
 import React, { lazy, Suspense } from "react";
 import { containsMathSyntax } from "./math-syntax";
+import { renderFormattedProse } from "./formatted-text";
 
 export { containsMathSyntax } from "./math-syntax";
 
@@ -19,7 +20,7 @@ const MathRenderer = React.memo(function MathRenderer(props: MathRendererProps) 
   if (!text) return null;
   const plainText = (
     <span className={`math-text inline leading-relaxed ${className}`} style={{ wordBreak: "break-word" }}>
-      {text}
+      {renderFormattedProse(text)}
     </span>
   );
   // Text-only questions should never download or execute the math typesetter.

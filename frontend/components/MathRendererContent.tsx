@@ -1,6 +1,7 @@
 "use client";
 
 import { createStandaloneNumericFracRegex, hasSlashOutsideUrls, splitContentUrls } from './content-urls';
+import { renderFormattedProse, renderPartsWithBold } from './formatted-text';
 import React from "react";
 import katex from "katex";
 import "katex/dist/katex.min.css";
@@ -139,42 +140,7 @@ const MathRenderer = React.memo(function MathRenderer({
 
   const parts = parseParts(text);
 
-  const rendered = parts.map((part, i) => {
-    if (part.type === "text") {
-      if (!hasSlashOutsideUrls(part.content)) {
-        return <span key={i}>{part.content}</span>;
-      }
-      // Protect URLs and image paths; only format standalone numeric fractions.
-      const textSegments = splitContentUrls(part.content);
-      const nodes: React.ReactNode[] = [];
-
-      textSegments.forEach((segment, segIdx) => {
-        if (segment.isUrl || !hasSlashOutsideUrls(segment.text)) {
-          nodes.push(<span key={`${i}-seg-${segIdx}`}>{segment.text}</span>);
-          return;
-        }
-        const fracRegex = createStandaloneNumericFracRegex();
-        let lastIndex = 0;
-        let match: RegExpExecArray | null;
-        while ((match = fracRegex.exec(segment.text)) !== null) {
-          const idx = match.index;
-          if (idx > lastIndex) nodes.push(<span key={`${i}-${segIdx}-t-${lastIndex}`}>{segment.text.slice(lastIndex, idx)}</span>);
-          const rawNum = match[1].trim().replace(/^\(|\)$/g, '');
-          const rawDen = match[2].trim().replace(/^\(|\)$/g, '');
-          const hasPercent = match[0].endsWith('%');
-          const html = renderKatexSafe(`\\tfrac{${rawNum}}{${rawDen}}`, false);
-          nodes.push(
-            <span key={`${i}-${segIdx}-f-${idx}`} dangerouslySetInnerHTML={{ __html: html }} />
-          );
-          if (hasPercent) nodes.push(<span key={`${i}-${segIdx}-f-pct-${idx}`}>%</span>);
-          lastIndex = fracRegex.lastIndex;
-        }
-        if (lastIndex < segment.text.length) nodes.push(<span key={`${i}-${segIdx}-t-last`}>{segment.text.slice(lastIndex)}</span>);
-      });
-
-      return <span key={i}>{nodes}</span>;
-    }
-
+  const renderMathPart = (part: Part, i: number) => {
     // Do not split chained slashes or dates even inside explicit math.
     const mathContent = part.content.replace(/(?<!\/\s*)(?<![/\d])(\d+)\s*\/\s*(\d+)(?!\s*\/)(?![/\d])/g, "\\tfrac{$1}{$2}");
     const html = renderKatexSafe(mathContent, part.type === "display");
@@ -190,7 +156,60 @@ const MathRenderer = React.memo(function MathRenderer({
         }
       />
     );
-  });
+  };
+
+  const renderTextContent = (content: string, keyPrefix: string) => {
+    if (!hasSlashOutsideUrls(content)) {
+      return <span key={keyPrefix}>{renderFormattedProse(content, keyPrefix)}</span>;
+    }
+    // Protect URLs and image paths; only format standalone numeric fractions.
+    const textSegments = splitContentUrls(content);
+    const nodes: React.ReactNode[] = [];
+
+    textSegments.forEach((segment, segIdx) => {
+      if (segment.isUrl || !hasSlashOutsideUrls(segment.text)) {
+        nodes.push(
+          <span key={`${keyPrefix}-seg-${segIdx}`}>
+            {segment.isUrl ? segment.text : renderFormattedProse(segment.text, `${keyPrefix}-seg-${segIdx}`)}
+          </span>
+        );
+        return;
+      }
+      const fracRegex = createStandaloneNumericFracRegex();
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
+      while ((match = fracRegex.exec(segment.text)) !== null) {
+        const idx = match.index;
+        if (idx > lastIndex) {
+          nodes.push(
+            <span key={`${keyPrefix}-${segIdx}-t-${lastIndex}`}>
+              {renderFormattedProse(segment.text.slice(lastIndex, idx), `${keyPrefix}-${segIdx}-t-${lastIndex}`)}
+            </span>
+          );
+        }
+        const rawNum = match[1].trim().replace(/^\(|\)$/g, '');
+        const rawDen = match[2].trim().replace(/^\(|\)$/g, '');
+        const hasPercent = match[0].endsWith('%');
+        const html = renderKatexSafe(`\\tfrac{${rawNum}}{${rawDen}}`, false);
+        nodes.push(
+          <span key={`${keyPrefix}-${segIdx}-f-${idx}`} dangerouslySetInnerHTML={{ __html: html }} />
+        );
+        if (hasPercent) nodes.push(<span key={`${keyPrefix}-${segIdx}-f-pct-${idx}`}>%</span>);
+        lastIndex = fracRegex.lastIndex;
+      }
+      if (lastIndex < segment.text.length) {
+        nodes.push(
+          <span key={`${keyPrefix}-${segIdx}-t-last`}>
+            {renderFormattedProse(segment.text.slice(lastIndex), `${keyPrefix}-${segIdx}-t-last`)}
+          </span>
+        );
+      }
+    });
+
+    return <span key={keyPrefix}>{nodes}</span>;
+  };
+
+  const rendered = renderPartsWithBold(parts, renderMathPart, renderTextContent);
 
   if (inline) return <>{rendered}</>;
 
