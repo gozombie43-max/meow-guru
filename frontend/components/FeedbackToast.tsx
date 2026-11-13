@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Toast, ToastRegion } from '@/design-system/components/Toast';
 import type { FeedbackTone } from '@/lib/feedback';
 
 type FeedbackDetail = { message: string; tone?: FeedbackTone };
 
+/** Global app-feedback listener backed by the canonical Meow Toast primitive. */
 export default function FeedbackToast() {
   const [feedback, setFeedback] = useState<FeedbackDetail | null>(null);
   const timeoutRef = useRef<number | null>(null);
@@ -25,9 +27,17 @@ export default function FeedbackToast() {
     };
   }, []);
 
+  const tone = feedback?.tone || 'success';
+
   return (
-    <div className="feedback-toast-region" aria-live="polite" aria-atomic="true">
-      {feedback ? <div className={`feedback-toast feedback-toast--${feedback.tone || 'success'}`} role="status">{feedback.message}</div> : null}
-    </div>
+    <ToastRegion className="feedback-toast-region">
+      {feedback ? (
+        <Toast
+          tone={tone}
+          message={feedback.message}
+          data-feedback-toast={tone}
+        />
+      ) : null}
+    </ToastRegion>
   );
 }

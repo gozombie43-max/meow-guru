@@ -1,0 +1,82 @@
+.card {
+  --ui-control-radius: var(--meow-radius-lg);
+
+  display: block;
+  border-radius: var(--meow-radius-lg);
+  border: 1px solid var(--meow-border);
+  background-color: var(--meow-surface);
+  color: var(--meow-text);
+  font-family: var(--meow-font-sans);
+  box-shadow: var(--meow-shadow-none);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+button.interactiveButton {
+  width: 100%;
+  text-align: left;
+  font-weight: 400 !important;
+  cursor: pointer;
+  transition:
+    background-color var(--meow-duration-fast) var(--meow-ease-standard),
+    border-color var(--meow-duration-fast) var(--meow-ease-standard);
+}
+
+button.interactiveButton:focus-visible {
+  outline: 2px solid var(--meow-accent);
+  outline-offset: 2px;
+}
+
+.variantDefault {
+  background-color: var(--meow-surface);
+  border-color: var(--meow-border);
+}
+
+.variantSubtle {
+  background-color: var(--meow-surface-subtle);
+  border-color: var(--meow-border);
+}
+
+.variantInteractive {
+  background-color: var(--meow-surface);
+  border-color: var(--meow-border);
+  transition:
+    background-color var(--meow-duration-fast) var(--meow-ease-standard),
+    border-color var(--meow-duration-fast) var(--meow-ease-standard);
+}
+
+.variantAccentOutline {
+  background-color: var(--meow-accent-soft);
+  border-color: var(--meow-accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .variantInteractive:hover,
+  button.interactiveButton:hover {
+    background-color: var(--meow-surface-subtle);
+    border-color: var(--meow-border-strong);
+  }
+}
+
+.paddingNone {
+  padding: 0;
+}
+
+.paddingSm {
+  padding: var(--meow-space-3);
+}
+
+.paddingMd {
+  padding: var(--meow-space-4);
+}
+
+.paddingLg {
+  padding: var(--meow-space-6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button.interactiveButton,
+  .variantInteractive {
+    transition-duration: 0.01ms;
+  }
+}

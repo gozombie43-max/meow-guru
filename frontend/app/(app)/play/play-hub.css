@@ -10,7 +10,7 @@
   padding-bottom: 0;
   overflow: hidden;
 }
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   body.has-bottom-nav .training-page.play-hub {
     padding-bottom: calc(var(--app-bottom-nav-height) + var(--safe-bottom));
   }

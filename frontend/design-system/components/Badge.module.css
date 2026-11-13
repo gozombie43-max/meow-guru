@@ -1,0 +1,63 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--meow-space-1);
+  border-radius: var(--meow-radius-full);
+  border: 1px solid transparent;
+  font-family: var(--meow-font-sans);
+  font-weight: 600;
+  white-space: nowrap;
+  vertical-align: middle;
+  line-height: var(--meow-leading-2xs);
+}
+
+.sizeSm {
+  padding: 2px var(--meow-space-2);
+  font-size: var(--meow-text-2xs);
+  line-height: var(--meow-leading-2xs);
+}
+
+.sizeMd {
+  padding: var(--meow-space-1) 10px;
+  font-size: var(--meow-text-xs);
+  line-height: var(--meow-leading-xs);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.variantNeutral {
+  background-color: var(--meow-surface-subtle);
+  border-color: var(--meow-border);
+  color: var(--meow-secondary);
+}
+
+.variantAccent,
+.variantInfo {
+  background-color: var(--meow-info-soft);
+  border-color: color-mix(in srgb, var(--meow-info) 30%, transparent);
+  color: var(--meow-info);
+}
+
+.variantSuccess {
+  background-color: var(--meow-success-soft);
+  border-color: color-mix(in srgb, var(--meow-success) 30%, transparent);
+  color: var(--meow-success);
+}
+
+.variantWarning {
+  background-color: var(--meow-warning-soft);
+  border-color: color-mix(in srgb, var(--meow-warning) 30%, transparent);
+  color: var(--meow-warning);
+}
+
+.variantError {
+  background-color: var(--meow-error-soft);
+  border-color: color-mix(in srgb, var(--meow-error) 30%, transparent);
+  color: var(--meow-error);
+}

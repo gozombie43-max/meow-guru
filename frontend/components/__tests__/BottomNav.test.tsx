@@ -160,14 +160,21 @@ describe('BottomNav Component', () => {
     expect(search).toHaveValue('Alex');
   });
 
-  it('highlights the active navigation tab', () => {
+  it('highlights the active navigation tab and exposes clean tokens attributes', () => {
     const { container } = render(<BottomNav />);
+    const nav = screen.getByRole('navigation');
+    expect(nav).toHaveAttribute('data-meow-component', 'bottom-nav');
+    expect(nav).toHaveAttribute('data-meow-tokens', '');
     const activeLink = container.querySelector('a[href="/mock-test"]');
     expect(activeLink).not.toBeNull();
+    expect(activeLink).toHaveAttribute('aria-current', 'page');
+    expect(activeLink).toHaveClass('is-active');
   });
 
   it.each([
     '/battle',
+    '/battle/rewards',
+    '/battle/rewards/',
     '/battle/profile',
     '/battle/leaderboard',
     '/battle/missions',
@@ -177,6 +184,14 @@ describe('BottomNav Component', () => {
     '/notifications/',
     '/play/setup/adaptive',
     '/play/setup/nightmare',
+    '/english/homonyms-homophones/study-mode',
+    '/english/homonyms-homophones/study-mode/quiz',
+    '/english/spelling-misspelled-words/study-mode',
+    '/english/spelling-misspelled-words/study-mode/quiz',
+    '/english/synonyms-antonyms/study-mode',
+    '/english/one-word-substitution/study-mode',
+    '/english/one-word-substitution/study-mode/quiz',
+    '/english/idioms-phrases/study-mode',
   ])('stays hidden on %s', (path) => {
     mockPathname = path;
     const { container } = render(<BottomNav />);
@@ -184,4 +199,15 @@ describe('BottomNav Component', () => {
     expect(document.body.classList.contains('has-bottom-nav')).toBe(false);
     mockPathname = '/mock-test';
   });
+
+  it.each(['/english/homonyms-homophones', '/english/synonyms-antonyms'])(
+    'stays visible on primary subject topic %s',
+    (path) => {
+      mockPathname = path;
+      render(<BottomNav />);
+      expect(screen.getByRole('navigation')).toBeDefined();
+      expect(document.body.classList.contains('has-bottom-nav')).toBe(true);
+      mockPathname = '/mock-test';
+    },
+  );
 });

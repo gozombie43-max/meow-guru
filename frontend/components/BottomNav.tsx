@@ -1,23 +1,19 @@
 'use client';
 
-import Link from 'next/link';
-import { hidesPrimaryNavigation } from '@/lib/shell-policy';
-import { usePathname } from 'next/navigation';
 import { useLayoutEffect, useRef } from 'react';
-import { NavAssistantIcon, NavHomeIcon, NavPlayIcon, NavTestIcon } from '@/components/BottomNavIcons';
-import { useThemeMode } from '@/hooks/useTheme';
+import { usePathname } from 'next/navigation';
+import { hidesPrimaryNavigation } from '@/lib/shell-policy';
 import { useKeyboardOpen } from '@/components/VirtualKeyboardProvider';
 import { useAuth } from '@/context/AuthContext';
 import GoogleAvatarRing from '@/components/GoogleAvatarRing';
+import { BottomNav as PatternBottomNav } from '@/design-system/patterns/BottomNav';
 
 export default function BottomNav() {
   const navRef = useRef<HTMLElement>(null);
   const pathname = usePathname() || '/';
   const keyboardOpen = useKeyboardOpen();
   const shouldHideNav = hidesPrimaryNavigation(pathname) || keyboardOpen;
-  const { theme } = useThemeMode();
   const { user } = useAuth();
-  const isLightSurface = theme === 'light';
 
   useLayoutEffect(() => {
     const body = document.body;
@@ -36,86 +32,42 @@ export default function BottomNav() {
       root.style.setProperty('--app-bottom-nav-occupied-height', '0px');
       return () => root.style.removeProperty('--app-bottom-nav-occupied-height');
     }
+
     const updateHeight = () => {
-      root.style.setProperty('--app-bottom-nav-occupied-height', `${nav.getBoundingClientRect().height}px`);
+      root.style.setProperty(
+        '--app-bottom-nav-occupied-height',
+        `${nav.getBoundingClientRect().height}px`,
+      );
     };
     updateHeight();
-    
+
     let observer: ResizeObserver | null = null;
     if (typeof ResizeObserver !== 'undefined') {
       observer = new ResizeObserver(updateHeight);
       observer.observe(nav);
     }
-    
+    window.addEventListener('resize', updateHeight);
+
     return () => {
-      if (observer) {
-        observer.disconnect();
-      }
+      observer?.disconnect();
+      window.removeEventListener('resize', updateHeight);
       root.style.removeProperty('--app-bottom-nav-occupied-height');
     };
   }, [shouldHideNav]);
 
   if (shouldHideNav) return null;
 
-  const isHome = pathname === '/';
-  const isMock = pathname.startsWith('/mock-test');
-  const isPlay = pathname === '/play' || pathname.startsWith('/play/');
-  const isProfile = pathname === '/profile' || pathname.startsWith('/profile/');
-
   return (
-    <nav
+    <PatternBottomNav
       ref={navRef}
-      data-ui-chrome="footer"
-      className={`bottom-pill-nav${isLightSurface ? ' is-light' : ''}`}
-      aria-label="Primary"
-    >
-      <Link replace
-        href="/"
-        prefetch={false}
-        className={`bottom-nav-item${isHome ? ' is-active' : ''}`}
-        aria-current={isHome ? 'page' : undefined}
-      >
-        <NavHomeIcon className="bottom-nav-icon" />
-        <span className="bottom-nav-label">Home</span>
-      </Link>
-      <Link replace
-        href="/mock-test"
-        prefetch={false}
-        className={`bottom-nav-item${isMock ? ' is-active' : ''}`}
-        aria-current={isMock ? 'page' : undefined}
-      >
-        <NavTestIcon className="bottom-nav-icon" />
-        <span className="bottom-nav-label">Mock</span>
-      </Link>
-
-      <Link replace
-        href="/ai-chat"
-        prefetch={false}
-        className="bottom-nav-item"
-        aria-label="AI Assistant"
-      >
-        <NavAssistantIcon className="bottom-nav-icon" />
-        <span className="bottom-nav-label">Assistant</span>
-      </Link>
-
-      <Link replace
-        href="/play"
-        prefetch={false}
-        className={`bottom-nav-item${isPlay ? ' is-active' : ''}`}
-        aria-current={isPlay ? 'page' : undefined}
-      >
-        <NavPlayIcon className="bottom-nav-icon" />
-        <span className="bottom-nav-label">Play</span>
-      </Link>
-      <Link replace
-        href="/profile"
-        prefetch={false}
-        className={`bottom-nav-item${isProfile ? ' is-active' : ''}`}
-        aria-current={isProfile ? 'page' : undefined}
-      >
-        <GoogleAvatarRing size={28} initial={user?.name?.trim().charAt(0).toUpperCase() || 'U'} avatarUrl={user?.avatar || undefined} />
-        <span className="bottom-nav-label">You</span>
-      </Link>
-    </nav>
+      pathname={pathname}
+      profileIcon={
+        <GoogleAvatarRing
+          size={28}
+          initial={user?.name?.trim().charAt(0).toUpperCase() || 'U'}
+          avatarUrl={user?.avatar || undefined}
+        />
+      }
+    />
   );
 }

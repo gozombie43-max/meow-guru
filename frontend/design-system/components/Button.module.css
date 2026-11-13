@@ -1,0 +1,186 @@
+:where(.button) {
+  display: inline-flex;
+}
+
+.button {
+  --ui-surface: var(--meow-surface);
+  --ui-muted-surface: var(--meow-surface-subtle);
+  --ui-border: var(--meow-border);
+  --ui-text: var(--meow-text);
+  --ui-secondary: var(--meow-secondary);
+  --ui-accent: var(--meow-accent);
+  --ui-action: var(--meow-action-fill);
+  --ui-danger: var(--meow-danger-fill);
+  --ui-control-radius: var(--meow-radius-md);
+  --ui-control-height: var(--meow-control-h-md);
+  --ui-font-body: var(--meow-text-base);
+  --ui-icon-size: var(--meow-icon-md);
+
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  gap: var(--meow-space-2);
+  font-family: var(--meow-font-sans);
+  font-size: var(--meow-text-base);
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration: none;
+  box-shadow: none;
+  text-shadow: none;
+  background-image: none;
+  cursor: pointer;
+  transition:
+    background-color var(--meow-duration-fast) var(--meow-ease-standard),
+    border-color var(--meow-duration-fast) var(--meow-ease-standard),
+    color var(--meow-duration-fast) var(--meow-ease-standard),
+    opacity var(--meow-duration-fast) var(--meow-ease-standard);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--meow-accent);
+  outline-offset: 2px;
+}
+
+.button:disabled,
+.button[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.sizeSm {
+  padding: 6px var(--meow-space-3);
+}
+
+.sizeMd {
+  padding: 10px var(--meow-space-4);
+}
+
+.sizeLg {
+  --ui-control-height: var(--meow-control-h-lg);
+  --ui-font-body: var(--meow-text-md);
+  padding: var(--meow-space-3) var(--meow-space-5);
+  font-size: var(--meow-text-md);
+}
+
+.sizeIcon {
+  padding: 0;
+  width: var(--meow-control-h-md);
+  height: var(--meow-control-h-md);
+}
+
+@media (min-width: 1024px) and (pointer: fine) {
+  button.sizeSm[data-ui-button] {
+    --ui-control-height: var(--meow-control-h-sm);
+    --ui-font-body: var(--meow-text-sm);
+    font-size: var(--meow-text-sm);
+    padding: 6px var(--meow-space-3) !important;
+  }
+}
+
+.variantPrimary {
+  background-color: var(--meow-action-fill);
+  border: 1px solid var(--meow-action-fill);
+  color: var(--meow-on-accent);
+}
+
+.variantSecondary {
+  background-color: var(--meow-surface);
+  border: 1px solid var(--meow-border);
+  color: var(--meow-text);
+}
+
+.variantGhost {
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: var(--meow-secondary);
+}
+
+.variantDestructiveSolid {
+  background-color: var(--meow-danger-fill);
+  border: 1px solid var(--meow-danger-fill);
+  color: var(--meow-on-accent);
+}
+
+.variantDestructiveSubtle {
+  background-color: var(--meow-error-soft);
+  border: 1px solid color-mix(in srgb, var(--meow-error) 35%, transparent);
+  color: var(--meow-error);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .variantPrimary:not(:disabled, [aria-disabled='true'], [aria-busy='true']):hover {
+    --ui-action: var(--meow-action-fill-hover);
+    background-color: var(--meow-action-fill-hover);
+    border-color: var(--meow-action-fill-hover);
+  }
+
+  .variantSecondary:not(:disabled, [aria-disabled='true'], [aria-busy='true']):hover {
+    --ui-muted-surface: var(--meow-surface-subtle);
+    --ui-accent: var(--meow-border-strong);
+    background-color: var(--meow-surface-subtle);
+    border-color: var(--meow-border-strong);
+  }
+
+  .variantGhost:not(:disabled, [aria-disabled='true'], [aria-busy='true']):hover {
+    background-color: var(--meow-surface-subtle);
+    color: var(--meow-text);
+  }
+
+  .variantDestructiveSolid:not(:disabled, [aria-disabled='true'], [aria-busy='true']):hover {
+    --ui-danger: var(--meow-danger-fill-hover);
+    background-color: var(--meow-danger-fill-hover);
+    border-color: var(--meow-danger-fill-hover);
+  }
+
+  .variantDestructiveSubtle:not(:disabled, [aria-disabled='true'], [aria-busy='true']):hover {
+    border-color: var(--meow-error);
+  }
+}
+
+.content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--meow-space-2);
+}
+
+.contentHidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.iconSlot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconSlot > svg {
+  width: var(--meow-icon-sm);
+  height: var(--meow-icon-sm);
+}
+
+.sizeIcon .iconSlot > svg {
+  width: var(--meow-icon-md);
+  height: var(--meow-icon-md);
+}
+
+.spinnerOverlay {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition-duration: 0.01ms;
+  }
+}

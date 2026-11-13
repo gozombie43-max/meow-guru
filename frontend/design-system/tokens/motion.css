@@ -1,0 +1,65 @@
+/* ==========================================================================
+   Meow Design System — Motion Tokens & Shared Keyframes (PR P0-A)
+   --------------------------------------------------------------------------
+   - Establishes uniform motion durations & easings without altering legacy
+     keyframes or adding global transitions onto un-migrated controls.
+   - Respects `prefers-reduced-motion: reduce` by collapsing durations.
+   ========================================================================== */
+
+:root {
+  --meow-duration-instant: 0ms;
+  --meow-duration-fast: 120ms;
+  --meow-duration-base: 180ms;
+  --meow-duration-slow: 260ms;
+
+  --meow-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --meow-ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --meow-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+}
+
+@keyframes meow-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes meow-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes meow-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+  40%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+/* Reduced-motion safe overrides for design-system duration variables and primitives */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --meow-duration-fast: 0.01ms;
+    --meow-duration-base: 0.01ms;
+    --meow-duration-slow: 0.01ms;
+  }
+
+  [data-meow-motion] {
+    animation-delay: 0s;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-delay: 0s;
+    transition-duration: 0.01ms;
+  }
+}
