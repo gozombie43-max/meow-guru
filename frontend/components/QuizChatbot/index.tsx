@@ -487,9 +487,6 @@ export default function QuizChatbot({
         <div
           ref={overlayRef}
           className="quiz-chatbot-overlay"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) handleClose();
-          }}
         >
           <button
             data-ui-decoration="true"
