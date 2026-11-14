@@ -2036,7 +2036,7 @@
 }
 .ios-series-dock {
   display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
-  align-items: center; gap: 4px; padding: 4px; border-radius: 24px;
+  align-items: stretch; gap: 2px; padding: 3px; border-radius: 26px;
   background: var(--quiz-answer-surface);
 }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock .ios-series-footer-pill {
@@ -2044,26 +2044,35 @@
 }
 .ios-series-dock .ios-series-pill-divider { display: none; }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock :is(.ios-series-footer-prev, .ios-series-pill-item) {
+  position: relative;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-width: 0; height: 48px; min-height: 48px; gap: 3px; padding: 4px 2px !important;
+  width: 100%; min-width: 0; height: 50px; min-height: 50px; gap: 3px; padding: 6px 8px !important;
   background: transparent !important; --ui-surface: transparent;
-  color: var(--quiz-text-primary) !important; border: 0; border-radius: 14px !important;
-  font-size: 11px !important; font-weight: 500 !important; line-height: 1.2 !important;
+  color: var(--quiz-text-primary) !important; border: 0; border-radius: 23px !important;
+  font-size: 12.5px !important; font-weight: 500 !important; line-height: 1.2 !important;
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.ios-series-quiz .ios-series-dock :is(.ios-series-footer-btn, .ios-series-pill-item) > * {
+  pointer-events: none;
 }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock :is(.ios-series-pill-icon, .ios-series-footer-prev .ios-series-btn-arrow) {
-  display: block; width: 18px; height: 18px; flex-shrink: 0;
+  display: block; width: 21px !important; height: 21px !important; flex-shrink: 0;
   color: var(--quiz-text-secondary); stroke-width: 1.8;
 }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock .ios-series-pill-label {
-  font-size: 11px; font-weight: 500; line-height: 1.2; color: inherit; white-space: nowrap;
+  font-size: 12.5px; font-weight: 500; line-height: 1.2; color: inherit; white-space: nowrap;
 }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock .ios-series-footer-next {
-  height: 48px; border-radius: 20px !important; padding: 8px 4px !important;
-  font-size: 11px !important; gap: 3px;
+  position: relative; width: 100%; height: 50px; min-height: 50px; border-radius: 23px !important;
+  padding: 6px 8px !important; font-size: 12.5px !important; gap: 3px;
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock :is(.ios-series-footer-btn, .ios-series-pill-item):disabled {
   background: transparent !important; border: 0 !important; box-shadow: none !important;
   color: var(--quiz-text-secondary) !important; opacity: .4 !important;
+}
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock .ios-series-pill-item:is(:focus, :focus-visible) {
+  outline: none !important; box-shadow: none !important;
 }
 @media (hover: hover) {
   .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock :is(.ios-series-footer-prev, .ios-series-pill-item):not(:disabled):hover {
@@ -2107,12 +2116,14 @@
 }
 .ios-series-quiz .ios-series-option,
 .ios-series-quiz .ios-series-option *,
-.ios-series-quiz .ios-series-dock button,
 .ios-series-quiz .ios-series-dock button * {
   animation: none !important; transition: none !important;
 }
-.ios-series-quiz .ios-series-option:active,
-.ios-series-quiz .ios-series-dock button:active { transform: none !important; }
+.ios-series-quiz .ios-series-dock :is(.ios-series-footer-btn, .ios-series-pill-item) {
+  animation: none !important;
+  transition: background-color 120ms ease, transform 100ms ease, color 120ms ease !important;
+}
+.ios-series-quiz .ios-series-option:active { transform: none !important; }
 
 /* ==========================================================================
    Light theme: white answer cards on a soft canvas, crisp outlines,
@@ -2220,15 +2231,15 @@
    icon-over-label rhythm instead of floating as a separate solid pill. */
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock .ios-series-footer-next {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-width: 0; height: 48px; min-height: 48px; gap: 3px; padding: 4px 2px !important;
-  border: 0 !important; border-radius: 20px !important; box-shadow: none !important;
+  width: 100%; min-width: 0; height: 50px; min-height: 50px; gap: 3px; padding: 6px 8px !important;
+  border: 0 !important; border-radius: 23px !important; box-shadow: none !important;
   background: color-mix(in srgb, var(--quiz-accent) 12%, transparent) !important;
   --ui-surface: transparent;
   color: var(--quiz-accent) !important;
-  font-size: 11px !important; font-weight: 600 !important; line-height: 1.2 !important;
+  font-size: 12.5px !important; font-weight: 600 !important; line-height: 1.2 !important;
 }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock .ios-series-footer-next .ios-series-btn-arrow {
-  display: block; width: 18px; height: 18px; flex-shrink: 0; order: -1;
+  display: block; width: 21px !important; height: 21px !important; flex-shrink: 0; order: -1;
   color: inherit; stroke-width: 2;
 }
 .ios-series-quiz[data-theme="dark"] .ios-series-dock .ios-series-footer-next {
@@ -2243,6 +2254,47 @@
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock .ios-series-footer-next:disabled {
   background: transparent !important;
   color: var(--quiz-text-secondary) !important;
+}
+.ios-series-quiz[data-theme="dark"] .ios-series-dock :is(.ios-series-footer-prev, .ios-series-pill-item):active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+  transform: scale(0.95) !important;
+  scale: none !important;
+  filter: none !important;
+}
+.ios-series-quiz[data-theme="dark"] .ios-series-dock :is(.ios-series-footer-prev, .ios-series-pill-item):active:not(:disabled) :is(.ios-series-btn-arrow, .ios-series-pill-icon) {
+  color: #ffffff !important;
+}
+.ios-series-quiz[data-theme="light"] .ios-series-dock :is(.ios-series-footer-prev, .ios-series-pill-item):active:not(:disabled) {
+  background: rgba(15, 23, 42, 0.11) !important;
+  color: #0f172a !important;
+  transform: scale(0.95) !important;
+  scale: none !important;
+  filter: none !important;
+}
+.ios-series-quiz[data-theme="light"] .ios-series-dock :is(.ios-series-footer-prev, .ios-series-pill-item):active:not(:disabled) :is(.ios-series-btn-arrow, .ios-series-pill-icon) {
+  color: #0f172a !important;
+}
+.ios-series-quiz[data-theme="dark"] .ios-series-dock .ios-series-footer-next:active:not(:disabled) {
+  background: color-mix(in srgb, var(--quiz-accent) 36%, transparent) !important;
+  color: #ffffff !important;
+  transform: scale(0.95) !important;
+  scale: none !important;
+  filter: none !important;
+}
+.ios-series-quiz[data-theme="light"] .ios-series-dock .ios-series-footer-next:active:not(:disabled) {
+  background: color-mix(in srgb, var(--quiz-accent) 26%, transparent) !important;
+  transform: scale(0.95) !important;
+  scale: none !important;
+  filter: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ios-series-quiz .ios-series-dock :is(.ios-series-footer-btn, .ios-series-pill-item),
+  .ios-series-quiz .ios-series-dock :is(.ios-series-footer-btn, .ios-series-pill-item):active:not(:disabled) {
+    transition: none !important;
+    transform: none !important;
+    scale: none !important;
+  }
 }
 
 

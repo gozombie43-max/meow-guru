@@ -176,7 +176,7 @@ function MobileQuizFooterControls({
               onClick={handleOpenSolution}
               disabled={!isCurrentSubmitted}
               className={`ios-series-pill-item ios-series-pill-solution ${!isCurrentSubmitted ? "is-disabled" : ""}`}
-              aria-label="View solution"
+              data-custom-focus="true" aria-label="View solution"
             >
               <SolutionIcon className="ios-series-pill-icon solution-icon" />
               <span className="ios-series-pill-label">Solution</span>
@@ -194,7 +194,7 @@ function MobileQuizFooterControls({
               onClick={handleOpenAiTutor}
               disabled={!isCurrentSubmitted}
               className={`ios-series-pill-item ios-series-pill-ai ${!isCurrentSubmitted ? "is-disabled" : ""}`}
-              aria-label="Ask AI tutor"
+              data-custom-focus="true" aria-label="Ask AI tutor"
             >
               <GeminiIcon className="ios-series-pill-icon ai-icon" />
               <span className="ios-series-pill-label">AI</span>
