@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, cleanup, act } from '@testing-library/react';
 import QuizChatbot from '../index';
 import api from '@/lib/axios';
 import type { QuizChatbotQuestion } from '../utils';
@@ -346,16 +346,37 @@ describe('QuizChatbot Component', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('renders a corner close button in the header that closes the modal when clicked', () => {
-    render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
-    const trigger = screen.getByRole('button', { name: /Ask AI Tutor/i });
-    fireEvent.click(trigger);
-    const dialog = screen.getByRole('dialog');
-    const closeBtn = screen.getByRole('button', { name: 'Close AI tutor' });
-    expect(closeBtn.closest('header')).toBeInTheDocument();
-    expect(dialog).toContainElement(closeBtn);
-    fireEvent.click(closeBtn);
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  it('does not render a close or back button in header and closes on hold or drag down', () => {
+    vi.useFakeTimers();
+    try {
+      render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
+      const trigger = screen.getByRole('button', { name: /Ask AI Tutor/i });
+      fireEvent.click(trigger);
+
+      expect(screen.queryByRole('button', { name: 'Close AI tutor' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Back to quiz' })).not.toBeInTheDocument();
+
+      const dragZone = screen.getByTitle('Hold or drag down to close');
+      expect(dragZone).toBeInTheDocument();
+
+      // Hold down (450ms) closes the modal
+      fireEvent.pointerDown(dragZone, { clientY: 100, button: 0 });
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+      // Reopen and drag down past threshold
+      fireEvent.click(trigger);
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      const reopenedDragZone = screen.getByTitle('Hold or drag down to close');
+      fireEvent.pointerDown(reopenedDragZone, { clientY: 100, button: 0 });
+      fireEvent.pointerMove(reopenedDragZone, { clientY: 200 });
+      fireEvent.pointerUp(reopenedDragZone, { clientY: 200 });
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('renders numbered solution steps and only the latest follow-up group', async () => {

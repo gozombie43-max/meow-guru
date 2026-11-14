@@ -1,7 +1,7 @@
 import { useModalSurface } from "@/components/ui/Dialog";
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { ArrowLeft, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import RichContent from '@/components/RichContent';
 import MathRenderer from '@/components/MathRenderer';
 import { formatMathBookSolutionLines } from '@/features/quiz/model/utils';
@@ -203,11 +203,7 @@ export function SolutionBottomSheet({
               </div>
 
               <div data-ui-chrome="header" className="ios-solution-header">
-                <button data-ui-button="icon" type="button" onClick={onClose} aria-label="Back to quiz" className="ios-done-btn">
-                  <ArrowLeft aria-hidden="true" />
-                </button>
                 <h3 className="ios-solution-title">Worked Solution</h3>
-                <span className="ios-header-placeholder" aria-hidden="true" />
               </div>
             </div>
 
@@ -314,13 +310,13 @@ export function SolutionBottomSheet({
                 width: 44px;
                 height: 5px;
                 border-radius: 99px;
-                background: rgba(255, 255, 255, 0.22);
+                background: rgb(var(--ios-system-blue-rgb, 10 132 255) / 0.45);
                 position: relative;
                 overflow: hidden;
                 transition: transform 0.2s ease, background 0.2s ease;
               }
               .ios-solution-drag-zone:hover .ios-sheet-handle {
-                background: rgb(var(--ios-system-blue-rgb) / 0.4);
+                background: rgb(var(--ios-system-blue-rgb, 10 132 255) / 0.65);
               }
               .ios-solution-drag-zone.is-holding .ios-sheet-handle {
                 transform: scaleY(1.3);
@@ -340,10 +336,9 @@ export function SolutionBottomSheet({
                 opacity: 1;
               }
               .ios-solution-header {
-                display: grid;
-                grid-template-columns: 44px minmax(0, 1fr) 44px;
-                gap: 12px;
+                display: flex;
                 align-items: center;
+                justify-content: center;
                 padding: 10px 20px 14px 20px;
                 border-bottom: 0.5px solid rgba(255, 255, 255, 0.12);
                 flex-shrink: 0;
@@ -355,19 +350,6 @@ export function SolutionBottomSheet({
                 color: #ffffff;
                 text-align: center;
                 letter-spacing: -0.01em;
-              }
-              .ios-done-btn {
-                background: transparent;
-                border: none;
-                padding: 0;
-                font-size: 17px;
-                font-weight: 600;
-                color: var(--ios-system-blue);
-                cursor: pointer;
-                justify-self: start;
-              }
-              .ios-done-btn:active {
-                opacity: 0.6;
               }
               .ios-solution-body {
                 flex: 1;
@@ -434,10 +416,10 @@ export function SolutionBottomSheet({
                 color: var(--light-text);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-sheet-handle {
-                background: var(--light-border);
+                background: rgb(var(--ios-system-blue-rgb, 10 132 255) / 0.45);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-drag-zone:hover .ios-sheet-handle {
-                background: rgb(var(--ios-system-blue-rgb) / 0.35);
+                background: rgb(var(--ios-system-blue-rgb, 10 132 255) / 0.65);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-hold-indicator {
                 background: var(--ios-system-blue);
@@ -447,9 +429,6 @@ export function SolutionBottomSheet({
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-title {
                 color: var(--light-text);
-              }
-              .ios-solution-backdrop[data-theme="light"] .ios-done-btn {
-                color: var(--light-accent);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-content-text {
                 color: var(--light-text);
@@ -510,12 +489,6 @@ export function SolutionBottomSheet({
                 color: var(--oled-text, #e5eaf0);
               }
               .ios-solution-backdrop[data-theme="dark"] .ios-solution-answer-summary { color: var(--oled-secondary, #a2a9b4); }
-              .ios-solution-backdrop[data-theme="dark"] .ios-done-btn {
-                background: var(--oled-inset, #29292c);
-                color: var(--oled-text, #e5eaf0);
-                border: 0;
-                box-shadow: none;
-              }
               .ios-solution-backdrop[data-theme="dark"] .ios-hold-indicator { background: var(--oled-selected, var(--ios-system-blue)); }
             `}</style>
           </motion.div>

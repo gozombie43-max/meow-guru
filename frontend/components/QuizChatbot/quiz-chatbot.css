@@ -157,9 +157,64 @@
   position: relative;
   z-index: 50;
   flex-shrink: 0;
-  padding: 10px max(16px, var(--safe-right, 0px)) 6px max(16px, var(--safe-left, 0px));
+  padding: 8px max(16px, var(--safe-right, 0px)) 6px max(16px, var(--safe-left, 0px));
   background: var(--card-bg);
   border-bottom: 1px solid var(--bd);
+}
+
+.quiz-chatbot-shell .tutor-drag-zone {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.quiz-chatbot-shell .tutor-drag-zone.is-dragging,
+.quiz-chatbot-shell .tutor-drag-zone.is-holding {
+  cursor: grabbing;
+}
+
+.quiz-chatbot-shell .tutor-sheet-handle-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 2px;
+  padding-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.quiz-chatbot-shell .tutor-sheet-handle {
+  width: 44px;
+  height: 5px;
+  border-radius: 99px;
+  background: rgb(var(--ios-system-blue-rgb, 10 132 255) / 0.45);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.quiz-chatbot-shell .tutor-drag-zone:hover .tutor-sheet-handle {
+  background: rgb(var(--ios-system-blue-rgb, 10 132 255) / 0.65);
+}
+
+.quiz-chatbot-shell .tutor-drag-zone.is-holding .tutor-sheet-handle {
+  transform: scaleY(1.3);
+}
+
+.quiz-chatbot-shell .tutor-hold-indicator {
+  position: absolute;
+  inset: 0;
+  background: var(--ios-system-blue, #0a84ff);
+  border-radius: 99px;
+  transform: scaleX(0);
+  transform-origin: center;
+  opacity: 0;
+  transition: transform 0.45s cubic-bezier(0.1, 0.8, 0.2, 1), opacity 0.15s ease;
+}
+
+.quiz-chatbot-shell .tutor-hold-indicator.active {
+  transform: scaleX(1);
+  opacity: 1;
 }
 
 .quiz-chatbot-shell .topbar {
@@ -396,45 +451,6 @@
   justify-self: end;
   gap: 6px;
   min-width: 0;
-}
-
-.quiz-chatbot-shell .tutor-close-btn {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 4px;
-  background-clip: content-box;
-  border: 0;
-  border-radius: 50%;
-  background: var(--field);
-  color: var(--dk);
-  flex-shrink: 0;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.quiz-chatbot-shell.dark .tutor-close-btn {
-  background: var(--field);
-  color: var(--gr);
-}
-
-.quiz-chatbot-shell .tutor-close-btn:hover {
-  background: color-mix(in srgb, var(--field) 82%, var(--dk));
-  color: var(--dk);
-}
-
-.quiz-chatbot-shell .tutor-close-btn:active:not(:disabled) {
-  animation: none;
-  transform: none;
-  scale: 1 !important;
-}
-
-.quiz-chatbot-shell .tutor-close-btn svg {
-  width: 16px !important;
-  height: 16px !important;
 }
 
 

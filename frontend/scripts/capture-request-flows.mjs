@@ -112,7 +112,7 @@ try {
       await page.locator('.ios-series-option, .mac-series-option').first().click();
       await measure('submit_answer', async () => { await page.getByRole('button', { name: 'Submit', exact: true }).click(); await expect(page.getByRole('button', { name: 'Next', exact: true })).toBeEnabled(); });
       await measure('open_solution', async () => { await page.getByRole('button', { name: /^View solution$/i }).click(); await expect(page.locator('[aria-label="Question solution"]')).toBeVisible(); });
-      await page.getByRole('button', { name: 'Back to quiz' }).click();
+      await page.keyboard.press('Escape');
       await measure('open_ai_tutor', async () => { await page.getByRole('button', { name: /Ask AI tutor/i }).click(); await expect(page.locator('textarea.tutor-textarea')).toBeVisible(); });
       await page.keyboard.press('Escape');
       await measure('next_question', async () => { await page.getByRole('button', { name: 'Next', exact: true }).click(); await expect(page.getByRole('button', { name: 'Submit', exact: true })).toBeVisible(); });

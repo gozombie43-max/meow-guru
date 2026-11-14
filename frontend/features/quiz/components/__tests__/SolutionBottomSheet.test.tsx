@@ -39,7 +39,7 @@ describe('SolutionBottomSheet Component', () => {
     fireEvent.click(trigger);
     expect(screen.getByRole('dialog')).toHaveFocus();
     expect(document.body.style.overflow).toBe('hidden');
-    fireEvent.click(screen.getByRole('button', { name: 'Back to quiz' }));
+    fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(document.body.style.overflow).toBe('hidden');
     expect(trigger).not.toHaveFocus();
@@ -82,7 +82,7 @@ describe('SolutionBottomSheet Component', () => {
 
     expect(screen.getByText('Worked Solution')).toBeInTheDocument();
     expect(screen.getByText(/Option \(C\) is correct/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Back to quiz/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Back to quiz/i })).not.toBeInTheDocument();
   });
 
   it('renders markdown bolding (**text** and __text__) in worked solutions', () => {
@@ -104,8 +104,8 @@ describe('SolutionBottomSheet Component', () => {
     expect(strongTexts).toContain('Note:');
   });
 
-  it('calls onClose when Back button is clicked', () => {
-    renderWithTheme(
+  it('does not render back button and calls onClose when backdrop is clicked', () => {
+    const { container } = renderWithTheme(
       <SolutionBottomSheet
         isOpen={true}
         solution="Solution explanation"
@@ -116,8 +116,9 @@ describe('SolutionBottomSheet Component', () => {
       />
     );
 
-    const doneBtn = screen.getByRole('button', { name: /Back to quiz/i });
-    fireEvent.click(doneBtn);
+    expect(screen.queryByRole('button', { name: /Back to quiz/i })).not.toBeInTheDocument();
+    const backdrop = container.querySelector('.ios-solution-backdrop')!;
+    fireEvent.click(backdrop);
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
