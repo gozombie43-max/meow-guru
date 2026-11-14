@@ -32,8 +32,6 @@ const LOCALIZED_CONTENT: Record<
   SupportedLang,
   {
     placeholder: string;
-    contextLoaded: string;
-    contextSubtitle: string;
     landingTitle: string;
     quickPrompts: string;
     landingOptions: Array<{
@@ -49,8 +47,6 @@ const LOCALIZED_CONTENT: Record<
 > = {
   en: {
     placeholder: "Ask anything",
-    contextLoaded: "Context loaded:",
-    contextSubtitle: "Ask anything about this submitted question.",
     landingTitle: "What can I help with?",
     quickPrompts: "Quick Prompts",
     landingOptions: [
@@ -88,8 +84,6 @@ const LOCALIZED_CONTENT: Record<
   },
   hi: {
     placeholder: "कुछ भी पूछें",
-    contextLoaded: "संदर्भ लोड हुआ:",
-    contextSubtitle: "इस प्रश्न के बारे में कुछ भी पूछें।",
     landingTitle: "मैं आपकी क्या मदद कर सकता हूँ?",
     quickPrompts: "त्वरित प्रश्न (Quick Prompts)",
     landingOptions: [
@@ -127,8 +121,6 @@ const LOCALIZED_CONTENT: Record<
   },
   bn: {
     placeholder: "যেকোনো প্রশ্ন জিজ্ঞাসা করুন",
-    contextLoaded: "প্রশ্ন লোড হয়েছে:",
-    contextSubtitle: "এই প্রশ্নটি সম্পর্কে যেকোনো কিছু জিজ্ঞাসা করুন।",
     landingTitle: "আমি কীভাবে সাহায্য করতে পারি?",
     quickPrompts: "দ্রুত প্রম্পট (Quick Prompts)",
     landingOptions: [
@@ -598,19 +590,7 @@ export default function QuizChatbot({
                 {!isChatView ? <div className="land">
                   <div className="lscroll">
                     <div className="ctx">
-                      <div className="ctxi">Q</div>
-                      <div>
-                        <div className="ctxl">
-                          {currentContent.contextLoaded}{" "}
-                          <span>
-                            Q{questionNumber} · {question.concept || topicTitle}
-                            {question.exam ? ` · ${question.exam}` : ""}
-                          </span>
-                        </div>
-                        <div className="ctxs">
-                          {currentContent.contextSubtitle}
-                        </div>
-                      </div>
+                      Q{questionNumber} · {question.concept || topicTitle}
                     </div>
 
                     <div className="ltitle">
