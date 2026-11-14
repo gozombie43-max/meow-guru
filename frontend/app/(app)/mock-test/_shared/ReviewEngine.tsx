@@ -7,15 +7,15 @@ import QuestionImage from '@/components/QuestionImage';
 import RichContent from '@/components/RichContent';
 import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { useSearchParams } from 'next/navigation';
-import { useEffect,useRef,useMemo,useState } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import {
-getAttempt,
-getSlotDetails,
-type MockAnswer,
-type MockAnswerKey,
-type MockAttempt,
-type MockQuestion,
-type MockSection,
+  getAttempt,
+  getSlotDetails,
+  type MockAnswer,
+  type MockAnswerKey,
+  type MockAttempt,
+  type MockQuestion,
+  type MockSection,
 } from './api';
 import styles from './ReviewEngine.module.css';
 import { paperDisplayTitle } from './paper-date';
@@ -23,6 +23,7 @@ import MockTestLoading from './MockTestLoading';
 import { useNativeDialog } from '@/components/ui/Dialog';
 import type { QuizLanguage } from '@meow/contracts/exam-paper';
 import ReviewQuestionNavigator, { type ReviewFilter } from './ReviewQuestionNavigator';
+import { AnalyticsTemplate } from '@/design-system';
 
 interface ReviewEngineProps {
   examSlug: string;
@@ -147,25 +148,33 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
   };
 
   if (!authLoading && !ready) return (
-    <div className={styles.loadingContainer}>
-      <p role="alert">Sign in to view your answer review.</p>
-      <button data-ui-button="primary" onClick={() => router.replace('/login')}>Sign in</button>
-      <button data-ui-button="secondary" onClick={() => router.back(`/mock-test/${examSlug}`)}>Back to Tests</button>
-    </div>
+    <AnalyticsTemplate showBottomNav={false} showNavRail={false}>
+      <div className={styles.loadingContainer}>
+        <p role="alert">Sign in to view your answer review.</p>
+        <button data-ui-button="primary" onClick={() => router.replace('/login')}>Sign in</button>
+        <button data-ui-button="secondary" onClick={() => router.back(`/mock-test/${examSlug}`)}>Back to Tests</button>
+      </div>
+    </AnalyticsTemplate>
   );
 
   if (loading) {
-    return <MockTestLoading label="Loading answer review…" />;
+    return (
+      <AnalyticsTemplate showBottomNav={false} showNavRail={false} isLoading={true} defaultLoadingLabel="Loading answer review…">
+        <MockTestLoading label="Loading answer review…" />
+      </AnalyticsTemplate>
+    );
   }
 
   if (error || !attempt) {
     return (
-      <div className={styles.loadingContainer}>
-        <p>{error || 'Attempt not found.'}</p>
-        <button data-ui-button="primary" className={styles.btnPrimary} onClick={() => router.back(`/mock-test/${examSlug}`)}>
-          Back to Tests
-        </button>
-      </div>
+      <AnalyticsTemplate showBottomNav={false} showNavRail={false}>
+        <div className={styles.loadingContainer}>
+          <p>{error || 'Attempt not found.'}</p>
+          <button data-ui-button="primary" className={styles.btnPrimary} onClick={() => router.back(`/mock-test/${examSlug}`)}>
+            Back to Tests
+          </button>
+        </div>
+      </AnalyticsTemplate>
     );
   }
 
@@ -188,172 +197,178 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
   };
 
   return (
-    <div data-paper-images className={styles.page}>
-      <header data-ui-chrome="header" className={styles.header}>
-        <div className={styles.headerTop}>
-          <div className={styles.headerLeft}>
-            <button data-ui-button="icon" className={styles.backBtn} aria-label="Back to results"
-              onClick={() => router.back(`/mock-test/${examSlug}/${testId}/result/${attemptId}`)}>
-              <ArrowLeft size={20} />
-            </button>
-            <div className={styles.examTitleWrap}>
-              <h1 className={styles.examTitle}>Answer review</h1>
-              <span className={styles.examSub} title={paperTitle || attempt.paper?.examName}>{paperTitle || attempt.paper?.examName || 'Mock test'}</span>
-            </div>
-          </div>
-          {attempt.paper?.schemaDriven && <div className={styles.languageSwitch} data-language={language} role="group" aria-label="Review language">
-            <button aria-pressed={language === 'en'} onClick={() => setLanguage('en')}>ENG</button>
-            <button aria-pressed={language === 'bn'} onClick={() => setLanguage('bn')}>বাংলা</button>
-          </div>}
-        </div>
-        <div className={styles.reviewControls}>
-          <label>Section
-            <select value={currentSectionIndex} onChange={event => selectSection(Number(event.target.value))}>
-              {sections.map((section, index) => <option key={section.key || index} value={index}>{section.label || section.key || `Section ${index + 1}`}</option>)}
-            </select>
-          </label>
-          <label>Show
-            <select value={filter} onChange={event => selectFilter(event.target.value as FilterType)}>
-              <option value="all">All ({questionAnalysis.length})</option>
-              <option value="correct">Correct ({questionAnalysis.filter(item => item.status === 'correct').length})</option>
-              <option value="incorrect">Wrong ({questionAnalysis.filter(item => item.status === 'incorrect').length})</option>
-              <option value="skipped">Skipped ({questionAnalysis.filter(item => item.status === 'skipped').length})</option>
-            </select>
-          </label>
-        </div>
-      </header>
-
-      <div className={styles.layout}>
-        <aside className={styles.sidebar} aria-label="Review question navigator">
-          <h2 className={styles.sidebarHeading}>Questions</h2>
-          <ReviewQuestionNavigator questions={questionAnalysis} filteredQuestions={filteredAnalysis}
-            filter={filter} selectedIndex={currentQuestionIndex} onFilter={selectFilter} onSelect={setCurrentQuestionIndex} />
-        </aside>
-
-        {/* Center: Question Details & Solution */}
-        <main className={styles.questionPanel} ref={questionPanelRef} aria-label="Question and solution">
-          {currentQ ? (
-            <div className={styles.questionCard}>
-              <div className={styles.questionMeta}>
-                <span className={styles.qNumBadge} aria-live="polite">Question {currentItem.index + 1} of {questions.length}</span>
-                <span className={`${styles.statusBadge} ${styles['status_' + currentItem.status]}`}>
-                  {currentItem.status === 'correct' && `Correct (+${currentSection?.marking?.correct ?? 2} marks)`}
-                  {currentItem.status === 'incorrect' && `Incorrect (-${currentSection?.marking?.incorrect ?? 0.5} marks)`}
-                  {currentItem.status === 'skipped' && 'Skipped · 0 marks'}
-                </span>
+    <AnalyticsTemplate
+      showBottomNav={false}
+      showNavRail={false}
+      maxWidth="100%"
+    >
+      <div data-paper-images className={styles.page}>
+        <header data-ui-chrome="header" className={styles.header}>
+          <div className={styles.headerTop}>
+            <div className={styles.headerLeft}>
+              <button data-ui-button="icon" className={styles.backBtn} aria-label="Back to results"
+                onClick={() => router.back(`/mock-test/${examSlug}/${testId}/result/${attemptId}`)}>
+                <ArrowLeft size={20} />
+              </button>
+              <div className={styles.examTitleWrap}>
+                <h1 className={styles.examTitle}>Answer review</h1>
+                <span className={styles.examSub} title={paperTitle || attempt.paper?.examName}>{paperTitle || attempt.paper?.examName || 'Mock test'}</span>
               </div>
+            </div>
+            {attempt.paper?.schemaDriven && <div className={styles.languageSwitch} data-language={language} role="group" aria-label="Review language">
+              <button aria-pressed={language === 'en'} onClick={() => setLanguage('en')}>ENG</button>
+              <button aria-pressed={language === 'bn'} onClick={() => setLanguage('bn')}>বাংলা</button>
+            </div>}
+          </div>
+          <div className={styles.reviewControls}>
+            <label>Section
+              <select value={currentSectionIndex} onChange={event => selectSection(Number(event.target.value))}>
+                {sections.map((section, index) => <option key={section.key || index} value={index}>{section.label || section.key || `Section ${index + 1}`}</option>)}
+              </select>
+            </label>
+            <label>Show
+              <select value={filter} onChange={event => selectFilter(event.target.value as FilterType)}>
+                <option value="all">All ({questionAnalysis.length})</option>
+                <option value="correct">Correct ({questionAnalysis.filter(item => item.status === 'correct').length})</option>
+                <option value="incorrect">Wrong ({questionAnalysis.filter(item => item.status === 'incorrect').length})</option>
+                <option value="skipped">Skipped ({questionAnalysis.filter(item => item.status === 'skipped').length})</option>
+              </select>
+            </label>
+          </div>
+        </header>
 
-              {/* Question Text */}
-              <div className={styles.questionBody}>
-                <div className={styles.questionText}>
-                  <RichContent
-                    text={questionText}
-                    criticalImages
-                    imageDimensions={{ width: currentQ.questionImageWidth, height: currentQ.questionImageHeight }}
-                  />
+        <div className={styles.layout}>
+          <aside className={styles.sidebar} aria-label="Review question navigator">
+            <h2 className={styles.sidebarHeading}>Questions</h2>
+            <ReviewQuestionNavigator questions={questionAnalysis} filteredQuestions={filteredAnalysis}
+              filter={filter} selectedIndex={currentQuestionIndex} onFilter={selectFilter} onSelect={setCurrentQuestionIndex} />
+          </aside>
+
+          {/* Center: Question Details & Solution */}
+          <main className={styles.questionPanel} ref={questionPanelRef} aria-label="Question and solution">
+            {currentQ ? (
+              <div className={styles.questionCard}>
+                <div className={styles.questionMeta}>
+                  <span className={styles.qNumBadge} aria-live="polite">Question {currentItem.index + 1} of {questions.length}</span>
+                  <span className={`${styles.statusBadge} ${styles['status_' + currentItem.status]}`}>
+                    {currentItem.status === 'correct' && `Correct (+${currentSection?.marking?.correct ?? 2} marks)`}
+                    {currentItem.status === 'incorrect' && `Incorrect (-${currentSection?.marking?.incorrect ?? 0.5} marks)`}
+                    {currentItem.status === 'skipped' && 'Skipped · 0 marks'}
+                  </span>
                 </div>
-                {questionImage && !questionText.includes(questionImage) && (
-                  <div className={styles.qImageWrap}>
-                    <QuestionImage
-                      src={questionImage}
-                      alt="Question diagram"
-                      width={currentQ.questionImageWidth}
-                      height={currentQ.questionImageHeight}
-                      critical
+
+                {/* Question Text */}
+                <div className={styles.questionBody}>
+                  <div className={styles.questionText}>
+                    <RichContent
+                      text={questionText}
+                      criticalImages
+                      imageDimensions={{ width: currentQ.questionImageWidth, height: currentQ.questionImageHeight }}
                     />
                   </div>
-                )}
-              </div>
-
-              {currentQ.questionType === 'NAT' && <div className={styles.solutionBox}><p>Your answer: {String(currentItem.userAns ?? 'Not answered')}</p><p>Accepted answer: {currentItem.correctAns && typeof currentItem.correctAns === 'object' && !Array.isArray(currentItem.correctAns) ? `${currentItem.correctAns.min} to ${currentItem.correctAns.max}` : String(currentItem.correctAns ?? '')}</p></div>}
-              {/* Options */}
-              <div className={styles.optionsList}>
-                {currentQ.options?.map((option, oIdx: number) => {
-                  const opt = currentQ.translations?.options[language][oIdx] ?? (typeof option === 'string' ? option : option.text);
-                  const letter = String.fromCharCode(65 + oIdx); // 'A', 'B', 'C', 'D'
-                  const isUserPick = [currentItem.userAns].flat().some(value => mockAnswerIndex(value, currentQ.options, true) === oIdx);
-                  const isCorrect = [currentItem.correctAns].flat().some(value => mockAnswerIndex(value, currentQ.options) === oIdx);
-                  const optImage = (typeof option === 'object' && option?.image) || currentQ.optionImages?.[oIdx];
-
-                  let optClass = styles.optionNormal;
-                  if (isCorrect) optClass = styles.optionCorrect;
-                  else if (isUserPick && !isCorrect) optClass = styles.optionUserWrong;
-
-                  return (
-                    <div key={oIdx} className={`${styles.optionItem} ${optClass}`}>
-                      <span className={styles.optionLetter}>{letter}</span>
-                      <div className={styles.optionText}>
-                        <RichContent text={opt} as="span" />
-                        {optImage && !opt.includes(optImage) && (
-                          <div style={{ marginTop: '0.5rem', maxWidth: '240px' }}>
-                            <QuestionImage src={optImage} alt={`Option ${letter} diagram`} enableZoom={false} isOption />
-                          </div>
-                        )}
-                      </div>
-                      {isCorrect && <span className={styles.correctLabel}>Correct answer</span>}
-                      {isUserPick && !isCorrect && <span className={styles.userWrongLabel}>Your answer</span>}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Solution / Explanation */}
-              {(solutionText || currentQ.solutionImage) && (
-                <div className={styles.solutionBox}>
-                  <h3 className={styles.solutionHeading}>Explanation</h3>
-                  {(solutionText) && (
-                    <div className={styles.solutionText}>
-                      <RichContent text={solutionText} />
-                    </div>
-                  )}
-                  {currentQ.solutionImage && !solutionText.includes(currentQ.solutionImage) && (
-                    <div className={styles.solImageWrap}>
+                  {questionImage && !questionText.includes(questionImage) && (
+                    <div className={styles.qImageWrap}>
                       <QuestionImage
-                        src={currentQ.solutionImage}
-                        alt="Detailed solution"
-                        width={currentQ.solutionImageWidth}
-                        height={currentQ.solutionImageHeight}
+                        src={questionImage}
+                        alt="Question diagram"
+                        width={currentQ.questionImageWidth}
+                        height={currentQ.questionImageHeight}
+                        critical
                       />
                     </div>
                   )}
                 </div>
-              )}
 
-            </div>
-          ) : (
-            <div className={styles.emptyQuestions}>
-              <h2>No {filter === 'all' ? '' : filter} questions</h2>
-              <p>{filter === 'all' ? 'This section has no questions to review.' : 'Try another status or review all questions in this section.'}</p>
-              {filter !== 'all' && <button className={styles.navBtn} onClick={() => selectFilter('all')}>Show all questions</button>}
-            </div>
-          )}
-        </main>
+                {currentQ.questionType === 'NAT' && <div className={styles.solutionBox}><p>Your answer: {String(currentItem.userAns ?? 'Not answered')}</p><p>Accepted answer: {currentItem.correctAns && typeof currentItem.correctAns === 'object' && !Array.isArray(currentItem.correctAns) ? `${currentItem.correctAns.min} to ${currentItem.correctAns.max}` : String(currentItem.correctAns ?? '')}</p></div>}
+                {/* Options */}
+                <div className={styles.optionsList}>
+                  {currentQ.options?.map((option, oIdx: number) => {
+                    const opt = currentQ.translations?.options[language][oIdx] ?? (typeof option === 'string' ? option : option.text);
+                    const letter = String.fromCharCode(65 + oIdx); // 'A', 'B', 'C', 'D'
+                    const isUserPick = [currentItem.userAns].flat().some(value => mockAnswerIndex(value, currentQ.options, true) === oIdx);
+                    const isCorrect = [currentItem.correctAns].flat().some(value => mockAnswerIndex(value, currentQ.options) === oIdx);
+                    const optImage = (typeof option === 'object' && option?.image) || currentQ.optionImages?.[oIdx];
+
+                    let optClass = styles.optionNormal;
+                    if (isCorrect) optClass = styles.optionCorrect;
+                    else if (isUserPick && !isCorrect) optClass = styles.optionUserWrong;
+
+                    return (
+                      <div key={oIdx} className={`${styles.optionItem} ${optClass}`}>
+                        <span className={styles.optionLetter}>{letter}</span>
+                        <div className={styles.optionText}>
+                          <RichContent text={opt} as="span" />
+                          {optImage && !opt.includes(optImage) && (
+                            <div style={{ marginTop: '0.5rem', maxWidth: '240px' }}>
+                              <QuestionImage src={optImage} alt={`Option ${letter} diagram`} enableZoom={false} isOption />
+                            </div>
+                          )}
+                        </div>
+                        {isCorrect && <span className={styles.correctLabel}>Correct answer</span>}
+                        {isUserPick && !isCorrect && <span className={styles.userWrongLabel}>Your answer</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Solution / Explanation */}
+                {(solutionText || currentQ.solutionImage) && (
+                  <div className={styles.solutionBox}>
+                    <h3 className={styles.solutionHeading}>Explanation</h3>
+                    {(solutionText) && (
+                      <div className={styles.solutionText}>
+                        <RichContent text={solutionText} />
+                      </div>
+                    )}
+                    {currentQ.solutionImage && !solutionText.includes(currentQ.solutionImage) && (
+                      <div className={styles.solImageWrap}>
+                        <QuestionImage
+                          src={currentQ.solutionImage}
+                          alt="Detailed solution"
+                          width={currentQ.solutionImageWidth}
+                          height={currentQ.solutionImageHeight}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+              </div>
+            ) : (
+              <div className={styles.emptyQuestions}>
+                <h2>No {filter === 'all' ? '' : filter} questions</h2>
+                <p>{filter === 'all' ? 'This section has no questions to review.' : 'Try another status or review all questions in this section.'}</p>
+                {filter !== 'all' && <button className={styles.navBtn} onClick={() => selectFilter('all')}>Show all questions</button>}
+              </div>
+            )}
+          </main>
+        </div>
+
+        <footer className={styles.bottomNav} aria-label="Question navigation">
+          <button className={styles.navBtn} onClick={handlePrev} disabled={!currentItem || currentQuestionIndex === 0}>
+            <ChevronLeft size={18} />Previous
+          </button>
+          <button className={styles.questionJump} aria-haspopup="dialog" onClick={() => setPaletteOpen(true)}>
+            <Grid2X2 size={17} />
+            <span>Questions<small>{currentItem ? `${currentQuestionIndex + 1} / ${filteredAnalysis.length}` : '0 questions'}</small></span>
+          </button>
+          <button className={`${styles.navBtn} ${styles.nextBtn}`} onClick={handleNext} disabled={!currentItem || currentQuestionIndex >= filteredAnalysis.length - 1}>
+            Next<ChevronRight size={18} />
+          </button>
+        </footer>
+
+        <dialog className={styles.paletteDialog} ref={paletteRef} aria-labelledby="review-palette-title" closedby="any" onClose={() => setPaletteOpen(false)}>
+          <div className={styles.sheetHeader}>
+            <div><h2 id="review-palette-title">Jump to question</h2><p>{currentSection?.label || currentSection?.key}</p></div>
+            <button className={styles.closeSheet} aria-label="Close question navigator" onClick={() => setPaletteOpen(false)}><X size={20} /></button>
+          </div>
+          <div className={styles.sheetContent}>
+            <ReviewQuestionNavigator questions={questionAnalysis} filteredQuestions={filteredAnalysis}
+              filter={filter} selectedIndex={currentQuestionIndex} onFilter={selectFilter}
+              onSelect={index => { setCurrentQuestionIndex(index); setPaletteOpen(false); }} />
+          </div>
+        </dialog>
       </div>
-
-      <footer className={styles.bottomNav} aria-label="Question navigation">
-        <button className={styles.navBtn} onClick={handlePrev} disabled={!currentItem || currentQuestionIndex === 0}>
-          <ChevronLeft size={18} />Previous
-        </button>
-        <button className={styles.questionJump} aria-haspopup="dialog" onClick={() => setPaletteOpen(true)}>
-          <Grid2X2 size={17} />
-          <span>Questions<small>{currentItem ? `${currentQuestionIndex + 1} / ${filteredAnalysis.length}` : '0 questions'}</small></span>
-        </button>
-        <button className={`${styles.navBtn} ${styles.nextBtn}`} onClick={handleNext} disabled={!currentItem || currentQuestionIndex >= filteredAnalysis.length - 1}>
-          Next<ChevronRight size={18} />
-        </button>
-      </footer>
-
-      <dialog className={styles.paletteDialog} ref={paletteRef} aria-labelledby="review-palette-title" closedby="any" onClose={() => setPaletteOpen(false)}>
-        <div className={styles.sheetHeader}>
-          <div><h2 id="review-palette-title">Jump to question</h2><p>{currentSection?.label || currentSection?.key}</p></div>
-          <button className={styles.closeSheet} aria-label="Close question navigator" onClick={() => setPaletteOpen(false)}><X size={20} /></button>
-        </div>
-        <div className={styles.sheetContent}>
-          <ReviewQuestionNavigator questions={questionAnalysis} filteredQuestions={filteredAnalysis}
-            filter={filter} selectedIndex={currentQuestionIndex} onFilter={selectFilter}
-            onSelect={index => { setCurrentQuestionIndex(index); setPaletteOpen(false); }} />
-        </div>
-      </dialog>
-    </div>
+    </AnalyticsTemplate>
   );
 }

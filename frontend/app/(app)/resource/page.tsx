@@ -24,6 +24,7 @@ X,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback,useEffect,useMemo,useRef,useState } from "react";
+import { ListingTemplate } from "@/design-system";
 
 import {
   IosSpinner,
@@ -42,7 +43,20 @@ import {
 
 export default function ResourcePage() {
   const { mode } = useExamMode();
-  return <ResourceContent key={mode} />;
+  return (
+    <ListingTemplate
+      columns={1}
+      wide
+      maxWidth="100%"
+      header={null}
+      hasStickyHeader={false}
+      showNavRail={false}
+      showBottomNav={false}
+      mainClassName={styleClasses("res-listing-main")}
+    >
+      <ResourceContent key={mode} />
+    </ListingTemplate>
+  );
 }
 
 function ResourceContent() {

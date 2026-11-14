@@ -1,5 +1,91 @@
-"use client";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { claimBattleSeasonReward, fetchBattleRewardTrack, type BattleRewardTrack } from "@/lib/api/battleRewardApi";
-export default function BattleRewardsPage() { const [data, setData] = useState<BattleRewardTrack | null>(null); const load = () => void fetchBattleRewardTrack().then(setData); useEffect(load, []); if (!data) return <main className="battle-aux-page p-6 text-slate-500">Loading reward track…</main>; if (!data.season) return <main className="battle-aux-page p-6">No active reward track.</main>; return <main className="battle-aux-page mx-auto min-h-dvh max-w-xl bg-slate-50 p-4 text-slate-900"><Link href="/battle/profile" className="text-sm font-semibold text-violet-700">← Battle Profile</Link><h1 className="mt-4 text-3xl font-black">{data.season.name}</h1><p className="text-slate-500">Reward Track · Season Level {data.level}</p><div className="mt-6 space-y-3">{data.items.map((item) => <article key={item.level} className={`rounded-2xl p-4 ${item.claimed ? "bg-emerald-50" : item.unlocked ? "bg-white shadow-sm" : "bg-slate-200 text-slate-500"}`}><div className="flex items-center justify-between"><div><div className="text-xs font-bold">LV {item.level}</div><div className="text-lg font-black">{item.reward.name}</div><div className="text-sm">{item.reward.type}</div></div>{item.claimed ? <b className="text-emerald-700">✓ Claimed</b> : item.claimable ? <button data-ui-button="state" onClick={() => void claimBattleSeasonReward(item.level).then(load)} className="rounded bg-violet-700 px-3 py-2 text-sm font-bold text-white">Claim</button> : <span>🔒</span>}</div></article>)}</div></main>; }
+'use client';
+
+import { useEffect, useState } from 'react';
+import { claimBattleSeasonReward, fetchBattleRewardTrack, type BattleRewardTrack } from '@/lib/api/battleRewardApi';
+import { ListingTemplate, Card, Badge, Button } from '@/design-system';
+
+export default function BattleRewardsPage() {
+  const [data, setData] = useState<BattleRewardTrack | null>(null);
+
+  const load = () => {
+    void fetchBattleRewardTrack().then(setData);
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const intro = data?.season ? (
+    <div className="mb-2">
+      <p className="text-xs font-bold tracking-wider uppercase text-[var(--meow-accent)]">SEASON REWARDS</p>
+      <h1 className="mt-1 text-2xl font-black text-[var(--meow-text)] sm:text-3xl">{data.season.name}</h1>
+      <p className="mt-1 text-sm text-[var(--meow-muted)]">Reward Track · Season Level {data.level}</p>
+    </div>
+  ) : null;
+
+  return (
+    <ListingTemplate
+      headerProps={{
+        title: 'Battle Rewards',
+        backHref: '/battle/profile',
+        backLabel: 'Battle Profile',
+      }}
+      intro={intro}
+      columns={1}
+      maxWidth={640}
+      showBottomNav={false}
+      showNavRail={false}
+      isLoading={!data}
+      isEmpty={Boolean(data && !data.season)}
+      defaultLoadingLabel="Loading reward track…"
+      emptyState={
+        <Card padding="lg" className="text-center text-[var(--meow-muted)]">
+          <p className="text-sm font-semibold">No active reward track.</p>
+          <p className="mt-1 text-xs">Check back when the next battle season starts.</p>
+        </Card>
+      }
+    >
+      {data?.items.map((item) => (
+        <Card
+          key={item.level}
+          padding="md"
+          variant={item.claimed ? 'accent-outline' : item.unlocked ? 'default' : 'subtle'}
+          className="transition-colors"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <Badge variant={item.claimed ? 'success' : item.unlocked ? 'accent' : 'neutral'} size="sm">
+                LV {item.level}
+              </Badge>
+              <div className="mt-1 text-base font-bold text-[var(--meow-text)] sm:text-lg">
+                {item.reward.name}
+              </div>
+              <div className="text-xs text-[var(--meow-muted)] capitalize">
+                {item.reward.type}
+              </div>
+            </div>
+            <div>
+              {item.claimed ? (
+                <Badge variant="success" size="md">
+                  ✓ Claimed
+                </Badge>
+              ) : item.claimable ? (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={() => void claimBattleSeasonReward(item.level).then(load)}
+                >
+                  Claim
+                </Button>
+              ) : (
+                <Badge variant="neutral" size="sm" aria-label="Locked">
+                  🔒 Locked
+                </Badge>
+              )}
+            </div>
+          </div>
+        </Card>
+      ))}
+    </ListingTemplate>
+  );
+}

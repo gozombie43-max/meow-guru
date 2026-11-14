@@ -1,29 +1,16 @@
 /* Shared ranked-topic layout for General Awareness subject groups. */
-.page {
-  --geo-bg: var(--light-only-canvas, #f5f7f9);
-  --geo-surface: var(--light-surface);
-  --geo-surface-muted: var(--light-only-surface-muted, #eef1f4);
-  --geo-border: var(--light-only-border, #e3e7eb);
-  --geo-text: var(--light-only-text, #15171a);
-  --geo-secondary: var(--light-only-text-muted, #68707a);
-  --geo-tertiary: var(--light-only-text-muted, #929aa4);
-  --geo-accent: var(--ios-system-blue, #007aff);
-  --geo-accent-soft: rgba(0, 122, 255, 0.12);
-  width: 100%;
-  box-sizing: border-box;
+.listingMain {
+  padding: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
 }
 
-:global(body.theme-dark) .page,
-:global(html.theme-dark) .page {
-  --geo-bg: #000000;
-  --geo-surface: #1c1c1e;
-  --geo-surface-muted: #252527;
-  --geo-border: rgba(255, 255, 255, 0.06);
-  --geo-text: #e5eaf0;
-  --geo-secondary: #a2a9b4;
-  --geo-tertiary: #8e8e93;
-  --geo-accent: var(--ios-system-blue, #0a84ff);
-  --geo-accent-soft: rgba(10, 132, 255, 0.14);
+.page {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .desktopContainer {
@@ -68,7 +55,6 @@
 }
 
 .page .mobileLayout {
-  --ui-header-surface: var(--geo-bg, #000000);
   background: var(--geo-bg, #000000) !important;
 }
 

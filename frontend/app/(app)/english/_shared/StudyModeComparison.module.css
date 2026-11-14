@@ -3,21 +3,6 @@
            AUTHENTIC APPLE DICTIONARY MATERIALS & SYSTEM COLOR TOKENS
            ════════════════════════════════════════════════════ */
         .apple-dict-viewport {
-          --desktop-bg: var(--dark-canvas);
-          --sidebar-bg: rgba(30, 30, 35, 0.85);
-          --workspace-bg: var(--dark-canvas);
-          --window-border: rgba(255, 255, 255, 0.16);
-          --divider: rgba(255, 255, 255, 0.09);
-          --text-primary: #ffffff;
-          --text-secondary: #98989d;
-          --text-muted: var(--light-only-text-secondary, #636366);
-          --item-hover: rgba(255, 255, 255, 0.06);
-          --table-header: rgba(255, 255, 255, 0.03);
-          --table-alt: rgba(255, 255, 255, 0.02);
-          --quote-bg: rgba(255, 255, 255, 0.04);
-          --quote-border: var(--ios-system-blue);
-          --system-blue: var(--ios-system-blue);
-
           min-height: 100dvh;
           height: 100dvh;
           max-height: 100dvh;
@@ -28,23 +13,6 @@
           display: flex;
           flex-direction: column;
           padding: 0;
-        }
-
-        .apple-dict-viewport[data-theme="light"] {
-          --desktop-bg: var(--light-canvas);
-          --sidebar-bg: rgba(235, 235, 240, 0.92);
-          --workspace-bg: var(--light-surface);
-          --window-border: var(--light-only-border, rgba(0, 0, 0, 0.15));
-          --divider: var(--light-only-border, rgba(0, 0, 0, 0.08));
-          --text-primary: var(--light-text);
-          --text-secondary: var(--light-only-text-muted, #6e6e73);
-          --text-muted: var(--light-only-text-muted, #86868b);
-          --item-hover: var(--light-only-surface-muted, rgba(0, 0, 0, 0.04));
-          --table-header: rgba(0, 0, 0, 0.025);
-          --table-alt: rgba(0, 0, 0, 0.015);
-          --quote-bg: var(--light-only-surface-muted, rgba(0, 0, 0, 0.03));
-          --quote-border: var(--ios-system-blue);
-          --system-blue: var(--ios-system-blue);
         }
 
         /* ── macOS Application Window Frame ── */

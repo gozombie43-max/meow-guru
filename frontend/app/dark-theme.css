@@ -144,17 +144,8 @@ html.theme-dark .training-dark .trade-filter-tab { border: 0; border-radius: 999
 html.theme-dark .training-dark .trade-ledger-item:hover { background: var(--oled-hover) !important; box-shadow: none; }
 html.theme-dark .training-dark :is(.play-setup-cat-badge, .play-setup-pill-pos, .play-setup-pill-neg, .play-setup-pill-zero, .setup-cat-badge) { border: 0; box-shadow: none; }
 
-/* Mobile refinements: keep the established OLED surfaces, soften white text,
-   and reserve the brighter accent for focus, links and selected states. */
+/* Mobile route boundary styling */
 @media (max-width: 767px) {
-  html.theme-dark,
-  body.theme-dark {
-    --dark-text: #e5eaf0;
-    --dark-text-secondary: #a2a9b4;
-    --dark-text-muted: #929aa6;
-    --dark-border: #38383c;
-  }
-
   html.theme-dark .route-boundary__content--error,
   html.theme-dark .route-boundary__recovery {
     margin: 24px auto;

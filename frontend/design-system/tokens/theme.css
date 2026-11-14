@@ -192,6 +192,25 @@
   --meow-scrim: rgba(4, 7, 11, 0.72);
   --meow-shadow-none: none;
   --meow-shadow-overlay: 0 12px 32px rgba(0, 0, 0, 0.55);
+
+  /* Domain Subject & Mode Accent Tokens (Dark Default) */
+  --meow-subject-math: #5AABFF;
+  --meow-subject-math-glow: rgba(10, 132, 255, 0.14);
+  --meow-subject-reasoning: #F07AAA;
+  --meow-subject-reasoning-glow: rgba(240, 86, 140, 0.12);
+  --meow-subject-english: #3EC9B5;
+  --meow-subject-english-glow: rgba(30, 201, 174, 0.11);
+  --meow-subject-gk: #E8B840;
+  --meow-subject-gk-glow: rgba(232, 168, 37, 0.13);
+  --meow-subject-books: #E08C50;
+  --meow-subject-books-glow: rgba(224, 120, 48, 0.12);
+  --meow-subject-battle: #40B8F0;
+  --meow-subject-battle-glow: rgba(26, 174, 232, 0.13);
+  --meow-subject-recent: #9E8EF0;
+  --meow-subject-recent-glow: rgba(139, 118, 232, 0.11);
+  --meow-mode-speed: #EDBD66;
+  --meow-mode-sectional: #68D5B8;
+  --meow-mode-extreme: #F79AAA;
 }
 
 /* Explicit dark subtree scope (supports dark components nested inside light routes) */
@@ -228,6 +247,23 @@ body.theme-dark,
   --meow-danger-fill-hover: #B91C1C;
   --meow-scrim: rgba(4, 7, 11, 0.72);
   --meow-shadow-overlay: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --meow-subject-math: #5AABFF;
+  --meow-subject-math-glow: rgba(10, 132, 255, 0.14);
+  --meow-subject-reasoning: #F07AAA;
+  --meow-subject-reasoning-glow: rgba(240, 86, 140, 0.12);
+  --meow-subject-english: #3EC9B5;
+  --meow-subject-english-glow: rgba(30, 201, 174, 0.11);
+  --meow-subject-gk: #E8B840;
+  --meow-subject-gk-glow: rgba(232, 168, 37, 0.13);
+  --meow-subject-books: #E08C50;
+  --meow-subject-books-glow: rgba(224, 120, 48, 0.12);
+  --meow-subject-battle: #40B8F0;
+  --meow-subject-battle-glow: rgba(26, 174, 232, 0.13);
+  --meow-subject-recent: #9E8EF0;
+  --meow-subject-recent-glow: rgba(139, 118, 232, 0.11);
+  --meow-mode-speed: #EDBD66;
+  --meow-mode-sectional: #68D5B8;
+  --meow-mode-extreme: #F79AAA;
 }
 
 /* Explicit light theme scope — identical semantic token names (verified >= 4.76:1) */
@@ -263,6 +299,23 @@ body.theme-light,
   --meow-danger-fill-hover: #B91C1C;
   --meow-scrim: rgba(15, 23, 42, 0.45);
   --meow-shadow-overlay: 0 8px 24px rgba(15, 23, 42, 0.12);
+  --meow-subject-math: #007AFF;
+  --meow-subject-math-glow: rgba(0, 122, 255, 0.07);
+  --meow-subject-reasoning: #E5387A;
+  --meow-subject-reasoning-glow: rgba(229, 56, 122, 0.07);
+  --meow-subject-english: #00A88E;
+  --meow-subject-english-glow: rgba(0, 168, 142, 0.07);
+  --meow-subject-gk: #B87C0A;
+  --meow-subject-gk-glow: rgba(184, 124, 10, 0.08);
+  --meow-subject-books: #C05F12;
+  --meow-subject-books-glow: rgba(192, 95, 18, 0.08);
+  --meow-subject-battle: #0E85C0;
+  --meow-subject-battle-glow: rgba(14, 133, 192, 0.08);
+  --meow-subject-recent: #6452C8;
+  --meow-subject-recent-glow: rgba(100, 82, 200, 0.07);
+  --meow-mode-speed: #A46B05;
+  --meow-mode-sectional: #12816E;
+  --meow-mode-extreme: #C14B61;
 }
 
 /* Ensure nested dark surfaces win when wrapped inside html.theme-light */
@@ -295,6 +348,23 @@ html.theme-light :is(.theme-dark, [data-theme="dark"], .training-dark) {
   --meow-danger-fill-hover: #B91C1C;
   --meow-scrim: rgba(4, 7, 11, 0.72);
   --meow-shadow-overlay: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --meow-subject-math: #5AABFF;
+  --meow-subject-math-glow: rgba(10, 132, 255, 0.14);
+  --meow-subject-reasoning: #F07AAA;
+  --meow-subject-reasoning-glow: rgba(240, 86, 140, 0.12);
+  --meow-subject-english: #3EC9B5;
+  --meow-subject-english-glow: rgba(30, 201, 174, 0.11);
+  --meow-subject-gk: #E8B840;
+  --meow-subject-gk-glow: rgba(232, 168, 37, 0.13);
+  --meow-subject-books: #E08C50;
+  --meow-subject-books-glow: rgba(224, 120, 48, 0.12);
+  --meow-subject-battle: #40B8F0;
+  --meow-subject-battle-glow: rgba(26, 174, 232, 0.13);
+  --meow-subject-recent: #9E8EF0;
+  --meow-subject-recent-glow: rgba(139, 118, 232, 0.11);
+  --meow-mode-speed: #EDBD66;
+  --meow-mode-sectional: #68D5B8;
+  --meow-mode-extreme: #F79AAA;
 }
 
 /* Ensure nested light previews (e.g., exam cards) win inside html.theme-dark */
@@ -327,4 +397,21 @@ html.theme-dark :is(.theme-light, [data-theme="light"]) {
   --meow-danger-fill-hover: #B91C1C;
   --meow-scrim: rgba(15, 23, 42, 0.45);
   --meow-shadow-overlay: 0 8px 24px rgba(15, 23, 42, 0.12);
+  --meow-subject-math: #007AFF;
+  --meow-subject-math-glow: rgba(0, 122, 255, 0.07);
+  --meow-subject-reasoning: #E5387A;
+  --meow-subject-reasoning-glow: rgba(229, 56, 122, 0.07);
+  --meow-subject-english: #00A88E;
+  --meow-subject-english-glow: rgba(0, 168, 142, 0.07);
+  --meow-subject-gk: #B87C0A;
+  --meow-subject-gk-glow: rgba(184, 124, 10, 0.08);
+  --meow-subject-books: #C05F12;
+  --meow-subject-books-glow: rgba(192, 95, 18, 0.08);
+  --meow-subject-battle: #0E85C0;
+  --meow-subject-battle-glow: rgba(14, 133, 192, 0.08);
+  --meow-subject-recent: #6452C8;
+  --meow-subject-recent-glow: rgba(100, 82, 200, 0.07);
+  --meow-mode-speed: #A46B05;
+  --meow-mode-sectional: #12816E;
+  --meow-mode-extreme: #C14B61;
 }

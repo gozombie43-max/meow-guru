@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DashboardTemplate } from "@/design-system";
 import styles from "./upload.module.css";
 
 const tools = [
@@ -44,51 +45,61 @@ const systemSpecs = [
 ];
 
 export default function AdminUploadHome() {
+  const heroSection = (
+    <header className={styles.heroHeader}>
+      <div className={styles.heroContent}>
+        <h1>Upload Studio</h1>
+        <p>Create questions, manage exam papers, and upload media.</p>
+      </div>
+      <div className={styles.versionBadge}>
+        <span>●</span>
+        <span>v2.4 Production Suite</span>
+      </div>
+    </header>
+  );
+
   return (
-    <div className={styles.hubContainer}>
-      <header className={styles.heroHeader}>
-        <div className={styles.heroContent}>
-          <h1>Upload Studio</h1>
-          <p>Create questions, manage exam papers, and upload media.</p>
-        </div>
-        <div className={styles.versionBadge}>
-          <span>●</span>
-          <span>v2.4 Production Suite</span>
-        </div>
-      </header>
-
-      <section className={styles.grid} aria-label="Upload Tools">
-        {tools.map((tool) => (
-          <Link className={styles.card} href={tool.href} key={tool.href}>
-            <div>
-              <div className={styles.cardIcon} style={{ background: tool.gradient }}>
-                {tool.icon}
-              </div>
-              <h2 className={styles.cardTitle}>{tool.title}</h2>
-              <p className={styles.cardDesc}>{tool.detail}</p>
-            </div>
-            <div className={styles.cardFooter}>
-              <span>{tool.badge}</span>
-              <span className={styles.cardArrow}>Open Tool →</span>
-            </div>
-          </Link>
-        ))}
-      </section>
-
-      <section className={styles.specPanel}>
-        <div className={styles.specTitle}>Upload capabilities</div>
-        <div className={styles.specGrid}>
-          {systemSpecs.map((spec, i) => (
-            <div key={i} className={styles.specItem}>
-              <span className={styles.specItemIcon}>{spec.icon}</span>
+    <DashboardTemplate
+      hero={heroSection}
+      gridColumns={1}
+      showNavRail={false}
+      showBottomNav={false}
+      showSkipLink={false}
+    >
+      <div className={styles.hubContainer} style={{ padding: 0 }}>
+        <section className={styles.grid} aria-label="Upload Tools">
+          {tools.map((tool) => (
+            <Link className={styles.card} href={tool.href} key={tool.href}>
               <div>
-                <h3 className={styles.specItemHeading}>{spec.title}</h3>
-                <p className={styles.specItemDesc}>{spec.desc}</p>
+                <div className={styles.cardIcon} style={{ background: tool.gradient }}>
+                  {tool.icon}
+                </div>
+                <h2 className={styles.cardTitle}>{tool.title}</h2>
+                <p className={styles.cardDesc}>{tool.detail}</p>
               </div>
-            </div>
+              <div className={styles.cardFooter}>
+                <span>{tool.badge}</span>
+                <span className={styles.cardArrow}>Open Tool →</span>
+              </div>
+            </Link>
           ))}
-        </div>
-      </section>
-    </div>
+        </section>
+
+        <section className={styles.specPanel}>
+          <div className={styles.specTitle}>Upload capabilities</div>
+          <div className={styles.specGrid}>
+            {systemSpecs.map((spec, i) => (
+              <div key={i} className={styles.specItem}>
+                <span className={styles.specItemIcon}>{spec.icon}</span>
+                <div>
+                  <h3 className={styles.specItemHeading}>{spec.title}</h3>
+                  <p className={styles.specItemDesc}>{spec.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </DashboardTemplate>
   );
 }

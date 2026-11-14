@@ -1,24 +1,13 @@
 .training-page,
 .training-setup {
-  --tr-bg: var(--light-canvas, #f6f7f9);
-  --tr-surface: var(--light-surface, #fff);
-  --tr-muted: var(--light-surface-muted, #f0f2f5);
-  --tr-border: var(--light-border, #e3e6eb);
-  --tr-text: var(--light-text, #1c2533);
-  --tr-secondary: var(--light-text-secondary, #647084);
-  --tr-accent: var(--light-accent, var(--ios-system-blue));
   color: var(--tr-text);
   background: var(--tr-bg);
   font-family: inherit;
 }
-.training-dark {
-  --tr-bg: var(--dark-canvas, #17191d);
-  --tr-surface: var(--dark-surface, #22252b);
-  --tr-muted: var(--dark-surface-muted, #2a2e35);
-  --tr-border: var(--dark-border, #363b44);
-  --tr-text: var(--dark-text, #f0f2f5);
-  --tr-secondary: var(--dark-text-secondary, #a5aebc);
-  --tr-accent: var(--dark-accent, #85aaff);
+.play-dashboard-main {
+  padding: 0;
+  max-width: 100%;
+  width: 100%;
 }
 .training-page {
   display: block;

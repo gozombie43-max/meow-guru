@@ -214,7 +214,7 @@ html body :is(select, [aria-haspopup="listbox"], [role="combobox"]):focus-visibl
 }
 
 /* The switch track sits inside a full-height touch target. */
-[data-ui-button][role="switch"] {
+[data-ui-button][role="switch"]:not([data-ui-exam-switch]) {
   box-sizing: border-box !important;
   width: 52px !important;
   min-width: 52px !important;
@@ -226,7 +226,7 @@ html body :is(select, [aria-haspopup="listbox"], [role="combobox"]):focus-visibl
   flex: 0 0 52px;
 }
 
-[data-ui-button][role="switch"] > span {
+[data-ui-button][role="switch"]:not([data-ui-exam-switch]) > span {
   position: relative !important;
   top: auto !important;
   left: auto !important;
@@ -238,7 +238,7 @@ html body :is(select, [aria-haspopup="listbox"], [role="combobox"]):focus-visibl
   transform: translateX(0) !important;
 }
 
-[data-ui-button][role="switch"][aria-checked="true"] > span {
+[data-ui-button][role="switch"]:not([data-ui-exam-switch])[aria-checked="true"] > span {
   transform: translateX(20px) !important;
 }
 

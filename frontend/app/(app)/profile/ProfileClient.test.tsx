@@ -4,7 +4,7 @@ import * as Auth from '@/context/AuthContext';
 import ProfileClient from './ProfileClient';
 
 const { router } = vi.hoisted(() => ({ router: { replace: vi.fn() } }));
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/profile' }));
 
 vi.mock('@/context/NotificationCenterContext', () => ({ useNotificationCenter: () => ({ unreadCount: 3 }) }));
 vi.mock('@/lib/userApi', () => ({

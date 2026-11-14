@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, CircleAlert, Lock } from 'lucide-react';
 import api from '@/shared/api/client';
+import { ConfigurationTemplate } from '@/design-system';
 import styles from '@/components/auth/verification.module.css';
 
 function ResetPasswordContent() {
@@ -84,7 +85,7 @@ function ResetPasswordContent() {
   if (tokenState === 'loading') return <Loading />;
 
   return (
-    <main className={styles.screen}>
+    <ConfigurationTemplate variant="auth" maxWidth={440} showNavRail={false} showBottomNav={false}>
       <section className={styles.card}>
         <div className={styles.icon}>
           {success ? <CheckCircle2 size={28} aria-hidden="true" /> : <Lock size={26} aria-hidden="true" />}
@@ -113,18 +114,22 @@ function ResetPasswordContent() {
                 <label htmlFor="confirm-password">Confirm password</label>
                 <input id="confirm-password" aria-label="Confirm password" type="password" autoComplete="new-password" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} disabled={submitting || tokenState !== 'ready'} required className={styles.input} />
               </div>
-              <button type="submit" disabled={submitting || tokenState !== 'ready'} className={styles.primary}>{submitting ? 'Updating…' : 'Reset password'}</button>
+              <button type="submit" data-ui-button="primary" disabled={submitting || tokenState !== 'ready'} className={styles.primary}>{submitting ? 'Updating…' : 'Reset password'}</button>
             </form>
             <Link href="/login" className={styles.secondary}>Back to sign in</Link>
           </>
         )}
       </section>
-    </main>
+    </ConfigurationTemplate>
   );
 }
 
 function Loading() {
-  return <main className={styles.screen}><p role="status" className={styles.copy}>Loading password reset…</p></main>;
+  return (
+    <ConfigurationTemplate variant="auth" maxWidth={440} showNavRail={false} showBottomNav={false}>
+      <p role="status" className={styles.copy}>Loading password reset…</p>
+    </ConfigurationTemplate>
+  );
 }
 
 export default function ResetPasswordPage() {

@@ -2,44 +2,6 @@
    SHARED VARIABLES & PAGE CONTAINER
    ========================================================================= */
 .pageWrapper {
-  /* Neutral white surfaces with a soft gray canvas and restrained borders. */
-  --light-canvas: var(--light-only-canvas, #f4f5f7);
-  --light-surface: var(--light-only-surface, #fdfdfd);
-  --light-surface-muted: var(--light-only-surface-muted, #eceef1);
-  --light-border: var(--light-only-border, #e1e4e8);
-  --light-text: var(--light-only-text, #242830);
-  --light-text-secondary: var(--light-only-text-secondary, #606773);
-  --light-text-muted: var(--light-only-text-muted, #7a828e);
-  --mac-bg-outer: transparent;
-  --mac-window-bg: var(--light-canvas);
-  --mac-sidebar-bg: var(--light-surface-muted);
-  --mac-canvas-bg: var(--light-canvas);
-  --mac-card-bg: var(--light-surface);
-  --mac-card-subtle: var(--light-surface-muted);
-  --mac-text-primary: var(--light-text);
-  --mac-text-secondary: var(--light-text-secondary);
-  --mac-text-muted: var(--light-text-muted);
-  --mac-border: var(--light-border);
-  --mac-border-subtle: var(--light-only-border, rgba(36, 40, 48, 0.07));
-  --mac-primary: var(--light-accent);
-  --mac-primary-hover: var(--light-accent-hover);
-  --mac-primary-soft: var(--light-surface-muted);
-  --mac-shadow-window: 0 20px 60px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--light-border);
-  --mac-shadow-card: 0 2px 8px rgba(24, 28, 36, 0.04), 0 1px 2px rgba(24, 28, 36, 0.02);
-  --mac-shadow-hover: 0 6px 18px rgba(24, 28, 36, 0.07);
-
-  /* Mobile iOS Blue theme tokens */
-  --bg: var(--light-canvas);
-  --surface: var(--light-surface);
-  --surface-soft: var(--light-surface-muted);
-  --text: var(--light-text);
-  --muted: var(--light-text-secondary);
-  --line: var(--light-border);
-  --purple: var(--light-accent);
-  --purple-2: var(--light-accent-hover);
-  --orange: #ff9500;
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-
   min-height: 100dvh;
   width: 100%;
   background: transparent;
@@ -59,17 +21,6 @@
   display: none;
   width: 0;
   height: 0;
-}
-
-:global(html:not(.theme-dark)) .pageWrapper:not(.dark) {
-  --light-surface: #ffffff;
-  --ui-header-surface: #f4f5f7;
-  --ui-surface: var(--light-surface);
-  --ui-muted-surface: #eceef1;
-  --ui-border: #e1e4e8;
-  --ui-text: #242830;
-  --ui-secondary: #606773;
-  --shadow: 0 2px 8px rgba(24, 28, 36, 0.04);
 }
 
 /* Home light appearance: quiet white cards and clear copy over the hero photo. */
@@ -98,40 +49,6 @@
   color: var(--muted);
 }
 
-.dark,
-:global(html.theme-dark) .pageWrapper,
-:global(body.theme-dark) .pageWrapper {
-  --mac-bg-outer: transparent;
-  --mac-window-bg: var(--dark-canvas);
-  --mac-sidebar-bg: var(--dark-canvas);
-  --mac-canvas-bg: var(--dark-canvas);
-  --mac-card-bg: var(--dark-surface);
-  --mac-card-subtle: var(--dark-surface-muted);
-  --mac-text-primary: var(--dark-text);
-  --mac-text-secondary: var(--dark-text-secondary);
-  --mac-text-muted: var(--dark-text-muted);
-  --mac-border: var(--dark-border);
-  --mac-border-subtle: rgba(255, 255, 255, 0.05);
-  --mac-primary: var(--dark-accent);
-  --mac-primary-hover: var(--dark-accent-hover);
-  --mac-primary-soft: var(--dark-accent-soft);
-  --mac-shadow-window: 0 28px 80px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
-  --mac-shadow-card: 0 4px 16px rgba(0, 0, 0, 0.3);
-  --mac-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.45);
-
-  /* Mobile dark overrides (iOS Blue) */
-  --bg: var(--dark-canvas);
-  --surface: var(--dark-surface);
-  --surface-soft: var(--dark-surface-muted);
-  --text: var(--dark-text);
-  --muted: var(--dark-text-muted);
-  --line: var(--dark-border);
-  --purple: var(--dark-accent);
-  --purple-2: var(--dark-accent-hover);
-  --orange: #ff9f0a;
-  --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-}
-
 /* Visibility switches */
 .desktopOnly {
   display: block;
@@ -148,10 +65,16 @@
   z-index: 1;
 }
 
+.homeDashboardMain {
+  padding: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
 @media (min-width: 1024px) {
   .pageWrapper {
-    height: 100vh;
-    max-height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
     overflow: hidden;
   }
 }
@@ -185,8 +108,8 @@
 .macWindow {
   width: 100%;
   max-width: 1400px;
-  max-height: calc(100vh - 32px);
-  height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  height: calc(100dvh - 32px);
   background: var(--mac-window-bg);
   border-radius: 24px;
   border: 1px solid var(--mac-border);
@@ -276,15 +199,15 @@
 }
 
 .railLink {
-  min-height: 35px;
-  border-radius: 9px;
+  min-height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 0 10px;
   color: var(--mac-text-secondary);
   text-decoration: none;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 500;
   white-space: nowrap;
   transition: color 0.18s ease, background-color 0.18s ease;
@@ -412,7 +335,7 @@
   box-shadow: 0 16px 36px rgba(15, 23, 42, 0.15);
   z-index: 50;
   overflow: hidden;
-  animation: fadeIn 0.15s ease;
+  animation: meow-fade-in var(--meow-duration-fast) var(--meow-ease-enter);
 }
 
 .searchDropdownHeader {
@@ -483,16 +406,6 @@
   color: var(--mac-text-secondary);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 .topActions {
   display: flex;
@@ -1279,11 +1192,11 @@
   transform: translateX(-100%);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 100;
-  padding: calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom));
+  padding: calc(14px + var(--safe-top)) 14px calc(14px + var(--safe-bottom));
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -1880,22 +1793,6 @@
 
 /* OLED surfaces: layout and navigation remain owned by the home shell. */
 :global(html.theme-dark) .pageWrapper {
-  --mac-canvas-bg: var(--oled-canvas);
-  --mac-window-bg: var(--oled-canvas);
-  --mac-card-bg: var(--oled-surface);
-  --mac-card-subtle: var(--oled-inset);
-  --mac-border: transparent;
-  --mac-border-subtle: transparent;
-  --mac-shadow-window: none;
-  --mac-shadow-card: none;
-  --mac-shadow-hover: none;
-  --surface: var(--oled-surface);
-  --surface-soft: var(--oled-inset);
-  --line: transparent;
-  --shadow: none;
-  --text: var(--oled-text);
-  --mac-text-primary: var(--oled-text);
-  --mac-text-secondary: var(--oled-secondary);
   background: var(--oled-canvas);
 }
 :global(html.theme-dark) .pageWrapper :is(.heroCard, .mobileHero, .subjectCard, .mobileSubjectCard, .resourceCard, .battleCard, .quizCard, .recentQuizCard, .searchContainer, .searchDropdown) {
@@ -1957,6 +1854,9 @@
   color: var(--muted);
 }
 .sidebarPreferences {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -1978,18 +1878,32 @@
   line-height: 20px;
   text-align: left;
   cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+@media (hover: hover) {
+  .mobileSidebar .sidebarPreferences > button:hover {
+    background: color-mix(in srgb, var(--text) 5%, transparent) !important;
+  }
 }
 .mobileSidebar .sidebarPreferences > button > span:first-child {
   display: grid;
   place-items: center;
-  flex: 0 0 28px;
-  width: 28px;
-  height: 28px;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
-  background: transparent;
+  background: var(--surface);
+  border: 1px solid var(--line);
   color: var(--muted);
 }
-.mobileSidebar .sidebarPreferences > button > span:first-child svg { width: 20px; height: 20px; }
+.mobileSidebar .sidebarPreferences > button > span:first-child svg { width: 17px; height: 17px; }
+.mobileSidebar .sidebarPreferences > button > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .mobileSidebar .sidebarPreferences > button > span:last-child {
   box-sizing: border-box;
   flex: 0 0 40px;
@@ -1998,15 +1912,21 @@
   margin-left: auto;
   padding: 3px;
   border-radius: 999px;
-  background: #767d89;
+  background: #CBD5E1;
+  transition: background-color 0.18s ease;
+}
+:global(html.theme-dark) .mobileSidebar .sidebarPreferences > button[aria-checked="false"] > span:last-child {
+  background: #484D56;
 }
 .mobileSidebar .sidebarPreferences > button > span:last-child > span {
+  display: block;
   width: 18px;
   height: 18px;
   border-radius: 50%;
   background: var(--light-only-surface, #fff);
-  box-shadow: 0 1px 3px rgb(0 0 0 / .18);
+  box-shadow: 0 1px 3px rgb(0 0 0 / .2);
   transform: translateX(0);
+  transition: transform 0.18s ease;
 }
 .mobileSidebar .sidebarPreferences > button[aria-checked=true] > span:last-child { background: var(--ios-system-blue); }
 .mobileSidebar .sidebarPreferences > button[aria-checked=true] > span:last-child > span { transform: translateX(16px); }
@@ -2034,18 +1954,17 @@
 .mobileSidebar .railActive { background: rgb(var(--ios-system-blue-rgb) / .12) !important; font-weight: 650; }
 .mobileSidebar :is(a, button):focus-visible { outline: 2px solid var(--ios-system-blue); outline-offset: 2px; }
 :global(html.theme-dark) .mobileSidebar {
-  --surface: #141518;
-  --surface-soft: #1e2024;
-  --line: #2b2e34;
-  --text: #f1f3f5;
-  --muted: #aeb4bf;
   background: var(--surface);
 }
 @media (prefers-reduced-motion: reduce) {
-  .mobileSidebar, .sidebarBackdrop { transition: none; }
+  .mobileSidebar,
+  .sidebarBackdrop,
+  .mobileSidebar .sidebarPreferences > button,
+  .mobileSidebar .sidebarPreferences > button > span:last-child,
+  .mobileSidebar .sidebarPreferences > button > span:last-child > span { transition: none; }
 }
 
-.mobileSidebar .adminContactCard { margin-bottom: 20px; }
+.mobileSidebar .adminContactCard { margin-bottom: 0; }
 .adminContactCard {
   margin-top: auto;
   padding: 12px;
@@ -2054,22 +1973,24 @@
   background: var(--surface-soft);
   color: var(--text);
 }
-.contactEyebrow { margin: 0 0 9px; color: var(--muted); font-size: 9px; font-weight: 650; line-height: 12px; letter-spacing: .12em; text-transform: uppercase; }
-.adminContactCard h2 { margin: 0; color: var(--text); font-size: 13px; font-weight: 650; line-height: 18px; letter-spacing: -.02em; }
-.contactIdentity { display: flex; align-items: center; gap: 9px; }
+.contactEyebrow { margin: 0 0 8px; color: var(--muted); font-size: 10px; font-weight: 650; line-height: 14px; letter-spacing: .1em; text-transform: uppercase; }
+.adminContactCard h2 { margin: 0; color: var(--text); font-size: 14px; font-weight: 650; line-height: 18px; letter-spacing: -.02em; }
+.contactIdentity { display: flex; align-items: center; gap: 10px; }
 .contactIdentity > div { min-width: 0; }
 .contactAvatar { display: block; flex: 0 0 36px; width: 36px; height: 36px; object-fit: cover; border-radius: 50%; background: var(--surface); }
-.contactRole { margin: 1px 0 0; color: var(--muted); font-size: 10px; line-height: 14px; }
-.contactDescription { margin: 10px 0; color: var(--text); font-size: 11px; line-height: 17px; }
+.contactRole { margin: 1px 0 0; color: var(--muted); font-size: 11px; line-height: 14px; }
+.contactDescription { margin: 8px 0 10px; color: var(--text); font-size: 12px; line-height: 1.45; }
 .contactDescription > span { color: var(--muted); }
-.adminContactCard .contactWhatsapp { display: flex; align-items: center; gap: 7px; min-height: 44px; padding: 9px; border: 0; border-radius: 10px; background: #008344; color: #fff; font-size: 11px; font-weight: 600; line-height: 16px; text-decoration: none; }
-.contactWhatsapp img { width: 22px; height: 22px; flex-shrink: 0; }
+.adminContactCard .contactWhatsapp { display: flex; align-items: center; gap: 7px; min-height: 44px; padding: 8px 10px; border: 0; border-radius: 10px; background: #008344; color: #fff; font-size: 11.5px; font-weight: 600; line-height: 16px; white-space: nowrap; text-decoration: none; }
+.contactWhatsapp img { width: 20px; height: 20px; flex-shrink: 0; }
 .contactWhatsapp > span { flex: 1; }
-.contactWhatsapp > svg { flex-shrink: 0; width: 18px; height: 18px; }
-.contactDivider { display: flex; align-items: center; gap: 8px; margin: 9px 0; color: var(--muted); font-size: 8px; font-weight: 600; line-height: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.contactWhatsapp > svg { flex-shrink: 0; width: 16px; height: 16px; }
+.contactDivider { display: flex; align-items: center; gap: 8px; margin: 10px 0; color: var(--muted); font-size: 10px; font-weight: 600; line-height: 12px; letter-spacing: .07em; text-transform: uppercase; }
 .contactDivider::before, .contactDivider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .contactLinks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-.adminContactCard .contactLinks a { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 44px; gap: 4px; padding: 7px 4px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--text); font-size: 10px; font-weight: 550; line-height: 16px; text-decoration: none; transition: background .15s ease; }
+.adminContactCard .contactLinks a { display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 44px; gap: 4px; padding: 6px 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); font-size: 11px; font-weight: 550; line-height: 16px; text-decoration: none; transition: background-color .15s ease; }
+.mobileSidebar .adminContactCard .contactWhatsapp { font-size: 12.5px; gap: 8px; }
+.mobileSidebar .adminContactCard .contactLinks a { font-size: 11.5px; gap: 5px; padding: 6px; }
 .contactLinks img { flex-shrink: 0; width: 17px; height: 17px; }
 .contactLinks svg { flex-shrink: 0; color: var(--muted); }
 .adminContactCard .contactLinks a:hover { background: var(--surface-soft); }

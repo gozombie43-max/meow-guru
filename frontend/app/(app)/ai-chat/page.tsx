@@ -24,13 +24,13 @@ X
 import { useEffect,useMemo,useRef,useState,type ChangeEvent,type MouseEvent as ReactMouseEvent } from 'react';
 import styles from './AiChat.module.css';
 import { bindStyleClasses } from '@/lib/styleClasses';
-import './AiChat.globals.css';
 
 const styleClasses = bindStyleClasses(styles);
 import { useAiChatHistory } from './useAiChatHistory';
 import { ChatComposer, type ChatComposerHandle } from './ChatComposer';
 import { MessageWindow } from '@/components/chat/MessageWindow';
 import dynamic from 'next/dynamic';
+import { QuizTemplate } from '@/design-system';
 
 const VisualResponse = dynamic(() => import('@/components/ai/VisualResponse'), {
   ssr: false,
@@ -44,6 +44,7 @@ normalizeSimpleTables,
 normalizeTutorMarkdown,
 type ChatSession,
 } from './formatting';
+
 function AiChatPageContent() {
   const { isJam } = useExamMode();
   const { theme } = useThemeMode();
@@ -218,7 +219,6 @@ function AiChatPageContent() {
     'Cloze test strategy',
   ];
 
-
   const hasMessages = messages.length > 0;
   const visibleSessions = chatSessions.filter((session) =>
     session.title.toLowerCase().includes(searchTerm.trim().toLowerCase())
@@ -295,181 +295,186 @@ function AiChatPageContent() {
   };
 
   return (
-    <main data-theme={theme} className={styleClasses(`ai-chat-page ios-theme-${theme} ${sidebarOpen ? '' : ' sidebar-collapsed'}`)}>
-      {sidebarOpen && (
-        <button
-          type="button"
-          className={styleClasses("sidebar-backdrop")}
-          aria-label="Close sidebar"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-      <aside className={styleClasses(`ai-sidebar${sidebarOpen ? '' : ' is-collapsed'}`)} aria-label="AI chat sidebar">
-        <div className={styleClasses("sidebar-head")}>
-          <button data-ui-button="icon" className={styleClasses("icon-btn")} type="button" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle sidebar">
-            <PanelLeft size={18} />
-          </button>
-          <button data-ui-button="state" className={styleClasses("new-chat")} type="button" onClick={startNewChat}>
-            <Plus size={17} />
-            <span>New chat</span>
-          </button>
-        </div>
-
-        <div className={styleClasses("sidebar-search")}>
-          <Search size={16} />
-          <input type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
-            placeholder="Search chats"
-            aria-label="Search chats"
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
+    <QuizTemplate
+      lockedViewport={true}
+      className={styleClasses(`ai-chat-page-root ios-theme-${theme}`)}
+    >
+      <main data-theme={theme} className={styleClasses(`ai-chat-page ios-theme-${theme} ${sidebarOpen ? '' : ' sidebar-collapsed'}`)}>
+        {sidebarOpen && (
+          <button
+            type="button"
+            className={styleClasses("sidebar-backdrop")}
+            aria-label="Close sidebar"
+            onClick={() => setSidebarOpen(false)}
           />
-        </div>
-
-        <div className={styleClasses("sidebar-section")}>
-          <div className={styleClasses("section-label")}>{isHistoryLoading || visibleSessions.length > 0 ? 'Saved chats' : 'Start with'}</div>
-          {isHistoryLoading ? (
-            <div className={styleClasses("history-skeletons")} aria-busy="true" aria-label="Loading chat history">
-              <span className={styleClasses("sr-only")} role="status">Loading chat history</span>
-              <span aria-hidden="true" />
-              <span aria-hidden="true" />
-              <span aria-hidden="true" />
-            </div>
-          ) : visibleSessions.length > 0
-            ? visibleSessions.map((session) => (
-                <button data-ui-button="state"
-                  className={styleClasses(`history-item${session.id === activeChatId ? ' is-active' : ''}`)}
-                  type="button"
-                  key={session.id}
-                  onClick={() => openChat(session)}
-                  title={session.title}
-                >
-                  <span>{session.title}</span>
-                </button>
-              ))
-            : starterPrompts.map((prompt) => (
-                <button data-ui-button="state" className={styleClasses("history-item")} type="button" key={prompt} data-prompt={prompt} onClick={handleStarterPrompt}>
-                  <span>{prompt}</span>
-                </button>
-              ))}
-        </div>
-
-        <div className={styleClasses("sidebar-footer")}>
-          <div className={styleClasses("mini-avatar")}>AI</div>
-          <div>
-            <strong>{isJam ? 'IIT JAM Tutor' : 'SSC Tutor'}</strong>
-            <span>Desktop mode</span>
-          </div>
-        </div>
-      </aside>
-
-      <section className={styleClasses(`chat-workspace ${!hasMessages ? 'is-empty' : ''}`)} aria-label="AI Tutor chat">
-        <header data-ui-chrome="header" className={styleClasses("chat-topbar")}>
-          <div className={styleClasses("topbar-left")}>
-            <div className={styleClasses("desktop-back")}>
-              <BackButton href="/" label="Back to home" className={styleClasses("icon-btn")} />
-            </div>
-            <button data-ui-button="icon" className={styleClasses("mobile-menu icon-btn")} type="button" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Open sidebar">
-              <Menu size={19} />
+        )}
+        <aside className={styleClasses(`ai-sidebar${sidebarOpen ? '' : ' is-collapsed'}`)} aria-label="AI chat sidebar">
+          <div className={styleClasses("sidebar-head")}>
+            <button data-ui-button="icon" className={styleClasses("icon-btn")} type="button" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Toggle sidebar">
+              <PanelLeft size={18} />
             </button>
-            <div className={styleClasses("chat-heading")}>
-              <div className={styleClasses("chat-title")}>AI Tutor</div>
-              <div className={styleClasses("chat-status")}>
-                <span />
-                {isJam ? 'IIT JAM Physics study assistant' : 'SSC CGL and CHSL study assistant'}
+            <button data-ui-button="state" className={styleClasses("new-chat")} type="button" onClick={startNewChat}>
+              <Plus size={17} />
+              <span>New chat</span>
+            </button>
+          </div>
+
+          <div className={styleClasses("sidebar-search")}>
+            <Search size={16} />
+            <input type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
+              placeholder="Search chats"
+              aria-label="Search chats"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+            />
+          </div>
+
+          <div className={styleClasses("sidebar-section")}>
+            <div className={styleClasses("section-label")}>{isHistoryLoading || visibleSessions.length > 0 ? 'Saved chats' : 'Start with'}</div>
+            {isHistoryLoading ? (
+              <div className={styleClasses("history-skeletons")} aria-busy="true" aria-label="Loading chat history">
+                <span className={styleClasses("sr-only")} role="status">Loading chat history</span>
+                <span aria-hidden="true" />
+                <span aria-hidden="true" />
+                <span aria-hidden="true" />
+              </div>
+            ) : visibleSessions.length > 0
+              ? visibleSessions.map((session) => (
+                  <button data-ui-button="state"
+                    className={styleClasses(`history-item${session.id === activeChatId ? ' is-active' : ''}`)}
+                    type="button"
+                    key={session.id}
+                    onClick={() => openChat(session)}
+                    title={session.title}
+                  >
+                    <span>{session.title}</span>
+                  </button>
+                ))
+              : starterPrompts.map((prompt) => (
+                  <button data-ui-button="state" className={styleClasses("history-item")} type="button" key={prompt} data-prompt={prompt} onClick={handleStarterPrompt}>
+                    <span>{prompt}</span>
+                  </button>
+                ))}
+          </div>
+
+          <div className={styleClasses("sidebar-footer")}>
+            <div className={styleClasses("mini-avatar")}>AI</div>
+            <div>
+              <strong>{isJam ? 'IIT JAM Tutor' : 'SSC Tutor'}</strong>
+              <span>Desktop mode</span>
+            </div>
+          </div>
+        </aside>
+
+        <section className={styleClasses(`chat-workspace ${!hasMessages ? 'is-empty' : ''}`)} aria-label="AI Tutor chat">
+          <header data-ui-chrome="header" className={styleClasses("chat-topbar")}>
+            <div className={styleClasses("topbar-left")}>
+              <div className={styleClasses("desktop-back")}>
+                <BackButton href="/" label="Back to home" className={styleClasses("icon-btn")} />
+              </div>
+              <button data-ui-button="icon" className={styleClasses("mobile-menu icon-btn")} type="button" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label="Open sidebar">
+                <Menu size={19} />
+              </button>
+              <div className={styleClasses("chat-heading")}>
+                <div className={styleClasses("chat-title")}>AI Tutor</div>
+                <div className={styleClasses("chat-status")}>
+                  <span />
+                  {isJam ? 'IIT JAM Physics study assistant' : 'SSC CGL and CHSL study assistant'}
+                </div>
               </div>
             </div>
-          </div>
-          <button data-ui-button="secondary" className={styleClasses("clear-btn")} type="button" onClick={handleClear} disabled={!hasMessages && !hasDraft}>
-            <Trash2 size={16} />
-            Clear
-          </button>
-        </header>
+            <button data-ui-button="secondary" className={styleClasses("clear-btn")} type="button" onClick={handleClear} disabled={!hasMessages && !hasDraft}>
+              <Trash2 size={16} />
+              Clear
+            </button>
+          </header>
 
-        <div className={styleClasses("chat-scroll")} ref={scrollRef}>
-          {!hasMessages ? (
-            <section className={styleClasses("welcome-panel")}>
-              <AiChatIcon size={48} style={{ color: 'var(--ink)', display: 'block', margin: '0 auto 16px auto' }} />
-              <h1>How can I help you study today?</h1>
-            </section>
-          ) : (
-            <div className={styleClasses("message-list")}>
-              <MessageWindow messages={messages} key={activeChatId ?? 'new'}>
-              {(message, index) => {
-                if (message.role === 'user') {
+          <div className={styleClasses("chat-scroll")} ref={scrollRef}>
+            {!hasMessages ? (
+              <section className={styleClasses("welcome-panel")}>
+                <AiChatIcon size={48} style={{ color: 'var(--ink)', display: 'block', margin: '0 auto 16px auto' }} />
+                <h1>How can I help you study today?</h1>
+              </section>
+            ) : (
+              <div className={styleClasses("message-list")}>
+                <MessageWindow messages={messages} key={activeChatId ?? 'new'}>
+                {(message, index) => {
+                  if (message.role === 'user') {
+                    return (
+                      <article className={styleClasses("message-row user-row")} key={`${message.role}-${index}`}>
+                        <div className={styleClasses("message-bubble user-bubble")}>{message.content}</div>
+                      </article>
+                    );
+                  }
+
                   return (
-                    <article className={styleClasses("message-row user-row")} key={`${message.role}-${index}`}>
-                      <div className={styleClasses("message-bubble user-bubble")}>{message.content}</div>
-                    </article>
-                  );
-                }
-
-                return (
-                  <article className={styleClasses("message-row assistant-row")} key={`${message.role}-${index}`}>
-                    <div className={styleClasses("assistant-avatar")}>AI</div>
-                    <div className={styleClasses("assistant-message")}>
-                      <div className={styleClasses("answer-card")}>
-                        <div className={styleClasses("answer-head")}>
-                          <span>AI Response</span>
-                          <button data-ui-button="state" type="button" onClick={() => handleCopy(message.content, index)} title="Copy entire AI response">
-                            <Copy size={15} />
-                            {copiedIndex === index ? 'Copied' : 'Copy'}
-                          </button>
-                        </div>
-                        <div className={styleClasses("answer-body ai-message-content")}>
-                          <RiskyWidgetBoundary label="AI response">
-                            <VisualResponse
-                              content={message.content}
-                              normalizeMarkdown={normalizeTutorMarkdown}
-                            />
-                          </RiskyWidgetBoundary>
+                    <article className={styleClasses("message-row assistant-row")} key={`${message.role}-${index}`}>
+                      <div className={styleClasses("assistant-avatar")}>AI</div>
+                      <div className={styleClasses("assistant-message")}>
+                        <div className={styleClasses("answer-card")}>
+                          <div className={styleClasses("answer-head")}>
+                            <span>AI Response</span>
+                            <button data-ui-button="state" type="button" onClick={() => handleCopy(message.content, index)} title="Copy entire AI response">
+                              <Copy size={15} />
+                              {copiedIndex === index ? 'Copied' : 'Copy'}
+                            </button>
+                          </div>
+                          <div className={styleClasses("answer-body ai-message-content")}>
+                            <RiskyWidgetBoundary label="AI response">
+                              <VisualResponse
+                                content={message.content}
+                                normalizeMarkdown={normalizeTutorMarkdown}
+                              />
+                            </RiskyWidgetBoundary>
+                          </div>
                         </div>
                       </div>
+                    </article>
+                  );
+                }}
+                </MessageWindow>
+
+                {isLoading && (
+                  <article className={styleClasses("message-row assistant-row")}>
+                    <div className={styleClasses("assistant-avatar")}>AI</div>
+                    <div className={styleClasses("typing-card")} aria-label="AI Tutor is typing">
+                      <span />
+                      <span />
+                      <span />
                     </div>
                   </article>
-                );
-              }}
-              </MessageWindow>
-
-              {isLoading && (
-                <article className={styleClasses("message-row assistant-row")}>
-                  <div className={styleClasses("assistant-avatar")}>AI</div>
-                  <div className={styleClasses("typing-card")} aria-label="AI Tutor is typing">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                </article>
-              )}
-            </div>
-          )}
-        </div>
-
-        <ChatComposer
-          ref={composerRef}
-          isLoading={isLoading}
-          attachmentFile={attachmentFile}
-          attachmentPreview={attachmentPreview}
-          attachmentError={attachmentError}
-          fileInputRef={fileInputRef}
-          onAttachmentChange={handleAttachmentChange}
-          onRemoveAttachment={removeAttachment}
-          onPreview={() => setIsPreviewModalOpen(true)}
-          onSend={sendMessage}
-          onDraftPresenceChange={setHasDraft}
-        />
-      </section>
-
-      {isPreviewModalOpen && attachmentPreview && (
-        <Dialog onClose={() => setIsPreviewModalOpen(false)} className={styleClasses("image-modal-overlay")} role="dialog" aria-modal="true" aria-label="Image preview">
-          <div className={styleClasses("image-modal-content")}>
-            <button data-ui-button="state" data-ui-shape="icon" className={styleClasses("image-modal-close")} onClick={() => setIsPreviewModalOpen(false)} aria-label="Close image preview">
-              <X size={24} />
-            </button>
-            <img src={attachmentPreview} alt="Preview" className={styleClasses("image-modal-img")} />
+                )}
+              </div>
+            )}
           </div>
-        </Dialog>
-      )}
-    </main>
+
+          <ChatComposer
+            ref={composerRef}
+            isLoading={isLoading}
+            attachmentFile={attachmentFile}
+            attachmentPreview={attachmentPreview}
+            attachmentError={attachmentError}
+            fileInputRef={fileInputRef}
+            onAttachmentChange={handleAttachmentChange}
+            onRemoveAttachment={removeAttachment}
+            onPreview={() => setIsPreviewModalOpen(true)}
+            onSend={sendMessage}
+            onDraftPresenceChange={setHasDraft}
+          />
+        </section>
+
+        {isPreviewModalOpen && attachmentPreview && (
+          <Dialog onClose={() => setIsPreviewModalOpen(false)} className={styleClasses("image-modal-overlay")} role="dialog" aria-modal="true" aria-label="Image preview">
+            <div className={styleClasses("image-modal-content")}>
+              <button data-ui-button="state" data-ui-shape="icon" className={styleClasses("image-modal-close")} onClick={() => setIsPreviewModalOpen(false)} aria-label="Close image preview">
+                <X size={24} />
+              </button>
+              <img src={attachmentPreview} alt="Preview" className={styleClasses("image-modal-img")} />
+            </div>
+          </Dialog>
+        )}
+      </main>
+    </QuizTemplate>
   );
 }
 

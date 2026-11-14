@@ -21,9 +21,10 @@ describe('IIT JAM section chapter navigation', () => {
     expect(group.topics.length).toBeGreaterThan(0);
     for (const chapter of group.topics) {
       const target = await ChapterPage({ params: Promise.resolve({ subject: JAM_SUBJECT, topic: section.slug, chapter: chapter.slug }) });
-      expect(target.props.title).toBe(chapter.title);
-      expect(target.props.routeBase).toBe(`${page.props.routeBase}/${chapter.slug}`);
-      expect(target.props.backHref).toBe(page.props.routeBase);
+      const child = target.props.children ?? target;
+      expect(child.props.title).toBe(chapter.title);
+      expect(child.props.routeBase).toBe(`${page.props.routeBase}/${chapter.slug}`);
+      expect(child.props.backHref).toBe(page.props.routeBase);
     }
   });
 

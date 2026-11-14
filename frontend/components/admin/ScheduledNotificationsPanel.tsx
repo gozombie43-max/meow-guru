@@ -21,6 +21,7 @@ import {
   Inbox,
   Navigation,
 } from 'lucide-react';
+import { Spinner } from '@/design-system';
 import s from './ScheduledNotificationsPanel.module.css';
 
 type TabType = 'pending' | 'sent' | 'failed' | 'cancelled' | 'all';
@@ -156,7 +157,7 @@ export default function ScheduledNotificationsPanel() {
           title="Refresh scheduled list"
           aria-label="Refresh scheduled list"
         >
-          <RotateCw size={13} className={loading ? s.spinner : ''} />
+          <RotateCw size={13} style={loading ? { animation: 'meow-spin var(--meow-duration-slow) linear infinite' } : undefined} />
           <span>Refresh</span>
         </button>
       </div>
@@ -227,7 +228,9 @@ export default function ScheduledNotificationsPanel() {
       {/* Cards List */}
       {loading && items.length === 0 ? (
         <div className={s.emptyState}>
-          <div className={s.spinner} style={{ margin: '0 auto 10px', width: 24, height: 24 }} />
+          <div style={{ margin: '0 auto 10px', display: 'flex', justifyContent: 'center' }}>
+            <Spinner size="md" />
+          </div>
           <div className={s.emptyText}>Loading scheduled notifications...</div>
         </div>
       ) : items.length === 0 ? (
@@ -382,7 +385,7 @@ export default function ScheduledNotificationsPanel() {
               >
                 {actionLoadingId === retryTargetItem._id ? (
                   <>
-                    <div className={s.spinner} />
+                    <Spinner size="sm" tone="on-accent" />
                     <span>Scheduling Retry...</span>
                   </>
                 ) : (

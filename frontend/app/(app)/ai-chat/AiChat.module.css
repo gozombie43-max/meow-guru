@@ -1,21 +1,5 @@
 .scope { isolation: auto; }
 .ai-chat-page {
-          --surface: var(--light-surface);
-          --surface-soft: var(--light-canvas);
-          --surface-muted: var(--light-surface-muted);
-          --ink: var(--light-text);
-          --muted: var(--light-text-muted);
-          --line: var(--light-border);
-          --accent: var(--light-accent);
-          --accent-dark: var(--light-accent-hover);
-          --topbar-bg: var(--light-only-surface, rgba(255, 255, 255, 0.75));
-          --input-bg: var(--light-surface);
-          --bubble-ai: var(--light-surface-muted);
-          --bubble-user: var(--light-accent);
-          --bubble-user-text: #ffffff;
-          --bubble-ai-text: var(--light-text);
-          --surface-transparent: rgba(255, 255, 255, 0);
-
           height: 100dvh;
           overflow: hidden;
           display: grid;
@@ -23,26 +7,6 @@
           background: var(--surface);
           color: var(--ink);
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        .ai-chat-page.ios-theme-dark,
-        :global(body.theme-dark) .ai-chat-page,
-        :global(html.theme-dark) .ai-chat-page {
-          --surface: var(--dark-canvas, #000000);
-          --surface-soft: var(--dark-surface, #1c1c1e);
-          --surface-muted: var(--dark-surface-muted, #2c2c2e);
-          --ink: var(--dark-text, #ffffff);
-          --muted: var(--dark-text-muted, rgba(235, 235, 245, 0.65));
-          --line: var(--dark-border, rgba(255, 255, 255, 0.12));
-          --accent: var(--dark-accent, var(--ios-system-blue));
-          --accent-dark: #0060cc;
-          --topbar-bg: #000000;
-          --input-bg: var(--dark-surface, #1c1c1e);
-          --bubble-ai: var(--dark-surface, #1c1c1e);
-          --bubble-user: var(--dark-accent, var(--ios-system-blue));
-          --bubble-user-text: #ffffff;
-          --bubble-ai-text: var(--dark-text, #ffffff);
-          --surface-transparent: rgba(0, 0, 0, 0);
         }
 
         .ai-chat-page.sidebar-collapsed {
@@ -794,7 +758,7 @@
         .image-modal-content {
           position: relative;
           max-width: 90vw;
-          max-height: 90vh;
+          max-height: 90dvh;
           border-radius: 12px;
           overflow: hidden;
           background: var(--dark-canvas);
@@ -827,7 +791,7 @@
 
         .image-modal-img {
           max-width: 100%;
-          max-height: 90vh;
+          max-height: 90dvh;
           object-fit: contain;
           display: block;
         }

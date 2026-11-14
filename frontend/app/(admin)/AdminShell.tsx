@@ -44,7 +44,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   if (loading || !isAdmin) return null;
 
   return (
-    <div className={styles.shell}>
+    <div className={styles.shell} data-meow-tokens="">
       <header data-ui-chrome="header" className={styles.header}>
         <div className={styles.headerLayout}>
           <Link replace

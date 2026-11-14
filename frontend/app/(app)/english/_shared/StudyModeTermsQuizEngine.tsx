@@ -3,6 +3,7 @@
 import { useStudyModeTerms, type StudyModeTermCard } from "./useStudyModeTerms";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SpeakerBtn } from "./SpeakerBtn";
+import QuizTemplate from "@/design-system/layouts/QuizTemplate";
 
 export interface StudyModeTermsConfig {
   topic: string;
@@ -290,7 +291,11 @@ export default function StudyModeTermsQuizEngine({ config }: { config: StudyMode
   const sharedProps = { config, cards: studyCards, bookmarked, toggleBookmark, theme, setTheme, categories };
 
   return (
-    <>
+    <QuizTemplate
+      lockedViewport={false}
+      readingMaxWidth="100%"
+      showSkipLink={false}
+    >
       <div className="mobile-view-container">
         <MobileQuizView {...sharedProps} />
       </div>
@@ -403,6 +408,6 @@ export default function StudyModeTermsQuizEngine({ config }: { config: StudyMode
         .done-btn:active { opacity: 0.85; }
         @media (max-width: 480px) { .large-title h1 { font-size: 26px; } .large-title p { font-size: 13px; } .term { font-size: 16px; } .bengali { font-size: 13.5px; } .definition { font-size: 13.5px; } .definition-bn { font-size: 12.5px; } .ows-card { padding: 12px 14px; } .nav-right { gap: 6px; } .progress-pill { padding: 4px 10px 4px 5px; font-size: 12px; } .spacer { height: calc(36px + var(--safe-bottom)); } }
       `}</style>
-    </>
+    </QuizTemplate>
   );
 }

@@ -2,6 +2,7 @@
 import { relativeTime, formatDate, canonicalRole, statusLabel } from './adminUsers.model';
 
 import type { UserRole } from '@/types/admin';
+import { Spinner } from '@/design-system';
 import { X, Bell, Ban, Trash2, Shield, CheckCircle } from 'lucide-react';
 import s from './AdminUsersPage.module.css';
 import type { AdminUsersView } from './useAdminUsers';
@@ -20,7 +21,7 @@ export function AdminUserDetails({ view }: { view: AdminUsersView }) {
 
             {drawerLoading ? (
               <div className={s.loadingWrap}>
-                <div className={s.spinner} />
+                <Spinner size="md" />
               </div>
             ) : selectedUser ? (
               <div className={s.drawerBody}>

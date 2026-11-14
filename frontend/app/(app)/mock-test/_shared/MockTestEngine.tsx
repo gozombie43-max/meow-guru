@@ -32,6 +32,7 @@ import styles from './MockTestEngine.module.css';
 import MockTestLoading from './MockTestLoading';
 import { useMockTranslation } from './useMockTranslation';
 import type { QuizLanguage } from '@meow/contracts/exam-paper';
+import QuizTemplate from '@/design-system/layouts/QuizTemplate';
 // import { getExamConfig, getSlotById } from './exam-config';
 
 function normalizeOption(option: string | MockOption, index: number): MockOption {
@@ -463,7 +464,12 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   });
 
   return (
-    <div data-paper-images className={`${styles.container} ${styles.ready}`}>
+    <QuizTemplate
+      lockedViewport={false}
+      readingMaxWidth="100%"
+      showSkipLink={false}
+    >
+      <div data-paper-images className={`${styles.container} ${styles.ready}`}>
       {confidential && <div role="note" style={{ padding: '8px 16px', fontSize: 12 }}>Confidential assessment · One attempt · {paper.compositeTimer ? 'Total exam time' : 'Section timing'} applies · No answer review</div>}
       {saveError && <div role="status">{saveError}{hasConflict && <button data-ui-button="state" onClick={() => window.location.reload()}>Reload saved attempt</button>}</div>}
       {sectionError && <div role="alert">{sectionError}<button data-ui-button="state" disabled={hasConflict || sectionSaving} onClick={() => finishSection()}>Retry saving section</button></div>}
@@ -710,5 +716,6 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         </div>
       )}
     </div>
+    </QuizTemplate>
   );
 }

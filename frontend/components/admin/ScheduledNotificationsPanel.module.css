@@ -446,20 +446,6 @@
   cursor: not-allowed;
 }
 
-.spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: currentColor;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 .container { padding: 16px; border-radius: 14px; margin-top: 16px; box-shadow: none; min-width: 0; }
 .header { flex-wrap: wrap; gap: 12px; }

@@ -15,13 +15,6 @@
     padding-bottom: calc(var(--app-bottom-nav-height) + var(--safe-bottom));
   }
 }
-.play-hub {
-  --play-accent-soft: color-mix(
-    in srgb,
-    var(--tr-accent) 10%,
-    var(--tr-surface)
-  );
-}
 .play-hub .training-header {
   position: relative;
   z-index: 35;
@@ -421,7 +414,6 @@ html.theme-dark .play-hub .training-header {
   gap: 12px;
 }
 .play-hub .training-mode-card[data-ui-button] {
-  --mode-color: var(--tr-accent);
   position: relative;
   border-radius: 16px;
   padding: 20px;
@@ -437,24 +429,6 @@ html.theme-dark .play-hub .training-header {
     transform 0.18s ease,
     border-color 0.18s ease,
     box-shadow 0.18s ease;
-}
-.play-hub .training-category-speed {
-  --mode-color: #a46b05 !important;
-}
-.play-hub .training-category-sectional {
-  --mode-color: #12816e !important;
-}
-.play-hub .training-category-extreme {
-  --mode-color: #c14b61 !important;
-}
-.play-hub.training-dark .training-category-speed {
-  --mode-color: #edbd66 !important;
-}
-.play-hub.training-dark .training-category-sectional {
-  --mode-color: #68d5b8 !important;
-}
-.play-hub.training-dark .training-category-extreme {
-  --mode-color: #f79aaa !important;
 }
 .play-hub .training-card-top {
   display: flex;
@@ -1455,10 +1429,7 @@ html.theme-dark .play-hub .training-header {
 }
 
 .setup-loading-spin {
-  animation: setupSpin 0.8s linear infinite;
-}
-@keyframes setupSpin {
-  to { transform: rotate(360deg); }
+  animation: meow-spin 0.8s linear infinite;
 }
 
 /* ── Mobile Viewport Overrides (< 768px) ─────────────────────────────────── */
@@ -1585,10 +1556,6 @@ html.theme-dark .play-hub .training-header {
 }
 .play-hub.training-dark .training-card-bottom .play-configure,
 .play-hub.training-dark .play-mission-action {
-  --play-action-bg: var(--oled-selected-soft, #182f4b);
-  --play-action-text: var(--ios-system-blue);
-  --play-action-hover: #213f60;
-  --play-action-pressed: #294e75;
   border-color: transparent;
 }
 @media (hover: hover) and (pointer: fine) {

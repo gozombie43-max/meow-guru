@@ -31,7 +31,6 @@ frontend/
 │   ├── components/            # Genuinely reusable primitives (Button, Card, Input, Dialog, Badge, Spinner, Table...)
 │   ├── patterns/              # Cross-feature UI compositions (SearchFilterBar, PageHeader, StatRow, Empty/ErrorState)
 │   ├── layouts/               # Approved structural page templates (Dashboard, Listing, Quiz, Config, Analytics)
-│   └── guidelines/            # Mirror of this approved spec for AI agents & PR reviewers
 ├── features/                  # Feature-specific business logic & views (quiz, mock-test, training, battle, admin)
 ├── components/                # Gradually thinned wrapper/legacy location until P5 cleanup
 └── app/                       # Next.js routes consuming layouts + features

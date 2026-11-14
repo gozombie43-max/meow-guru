@@ -134,48 +134,62 @@
 .switch {
   display:flex!important;
   align-items:center;
-  gap:12px!important;
+  gap:10px!important;
   width:100%;
-  padding:8px 14px!important;
-  background:transparent!important;
+  padding:6px 10px!important;
+  background:var(--mac-card-bg, transparent)!important;
   color:inherit!important;
-  border:0!important;
-  min-height:58px!important;
+  border:1px solid var(--mac-border, transparent)!important;
+  border-radius:12px!important;
+  min-height:44px!important;
   text-align:left;
-  font-size:15px!important;
+  font-size:13px!important;
   font-weight:600!important;
+  cursor:pointer;
+  transition:background-color .16s ease, border-color .16s ease;
 }
 .switchIcon {
   display:grid;
   place-items:center;
-  width:36px;
-  height:36px;
-  border-radius:50%;
+  width:28px;
+  height:28px;
+  border-radius:8px;
   background:rgb(var(--ios-system-blue-rgb)/.12);
   color:var(--ios-system-blue);
+  flex-shrink:0;
+}
+.switchLabel {
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
 .track {
+  box-sizing:border-box;
   margin-left:auto;
-  width:42px;
-  height:25px;
-  border-radius:30px;
+  width:40px;
+  height:24px;
+  border-radius:999px;
   background:#626874;
   padding:3px;
   flex-shrink:0;
+  transition:background-color .18s ease;
 }
 .track>span {
   display:block;
-  width:19px;
-  height:19px;
+  width:18px;
+  height:18px;
   border-radius:50%;
   background:var(--light-only-surface, white);
-  transition:transform .15s;
+  box-shadow:0 1px 3px rgb(0 0 0 / .2);
+  transition:transform .18s ease;
 }
 .switch[aria-checked=true] .track {
   background:#7628fa;
 }
 .switch[aria-checked=true] .track>span {
-  transform:translateX(17px);
+  transform:translateX(16px);
 }
 .compactSwitch {
   display: inline-flex;
@@ -350,6 +364,8 @@
   }
 }
 @media(prefers-reduced-motion:reduce) {
+  .switch,
+  .track,
   .track>span {
     transition:none;
   }

@@ -1,23 +1,16 @@
-/* ════════════════════════════════════════════
-           THEME TOKENS: DARK (DEFAULT)
-           ════════════════════════════════════════════ */
-        .formula-notes-page {
-          --bg: var(--dark-canvas);
-          --card-bg: var(--dark-surface);
-          --card-hover: #242428;
-          --border: rgba(255, 255, 255, 0.09);
-          --header-bg: #000000;
-          --text-primary: #f8fafc;
-          --text-secondary: rgba(235, 235, 245, 0.6);
-          --text-tertiary: rgba(235, 235, 245, 0.35);
-          --tab-bg: rgba(255, 255, 255, 0.08);
-          --tab-color: rgba(235, 235, 245, 0.75);
-          --accent: var(--ios-system-blue);
-          --modal-bg: var(--dark-surface);
-          --modal-option-bg: #28282c;
-          --notice-color: rgba(235, 235, 245, 0.5);
-          --spinner-color: rgba(235, 235, 245, 0.75);
+.fn-listing-main {
+  padding: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
 
+/* ════════════════════════════════════════════
+   THEME TOKENS: DARK (DEFAULT)
+   ════════════════════════════════════════════ */
+.formula-notes-page {
           height: 100dvh;
           width: 100%;
           box-sizing: border-box;
@@ -658,24 +651,6 @@
         /* ════════════════════════════════════════════
            LIGHT THEME OVERRIDES (body.theme-light)
            ════════════════════════════════════════════ */
-        :global(body.theme-light) .formula-notes-page,
-        :global(html.theme-light) .formula-notes-page {
-          --bg: var(--light-canvas);
-          --card-bg: var(--light-only-surface, #ffffff);
-          --card-hover: var(--light-only-canvas, #f8fafc);
-          --border: var(--light-only-border, rgba(0, 0, 0, 0.08));
-          --header-bg: rgba(246, 248, 250, 0.92);
-          --text-primary: var(--light-text);
-          --text-secondary: var(--light-text-secondary);
-          --text-tertiary: var(--light-text-muted);
-          --tab-bg: var(--light-only-surface-muted, rgba(0, 0, 0, 0.05));
-          --tab-color: var(--light-text-secondary);
-          --modal-bg: var(--light-only-surface, #ffffff);
-          --modal-option-bg: var(--light-canvas);
-          --notice-color: var(--light-text-secondary);
-          --spinner-color: var(--light-only-text-secondary, rgba(60, 60, 67, 0.6));
-        }
-
         :global(body.theme-light) .fn-card {
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
         }

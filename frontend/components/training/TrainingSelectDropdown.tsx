@@ -158,6 +158,7 @@ export function TrainingSelectDropdown({
       <button
         ref={triggerRef}
         type="button"
+        data-ui-button="state"
         id={`${id}-trigger`}
         className={`tsd-trigger ${variant === "card" ? "tsd-trigger--card" : ""} ${open ? "tsd-trigger--open" : ""}`}
         aria-labelledby={`${id}-label ${id}-value`}

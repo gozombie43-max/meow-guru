@@ -6,6 +6,7 @@ import { adminScopedUrl } from "@/lib/admin-exam-mode";
 import { API_BASE } from "@/lib/api-base";
 import { type ExamMode } from "@/lib/exam-mode";
 import { requestResponse } from "@/shared/api/request";
+import { Spinner } from "@/design-system";
 import styles from "./QuestionBankZipUpload.module.css";
 
 export type ZipStage =
@@ -415,7 +416,7 @@ export function QuestionBankZipUpload({
         aria-busy={isBusy}
       >
         <div className={styles.zipStatusHeading}>
-          {isBusy && <span className={styles.zipSpinner} aria-hidden="true" />}
+          {isBusy && <Spinner size="sm" />}
           <strong>
             {
               {

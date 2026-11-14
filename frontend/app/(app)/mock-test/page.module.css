@@ -1,14 +1,13 @@
+.listingMain {
+  padding: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
 .page {
-  --primary: var(--dark-accent, var(--ios-system-blue));
-  --primary-light: var(--dark-accent-hover);
-  --primary-bg: rgb(var(--ios-system-blue-rgb) / 0.16);
-  --bg: var(--dark-canvas, #000000);
-  --card: var(--dark-surface, #1c1c1e);
-  --text-dark: var(--dark-text, #ffffff);
-  --text-muted: var(--dark-text-muted, rgba(235, 235, 245, 0.65));
-  --text-light: var(--dark-text-muted, rgba(235, 235, 245, 0.40));
-  --border: var(--dark-border, rgba(255, 255, 255, 0.12));
-  
   background: var(--bg);
   height: 100dvh;
   max-height: 100dvh;
@@ -18,19 +17,6 @@
   flex-direction: column;
   color: var(--text-dark);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-:global(body.theme-light) .page,
-:global(html.theme-light) .page {
-  --primary: var(--light-accent);
-  --primary-light: #47a1ff;
-  --primary-bg: var(--light-accent-soft);
-  --bg: var(--light-canvas);
-  --card: var(--light-surface);
-  --text-dark: var(--light-text);
-  --text-muted: var(--light-text-secondary);
-  --text-light: var(--light-text-muted);
-  --border: var(--light-border);
 }
 
 :global(html.mock-test-surface),
@@ -62,32 +48,6 @@
   :global(body.mock-test-surface:not(.theme-light)) {
     background: var(--dark-canvas);
   }
-
-  :global(body:not(.theme-light)) .page,
-  :global(html:not(.theme-light)) .page {
-    --primary: var(--dark-accent);
-    --primary-light: var(--dark-accent-hover);
-    --primary-bg: var(--dark-accent-soft);
-    --bg: var(--dark-canvas);
-    --card: var(--dark-surface);
-    --text-dark: var(--dark-text);
-    --text-muted: var(--dark-text-muted);
-    --text-light: var(--dark-text-muted);
-    --border: var(--dark-border);
-  }
-}
-
-:global(body.theme-dark) .page,
-:global(html.theme-dark) .page {
-  --primary: var(--dark-accent);
-  --primary-light: var(--dark-accent-hover);
-  --primary-bg: var(--dark-accent-soft);
-  --bg: var(--dark-canvas);
-  --card: var(--dark-surface);
-  --text-dark: var(--dark-text);
-  --text-muted: var(--dark-text-muted);
-  --text-light: var(--dark-text-muted);
-  --border: var(--dark-border);
 }
 
 :global(html.mock-test-surface.theme-dark),
@@ -1064,7 +1024,6 @@
 
   :global(body.theme-dark) .macosSidebar {
     background: rgba(38, 38, 42, 0.6);
-    --border: var(--dark-border);
   }
 
   .macosTrafficLights {
@@ -1433,11 +1392,6 @@
 
 /* Shared borderless OLED appearance. */
 :global(html.theme-dark) .page {
-  --bg: var(--oled-canvas); --card: var(--oled-surface);
-  --text-dark: var(--oled-text); --text-muted: var(--oled-secondary);
-  --text-light: var(--oled-secondary); --border: transparent;
-  --primary: var(--ios-system-blue); --primary-light: var(--ios-system-blue);
-  --primary-bg: var(--oled-selected-soft);
   background: var(--oled-canvas); color: var(--oled-text);
 }
 :global(html.theme-dark) .page :is(.continueCard, .examCard, .statBox, .cardSection, .testLineCard, .detailHeader) { background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 14px; }

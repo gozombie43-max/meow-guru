@@ -1,4 +1,15 @@
 .nav {
+  /* Preserve previous bottom navigation palette across dark (#0f0f0f + white active)
+     and light (#ffffff + blue accent) viewports. */
+  --_nav-bg: #0f0f0f;
+  --_nav-border: rgba(255, 255, 255, 0.12);
+  --_nav-shadow: 0 -4px 28px rgba(0, 0, 0, 0.55);
+  --_nav-item-color: #a2a9b4;
+  --_nav-item-hover-bg: #2c2c2e;
+  --_nav-item-hover-color: #ffffff;
+  --_nav-active-bg: transparent;
+  --_nav-active-color: #ffffff;
+
   position: fixed;
   inset-block-end: 0;
   inset-inline: 0;
@@ -10,14 +21,25 @@
   padding: var(--meow-space-2) max(var(--meow-space-2), var(--safe-right, 0px))
     calc(var(--meow-space-2) + var(--safe-bottom, 0px))
     max(var(--meow-space-2), var(--safe-left, 0px));
-  background-color: var(--meow-surface);
-  border-top: 1px solid var(--meow-border);
-  box-shadow: none;
+  background-color: var(--_nav-bg);
+  border-top: 1px solid var(--_nav-border);
+  box-shadow: var(--_nav-shadow);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   transition:
     transform var(--meow-duration-base) var(--meow-ease-standard),
     opacity var(--meow-duration-fast) var(--meow-ease-standard);
+}
+
+:global(:is(html.theme-light, body.theme-light, .theme-light, [data-theme='light'])) .nav {
+  --_nav-bg: #ffffff;
+  --_nav-border: #e1e4e8;
+  --_nav-shadow: 0 -4px 24px rgba(24, 36, 56, 0.05);
+  --_nav-item-color: #606773;
+  --_nav-item-hover-bg: #eef0f3;
+  --_nav-item-hover-color: #242830;
+  --_nav-active-bg: #e0f0ff;
+  --_nav-active-color: #0062cc;
 }
 
 .hidden {
@@ -38,7 +60,7 @@
   justify-content: center;
   gap: var(--meow-space-1);
   border-radius: var(--meow-radius-md);
-  color: var(--meow-secondary);
+  color: var(--_nav-item-color);
   background-color: transparent;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
@@ -54,14 +76,14 @@
 
 @media (hover: hover) and (pointer: fine) {
   .item:not(.itemActive):hover {
-    background-color: var(--meow-surface-subtle);
-    color: var(--meow-text);
+    background-color: var(--_nav-item-hover-bg);
+    color: var(--_nav-item-hover-color);
   }
 }
 
 .itemActive {
-  background-color: var(--meow-accent-soft);
-  color: var(--meow-accent-light);
+  background-color: var(--_nav-active-bg);
+  color: var(--_nav-active-color);
 }
 
 .itemActive .label {

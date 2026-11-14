@@ -33,7 +33,7 @@ export default function ConvexAuthDiagnostics() {
 
   if (!convex) {
     return (
-      <main className="min-h-screen p-6">
+      <main className="min-h-dvh p-6">
         <h1 className="mb-6 text-xl font-semibold">
           Meow Convex Authentication
         </h1>
@@ -43,7 +43,7 @@ export default function ConvexAuthDiagnostics() {
   }
 
   return (
-    <main className="min-h-screen p-6">
+    <main className="min-h-dvh p-6">
       <h1 className="mb-6 text-xl font-semibold">
         Meow Convex Authentication
       </h1>

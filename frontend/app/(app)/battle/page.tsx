@@ -3,7 +3,6 @@ import BattleQuestionCard from "@/components/battle/BattleQuestionCard";
 import QuestionImage from "@/components/QuestionImage";
 import { battlePicked, battleKeyIncludes, revealCorrect } from "@/lib/battle-state";
 
-
 import { useExamMode } from '@/context/ExamModeContext';
 import { JAM_SECTIONS, JAM_SUBJECT, jamQuestionTopic } from '@/lib/exam-mode';
 import { Dialog } from "@/components/ui/Dialog";
@@ -20,6 +19,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import useSWR from 'swr';
 import api from '@/shared/api/client';
+import { ConfigurationTemplate, QuizTemplate, AnalyticsTemplate } from "@/design-system";
 
 const validRoomCode = (value: string) => /^(?:[A-Z2-9]{6}|\d{4})$/.test(value);
 const cleanRoomCode = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
@@ -115,8 +115,6 @@ function BattleRoundResult({ reveal, userId }: { reveal: Reveal; userId: string 
   const Icon = { won: Check, "both-correct": CheckCheck, lost: X, "both-missed": Minus }[result];
 
   useEffect(() => {
-    // Enter for 200ms, hold for 1400ms, then exit for 160ms. A resumed
-    // round must dismiss before its server-controlled reveal window ends.
     const delay = reveal.revealEndsAt
       ? Math.max(0, Math.min(1600, new Date(reveal.revealEndsAt).getTime() - Date.now() - 160))
       : 1600;
@@ -321,11 +319,36 @@ function BattlePageContent() {
     catch { /* The selectable code remains available when clipboard access is denied. */ }
   };
 
-  if (loading) return <main className="battle-centered"><LoaderCircle className="battle-spinner" /><p>Preparing the arena…</p></main>;
-  if (!user || !token) return <main className="battle-page"><BattleHeader title="1v1 Battle" status="offline" /><section className="battle-auth-card">
-    <span className="battle-hero-icon"><Shield /></span><p className="battle-kicker">Members only</p><h1>Sign in to enter the arena</h1>
-    <p>Your battle rating, results, and reconnect protection are linked to your account.</p><Link data-ui-button="primary" className="battle-primary-button" href="/login">Sign in to battle</Link>
-  </section></main>;
+  if (loading) {
+    return (
+      <ConfigurationTemplate
+        variant="setup"
+        isLoading={true}
+        defaultLoadingLabel="Preparing the arena…"
+        showBottomNav={false}
+        showNavRail={false}
+      />
+    );
+  }
+
+  if (!user || !token) {
+    return (
+      <ConfigurationTemplate
+        variant="auth"
+        header={<BattleHeader title="1v1 Battle" status="offline" />}
+        showBottomNav={false}
+        showNavRail={false}
+      >
+        <section className="battle-auth-card">
+          <span className="battle-hero-icon"><Shield /></span>
+          <p className="battle-kicker">Members only</p>
+          <h1>Sign in to enter the arena</h1>
+          <p>Your battle rating, results, and reconnect protection are linked to your account.</p>
+          <Link data-ui-button="primary" className="battle-primary-button" href="/login">Sign in to battle</Link>
+        </section>
+      </ConfigurationTemplate>
+    );
+  }
 
   if (state.phase === "lobby") {
     const topicOptions = isJam ? [{ value: "all", label: "All Physics sections" }, ...JAM_SECTIONS.map(s => ({ value: jamQuestionTopic(s.slug), label: s.title }))] : TOPICS[subject] || TOPICS.mathematics;
@@ -335,61 +358,183 @@ function BattlePageContent() {
       else if (mode === "create") battle.create({ playerName: effectivePlayerName.trim(), subject, topic, questionCount });
       else if (validRoomCode(effectiveJoinCode)) battle.join(effectiveJoinCode, effectivePlayerName.trim());
     };
-    return <main className="battle-page"><BattleHeader title="1v1 Battle" status={connection} /><div className="battle-lobby-shell">
-      <section className="battle-intro"><span className="battle-hero-icon"><Swords /></span><p className="battle-kicker">Real-time quiz duel</p>
-        <h1>Think fast.<br />Win the round.</h1><p>Find an opponent with Quick Match, challenge a friend, or share a private room. Both players answer the same questions.</p>
-        <div className="battle-trust-row"><span><Zap /> Quick Match</span><span><Shield /> Reconnect safe</span><span><Trophy /> {capabilities?.ranked ? 'Ranked matchmaking' : 'Casual battles'}</span></div>
+
+    const lobbyHero = (
+      <section className="battle-intro">
+        <span className="battle-hero-icon"><Swords /></span>
+        <p className="battle-kicker">Real-time quiz duel</p>
+        <h1>Think fast.<br />Win the round.</h1>
+        <p>Find an opponent with Quick Match, challenge a friend, or share a private room. Both players answer the same questions.</p>
+        <div className="battle-trust-row">
+          <span><Zap /> Quick Match</span>
+          <span><Shield /> Reconnect safe</span>
+          <span><Trophy /> {capabilities?.ranked ? 'Ranked matchmaking' : 'Casual battles'}</span>
+        </div>
       </section>
-      <section className="battle-setup-card" aria-labelledby="setup-title"><div className="battle-card-heading"><Users aria-hidden="true" /><h2 id="setup-title">Start a battle</h2><select className="battle-question-count" aria-label="Question count" value={questionCount} onChange={(event) => setQuestionCount(Number(event.target.value))}>{QUESTION_COUNTS.map(count => <option key={count} value={count}>{count} Qs</option>)}</select></div>
-        <div className="battle-tabs" role="tablist" aria-label="Battle mode">{([['quick', 'Quick Match'], ['create', 'Private room'], ['join', 'Join room']] as const).map(([value, label]) => <button key={value} data-ui-button="state" type="button" role="tab" aria-selected={mode === value} className={mode === value ? 'is-active' : ''} onClick={() => setModeOverride(value)}>{label}</button>)}</div>
-        {mode !== "join" ? <><div className="battle-field-grid"><label className="battle-field"><span>Subject</span><select value={subject} onChange={(event) => { setSubject(event.target.value); setTopic("all"); }}>{subjects.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label className="battle-field"><span>Topic</span><select value={topic} onChange={(event) => setTopic(event.target.value)}>{topicOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label></div>
-</>
-          : <label className="battle-field battle-code-field"><span>Room code</span><input value={effectiveJoinCode} onChange={(event) => setJoinCode(cleanRoomCode(event.target.value))} placeholder="7K4P9Q" inputMode="text" autoCapitalize="characters" autoComplete="off" spellCheck={false} maxLength={6} aria-label="Room code"/></label>}
-        <ErrorNotice message={state.error || (mode === "quick" && capabilitiesError ? "Could not load Quick Match availability. Please retry." : "")} onRetry={connection === "offline" ? battle.reconnect : undefined} />{mode === "quick" && capabilitiesError && <button data-ui-button="state" type="button" className="battle-text-button" onClick={() => void refreshCapabilities()}>Retry availability</button>}
-        <button data-ui-button="primary" type="button" className="battle-primary-button" disabled={!canSend || !effectivePlayerName.trim() || (mode === "join" && !validRoomCode(effectiveJoinCode)) || (mode === "quick" && !capabilities?.matchmaking)} onClick={submit}>{pending ? <LoaderCircle className="battle-spinner" /> : <Swords />}{pending === "matchmaking" ? "Joining matchmaking…" : pending === "create" ? "Creating room…" : pending === "join" ? "Joining room…" : mode === "quick" ? (!capabilities ? "Checking availability…" : "Find an opponent") : mode === "create" ? "Create private room" : "Join battle"}</button>
-        <p className="battle-helper">{mode === "quick" ? (!capabilities ? "Checking battle availability…" : capabilities.ranked ? "Ranked · Balanced questions · Similar ratings" : "Casual matchmaking · Ratings are paused") : "Casual battle · Ratings do not change"}</p>{capabilities?.socialChallenges && <Link href="/battle/social" className="battle-friend-link">Challenge a friend <span>Casual</span></Link>}
-      </section>
-    </div></main>;
+    );
+
+    return (
+      <ConfigurationTemplate
+        variant="setup"
+        header={<BattleHeader title="1v1 Battle" status={connection} />}
+        hero={lobbyHero}
+        showBottomNav={false}
+        showNavRail={false}
+        maxWidth={1080}
+      >
+        <div className="battle-lobby-shell">
+          <section className="battle-setup-card" aria-labelledby="setup-title">
+            <div className="battle-card-heading">
+              <Users aria-hidden="true" />
+              <h2 id="setup-title">Start a battle</h2>
+              <select className="battle-question-count" aria-label="Question count" value={questionCount} onChange={(event) => setQuestionCount(Number(event.target.value))}>
+                {QUESTION_COUNTS.map(count => <option key={count} value={count}>{count} Qs</option>)}
+              </select>
+            </div>
+            <div className="battle-tabs" role="tablist" aria-label="Battle mode">
+              {([['quick', 'Quick Match'], ['create', 'Private room'], ['join', 'Join room']] as const).map(([value, label]) => (
+                <button key={value} data-ui-button="state" type="button" role="tab" aria-selected={mode === value} className={mode === value ? 'is-active' : ''} onClick={() => setModeOverride(value)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            {mode !== "join" ? (
+              <div className="battle-field-grid">
+                <label className="battle-field">
+                  <span>Subject</span>
+                  <select value={subject} onChange={(event) => { setSubject(event.target.value); setTopic("all"); }}>
+                    {subjects.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                  </select>
+                </label>
+                <label className="battle-field">
+                  <span>Topic</span>
+                  <select value={topic} onChange={(event) => setTopic(event.target.value)}>
+                    {topicOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                  </select>
+                </label>
+              </div>
+            ) : (
+              <label className="battle-field battle-code-field">
+                <span>Room code</span>
+                <input value={effectiveJoinCode} onChange={(event) => setJoinCode(cleanRoomCode(event.target.value))} placeholder="7K4P9Q" inputMode="text" autoCapitalize="characters" autoComplete="off" spellCheck={false} maxLength={6} aria-label="Room code"/>
+              </label>
+            )}
+            <ErrorNotice message={state.error || (mode === "quick" && capabilitiesError ? "Could not load Quick Match availability. Please retry." : "")} onRetry={connection === "offline" ? battle.reconnect : undefined} />
+            {mode === "quick" && capabilitiesError && <button data-ui-button="state" type="button" className="battle-text-button" onClick={() => void refreshCapabilities()}>Retry availability</button>}
+            <button data-ui-button="primary" type="button" className="battle-primary-button" disabled={!canSend || !effectivePlayerName.trim() || (mode === "join" && !validRoomCode(effectiveJoinCode)) || (mode === "quick" && !capabilities?.matchmaking)} onClick={submit}>
+              {pending ? <LoaderCircle className="battle-spinner" /> : <Swords />}
+              {pending === "matchmaking" ? "Joining matchmaking…" : pending === "create" ? "Creating room…" : pending === "join" ? "Joining room…" : mode === "quick" ? (!capabilities ? "Checking availability…" : "Find an opponent") : mode === "create" ? "Create private room" : "Join battle"}
+            </button>
+            <p className="battle-helper">{mode === "quick" ? (!capabilities ? "Checking battle availability…" : capabilities.ranked ? "Ranked · Balanced questions · Similar ratings" : "Casual matchmaking · Ratings are paused") : "Casual battle · Ratings do not change"}</p>
+            {capabilities?.socialChallenges && <Link href="/battle/social" className="battle-friend-link">Challenge a friend <span>Casual</span></Link>}
+          </section>
+        </div>
+      </ConfigurationTemplate>
+    );
   }
 
-  if (state.phase === 'queueing' || (state.phase === 'waiting' && state.origin === 'matchmaking')) return <main className="battle-page battle-waiting-page">
-    <BattleHeader title="Quick Match" status={connection} onBack={state.phase === 'queueing' ? battle.cancelMatchmaking : battle.leave} />
-    <section className="battle-waiting-card">
-      <LoaderCircle className="battle-spinner" aria-hidden="true" /><p className="battle-kicker">{capabilities?.ranked ? 'Ranked matchmaking' : 'Casual matchmaking'}</p>
-      <h1>{state.phase === 'queueing' ? 'Finding an opponent' : 'Opponent found'}</h1>
-      <p role="status">{state.phase === 'queueing' ? 'Looking for a player near your rating. Your match starts when both players are ready.' : 'Connecting both players to the match…'}</p>
-      {state.matchmakingRating !== null && <p>Your rating: {state.matchmakingRating}</p>}
-      <ErrorNotice message={state.error} onRetry={connection === 'offline' ? battle.reconnect : undefined} />
-      <button data-ui-button="secondary" type="button" className="battle-secondary-button" disabled={!canSend} onClick={state.phase === 'queueing' ? battle.cancelMatchmaking : battle.leave}>{pending === 'cancel-matchmaking' || pending === 'leave' ? 'Cancelling…' : 'Cancel'}</button>
-    </section>
-  </main>;
+  if (state.phase === 'queueing' || (state.phase === 'waiting' && state.origin === 'matchmaking')) {
+    return (
+      <ConfigurationTemplate
+        variant="setup"
+        header={<BattleHeader title="Quick Match" status={connection} onBack={state.phase === 'queueing' ? battle.cancelMatchmaking : battle.leave} />}
+        showBottomNav={false}
+        showNavRail={false}
+      >
+        <section className="battle-waiting-card">
+          <LoaderCircle className="battle-spinner" aria-hidden="true" />
+          <p className="battle-kicker">{capabilities?.ranked ? 'Ranked matchmaking' : 'Casual matchmaking'}</p>
+          <h1>{state.phase === 'queueing' ? 'Finding an opponent' : 'Opponent found'}</h1>
+          <p role="status">{state.phase === 'queueing' ? 'Looking for a player near your rating. Your match starts when both players are ready.' : 'Connecting both players to the match…'}</p>
+          {state.matchmakingRating !== null && <p>Your rating: {state.matchmakingRating}</p>}
+          <ErrorNotice message={state.error} onRetry={connection === 'offline' ? battle.reconnect : undefined} />
+          <button data-ui-button="secondary" type="button" className="battle-secondary-button" disabled={!canSend} onClick={state.phase === 'queueing' ? battle.cancelMatchmaking : battle.leave}>
+            {pending === 'cancel-matchmaking' || pending === 'leave' ? 'Cancelling…' : 'Cancel'}
+          </button>
+        </section>
+      </ConfigurationTemplate>
+    );
+  }
 
-  if (state.phase === "waiting") return <main className="battle-page battle-waiting-page"><BattleHeader title="Waiting room" status={connection} onBack={battle.leave} /><section className="battle-waiting-card">
-    <div className="battle-pulse"><Swords /></div><p className="battle-kicker">Room ready</p><h1>Invite your opponent</h1><p>The battle will begin as soon as a second player joins.</p>
-    <button data-ui-button="state" type="button" className="battle-room-code" onClick={copyCode} aria-label="Copy room code"><small>Room code</small><strong>{state.code}</strong><span>{copied ? <><Check /> Copied</> : <><Copy /> Copy</>}</span></button>
-    <div className="battle-versus-row"><div><span>{state.players[0]?.charAt(0).toUpperCase() || "?"}</span><b>{state.players[0] || effectivePlayerName}</b><small>Ready</small></div><i>VS</i><div className="is-empty"><span>?</span><b>{state.players[1] || "Opponent"}</b><small>{state.players[1] ? "Joining…" : "Waiting…"}</small></div></div>
-    <form className="battle-invite" onSubmit={(event) => { event.preventDefault(); if (inviteEmail.trim()) battle.invite(inviteEmail.trim()); }}><label htmlFor="battle-email">Invite by email</label><div><Mail /><input id="battle-email" type="email" value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} placeholder="friend@example.com"  aria-label="friend@example.com"/><button data-ui-button="state" disabled={!canSend || !inviteEmail.trim()}>{pending === "invite" ? "Sending…" : "Send"}</button></div>{inviteStatus && <p className={inviteStatus.ok ? "is-success" : "is-error"}>{inviteStatus.message}</p>}</form>
-    <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} /><button data-ui-button="state" type="button" className="battle-text-button" disabled={pending === "leave"} onClick={battle.leave}>{pending === "leave" ? "Cancelling…" : "Cancel room"}</button>
-  </section></main>;
+  if (state.phase === "waiting") {
+    return (
+      <ConfigurationTemplate
+        variant="setup"
+        header={<BattleHeader title="Waiting room" status={connection} onBack={battle.leave} />}
+        showBottomNav={false}
+        showNavRail={false}
+      >
+        <section className="battle-waiting-card">
+          <div className="battle-pulse"><Swords /></div>
+          <p className="battle-kicker">Room ready</p>
+          <h1>Invite your opponent</h1>
+          <p>The battle will begin as soon as a second player joins.</p>
+          <button data-ui-button="state" type="button" className="battle-room-code" onClick={copyCode} aria-label="Copy room code">
+            <small>Room code</small>
+            <strong>{state.code}</strong>
+            <span>{copied ? <><Check /> Copied</> : <><Copy /> Copy</>}</span>
+          </button>
+          <div className="battle-versus-row">
+            <div>
+              <span>{state.players[0]?.charAt(0).toUpperCase() || "?"}</span>
+              <b>{state.players[0] || effectivePlayerName}</b>
+              <small>Ready</small>
+            </div>
+            <i>VS</i>
+            <div className="is-empty">
+              <span>?</span>
+              <b>{state.players[1] || "Opponent"}</b>
+              <small>{state.players[1] ? "Joining…" : "Waiting…"}</small>
+            </div>
+          </div>
+          <form className="battle-invite" onSubmit={(event) => { event.preventDefault(); if (inviteEmail.trim()) battle.invite(inviteEmail.trim()); }}>
+            <label htmlFor="battle-email">Invite by email</label>
+            <div>
+              <Mail />
+              <input id="battle-email" type="email" value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} placeholder="friend@example.com" aria-label="friend@example.com"/>
+              <button data-ui-button="state" disabled={!canSend || !inviteEmail.trim()}>
+                {pending === "invite" ? "Sending…" : "Send"}
+              </button>
+            </div>
+            {inviteStatus && <p className={inviteStatus.ok ? "is-success" : "is-error"}>{inviteStatus.message}</p>}
+          </form>
+          <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
+          <button data-ui-button="state" type="button" className="battle-text-button" disabled={pending === "leave"} onClick={battle.leave}>
+            {pending === "leave" ? "Cancelling…" : "Cancel room"}
+          </button>
+        </section>
+      </ConfigurationTemplate>
+    );
+  }
 
   if (state.phase === "playing") {
-    if (!state.question) return <main className="battle-centered"><LoaderCircle className="battle-spinner" /><p>Loading the first question…</p></main>;
+    if (!state.question) {
+      return (
+        <QuizTemplate
+          lockedViewport={true}
+          isLoading={true}
+          defaultLoadingLabel="Loading the first question…"
+        />
+      );
+    }
     const q = state.question;
-    return <main className="battle-game-shell ios-series-quiz" data-theme={theme} data-text-size="md" data-text-weight="medium">
+
+    const battleScoreTopBar = (
       <header className="battle-score-header" aria-label="Battle progress and scores">
         <div className="battle-score-meta">
-            <button data-ui-button="state"
-              type="button"
-              className="battle-exit-button"
-              onClick={() => setShowExitModal(true)}
-              aria-label="Exit quiz"
-            >
-              <ArrowLeft aria-hidden="true" />
-              <span>Exit</span>
-            </button>
-            <div className="battle-meta-counter" aria-label={`Question ${q.questionIndex + 1} of ${q.total}`}>
-              <span>Question</span><strong>{q.questionIndex + 1} / {q.total}</strong>
-            </div>
+          <button
+            data-ui-button="state"
+            type="button"
+            className="battle-exit-button"
+            onClick={() => setShowExitModal(true)}
+            aria-label="Exit quiz"
+          >
+            <ArrowLeft aria-hidden="true" />
+            <span>Exit</span>
+          </button>
+          <div className="battle-meta-counter" aria-label={`Question ${q.questionIndex + 1} of ${q.total}`}>
+            <span>Question</span><strong>{q.questionIndex + 1} / {q.total}</strong>
+          </div>
           <ConnectionStatus status={connection} compact />
         </div>
         <div className="battle-round-progress" role="progressbar" aria-label="Question progress" aria-valuemin={0} aria-valuemax={q.total} aria-valuenow={q.questionIndex + 1}>
@@ -401,67 +546,83 @@ function BattlePageContent() {
           <PlayerBlock player={opponent} fallback="Opponent" side="opponent" />
         </div>
       </header>
+    );
 
-      <div className="battle-game-scroll">
-        <div className="battle-question-wrap">
+    return (
+      <QuizTemplate
+        lockedViewport={true}
+        topBar={battleScoreTopBar}
+        className="battle-game-shell ios-series-quiz"
+      >
+        <div className="battle-question-wrap" data-theme={theme} data-text-size="md" data-text-weight="medium">
           {state.opponentDeadline && (
             <div className="battle-notice">
               <span>Opponent disconnected. Their reconnect window is still open.</span>
             </div>
           )}
-          <BattleQuestionCard key={`${state.code}-${q.questionIndex}`} question={q} answer={state.answer} reveal={state.reveal}
-            userId={user.id} disabled={state.answerStatus !== "idle" || connection !== "online"} onSubmit={battle.submitAnswer} />
+          <BattleQuestionCard
+            key={`${state.code}-${q.questionIndex}`}
+            question={q}
+            answer={state.answer}
+            reveal={state.reveal}
+            userId={user.id}
+            disabled={state.answerStatus !== "idle" || connection !== "online"}
+            onSubmit={battle.submitAnswer}
+          />
 
-          {!state.reveal && <div className="battle-answer-status" aria-live="polite">
-            {state.answerStatus !== "idle" ? (
-              <>
-                <LoaderCircle className="battle-spinner" />
-                <span>Your answer is locked. Waiting for your opponent…</span>
-              </>
-            ) : connection !== "online" ? (
-              <>
-                <WifiOff />
-                <span>Reconnecting before you can answer…</span>
-              </>
-            ) : (
-              <span>Choose your answer.</span>
-            )}
-          </div>}
+          {!state.reveal && (
+            <div className="battle-answer-status" aria-live="polite">
+              {state.answerStatus !== "idle" ? (
+                <>
+                  <LoaderCircle className="battle-spinner" />
+                  <span>Your answer is locked. Waiting for your opponent…</span>
+                </>
+              ) : connection !== "online" ? (
+                <>
+                  <WifiOff />
+                  <span>Reconnecting before you can answer…</span>
+                </>
+              ) : (
+                <span>Choose your answer.</span>
+              )}
+            </div>
+          )}
           <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
         </div>
-      </div>
 
-      <div className="battle-result-hud" role="status" aria-live="polite" aria-atomic="true">
-        {state.reveal && <BattleRoundResult key={`${state.code}-${q.questionIndex}`} reveal={state.reveal} userId={user.id} />}
-      </div>
+        <div className="battle-result-hud" role="status" aria-live="polite" aria-atomic="true">
+          {state.reveal && <BattleRoundResult key={`${state.code}-${q.questionIndex}`} reveal={state.reveal} userId={user.id} />}
+        </div>
 
-      {showExitModal && (
-        <Dialog onClose={() => setShowExitModal(false)} busy={pending === "forfeit"} className="battle-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="exit-modal-title">
-          <div className="battle-modal-card">
-            <div className="battle-modal-icon is-danger"><AlertTriangle /></div>
-            <h2 id="exit-modal-title">Exit Battle?</h2>
-            <p>If you exit now, you will forfeit this duel and your opponent will <strong>automatically win immediately</strong>.</p>
-            <div className="battle-modal-actions">
-              <button data-ui-button="secondary" type="button" className="battle-secondary-button" onClick={() => setShowExitModal(false)}>
-                Keep Playing
-              </button>
-              <button data-ui-button="danger"
-                type="button"
-                className="battle-danger-button"
-                disabled={pending === "forfeit"}
-                onClick={() => {
-                  setShowExitModal(false);
-                  battle.forfeit();
-                }}
-              >
-                {pending === "forfeit" ? <LoaderCircle className="battle-spinner" /> : <LogOut />}
-                {pending === "forfeit" ? "Exiting…" : "Forfeit & Exit"}
-              </button>
+        {showExitModal && (
+          <Dialog onClose={() => setShowExitModal(false)} busy={pending === "forfeit"} className="battle-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="exit-modal-title">
+            <div className="battle-modal-card">
+              <div className="battle-modal-icon is-danger"><AlertTriangle /></div>
+              <h2 id="exit-modal-title">Exit Battle?</h2>
+              <p>If you exit now, you will forfeit this duel and your opponent will <strong>automatically win immediately</strong>.</p>
+              <div className="battle-modal-actions">
+                <button data-ui-button="secondary" type="button" className="battle-secondary-button" onClick={() => setShowExitModal(false)}>
+                  Keep Playing
+                </button>
+                <button
+                  data-ui-button="danger"
+                  type="button"
+                  className="battle-danger-button"
+                  disabled={pending === "forfeit"}
+                  onClick={() => {
+                    setShowExitModal(false);
+                    battle.forfeit();
+                  }}
+                >
+                  {pending === "forfeit" ? <LoaderCircle className="battle-spinner" /> : <LogOut />}
+                  {pending === "forfeit" ? "Exiting…" : "Forfeit & Exit"}
+                </button>
+              </div>
             </div>
-          </div>
-        </Dialog>
-      )}
-    </main>;
+          </Dialog>
+        )}
+      </QuizTemplate>
+    );
   }
 
   const result = state.result;
@@ -470,79 +631,100 @@ function BattlePageContent() {
   const resultPlayers = Object.entries(result.scores).sort(([, left], [, right]) => right.score - left.score);
   const rating = result.rating;
   const title = outcome === "win" ? "Victory" : outcome === "loss" ? "Good battle" : outcome === "draw" ? "Draw match" : "Battle ended";
-  return <main className={`battle-page battle-result-page is-${outcome}`}>
-    {outcome === "win" && <Confetti />}
-    <BattleHeader title="Match result" status={connection} onBack={battle.reset} />
-    <section className="battle-result-shell">
-      <div className="battle-result-hero">
-        <span>{outcome === "win" ? <Trophy /> : outcome === "draw" ? <Swords /> : <Shield />}</span>
-        <p className="battle-kicker">{result.finishReason === "forfeit" ? "Finished by forfeit" : "Final result"}</p>
-        <h1>{title}</h1>
-        {result.outcomeReason === "response-time" && <p>Scores tied. Total response time decided the match.</p>}
-        <p>{outcome === "win" ? (result.finishReason === "forfeit" ? "Opponent forfeited the duel — instant victory!" : "Sharp answers and steady timing.") : outcome === "loss" ? (result.finishReason === "forfeit" ? "Duel ended by forfeit." : "Review the result, then run it back.") : outcome === "draw" ? "Nothing separated you this time." : "The match could not be completed."}</p>
-      </div>
-      <div className="battle-final-scores">
-        {resultPlayers.map(([id, player], index) => (
-          <div key={id} className={id === user.id ? "is-me" : ""}>
-            <span>{index + 1}</span>
-            <i>{player.name.charAt(0).toUpperCase()}</i>
-            <p><b>{player.name}</b><small>{id === user.id ? "You" : "Opponent"}</small></p>
-            <strong>{player.score}<small> pts</small></strong>
-          </div>
-        ))}
-      </div>
-      {rating && (
-        <section className="battle-result-panel">
-          <div><p className="battle-kicker">Rating update</p><h2>{rating.season?.tierAfter || "Lifetime rating"}</h2></div>
-          <strong>{rating.season?.after ?? rating.lifetime.after}<small className={(rating.season?.delta ?? rating.lifetime.delta) >= 0 ? "is-positive" : "is-negative"}>{(rating.season?.delta ?? rating.lifetime.delta) >= 0 ? "+" : ""}{rating.season?.delta ?? rating.lifetime.delta}</small></strong>
-        </section>
-      )}
-      {result.matchStats && (
-        <section className="battle-stats-panel">
-          <h2>Match breakdown</h2>
-          <div>
-            <article>
-              <span>You</span>
-              <strong>{result.matchStats.me.accuracy}%</strong>
-              <small>{result.matchStats.me.correct}/{result.matchStats.me.total} correct</small>
-            </article>
-            <article>
-              <span>Opponent</span>
-              <strong>{result.matchStats.opponent.accuracy}%</strong>
-              <small>{result.matchStats.opponent.correct}/{result.matchStats.opponent.total} correct</small>
-            </article>
-          </div>
-        </section>
-      )}
 
-      {showReview && (
-        <BattleReviewSection review={result.review} opponentName={result.opponentName} />
-      )}
-
-      <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
-      <div className="battle-result-actions">
-        <button data-ui-button="state"
-          type="button"
-          className="battle-secondary-button battle-review-toggle"
-          onClick={() => setShowReview((prev) => !prev)}
-        >
-          <FileText /> {showReview ? "Hide Question Review" : "Review All Question Interactions"}
-        </button>
-        {result.rematchToken && (
-          <button data-ui-button="primary" type="button" className="battle-primary-button" disabled={!canSend} onClick={() => battle.rematch(effectivePlayerName)}>
-            {pending === "rematch" ? <LoaderCircle className="battle-spinner" /> : <RotateCcw />}
-            {pending === "rematch" ? "Sending rematch…" : `Rematch ${result.opponentName || "opponent"}`}
-          </button>
+  return (
+    <AnalyticsTemplate
+      header={<BattleHeader title="Match result" status={connection} onBack={battle.reset} />}
+      showBottomNav={false}
+      showNavRail={false}
+      maxWidth={720}
+    >
+      <section className={`battle-result-shell is-${outcome}`}>
+        {outcome === "win" && <Confetti />}
+        <div className="battle-result-hero">
+          <span>{outcome === "win" ? <Trophy /> : outcome === "draw" ? <Swords /> : <Shield />}</span>
+          <p className="battle-kicker">{result.finishReason === "forfeit" ? "Finished by forfeit" : "Final result"}</p>
+          <h1>{title}</h1>
+          {result.outcomeReason === "response-time" && <p>Scores tied. Total response time decided the match.</p>}
+          <p>{outcome === "win" ? (result.finishReason === "forfeit" ? "Opponent forfeited the duel — instant victory!" : "Sharp answers and steady timing.") : outcome === "loss" ? (result.finishReason === "forfeit" ? "Duel ended by forfeit." : "Review the result, then run it back.") : outcome === "draw" ? "Nothing separated you this time." : "The match could not be completed."}</p>
+        </div>
+        <div className="battle-final-scores">
+          {resultPlayers.map(([id, player], index) => (
+            <div key={id} className={id === user.id ? "is-me" : ""}>
+              <span>{index + 1}</span>
+              <i>{player.name.charAt(0).toUpperCase()}</i>
+              <p><b>{player.name}</b><small>{id === user.id ? "You" : "Opponent"}</small></p>
+              <strong>{player.score}<small> pts</small></strong>
+            </div>
+          ))}
+        </div>
+        {rating && (
+          <section className="battle-result-panel">
+            <div><p className="battle-kicker">Rating update</p><h2>{rating.season?.tierAfter || "Lifetime rating"}</h2></div>
+            <strong>{rating.season?.after ?? rating.lifetime.after}<small className={(rating.season?.delta ?? rating.lifetime.delta) >= 0 ? "is-positive" : "is-negative"}>{(rating.season?.delta ?? rating.lifetime.delta) >= 0 ? "+" : ""}{rating.season?.delta ?? rating.lifetime.delta}</small></strong>
+          </section>
         )}
-        <button data-ui-button="secondary" type="button" className="battle-secondary-button" onClick={battle.reset}>
-          <Swords /> New battle
-        </button>
-        <Link href="/" className="battle-text-link">Return home</Link>
-      </div>
-    </section>
-  </main>;
+        {result.matchStats && (
+          <section className="battle-stats-panel">
+            <h2>Match breakdown</h2>
+            <div>
+              <article>
+                <span>You</span>
+                <strong>{result.matchStats.me.accuracy}%</strong>
+                <small>{result.matchStats.me.correct}/{result.matchStats.me.total} correct</small>
+              </article>
+              <article>
+                <span>Opponent</span>
+                <strong>{result.matchStats.opponent.accuracy}%</strong>
+                <small>{result.matchStats.opponent.correct}/{result.matchStats.opponent.total} correct</small>
+              </article>
+            </div>
+          </section>
+        )}
+
+        {showReview && (
+          <BattleReviewSection review={result.review} opponentName={result.opponentName} />
+        )}
+
+        <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
+        <div className="battle-result-actions">
+          <button data-ui-button="state"
+            type="button"
+            className="battle-secondary-button battle-review-toggle"
+            onClick={() => setShowReview((prev) => !prev)}
+          >
+            <FileText /> {showReview ? "Hide Question Review" : "Review All Question Interactions"}
+          </button>
+          {result.rematchToken && (
+            <button data-ui-button="primary" type="button" className="battle-primary-button" disabled={!canSend} onClick={() => battle.rematch(effectivePlayerName)}>
+              {pending === "rematch" ? <LoaderCircle className="battle-spinner" /> : <RotateCcw />}
+              {pending === "rematch" ? "Sending rematch…" : `Rematch ${result.opponentName || "opponent"}`}
+            </button>
+          )}
+          <button data-ui-button="secondary" type="button" className="battle-secondary-button" onClick={battle.reset}>
+            <Swords /> New battle
+          </button>
+          <Link href="/" className="battle-text-link">Return home</Link>
+        </div>
+      </section>
+    </AnalyticsTemplate>
+  );
 }
 
 export default function BattlePage() {
-  return <Suspense fallback={<main className="battle-centered"><LoaderCircle className="battle-spinner" /><p>Preparing the arena…</p></main>}><BattlePageContent /></Suspense>;
+  return (
+    <Suspense
+      fallback={
+        <ConfigurationTemplate
+          variant="setup"
+          isLoading={true}
+          defaultLoadingLabel="Preparing the arena…"
+          showBottomNav={false}
+          showNavRail={false}
+        />
+      }
+    >
+      <BattlePageContent />
+    </Suspense>
+  );
 }

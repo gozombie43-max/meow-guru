@@ -19,9 +19,9 @@
 }
 
 /* Tablet screens */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .container {
-    --max-img-height: min(320px, 42vh);
+    --max-img-height: min(320px, 42dvh);
     --min-img-height: 130px;
     border-radius: 10px;
   }
@@ -30,7 +30,7 @@
 /* Mobile screens: prevent images from being too big (taking full viewport) or too small */
 @media (max-width: 480px) {
   .container {
-    --max-img-height: min(260px, 38vh);
+    --max-img-height: min(260px, 38dvh);
     --min-img-height: 120px;
     border-radius: 8px;
   }
@@ -71,27 +71,12 @@
   z-index: 1;
 }
 
-.spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid rgba(148, 163, 184, 0.25);
-  border-top-color: var(--primary, #007aff);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
   }
   100% {
     background-position: -200% 0;
-  }
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
   }
 }
 
@@ -176,7 +161,7 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  animation: fadeIn 0.2s ease-out;
+  animation: meow-fade-in var(--meow-duration-base) var(--meow-ease-enter);
 }
 
 .modalClose {
@@ -215,7 +200,7 @@
 .modalImgWrapper {
   position: relative;
   max-width: 96vw;
-  max-height: 82vh;
+  max-height: 82dvh;
   width: auto;
   height: auto;
   display: flex;
@@ -231,7 +216,7 @@
 
 .modalImg {
   max-width: 92vw;
-  max-height: 76vh;
+  max-height: 76dvh;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -248,14 +233,6 @@
   pointer-events: none;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .container,

@@ -342,20 +342,6 @@
   font-size: 14px;
 }
 
-.training-loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--tr-border);
-  border-top-color: var(--tr-accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 /* ==========================================================================
    MAIN QUIZ COLUMNS

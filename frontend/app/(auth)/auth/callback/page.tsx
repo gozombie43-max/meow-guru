@@ -3,6 +3,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { ConfigurationTemplate, Spinner } from '@/design-system';
 
 function CallbackContent() {
   const { user, loading } = useAuth();
@@ -14,12 +15,12 @@ function CallbackContent() {
   }, [loading, router, user]);
 
   return (
-    <div className="min-h-dvh flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-slate-500 text-sm">Signing you in...</p>
+    <ConfigurationTemplate variant="auth" maxWidth={440} showNavRail={false} showBottomNav={false}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 20px', textAlign: 'center' }}>
+        <Spinner size="lg" tone="accent" aria-hidden="true" style={{ marginBottom: 16 }} />
+        <p style={{ color: 'var(--meow-text-muted)', fontSize: 14, margin: 0 }}>Signing you in...</p>
       </div>
-    </div>
+    </ConfigurationTemplate>
   );
 }
 

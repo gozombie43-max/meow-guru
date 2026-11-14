@@ -77,10 +77,10 @@ export default function PalettePreviewClient() {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', minHeight: '100vh', backgroundColor: '#121316', overflow: 'hidden', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <div style={{ position: 'relative', width: '100%', minHeight: '100dvh', backgroundColor: '#121316', overflow: 'hidden', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
       
       {/* Blurred / Dimmed Quiz Interface in background */}
-      <div style={{ padding: '16px', filter: isOpen ? 'blur(4px) brightness(0.6)' : 'none', transition: 'filter 0.3s ease', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '16px', filter: isOpen ? 'blur(4px) brightness(0.6)' : 'none', transition: 'filter 0.3s ease', minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#9EA2A8', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ArrowLeft size={20} />

@@ -29,7 +29,6 @@
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
   color-scheme: dark;
 
-  min-height: 100vh;
   min-height: 100dvh;
   font-family: var(--mac-font);
   color: var(--mac-text-primary);
@@ -49,9 +48,8 @@
 
 @media (min-width: 768px) {
   .pageRoot {
-    height: 100vh;
     height: 100dvh;
-    max-height: 100vh;
+    max-height: 100dvh;
     overflow: hidden;
     display: flex;
     justify-content: center;
@@ -129,7 +127,7 @@
 .macWindow {
   width: 100%;
   max-width: 1060px;
-  height: 86vh;
+  height: 86dvh;
   max-height: 740px;
   min-height: 540px;
   background: var(--mac-window-bg);

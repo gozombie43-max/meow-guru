@@ -2,13 +2,16 @@ import { expect, test, type Page } from '@playwright/test';
 import { FIXTURE_BACKEND_URL, loginFixtureUser } from './helpers/auth-fixture';
 
 const VIEWPORTS_MOBILE = [
+  { name: '320x568', width: 320, height: 568 },
   { name: '360x800', width: 360, height: 800 },
-  { name: '393x852', width: 393, height: 852 },
+  { name: '390x844', width: 390, height: 844 },
+  { name: '430x932', width: 430, height: 932 },
   { name: '768x1024', width: 768, height: 1024 },
 ] as const;
 
 const VIEWPORTS_DESKTOP = [
   { name: '1024x900', width: 1024, height: 900 },
+  { name: '1366x900', width: 1366, height: 900 },
   { name: '1440x900', width: 1440, height: 900 },
 ] as const;
 
@@ -76,7 +79,7 @@ test.describe('P0-D Global Shell Chrome', () => {
       request,
     }, testInfo) => {
       test.skip(testInfo.project.name !== 'mobile', 'Runs on mobile/touch viewports.');
-      test.setTimeout(90_000);
+      test.setTimeout(180_000);
       const { token } = await loginFixtureUser(request, 'browser-mobile@example.test');
       await setupAuthenticatedRoutes(page, token, theme);
 
@@ -122,7 +125,7 @@ test.describe('P0-D Global Shell Chrome', () => {
           );
           expect(metrics.navBackdropFilter).toBe('none');
           expect(metrics.labelFontSize).toBe('12px');
-          expect(metrics.navBg).toBe(theme === 'dark' ? 'rgb(17, 23, 34)' : 'rgb(255, 255, 255)');
+          expect(metrics.navBg).toBe(theme === 'dark' ? 'rgb(15, 15, 15)' : 'rgb(255, 255, 255)');
           for (const box of metrics.itemBoxes) {
             expect(box.width).toBeGreaterThanOrEqual(56);
             expect(box.height).toBeGreaterThanOrEqual(44);
@@ -179,7 +182,7 @@ test.describe('P0-D Global Shell Chrome', () => {
       request,
     }, testInfo) => {
       test.skip(testInfo.project.name !== 'desktop', 'Runs on desktop viewports.');
-      test.setTimeout(90_000);
+      test.setTimeout(180_000);
       const { token } = await loginFixtureUser(request, 'browser-desktop@example.test');
       await setupAuthenticatedRoutes(page, token, theme);
 

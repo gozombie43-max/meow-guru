@@ -6,6 +6,7 @@ import { useEffect,useState } from "react";
 import { useExamMode } from '@/context/ExamModeContext';
 import { adminScopedUrl, getAdminExamCatalog } from '@/lib/admin-exam-mode';
 import { JAM_SUBJECT } from '@/lib/exam-mode';
+import { ConfigurationTemplate } from "@/design-system";
 
 type Region = { x: number; y: number; w: number; h: number };
 
@@ -129,10 +130,22 @@ export default function UploadImage() {
     setRegions(detected);
   };
 
-  return (
-    <div className={styles.shell} style={{ padding: 0, maxWidth: "100%", margin: "0 auto" }}>
+  const heroSection = (
+    <div>
       <h2 className={styles.pageTitle}>Image Question Builder</h2>
       {isJam && <label className={styles.fieldLabel}>IIT JAM section<select value={topic} onChange={event => setTopic(event.target.value)} className={styles.macSelect}><option value="">Select section</option>{topics.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>}
+    </div>
+  );
+
+  return (
+    <ConfigurationTemplate
+      variant="setup"
+      hero={heroSection}
+      showNavRail={false}
+      showBottomNav={false}
+      showSkipLink={false}
+    >
+      <div className={styles.shell} style={{ padding: 0, maxWidth: "100%", margin: "0 auto", minHeight: 'auto', background: 'transparent' }}>
 
       <input className={styles.macInput} aria-label="Question image" type="file" accept="image/*" onChange={handleImage} />
 
@@ -406,6 +419,7 @@ export default function UploadImage() {
       >
         Upload Question
       </button>
-    </div>
+      </div>
+    </ConfigurationTemplate>
   );
 }

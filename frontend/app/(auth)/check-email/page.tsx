@@ -10,6 +10,7 @@ import {
 
 import api from '@/shared/api/client';
 import { emailPattern } from '@/components/auth/validation';
+import { ConfigurationTemplate } from '@/design-system';
 import styles from '@/components/auth/verification.module.css';
 
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -109,7 +110,7 @@ export default function CheckEmailPage() {
       : 'your email address';
 
   return (
-    <main className={styles.screen}>
+    <ConfigurationTemplate variant="auth" maxWidth={440} showNavRail={false} showBottomNav={false}>
       <section className={styles.card}>
         <div className={styles.icon}>
           <MailCheck
@@ -156,6 +157,7 @@ export default function CheckEmailPage() {
             sending ||
             seconds > 0
           }
+          data-ui-button="primary"
           className={styles.primary}
         >
           <RefreshCw
@@ -183,6 +185,6 @@ export default function CheckEmailPage() {
           Back to sign in
         </Link>
       </section>
-    </main>
+    </ConfigurationTemplate>
   );
 }
