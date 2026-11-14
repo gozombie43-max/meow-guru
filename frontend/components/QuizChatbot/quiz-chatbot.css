@@ -96,13 +96,13 @@
 
 .quiz-chatbot-shell.dark {
   --or: color-mix(in srgb, var(--dark-accent, var(--ios-system-blue)) 45%, var(--dark-text-muted, #a8aeb8));
-  --orl: color-mix(in srgb, var(--or) 10%, var(--dark-surface, #1c1c1e));
+  --orl: color-mix(in srgb, var(--or) 10%, var(--oled-surface, var(--dark-surface, #1c1c1e)));
   --dk: var(--dark-text, #f1f2f4);
   --gr: var(--dark-text-muted, #a8aeb8);
   --bd: var(--dark-border, #303238);
-  --bg: var(--dark-canvas, #101010);
-  --card-bg: var(--dark-surface, #1c1c1e);
-  --field: var(--dark-surface-muted, #27272a);
+  --bg: var(--oled-surface, var(--dark-surface, #1c1c1e));
+  --card-bg: var(--oled-inset, var(--dark-surface-muted, #29292c));
+  --field: var(--oled-inset, var(--dark-surface-muted, #29292c));
 }
 
 .quiz-chatbot-shell *, .quiz-chatbot-shell *::before, .quiz-chatbot-shell *::after {
@@ -241,7 +241,11 @@
   width: 24px !important;
   height: 24px !important;
   flex-shrink: 0;
-  color: var(--ios-system-blue, #0a84ff);
+  color: var(--dk);
+}
+
+.quiz-chatbot-shell.dark :is(.tutor-brand-icon, .ltitle-sparkle) {
+  color: #ffffff;
 }
 
 .quiz-chatbot-shell .logo {
@@ -264,13 +268,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px; width: max-content; height: 28px !important; min-height: 28px !important; max-height: 28px !important; padding: 0 10px 0 11px !important; font-size: 12px !important;
+  gap: 5px;
   width: max-content;
   height: 28px !important;
   min-height: 28px !important;
   max-height: 28px !important;
   padding: 0 10px 0 11px !important;
-  border: 1px solid var(--bd);
+  border: 0 !important;
   border-radius: 9999px !important;
   background: var(--field);
   color: var(--gr);
@@ -286,14 +290,14 @@
   filter: none !important;
   outline: none !important;
   box-shadow: none !important;
-  transition: color 0.12s ease, background-color 0.12s ease, border-color 0.12s ease !important;
+  transition: color 0.12s ease, background-color 0.12s ease !important;
   user-select: none;
   -webkit-user-select: none;
   box-sizing: border-box;
 }
 
 .quiz-chatbot-shell.dark .tutor-header-pill {
-  border-color: rgba(255, 255, 255, 0.08);
+  border: 0 !important;
 }
 
 .quiz-chatbot-shell .tutor-header-pill > svg.lucide {
@@ -314,7 +318,7 @@
 .quiz-chatbot-shell .tutor-header-pill[aria-expanded="true"] {
   background: color-mix(in srgb, var(--field) 85%, var(--dk));
   color: var(--dk);
-  border-color: color-mix(in srgb, var(--bd) 70%, var(--gr));
+  border: 0 !important;
   animation: none !important;
   scale: 1 !important;
   transform: none !important;
@@ -325,14 +329,14 @@
 .quiz-chatbot-shell.dark .tutor-header-pill:hover,
 .quiz-chatbot-shell.dark .tutor-header-pill:active,
 .quiz-chatbot-shell.dark .tutor-header-pill[aria-expanded="true"] {
-  background: #26262a;
+  background: color-mix(in srgb, var(--field) 88%, #ffffff);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.16);
+  border: 0 !important;
 }
 
-.quiz-chatbot-shell .tutor-header-pill:focus-visible {
-  outline: 1.5px solid rgba(255, 255, 255, 0.35) !important;
-  outline-offset: 2px !important;
+.quiz-chatbot-shell .tutor-header-pill:is(:focus, :focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .quiz-chatbot-shell .tutor-header-pill[aria-expanded="true"] {
@@ -522,7 +526,7 @@
   height: 20px !important;
   flex-shrink: 0;
   display: block;
-  color: var(--ios-system-blue, #0a84ff);
+  color: var(--dk);
   transform: translateY(-1px);
 }
 
@@ -552,7 +556,7 @@
   gap: 14px;
   padding: 7px 10px 7px 8px !important;
   min-height: 52px !important;
-  border: 1px solid var(--bd) !important;
+  border: 0 !important;
   border-radius: 9999px !important;
   background: var(--card-bg) !important;
   box-shadow: none !important;
@@ -564,17 +568,18 @@
   scale: 1 !important;
   transform: none !important;
   filter: none !important;
-  transition: background-color 0.14s ease, border-color 0.14s ease !important;
+  transition: background-color 0.14s ease !important;
 }
 
 .quiz-chatbot-shell.dark .opt {
   background: var(--card-bg) !important;
-  border-color: transparent !important;
+  border: 0 !important;
 }
 
 .quiz-chatbot-shell .opt:hover,
 .quiz-chatbot-shell .opt:active {
   background: color-mix(in srgb, var(--card-bg) 88%, var(--dk)) !important;
+  border: 0 !important;
   animation: none !important;
   scale: 1 !important;
   transform: none !important;
@@ -584,7 +589,7 @@
 .quiz-chatbot-shell.dark .opt:hover,
 .quiz-chatbot-shell.dark .opt:active {
   background: color-mix(in srgb, var(--card-bg) 88%, #ffffff) !important;
-  border-color: transparent !important;
+  border: 0 !important;
 }
 
 .quiz-chatbot-shell .oi {
@@ -716,7 +721,7 @@
   max-width: 36px !important;
   max-height: 36px !important;
   padding: 0;
-  border: 1px solid var(--bd);
+  border: 0 !important;
   border-radius: 50% !important;
   aspect-ratio: 1 / 1 !important;
   background: var(--field);
@@ -724,7 +729,7 @@
   flex-shrink: 0 !important;
   cursor: pointer;
   box-sizing: border-box;
-  transition: color 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), filter 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), filter 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .quiz-chatbot-shell .tutor-plus-btn:hover {
@@ -738,7 +743,6 @@
   z-index: 60;
   background: var(--orl);
   color: var(--or);
-  border-color: var(--or);
   transform: rotate(45deg);
 }
 
@@ -756,17 +760,17 @@
   gap: 6px;
   padding: 4px 6px 4px 14px;
   background: var(--field);
-  border: 1px solid var(--bd);
+  border: 0 !important;
   border-radius: 22px;
   min-height: 36px;
   box-sizing: border-box;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
 .quiz-chatbot-shell .tutor-input-capsule:focus-within {
-  border-color: var(--or);
   background: var(--card-bg);
-  box-shadow: 0 0 0 2.5px var(--orl);
+  outline: none;
+  box-shadow: none;
 }
 
 .quiz-chatbot-shell .tutor-textarea {
@@ -949,7 +953,7 @@
 }
 
 .quiz-chatbot-shell .cpb {
-  border: 1px solid var(--bd);
+  border: 0 !important;
   border-radius: 10px;
   background: var(--card-bg);
   padding: 6px 12px;
@@ -1138,7 +1142,7 @@
   gap: 8px;
   align-items: center;
   padding: 10px 12px;
-  border: 1px solid var(--bd);
+  border: 0 !important;
   border-radius: 12px;
   background: var(--card-bg);
   text-align: left;
@@ -1344,9 +1348,9 @@
   .quiz-chatbot-shell.dark {
     --or: var(--oled-selected, var(--ios-system-blue));
     --orl: var(--oled-selected-soft, #182f4b);
-    --bg: var(--meow-surface, #151515);
-    --card-bg: var(--meow-surface-subtle, #25262A);
-    --field: var(--meow-surface-subtle, #25262A);
+    --bg: var(--oled-surface, var(--dark-surface, #1c1c1e));
+    --card-bg: var(--oled-inset, var(--dark-surface-muted, #29292c));
+    --field: var(--oled-inset, var(--dark-surface-muted, #29292c));
     --dk: var(--oled-text, #e5eaf0);
     --gr: var(--oled-secondary, #a2a9b4);
     --bd: transparent;
@@ -1364,7 +1368,7 @@
   }
   .quiz-chatbot-shell :is(.tutor-input-capsule, .tutor-plus-btn) {
     background: var(--card-bg);
-    border: 1px solid var(--bd);
+    border: 0 !important;
     box-shadow: none;
   }
   .quiz-chatbot-shell.dark .bbar {
@@ -1375,7 +1379,7 @@
   }
   .quiz-chatbot-shell.dark :is(.tutor-input-capsule, .tutor-plus-btn) {
     background: var(--card-bg);
-    border: 1px solid transparent;
+    border: 0 !important;
     box-shadow: none;
   }
   .quiz-chatbot-shell.dark .tutor-plus-btn {
@@ -1383,12 +1387,12 @@
   }
   .quiz-chatbot-shell.dark .tutor-plus-btn:hover {
     background: color-mix(in srgb, var(--card-bg) 88%, #ffffff);
-    border-color: transparent;
+    border: 0 !important;
     color: #ffffff;
   }
   .quiz-chatbot-shell.dark .tutor-input-capsule:focus-within {
     background: var(--card-bg);
-    border-color: rgba(255, 255, 255, 0.14);
+    border: 0 !important;
     outline: none;
     box-shadow: none;
   }
