@@ -7,8 +7,13 @@ import { ConfigurationTemplate } from '@/design-system';
 export default async function Page({ params }: { params: Promise<{ subject: string; topic: string; chapter: string }> }) {
   const { subject, topic, chapter: slug } = await params;
   const group = getJamChapterGroup(topic);
-  const chapter = group?.topics.find(item => item.slug === slug);
-  if (subject !== JAM_SUBJECT || !group || !chapter) notFound();
+  if (subject !== JAM_SUBJECT || !group) {
+    return notFound();
+  }
+  const chapter = group.topics.find((item) => item.slug === slug);
+  if (!chapter) {
+    return notFound();
+  }
   return (
     <ConfigurationTemplate
       variant="setup"

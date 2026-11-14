@@ -790,6 +790,8 @@
         }
 
         .image-modal-img {
+          width: auto;
+          height: auto;
           max-width: 100%;
           max-height: 90dvh;
           object-fit: contain;

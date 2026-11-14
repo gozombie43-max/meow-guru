@@ -30,6 +30,7 @@ import { useAiChatHistory } from './useAiChatHistory';
 import { ChatComposer, type ChatComposerHandle } from './ChatComposer';
 import { MessageWindow } from '@/components/chat/MessageWindow';
 import dynamic from 'next/dynamic';
+import NextImage from 'next/image';
 import { QuizTemplate } from '@/design-system';
 
 const VisualResponse = dynamic(() => import('@/components/ai/VisualResponse'), {
@@ -44,6 +45,8 @@ normalizeSimpleTables,
 normalizeTutorMarkdown,
 type ChatSession,
 } from './formatting';
+
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 function AiChatPageContent() {
   const { isJam } = useExamMode();
@@ -257,7 +260,8 @@ function AiChatPageContent() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const isAllowed = file.type.startsWith('image/') || file.type === 'application/pdf';
+    const isAllowedImage = ALLOWED_IMAGE_TYPES.has(file.type);
+    const isAllowed = isAllowedImage || file.type === 'application/pdf';
     if (!isAllowed) {
       setAttachmentError('Upload an image or PDF file.');
       event.target.value = '';
@@ -274,7 +278,9 @@ function AiChatPageContent() {
     setAttachmentFile(file);
     setAttachmentPreview((current) => {
       if (current) URL.revokeObjectURL(current);
-      return file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
+      if (!isAllowedImage) return null;
+      const objectUrl = URL.createObjectURL(file);
+      return objectUrl.startsWith('blob:') ? objectUrl : null;
     });
   };
 
@@ -469,7 +475,14 @@ function AiChatPageContent() {
               <button data-ui-button="state" data-ui-shape="icon" className={styleClasses("image-modal-close")} onClick={() => setIsPreviewModalOpen(false)} aria-label="Close image preview">
                 <X size={24} />
               </button>
-              <img src={attachmentPreview} alt="Preview" className={styleClasses("image-modal-img")} />
+              <NextImage
+                src={attachmentPreview}
+                alt="Preview"
+                width={1200}
+                height={900}
+                unoptimized
+                className={styleClasses("image-modal-img")}
+              />
             </div>
           </Dialog>
         )}
