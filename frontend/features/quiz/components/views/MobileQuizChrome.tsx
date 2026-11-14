@@ -89,7 +89,7 @@ type FooterProps = Pick<
 };
 
 export function MobileQuizFooter(props: FooterProps) {
-  return <MobileQuizFooterControls key={props.currentQ?.id ?? props.currentIndex} {...props} />;
+  return <MobileQuizFooterControls key={props.currentIndex} {...props} />;
 }
 
 function MobileQuizFooterControls({
@@ -108,7 +108,6 @@ function MobileQuizFooterControls({
   hideViewSolution = false,
   hideAiTutor = false,
 }: FooterProps) {
-  const [tutorLoaded, setTutorLoaded] = useState(false);
   const [tutorOpen, setTutorOpen] = useState(false);
 
   const handleNextOrSubmit = () => {
@@ -126,7 +125,6 @@ function MobileQuizFooterControls({
 
   const handleOpenAiTutor = () => {
     if (!isCurrentSubmitted || hideAiTutor) return;
-    setTutorLoaded(true);
     setTutorOpen(true);
   };
 
@@ -134,10 +132,10 @@ function MobileQuizFooterControls({
 
   return (
     <footer data-ui-chrome="footer" className="ios-series-footer">
-      {/* Retain the conversation after its first opening; submission alone loads nothing. */}
-      {tutorLoaded && !hideAiTutor && isCurrentSubmitted && currentQ && (
+      {/* Mount eagerly once a question is present so the dynamic chunk preloads before clicking AI. */}
+      {!hideAiTutor && currentQ && (
         <QuizChatbot
-          key={`ios-chat-${currentQ.id}`}
+          key={`ios-chat-${currentIndex}`}
           isVisible={isCurrentSubmitted}
           questionNumber={currentIndex + 1}
           topicTitle={title}
