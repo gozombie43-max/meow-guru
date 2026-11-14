@@ -1149,7 +1149,8 @@ body.has-bottom-nav .dashboard-shell {
 
 /* Route-level fullscreen bottom-nav overrides consolidated into globals.css */
 body.ai-chat-route.has-bottom-nav,
-body.formula-notes-route.has-bottom-nav {
+body.formula-notes-route.has-bottom-nav,
+body.home-redesign.has-bottom-nav {
   padding-bottom: 0 !important;
 }
 

@@ -449,7 +449,7 @@ html.theme-dark :is(.theme-light, [data-theme="light"]) {
   --separator: var(--meow-border);
   --border: var(--meow-border);
   --line: var(--meow-border);
-  --muted: var(--meow-surface-subtle);
+  --muted: var(--meow-secondary);
   --text: var(--meow-text);
   --ink: var(--meow-text);
   --label: var(--meow-text);
