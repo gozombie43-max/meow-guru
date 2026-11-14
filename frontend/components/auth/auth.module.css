@@ -70,7 +70,7 @@
 :global(body.theme-dark) .modalOverlay,
 :global(.theme-dark) .modalOverlay,
 .modalOverlay:global(.theme-dark) {
-  --ios-bg: var(--meow-bg, #080C11);
+  --ios-bg: var(--meow-bg, #000000);
   --ios-card-bg: var(--meow-surface, #111722);
   --ios-card-border: var(--meow-border, #222A38);
   --ios-card-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
@@ -78,12 +78,12 @@
   --ios-secondary: var(--meow-secondary, #929CAF);
   --ios-blue: var(--meow-accent, #3B82F6);
   --ios-blue-hover: var(--meow-accent-hover, #60A5FA);
-  --ios-input-bg: var(--meow-bg, #080C11);
+  --ios-input-bg: var(--meow-bg, #000000);
   --ios-input-focus-bg: var(--meow-surface-subtle, #192231);
   --ios-input-border: var(--meow-border-strong, #334155);
   --ios-input-focus-border: var(--meow-accent, #3B82F6);
   --ios-input-focus-ring: var(--meow-accent-alpha, rgba(59, 130, 246, 0.2));
-  --ios-segmented-bg: var(--meow-bg, #080C11);
+  --ios-segmented-bg: var(--meow-bg, #000000);
   --ios-segmented-active: var(--meow-surface-subtle, #192231);
   --ios-segmented-active-text: var(--meow-text, #F1F4F8);
   --ios-segmented-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), inset 0 0 0 1px var(--meow-border-strong, #334155);

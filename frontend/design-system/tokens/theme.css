@@ -4,7 +4,7 @@
    - Defines Tailwind CSS v4 @theme inline exposure for bg-meow-*, text-meow-*,
      border-meow-*, font-meow-*, radius-meow-* utilities without colliding
      with built-in Tailwind utilities.
-   - Defines canonical Dark (#080C11) and Light (#F4F6F9) semantic variables
+   - Defines canonical Dark (#000000) and Light (#F4F6F9) semantic variables
      plus nested theme isolation (.theme-dark / .theme-light / [data-theme]).
    - Does NOT overwrite existing legacy global variables (--dark-*, --oled-*,
      --light-*, --ui-*) at :root so existing routes remain visually unchanged
@@ -156,7 +156,7 @@
   --meow-bp-desktop-min: 1024px;
 
   /* Canonical Meow Dark Palette (OLED-First Default) */
-  --meow-bg: #080C11;
+  --meow-bg: #000000;
   --meow-surface: #111722;
   --meow-surface-subtle: #192231;
   --meow-border: #222A38;
@@ -219,7 +219,7 @@ body.theme-dark,
 .theme-dark,
 [data-theme="dark"],
 .training-dark {
-  --meow-bg: #080C11;
+  --meow-bg: #000000;
   --meow-surface: #111722;
   --meow-surface-subtle: #192231;
   --meow-border: #222A38;
@@ -320,7 +320,7 @@ body.theme-light,
 
 /* Ensure nested dark surfaces win when wrapped inside html.theme-light */
 html.theme-light :is(.theme-dark, [data-theme="dark"], .training-dark) {
-  --meow-bg: #080C11;
+  --meow-bg: #000000;
   --meow-surface: #111722;
   --meow-surface-subtle: #192231;
   --meow-border: #222A38;

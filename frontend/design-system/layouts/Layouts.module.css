@@ -6,7 +6,7 @@
      ConfigurationTemplate, AnalyticsTemplate.
    - Hard Shell Law: dynamic viewport units (100dvh) only; zero legacy vh units,
      no blur glassmorphism, explicit property transitions only, 1024px desktop split.
-   - Entirely token-driven (--meow-*) so Dark (#080C11) and Light (#F4F6F9)
+   - Entirely token-driven (--meow-*) so Dark (#000000) and Light (#F4F6F9)
      themes resolve identically through CSS custom properties.
    ========================================================================== */
 

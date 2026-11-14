@@ -8,7 +8,7 @@ function QuizLoading() {
     <div
       className="min-h-dvh flex items-center justify-center"
       style={{
-        background: "var(--meow-bg, #080C11)",
+        background: "var(--meow-bg, #000000)",
         color: "var(--meow-text-muted, #94A3B8)",
       }}
       role="status"
