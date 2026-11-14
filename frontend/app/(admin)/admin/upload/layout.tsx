@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type ReactNode } from "react";
-import styles from "./macos.module.css";
+import styles from "./upload.module.css";
 
 const tabs = [
   { href: "/admin/upload", label: "Overview", icon: "🧭", exact: true },

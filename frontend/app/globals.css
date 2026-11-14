@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "../design-system/tokens/theme.css";
-@import "../design-system/tokens/legacy-bridge.css";
 @import "../design-system/tokens/motion.css";
 @import "./light-theme.css";
 @import "./dark-theme.css";
