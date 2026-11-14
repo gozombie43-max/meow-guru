@@ -3,7 +3,7 @@ import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
 import SubjectHub from "@/components/subject-hub/SubjectHub";
 import { Globe, Zap, TrendingUp, CircleDot } from "lucide-react";
 import { TOPICS, PRACTICE_MODES, PRIORITY_BADGE_STYLE } from "./topic-data";
-import { getGeneralAwarenessTopicGroup } from "@/lib/general-awareness-topic-groups";
+import { getGeneralAwarenessTopicGroup, getGeneralAwarenessTopicSolved } from "@/lib/general-awareness-topic-groups";
 
 const config = {
   mobileAppearance: "oled" as const,
@@ -33,7 +33,8 @@ export default function GeneralAwarenessHubClient() {
       const topicSlug = topic.slug;
       const hasApiTotal = Boolean(data?.totals && typeof data.totals[topicSlug] === "number");
       const totalQuestions = hasApiTotal ? (data?.totals?.[topicSlug] ?? 0) : 0;
-      const userSolved = data?.userProgress?.[topicSlug]?.userSolved || 0;
+      const rawSolved = getGeneralAwarenessTopicSolved(topicSlug, data?.userProgress, topic.name);
+      const userSolved = hasApiTotal && totalQuestions > 0 ? Math.min(rawSolved, totalQuestions) : rawSolved;
 
       const progress = totalQuestions > 0
         ? Math.round((userSolved / totalQuestions) * 100)

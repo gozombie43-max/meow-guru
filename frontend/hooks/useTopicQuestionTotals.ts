@@ -13,6 +13,11 @@ type Snapshot = { subject: string; revision: number; totals: Record<string, numb
 const cacheBySubject = new Map<string, Snapshot | undefined>();
 const subscribe = () => () => {};
 const serverSnapshot = () => undefined;
+let lastProgressInvalidatedAt = 0;
+
+export function invalidateTopicProgressCache() {
+  lastProgressInvalidatedAt = Date.now();
+}
 
 function publicSnapshot(value: unknown, subject: string): Snapshot | undefined {
   if (!value || typeof value !== "object") return;
@@ -69,7 +74,7 @@ export function useTopicQuestionTotals(subject = "mathematics") {
   const read = useAbortableResource(serialized);
   const personal = useSWR(key, async () => {
     const cached = serialized ? cache.get(serialized)?.data as { owner: string; subject: string; userProgress: Progress; fetchedAt: number } | undefined : undefined;
-    if (cached && Date.now() - cached.fetchedAt < 5000) return cached;
+    if (cached && cached.fetchedAt > lastProgressInvalidatedAt && Date.now() - cached.fetchedAt < 5000) return cached;
     return read(async signal => {
       const response = await fetchWithRetry(`${API_BASE}/api/progress/topics/private?subject=${encodeURIComponent(subject)}`, { signal });
       if (!response.ok) throw new Error("Unable to load topic progress");

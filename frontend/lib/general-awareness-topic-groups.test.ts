@@ -3,6 +3,8 @@ import {
   GENERAL_AWARENESS_TOPIC_GROUPS,
   getGeneralAwarenessChapter,
   getGeneralAwarenessChapterParams,
+  getGeneralAwarenessChapterSolved,
+  getGeneralAwarenessTopicSolved,
 } from "./general-awareness-topic-groups";
 import { QUIZ_TREE } from "./quiz-constants";
 
@@ -84,5 +86,30 @@ describe("general awareness ranked topic groups", () => {
     expect(topics.filter(({ priority }) => priority === "High")).toHaveLength(8);
     expect(topics.filter(({ priority }) => priority === "Medium")).toHaveLength(10);
     expect(getGeneralAwarenessChapter("polity", "fundamental-rights")?.rank).toBe(1);
+  });
+
+  it("aggregates solved progress across chapters by slug and title without double counting", () => {
+    const firstChapter = GENERAL_AWARENESS_TOPIC_GROUPS.geography.topics[0];
+    const secondChapter = GENERAL_AWARENESS_TOPIC_GROUPS.geography.topics[1];
+    const userProgress = {
+      [firstChapter.slug]: { userSolved: 12, userMastered: 8 },
+      [secondChapter.title]: { userSolved: 5, userMastered: 3 },
+      "Polity & Constitution": { userSolved: 9, userMastered: 4 },
+      "current-affairs": { userSolved: 7, userMastered: 5 },
+    };
+
+    expect(getGeneralAwarenessChapterSolved(firstChapter, userProgress)).toBe(12);
+    expect(getGeneralAwarenessChapterSolved(secondChapter, userProgress)).toBe(5);
+    expect(getGeneralAwarenessTopicSolved("geography", userProgress, "Geography")).toBe(17);
+    expect(getGeneralAwarenessTopicSolved("polity", userProgress, "Polity & Constitution")).toBe(9);
+    expect(getGeneralAwarenessTopicSolved("current-affairs", userProgress, "Current Affairs")).toBe(7);
+
+    // Same chapter present under both slug and title sums once per entry without duplicating the key
+    const bothFormats = {
+      [firstChapter.slug]: { userSolved: 4, userMastered: 2 },
+      geography: { userSolved: 3, userMastered: 1 },
+    };
+    expect(getGeneralAwarenessChapterSolved(firstChapter, bothFormats)).toBe(4);
+    expect(getGeneralAwarenessTopicSolved("geography", bothFormats, "Geography")).toBe(7);
   });
 });

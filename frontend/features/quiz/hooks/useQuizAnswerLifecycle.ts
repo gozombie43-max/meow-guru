@@ -5,6 +5,7 @@ import type { QuizAnswerCommand, RecentQuizPayload } from "@/lib/userApi";
 import type { QuizAnswerResponse } from "../model/resumeDelta";
 import { mergeQuestionWithReveal } from "../model/quizLruCache";
 import { ANSWER_RETRY_PREFIX, quizSessionReducer } from '../model/sessionReducer';
+import { invalidateTopicProgressCache } from "@/hooks/useTopicQuestionTotals";
 import { useCallback, useRef, type Dispatch } from "react";
 import type { QuizSessionState, QuizEvent } from "../model/sessionReducer";
 
@@ -70,6 +71,7 @@ export function useQuizAnswerLifecycle({
 
     const event: QuizEvent = { type: 'SUBMIT', question: effectiveQuestion, timeTaken };
     dispatch(event);
+    invalidateTopicProgressCache();
     onAnswerSubmitted?.();
 
     const vibrate = (correct: boolean) => { try { navigator.vibrate?.(correct ? [12, 35, 18] : 20); } catch {} };
@@ -92,6 +94,7 @@ export function useQuizAnswerLifecycle({
         snapshot(quizSessionReducer(state, event)),
         {
           onResolved: (revealed) => {
+            invalidateTopicProgressCache();
             if (!revealed) return;
             onAnswerRevealed?.(index, questionId, revealed);
             if (!answerKnown && typeof revealed.correct === 'number') {

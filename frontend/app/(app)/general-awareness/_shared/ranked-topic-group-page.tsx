@@ -7,6 +7,7 @@ import ChapterThumbnail from "./ChapterThumbnail";
 import { MobileSearchBar } from "@/components/subject-hub/MobileSearchBar";
 import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
 import { prefetchQuestionCounts } from "@/hooks/useQuestionCounts";
+import { getGeneralAwarenessChapterSolved, slugifyGeneralAwarenessTitle } from "@/lib/general-awareness-topic-groups";
 import { useRecentChapter } from "@/lib/recent-study";
 import { chapterImage } from "@/lib/topic-images";
 import { useBackLayer } from "@/hooks/useAppNavigation";
@@ -26,9 +27,6 @@ type PriorityFilter = RankedTopicPriority | "All";
 
 // Rows visible on first paint of a typical phone; the rest lazy-load near the viewport.
 const EAGER_THUMBNAILS = 6;
-
-const slugifyTitle = (title: string) =>
-  title.trim().toLowerCase().replace(/&/g, " ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
 const PRIORITY_CLASS: Record<RankedTopicPriority, string> = {
   "Very High": styles.veryHigh,
@@ -54,12 +52,9 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
   const { data } = useTopicQuestionTotals(subject);
   // Uploads are keyed by chapter slug; fall back to the slugified chapter title.
   const questionTotal = (topic: { slug: string; title: string }) =>
-    data?.totals?.[topic.slug] ?? data?.totals?.[slugifyTitle(topic.title)] ?? 0;
+    data?.totals?.[topic.slug] ?? data?.totals?.[slugifyGeneralAwarenessTitle(topic.title)] ?? 0;
   const questionSolved = (topic: { slug: string; title: string }) =>
-    data?.userProgress?.[topic.slug]?.userSolved ??
-    data?.userProgress?.[topic.title]?.userSolved ??
-    data?.userProgress?.[slugifyTitle(topic.title)]?.userSolved ??
-    0;
+    getGeneralAwarenessChapterSolved(topic, data?.userProgress);
   const [query, setQuery] = useState("");
   const [priority, setPriority] = useState<PriorityFilter>("All");
   const [filterOpen, setFilterOpen] = useState(false);
