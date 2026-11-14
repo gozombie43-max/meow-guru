@@ -100,7 +100,7 @@ describe('Meow Design System Tokens (PR P0-A)', () => {
     );
 
     expect(rootVars['--meow-bg'].toUpperCase()).toBe('#000000');
-    expect(rootVars['--meow-surface'].toUpperCase()).toBe('#111722');
+    expect(rootVars['--meow-surface'].toUpperCase()).toBe('#151515');
     expect(rootVars['--meow-border'].toUpperCase()).toBe('#222A38');
     expect(rootVars['--meow-text'].toUpperCase()).toBe('#F1F4F8');
     expect(rootVars['--meow-secondary'].toUpperCase()).toBe('#929CAF');

@@ -143,7 +143,7 @@ export function SubjectTopicStyles() {
         }
         .sg-banner {
           background: var(--meow-surface);
-          border: 1px solid var(--meow-border);
+          border: none;
           border-radius: var(--meow-radius-lg);
           padding: var(--meow-space-4);
           min-height: 84px;
@@ -156,13 +156,11 @@ export function SubjectTopicStyles() {
           color: var(--meow-text);
           -webkit-tap-highlight-color: transparent;
           box-shadow: none;
-          transition: border-color var(--meow-duration-fast) var(--meow-ease-standard),
-            background-color var(--meow-duration-fast) var(--meow-ease-standard);
+          transition: background-color var(--meow-duration-fast) var(--meow-ease-standard);
         }
         .sg-banner:hover,
         .sg-banner:active {
           background: var(--meow-surface-subtle);
-          border-color: var(--meow-border-strong);
           box-shadow: none;
         }
         .sg-banner-icon {
@@ -171,7 +169,7 @@ export function SubjectTopicStyles() {
           border-radius: var(--meow-radius-md);
           flex-shrink: 0;
           background: var(--meow-surface-subtle);
-          border: 1px solid var(--meow-border);
+          border: none;
           color: var(--meow-secondary);
           display: flex;
           align-items: center;
@@ -280,10 +278,9 @@ export function SubjectTopicStyles() {
           background: var(--meow-surface);
           color: var(--meow-text);
           text-decoration: none;
-          border: 1px solid var(--meow-border);
+          border: none;
           box-shadow: none;
-          transition: border-color var(--meow-duration-fast) var(--meow-ease-standard),
-            transform 0.12s var(--meow-ease-standard),
+          transition: transform 0.12s var(--meow-ease-standard),
             background-color var(--meow-duration-fast) var(--meow-ease-standard);
           cursor: pointer;
           overflow: hidden;
@@ -294,7 +291,6 @@ export function SubjectTopicStyles() {
         .sg-card:active {
           color: var(--meow-text);
           background: var(--meow-surface-subtle);
-          border-color: var(--meow-border-strong);
           box-shadow: none;
         }
 
@@ -327,7 +323,7 @@ export function SubjectTopicStyles() {
           border-radius: var(--meow-radius-md);
           background: var(--meow-surface-subtle) !important;
           color: var(--meow-secondary) !important;
-          border: 1px solid var(--meow-border) !important;
+          border: none !important;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -413,7 +409,7 @@ export function SubjectTopicStyles() {
           box-sizing: border-box;
           border-radius: var(--meow-radius-sm);
           background: var(--meow-surface-subtle);
-          border: 1px solid var(--meow-border);
+          border: none;
           font-size: var(--meow-text-base);
           font-weight: 700;
           font-variant-numeric: tabular-nums;
@@ -477,7 +473,7 @@ export function SubjectTopicStyles() {
           pointer-events: none;
           transform: none !important;
           background: var(--meow-surface);
-          border-color: var(--meow-border);
+          border: none;
           box-shadow: none;
         }
         .sg-card[data-empty="true"] .sg-badge,
@@ -489,8 +485,8 @@ export function SubjectTopicStyles() {
           animation: sg-dim-in 0.28s ease-out both;
         }
         .sg-card[data-empty="true"] .sg-card-qs-text {
-          background: transparent;
-          border-color: var(--meow-border);
+          background: var(--meow-surface-subtle);
+          border: none;
           color: var(--meow-secondary);
         }
 

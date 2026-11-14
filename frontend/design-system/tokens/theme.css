@@ -157,8 +157,8 @@
 
   /* Canonical Meow Dark Palette (OLED-First Default) */
   --meow-bg: #000000;
-  --meow-surface: #111722;
-  --meow-surface-subtle: #192231;
+  --meow-surface: #151515;
+  --meow-surface-subtle: #25262A;
   --meow-border: #222A38;
   --meow-border-strong: #334155;
   --meow-text: #F1F4F8;
@@ -220,8 +220,8 @@ body.theme-dark,
 [data-theme="dark"],
 .training-dark {
   --meow-bg: #000000;
-  --meow-surface: #111722;
-  --meow-surface-subtle: #192231;
+  --meow-surface: #151515;
+  --meow-surface-subtle: #25262A;
   --meow-border: #222A38;
   --meow-border-strong: #334155;
   --meow-text: #F1F4F8;
@@ -321,8 +321,8 @@ body.theme-light,
 /* Ensure nested dark surfaces win when wrapped inside html.theme-light */
 html.theme-light :is(.theme-dark, [data-theme="dark"], .training-dark) {
   --meow-bg: #000000;
-  --meow-surface: #111722;
-  --meow-surface-subtle: #192231;
+  --meow-surface: #151515;
+  --meow-surface-subtle: #25262A;
   --meow-border: #222A38;
   --meow-border-strong: #334155;
   --meow-text: #F1F4F8;
