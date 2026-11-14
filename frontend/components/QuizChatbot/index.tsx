@@ -15,6 +15,7 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { isAxiosError } from 'axios';
 import { ChatMessage, QuizChatbotProps, buildQuestionContext } from './utils';
@@ -435,6 +436,16 @@ export default function QuizChatbot({
                         </div>
                       )}
                     </div>
+                    <button
+                      data-ui-button="state"
+                      data-ui-shape="icon"
+                      type="button"
+                      className="tutor-close-btn"
+                      onClick={handleClose}
+                      aria-label="Close AI tutor"
+                    >
+                      <X aria-hidden="true" />
+                    </button>
                   </div>
                 </div>
               </header>

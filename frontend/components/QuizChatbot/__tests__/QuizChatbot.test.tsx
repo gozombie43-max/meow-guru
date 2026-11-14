@@ -346,6 +346,18 @@ describe('QuizChatbot Component', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('renders a corner close button in the header that closes the modal when clicked', () => {
+    render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
+    const trigger = screen.getByRole('button', { name: /Ask AI Tutor/i });
+    fireEvent.click(trigger);
+    const dialog = screen.getByRole('dialog');
+    const closeBtn = screen.getByRole('button', { name: 'Close AI tutor' });
+    expect(closeBtn.closest('header')).toBeInTheDocument();
+    expect(dialog).toContainElement(closeBtn);
+    fireEvent.click(closeBtn);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('renders numbered solution steps and only the latest follow-up group', async () => {
     (api.post as ReturnType<typeof vi.fn>).mockResolvedValue({
       data: { success: true, reply: '## Method\n\n1. Read the question.\n2. Choose New Delhi.' },
