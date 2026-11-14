@@ -630,10 +630,9 @@ export default function QuizChatbot({
 
                 : <div className="chat">
                   <div className="ca" ref={scrollRef}>
-                    <details className="tutor-question">
-                      <summary>Q{questionNumber} · {question.concept || topicTitle}</summary>
-                      <div className="sbody"><TutorMarkdown content={question.question} /></div>
-                    </details>
+                    <div className="tutor-question">
+                      Q{questionNumber} · {question.concept || topicTitle}
+                    </div>
                     {messages.length > 0 && <div className="chat-divider">Start of conversation</div>}
                     <MessageWindow messages={messages}>
                     {(message, index) => {

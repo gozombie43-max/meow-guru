@@ -1290,26 +1290,15 @@
 }
 
 .quiz-chatbot-shell .tutor-question {
-  margin-bottom: 20px;
-  border: 1px solid var(--bd);
-  background: var(--card-bg);
-  border-radius: 12px;
-  padding: 0 12px;
-}
-
-.quiz-chatbot-shell .tutor-question summary {
-  cursor: pointer;
-  padding: 12px 0;
-  min-height: 44px;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
+  line-height: 1.4;
   color: var(--gr);
   overflow-wrap: anywhere;
-}
-
-.quiz-chatbot-shell .tutor-question .sbody {
-  font-size: 15px;
-  padding-bottom: 12px;
 }
 
 @media (max-width: 380px) {
