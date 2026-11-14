@@ -484,8 +484,21 @@ export default function QuizChatbot({
       )}
 
       {isOpen && createPortal(
-        <div ref={overlayRef} className="quiz-chatbot-overlay">
-          <button data-ui-decoration="true" className="tutor-backdrop" type="button" aria-label="Dismiss AI tutor" onClick={handleClose} />
+        <div
+          ref={overlayRef}
+          className="quiz-chatbot-overlay"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) handleClose();
+          }}
+        >
+          <button
+            data-ui-decoration="true"
+            data-dialog-backdrop=""
+            className="tutor-backdrop"
+            type="button"
+            aria-label="Dismiss AI tutor"
+            onClick={handleClose}
+          />
           <section
             ref={modalRef}
             className="quiz-chatbot-modal"

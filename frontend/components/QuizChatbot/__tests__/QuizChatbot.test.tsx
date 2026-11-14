@@ -342,6 +342,8 @@ describe('QuizChatbot Component', () => {
     expect(screen.queryByRole('button', { name: 'Toggle dark mode' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Back to quiz' })).not.toBeInTheDocument();
     const backdrop = screen.getByRole('button', { name: 'Dismiss AI tutor' });
+    expect(backdrop).not.toHaveAttribute('inert');
+    expect(backdrop.inert).toBeFalsy();
     fireEvent.click(backdrop);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
