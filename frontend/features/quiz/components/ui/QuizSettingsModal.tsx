@@ -92,9 +92,9 @@ function SettingsSelect({ ariaLabel, value, disabled, onChange, children }: Sett
   );
 }
 
-function SettingsRow({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
+function SettingsRow({ icon, label, inactive = false, children }: { icon: ReactNode; label: string; inactive?: boolean; children: ReactNode }) {
   return (
-    <div className="ios-settings-item">
+    <div className={`ios-settings-item ${inactive ? "is-inactive" : ""}`} data-inactive={inactive ? "true" : undefined}>
       <div className="ios-settings-item-left">
         <span className="ios-settings-icon-box" aria-hidden="true">{icon}</span>
         <span className="ios-settings-label">{label}</span>
@@ -104,8 +104,8 @@ function SettingsRow({ icon, label, children }: { icon: ReactNode; label: string
   );
 }
 
-const TEXT_SIZE_LABELS = { sm: "S", md: "M", lg: "L" } as const;
-const TEXT_WEIGHT_LABELS = { low: "L", medium: "M", high: "H" } as const;
+const TEXT_SIZE_LABELS = { sm: "Small", md: "Medium", lg: "Big" } as const;
+const TEXT_WEIGHT_LABELS = { low: "Low", medium: "Medium", high: "High" } as const;
 const CUSTOM_SIZES = Array.from({ length: MAX_QUIZ_TEXT_SIZE - MIN_QUIZ_TEXT_SIZE + 1 }, (_, index) => MIN_QUIZ_TEXT_SIZE + index);
 
 export interface QuizSettingsModalProps {
@@ -159,8 +159,9 @@ export function QuizSettingsModal({
 
   const isDark = theme === "dark";
   const hideBoth = hideViewSolution && hideAiTutor;
+  const isCustomSize = typeof textSize === "number";
   const textSizePixels = getQuizTextSizePixels(textSize);
-  const textSizePreset = typeof textSize === "string" ? textSize : "custom";
+  const textSizePreset = isCustomSize ? "custom" : textSize;
 
   return (
     <>
@@ -210,7 +211,7 @@ export function QuizSettingsModal({
 
               <div className="ios-settings-list">
                 <section className="ios-settings-group" aria-label="Reading comfort">
-                  <SettingsRow icon={<Type size={17} />} label="Text size">
+                  <SettingsRow icon={<Type size={17} />} label="Text size" inactive={isCustomSize}>
                     <SettingsSelect
                       ariaLabel="Text size"
                       value={textSizePreset}
@@ -224,7 +225,7 @@ export function QuizSettingsModal({
                     </SettingsSelect>
                   </SettingsRow>
 
-                  <SettingsRow icon={<ALargeSmall size={17} />} label="Custom size">
+                  <SettingsRow icon={<ALargeSmall size={17} />} label="Custom size" inactive={!isCustomSize}>
                     <SettingsSelect
                       ariaLabel="Custom text size"
                       value={String(textSizePixels)}
@@ -458,6 +459,17 @@ export function QuizSettingsModal({
           justify-content: space-between;
           gap: 10px;
           min-height: 42px;
+          transition: opacity 0.16s ease;
+        }
+        .ios-settings-item.is-inactive {
+          opacity: 0.42;
+        }
+        .ios-settings-item.is-inactive:hover,
+        .ios-settings-item.is-inactive:focus-within {
+          opacity: 0.85;
+        }
+        .ios-settings-item.is-inactive .ios-settings-select select {
+          color: var(--qs-secondary);
         }
         .ios-settings-item + .ios-settings-item {
           border-top: 1px solid var(--qs-divider);

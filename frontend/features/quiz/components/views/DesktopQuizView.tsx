@@ -11,13 +11,10 @@ import { SolutionBottomSheet } from "@/features/quiz/components/ui/SolutionViews
 import { getQuestionStatus } from "@/features/quiz/model/utils";
 import transitionStyles from "./question-transition.module.css";
 import { Bookmark, BookmarkCheck, Moon, Settings, Sun, XCircle } from "lucide-react";
-import dynamic from "next/dynamic";
+import QuizChatbot from "@/components/QuizChatbot";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
 import { useEffect, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-const QuizChatbot = dynamic(() => import("@/components/QuizChatbot"), {
-  ssr: false,
-});
 export type DesktopQuizFields = Pick<
   QuizController,
   | "routeBase"
