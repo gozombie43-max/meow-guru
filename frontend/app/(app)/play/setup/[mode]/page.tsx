@@ -200,6 +200,7 @@ export default function PlaySetupPage() {
     >
       <ConfigurationTemplate
         variant="setup"
+        mainClassName="play-setup-body"
         header={
           <header
             className={`play-setup-header play-setup-header--${category}`}
@@ -235,58 +236,35 @@ export default function PlaySetupPage() {
             </div>
           </header>
         }
-        summary={
-          <div className="flex flex-col gap-3 rounded-2xl border border-[var(--meow-border)] bg-[var(--meow-surface)] p-4 shadow-sm">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--meow-text-muted,#94a3b8)]">
-              Session Target
-            </h3>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[var(--meow-text-muted,#94a3b8)]">Questions</span>
-              <span className="font-semibold text-[var(--meow-text)]">
-                {count === "full" ? "Full section" : `${count} questions`}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[var(--meow-text-muted,#94a3b8)]">Subject</span>
-              <span className="font-semibold text-[var(--meow-text)]">{subject || "Personalized mix"}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[var(--meow-text-muted,#94a3b8)]">Mode</span>
-              <span className="font-semibold text-[var(--meow-text)]">{selectedMode.title}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[var(--meow-text-muted,#94a3b8)]">Exam</span>
-              <span className="font-semibold text-[var(--meow-text)]">{examLabel}</span>
-            </div>
-          </div>
-        }
-        actionBar={
-          <div className="play-setup-footer-inner w-full">
-            <div className="play-setup-footer-meta">
-              <span className="play-setup-footer-meta-title">
-                {count === "full" ? "Full section" : `${count} questions`} · {subject || "Personalized mix"}
-              </span>
-              <span className="play-setup-footer-meta-sub">
-                {examLabel} · {selectedMode.title}
-              </span>
-            </div>
+        footer={
+          <footer className="play-setup-sticky-footer" data-ui-chrome="footer">
+            <div className="play-setup-footer-inner">
+              <div className="play-setup-footer-meta">
+                <span className="play-setup-footer-meta-title">
+                  {count === "full" ? "Full section" : `${count} questions`} · {subject || "Personalized mix"}
+                </span>
+                <span className="play-setup-footer-meta-sub">
+                  {examLabel} · {selectedMode.title}
+                </span>
+              </div>
 
-            <button
-              type="button"
-              data-ui-button="primary"
-              aria-busy={busy || setupLoading}
-              className="play-setup-start-btn"
-              disabled={isFormDisabled || !!capabilitiesError || !!dashboardError || requiresSubjectMissing}
-              onClick={startSession}
-            >
-              <span aria-live="polite">{busy ? "Building your session…" : setupLoading ? "Loading setup…" : "Begin training"}</span>
-              {busy || setupLoading ? (
-                <LoaderCircle className="play-setup-loading-spin" size={18} aria-hidden="true" />
-              ) : (
-                <ArrowRight size={18} strokeWidth={2.4} />
-              )}
-            </button>
-          </div>
+              <button
+                type="button"
+                data-ui-button="primary"
+                aria-busy={busy || setupLoading}
+                className="play-setup-start-btn"
+                disabled={isFormDisabled || !!capabilitiesError || !!dashboardError || requiresSubjectMissing}
+                onClick={startSession}
+              >
+                <span aria-live="polite">{busy ? "Building your session…" : setupLoading ? "Loading setup…" : "Begin training"}</span>
+                {busy || setupLoading ? (
+                  <LoaderCircle className="play-setup-loading-spin" size={18} aria-hidden="true" />
+                ) : (
+                  <ArrowRight size={18} strokeWidth={2.4} />
+                )}
+              </button>
+            </div>
+          </footer>
         }
       >
         {capabilitiesError && (

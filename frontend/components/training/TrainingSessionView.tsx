@@ -42,7 +42,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
   const [showOverview, setShowOverview] = useState(false);
   const desktop = useMediaQuery('(min-width: 1024px)');
 
-  const mainRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLDivElement>(null);
   const finishRef = useRef<HTMLDialogElement>(null);
 
   useQuizLeaveGuard(session?.status === "active", "/play", "Leave this training quiz? Saved answers will remain, but the session timer may continue.");
@@ -61,10 +61,11 @@ export default function TrainingSessionView({ id }: { id: string }) {
 
   return (
     <QuizTemplate
-      lockedViewport={false}
+      lockedViewport={true}
       readingMaxWidth="100%"
       showSkipLink={false}
-      topBar={
+    >
+      <div className={`training-page training-session ${confirmFinish ? "has-finish-dialog" : ""} ${theme === "dark" ? "training-dark" : ""}`}>
         <TrainingSessionHeader 
           session={session} 
           timeSync={timeSync}
@@ -75,25 +76,8 @@ export default function TrainingSessionView({ id }: { id: string }) {
           answered={answered}
           canNavigate={canNavigate || false}
         />
-      }
-      actionBar={
-        session?.status === "active" && q ? (
-          <TrainingFooter 
-            session={session} 
-            q={q} 
-            busy={busy} 
-            unsaved={unsaved} 
-            canNavigate={canNavigate || false} 
-            expired={expired}
-            choice={choice} 
-            confidence={confidence} 
-            act={act} 
-          />
-        ) : undefined
-      }
-    >
-      <div className={`training-page training-session ${confirmFinish ? "has-finish-dialog" : ""} ${theme === "dark" ? "training-dark" : ""}`}>
-        <main ref={mainRef} className="training-session-main">
+
+        <div ref={mainRef} className="training-session-main">
           {session && busy && (
             <div className="training-request-status" role="status">
               <LoaderCircle className="training-loading-icon" size={18} aria-hidden="true" />
@@ -148,7 +132,21 @@ export default function TrainingSessionView({ id }: { id: string }) {
               </section>
             </div>
           )}
-        </main>
+        </div>
+
+        {session?.status === "active" && q && (
+          <TrainingFooter 
+            session={session} 
+            q={q} 
+            busy={busy} 
+            unsaved={unsaved} 
+            canNavigate={canNavigate || false} 
+            expired={expired}
+            choice={choice} 
+            confidence={confidence} 
+            act={act} 
+          />
+        )}
 
         {confirmFinish && <TrainingFinishDialog
           finishRef={finishRef} 

@@ -13,9 +13,10 @@ interface QuestionsMeta {
   conceptGroups?: { id: string; label: string; description: string; concepts: string[] }[];
   groupingStatus?: 'ready' | 'processing' | 'failed' | 'empty';
   groupingFingerprint?: string;
+  metadataChanged?: boolean;
 }
 
-type GroupingStatus = Pick<QuestionsMeta, 'groupingStatus' | 'groupingFingerprint' | 'conceptGroups'> & { metadataChanged?: boolean };
+type GroupingStatus = Pick<QuestionsMeta, 'groupingStatus' | 'groupingFingerprint' | 'conceptGroups' | 'metadataChanged'>;
 
 const fetcher = async (url: string): Promise<QuestionsMeta> => {
   const early = consumeEarlyRouteData<QuestionsMeta>(API_BASE, `public:GET:${url}`, null);
@@ -62,30 +63,62 @@ export function useQuestionsMeta(params: {
   });
 
   const fingerprint = url && data?.groupingStatus === 'processing' ? data.groupingFingerprint : undefined;
-  const [pollFingerprint, setPollFingerprint] = useState<string>();
-  useEffect(() => {
-    if (!fingerprint) return;
-    // Metadata already contains the initial status; avoid reading it again on mount.
-    const timer = setTimeout(() => setPollFingerprint(fingerprint), 10000);
-    return () => clearTimeout(timer);
-  }, [fingerprint]);
-  const statusUrl = fingerprint && pollFingerprint === fingerprint
-    ? `${API_BASE}/api/questions/concept-groups/${encodeURIComponent(fingerprint)}`
-    : null;
-  const { data: grouping, error: groupingError } = useSWR<GroupingStatus>(statusUrl, fetcher, {
-    ...PUBLIC_QUESTION_QUERY,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: true,
-    refreshInterval: value => value?.groupingStatus === 'processing' ? 10000 : 0,
-    // SWR pauses interval polling after an error, so retry status reads too.
-    shouldRetryOnError: true,
-    errorRetryInterval: 10000,
-    dedupingInterval: 10000,
-  });
+  const [grouping, setGrouping] = useState<GroupingStatus>();
+  const [groupingError, setGroupingError] = useState<unknown>();
 
   useEffect(() => {
-    if (grouping?.metadataChanged && grouping.groupingFingerprint === fingerprint) void mutate();
-  }, [grouping, fingerprint, mutate]);
+    if (!fingerprint) return;
+    const statusUrl = `${API_BASE}/api/questions/concept-groups/${encodeURIComponent(fingerprint)}`;
+    let cancelled = false;
+    let stopped = false;
+    let inFlight = false;
+    let queuedPoll = false;
+
+    const pollStatus = async () => {
+      if (cancelled || stopped) return;
+      if (inFlight) {
+        queuedPoll = true;
+        return;
+      }
+      inFlight = true;
+      try {
+        const next = await fetcher(statusUrl);
+        if (cancelled || stopped) return;
+        setGroupingError(undefined);
+        if (next.metadataChanged && next.groupingFingerprint === fingerprint) {
+          stopped = true;
+          clearInterval(timer);
+          void mutate();
+          return;
+        }
+        setGrouping(next);
+        if (next.groupingStatus !== 'processing') {
+          stopped = true;
+          clearInterval(timer);
+          return;
+        }
+      } catch (err) {
+        if (cancelled || stopped) return;
+        setGroupingError(err);
+      } finally {
+        inFlight = false;
+        if (!cancelled && !stopped && queuedPoll) {
+          queuedPoll = false;
+          void pollStatus();
+        }
+      }
+    };
+
+    // Metadata already contains the initial status; avoid reading it again on mount.
+    const timer = setInterval(() => {
+      void pollStatus();
+    }, 10000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [fingerprint, mutate]);
 
   return useMemo(() => ({
     meta: data && grouping?.groupingFingerprint === data.groupingFingerprint ? { ...data, ...grouping } : data ?? EMPTY_META,

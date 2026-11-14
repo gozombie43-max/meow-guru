@@ -566,13 +566,17 @@
 }
 
 .configSummary {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: var(--meow-space-4);
   min-width: 0;
 }
 
 @media (min-width: 1024px) {
+  .configSummary {
+    display: flex;
+  }
+
   .configGridWithSummary {
     grid-template-columns: minmax(0, 1fr) 340px;
     align-items: start;
@@ -585,8 +589,10 @@
 }
 
 .configActionBar {
-  position: sticky;
+  position: fixed;
   bottom: 0;
+  left: 0;
+  right: 0;
   z-index: var(--meow-z-sticky);
   width: 100%;
   background-color: var(--meow-surface);
