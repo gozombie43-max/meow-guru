@@ -26,7 +26,7 @@ it('does not invent a total or imply infinity while metadata is unavailable', ()
   expect(screen.getByRole('button', { name: 'Question 7 - Open question navigator' })).toHaveTextContent('Question 7');
 });
 
-it('opens the AI Tutor dialog immediately on first click and keeps it open when currentQ updates on the same index', () => {
+it('opens the AI Tutor dialog immediately on first click and keeps it open when currentQ updates on the same index', async () => {
   const baseQuestion = {
     id: 'q-1',
     concept: 'Percentages',
@@ -61,7 +61,7 @@ it('opens the AI Tutor dialog immediately on first click and keeps it open when 
   const view = render(<MobileQuizFooter {...footerProps} />);
   fireEvent.click(screen.getByRole('button', { name: 'Ask AI tutor' }));
 
-  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  expect(await screen.findByRole('dialog')).toBeInTheDocument();
   expect(screen.getByText('AI Solution')).toBeInTheDocument();
 
   view.rerender(

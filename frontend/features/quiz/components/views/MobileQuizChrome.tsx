@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { LangToggle } from "@/components/LangToggle";
-import QuizChatbot from "@/components/QuizChatbot";
 import { Settings, ArrowLeft, ArrowRight, BookOpenText, Check } from "lucide-react";
+import dynamic from "next/dynamic";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
 
 function SolutionIcon({ className }: { className?: string }) {
@@ -11,6 +11,10 @@ function SolutionIcon({ className }: { className?: string }) {
 function GeminiIcon({ className }: { className?: string }) {
   return <span className={className} aria-hidden="true" style={{ backgroundColor: "currentColor", mask: 'url("/icons8-gemini-ai.svg") center / contain no-repeat', WebkitMask: 'url("/icons8-gemini-ai.svg") center / contain no-repeat' }} />;
 }
+
+const QuizChatbot = dynamic(() => import("@/components/QuizChatbot"), {
+  ssr: false,
+});
 
 type HeaderProps = Pick<
   QuizController,
@@ -128,10 +132,10 @@ function MobileQuizFooterControls({
 
   return (
     <footer data-ui-chrome="footer" className="ios-series-footer">
-      {/* Keep the tutor dialog ready as soon as the current question is submitted so opening is instant. */}
-      {!hideAiTutor && isCurrentSubmitted && currentQ && (
+      {/* Mount eagerly once a question is present so the dynamic chunk preloads before clicking AI. */}
+      {!hideAiTutor && currentQ && (
         <QuizChatbot
-          key={`ios-chat-${currentQ.id ?? currentIndex}`}
+          key={`ios-chat-${currentIndex}`}
           isVisible={isCurrentSubmitted}
           questionNumber={currentIndex + 1}
           topicTitle={title}
