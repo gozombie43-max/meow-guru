@@ -127,3 +127,59 @@ export function getGeneralAwarenessChapterParams() {
     group.topics.map((topic) => ({ topic: group.slug, chapter: topic.slug }))
   );
 }
+
+type TopicProgressMap = Record<string, { userSolved: number; userMastered?: number }>;
+
+export function slugifyGeneralAwarenessTitle(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, " ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function sumMatchingProgress(
+  items: Array<{ slug?: string; title?: string }>,
+  userProgress?: TopicProgressMap
+): number {
+  if (!userProgress) return 0;
+  const rawTargets = new Set<string>();
+  const slugTargets = new Set<string>();
+  for (const item of items) {
+    if (item.slug) {
+      rawTargets.add(item.slug);
+      const normalizedSlug = slugifyGeneralAwarenessTitle(item.slug);
+      if (normalizedSlug) slugTargets.add(normalizedSlug);
+    }
+    if (item.title) {
+      rawTargets.add(item.title);
+      const normalizedTitle = slugifyGeneralAwarenessTitle(item.title);
+      if (normalizedTitle) slugTargets.add(normalizedTitle);
+    }
+  }
+  let total = 0;
+  for (const [key, entry] of Object.entries(userProgress)) {
+    if (rawTargets.has(key) || slugTargets.has(slugifyGeneralAwarenessTitle(key))) {
+      total += entry?.userSolved || 0;
+    }
+  }
+  return total;
+}
+
+export function getGeneralAwarenessChapterSolved(
+  chapter: { slug: string; title: string },
+  userProgress?: TopicProgressMap
+): number {
+  return sumMatchingProgress([chapter], userProgress);
+}
+
+export function getGeneralAwarenessTopicSolved(
+  topicSlug: string,
+  userProgress?: TopicProgressMap,
+  topicName?: string
+): number {
+  const group = getGeneralAwarenessTopicGroup(topicSlug);
+  const chapters = group?.topics ?? [];
+  return sumMatchingProgress([{ slug: topicSlug, title: topicName }, ...chapters], userProgress);
+}

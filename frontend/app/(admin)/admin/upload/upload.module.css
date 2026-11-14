@@ -183,3 +183,10 @@
 
 .card, .specPanel, .specItem { border-color: var(--admin-border); }
 @media (max-width: 640px) { .grid, .specGrid { grid-template-columns: minmax(0, 1fr); } .card { padding: 16px; } .versionBadge { display: none; } }
+
+.desktop, .window, .windowContent { display: block; width: 100%; min-width: 0; }
+.navBar { margin-bottom: 16px; overflow-x: auto; scrollbar-width: thin; }
+.segmentedControl { display: flex; width: max-content; min-width: 100%; gap: 3px; padding: 3px; background: var(--admin-surface-muted); border: 1px solid var(--admin-border); border-radius: 11px; }
+.tabItem { flex: 1 0 auto; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 12px; font-size: 13px; color: var(--admin-text-secondary); text-decoration: none; border-radius: 8px; }
+.tabItemActive { background: var(--admin-surface-solid); color: var(--admin-text); box-shadow: 0 1px 4px #0002; font-weight: 600; }
+.tabIcon { font-size: 14px; }

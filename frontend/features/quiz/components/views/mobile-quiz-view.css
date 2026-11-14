@@ -1,7 +1,7 @@
 /* Mobile quiz layout with theme-scoped OLED surfaces and semantic answer states. */
 
 .ios-series-quiz[data-theme="dark"] {
-  --dark-canvas: #080C14;
+  --dark-canvas: #000000;
   --dark-surface: #121722;
   --dark-surface-muted: #171D29;
   --dark-surface-elevated: #1C2331;

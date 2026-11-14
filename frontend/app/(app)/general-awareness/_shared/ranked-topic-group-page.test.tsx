@@ -129,4 +129,23 @@ describe("RankedTopicGroupPage", () => {
     expect(within(firstRow).getByText("Continue")).toBeInTheDocument();
     expect(within(firstRow).queryByText("Recently")).not.toBeInTheDocument();
   });
+
+  it("displays chapter solved count when progress is keyed by chapter title", () => {
+    mockUseTopicQuestionTotals.mockReturnValue({
+      data: {
+        totals: {
+          "physiography-of-india": 56,
+        },
+        userProgress: {
+          "Physiography of India": { userSolved: 7, userMastered: 3 },
+        },
+      },
+    });
+
+    render(<RankedTopicGroupPage group={GENERAL_AWARENESS_TOPIC_GROUPS.geography} />);
+
+    const physioLinks = screen.getAllByRole("link", { name: /Physiography of India/i });
+    expect(physioLinks).toHaveLength(1);
+    expect(physioLinks[0].textContent).toContain("7/56 attempted");
+  });
 });

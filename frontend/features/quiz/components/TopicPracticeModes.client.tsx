@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import { useState } from "react";
 import Image from "next/image";
 import { useQuestionCounts } from "@/hooks/useQuestionCounts";
@@ -27,48 +26,13 @@ export default function TopicPracticeModes({
   const [revealWithMotion] = useState(isPending);
 
   const modes = [
-    {
-      title: "PYQ", sub: "Previous year Qs", href: `${base}/quiz?mode=concept`, mode: "concept",
-      icon: "/icons/practice/pyq.svg", color: "#0d9488", gradient: "linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(13, 148, 136, 0.2) 0%, rgba(13, 148, 136, 0.08) 100%)",
-      border: "rgba(13, 148, 136, 0.22)", borderDark: "rgba(13, 148, 136, 0.35)", shadow: "0 2px 8px rgba(13, 148, 136, 0.08)",
-    },
-    {
-      title: "CareerWill", sub: formulaSubtitle, href: `${base}/quiz?mode=formula`, mode: "formula",
-      icon: "/icons/practice/careerwill.svg", color: "#2563eb", gradient: "linear-gradient(135deg, #edf4fe 0%, #dbeafe 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.08) 100%)",
-      border: "rgba(37, 99, 235, 0.22)", borderDark: "rgba(37, 99, 235, 0.35)", shadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
-    },
-    {
-      title: "PW", sub: mixedSubtitle, href: `${base}/quiz?mode=mixed`, mode: "mixed",
-      icon: "/icons/practice/pw.svg", color: "#4f46e5", gradient: "linear-gradient(135deg, #f1f3fd 0%, #e0e7ff 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.08) 100%)",
-      border: "rgba(79, 70, 229, 0.22)", borderDark: "rgba(79, 70, 229, 0.35)", shadow: "0 2px 8px rgba(79, 70, 229, 0.08)",
-    },
-    {
-      title: "Selection Way", sub: "Speed test", href: `${base}/quiz?mode=ai-challenge`, mode: "ai-challenge",
-      icon: "/icons/practice/selection-way.svg", color: "#7c3aed", gradient: "linear-gradient(135deg, #f7f2fe 0%, #ede9fe 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0.08) 100%)",
-      border: "rgba(124, 58, 237, 0.22)", borderDark: "rgba(124, 58, 237, 0.35)", shadow: "0 2px 8px rgba(124, 58, 237, 0.08)",
-    },
-    {
-      title: "Topic Mix", sub: "Foundation easy", href: `${base}/quiz?mode=easy`, mode: "easy",
-      icon: "/icons/practice/topic-mix.svg", color: "#0284c7", gradient: "linear-gradient(135deg, #edf9ff 0%, #e0f2fe 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(2, 132, 199, 0.08) 100%)",
-      border: "rgba(2, 132, 199, 0.22)", borderDark: "rgba(2, 132, 199, 0.35)", shadow: "0 2px 8px rgba(2, 132, 199, 0.08)",
-    },
-    {
-      title: "Tier 2", sub: "Advanced level", href: `${base}/quiz?mode=hard`, mode: "hard",
-      icon: "/icons/practice/tier-2.svg", color: "#e11d48", gradient: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(225, 29, 72, 0.2) 0%, rgba(225, 29, 72, 0.08) 100%)",
-      border: "rgba(225, 29, 72, 0.22)", borderDark: "rgba(225, 29, 72, 0.35)", shadow: "0 2px 8px rgba(225, 29, 72, 0.08)",
-    },
-    ...(hasStudyMode ? [{
-      title: "Study Mode", sub: "Interactive study deck", href: `${base}/study-mode`, mode: "study-mode",
-      icon: "/icons/practice/study-mode.svg", color: "#ec4899", gradient: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(236, 72, 153, 0.08) 100%)",
-      border: "rgba(236, 72, 153, 0.22)", borderDark: "rgba(236, 72, 153, 0.35)", shadow: "0 2px 8px rgba(236, 72, 153, 0.08)",
-    }] : []),
+    { title: "PYQ", sub: "Previous year Qs", href: `${base}/quiz?mode=concept`, mode: "concept", icon: "/icons/practice/pyq.svg" },
+    { title: "CareerWill", sub: formulaSubtitle, href: `${base}/quiz?mode=formula`, mode: "formula", icon: "/icons/practice/careerwill.svg" },
+    { title: "PW", sub: mixedSubtitle, href: `${base}/quiz?mode=mixed`, mode: "mixed", icon: "/icons/practice/pw.svg" },
+    { title: "Selection Way", sub: "Speed test", href: `${base}/quiz?mode=ai-challenge`, mode: "ai-challenge", icon: "/icons/practice/selection-way.svg" },
+    { title: "Topic Mix", sub: "Foundation easy", href: `${base}/quiz?mode=easy`, mode: "easy", icon: "/icons/practice/topic-mix.svg" },
+    { title: "Tier 2", sub: "Advanced level", href: `${base}/quiz?mode=hard`, mode: "hard", icon: "/icons/practice/tier-2.svg" },
+    ...(hasStudyMode ? [{ title: "Study Mode", sub: "Interactive study deck", href: `${base}/study-mode`, mode: "study-mode", icon: "/icons/practice/study-mode.svg" }] : []),
   ];
 
   const jamLabels: Record<string, string> = { formula: 'Formula practice', mixed: 'Mixed practice', 'ai-challenge': 'Speed practice', hard: 'Advanced practice' };
@@ -78,14 +42,6 @@ export default function TopicPracticeModes({
       {modes.map((mode) => {
         const countLabel = isError ? "—" : `${counts[mode.mode] ?? 0}`;
         const isEmpty = !isPending && !isError && countLabel === "0";
-        const cardStyle = {
-          "--card-gradient": mode.gradient,
-          "--card-gradient-dark": mode.gradientDark,
-          "--card-border": mode.border,
-          "--card-border-dark": mode.borderDark,
-          "--card-accent": mode.color,
-          "--card-shadow": mode.shadow,
-        } as CSSProperties;
         const cardContent = (
           <>
             <div className="sg-card-left">
@@ -97,7 +53,7 @@ export default function TopicPracticeModes({
             </div>
             <div className="sg-card-tab" aria-hidden="true">
               <svg className="sg-tab-bg-svg" viewBox="0 0 88 46" preserveAspectRatio="none">
-                <path d="M28 0 C28 10, 0 13, 0 23 C0 33, 28 36, 28 46 L88 46 L88 0 Z" fill="var(--card-2)" />
+                <path d="M28 0 C28 10, 0 13, 0 23 C0 33, 28 36, 28 46 L88 46 L88 0 Z" fill="var(--meow-surface-subtle)" />
               </svg>
               <div className="sg-tab-action-wrap">
                 {isPending ? (
@@ -124,7 +80,6 @@ export default function TopicPracticeModes({
               className="sg-card"
               data-empty="true"
               aria-disabled="true"
-              style={cardStyle}
             >
               {cardContent}
             </div>
@@ -138,7 +93,6 @@ export default function TopicPracticeModes({
             // until a mode is selected, especially on mobile connections.
             prefetch={subject === "mathematics" ? false : undefined}
             className="sg-card"
-            style={cardStyle}
           >
             {cardContent}
           </Link>

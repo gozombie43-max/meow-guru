@@ -52,7 +52,8 @@ for (const [parent, width] of [
       await expect(page.getByRole("dialog", { name: "Question solution" }).locator(".katex").first())
         .toHaveCSS("font-family", /KaTeX_Main/);
     }
-    await page.getByRole("button", { name: "Back to quiz", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Back to quiz", exact: true })).toHaveCount(0);
+    await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog", { name: "Question solution" })).toHaveCount(0);
     if (await reviewBtn.isVisible()) {
       await reviewBtn.click();

@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest';
 const TOKENS_DIR = join(process.cwd(), 'design-system', 'tokens');
 const GLOBALS_CSS = readFileSync(join(process.cwd(), 'app', 'globals.css'), 'utf8');
 const THEME_CSS = readFileSync(join(TOKENS_DIR, 'theme.css'), 'utf8');
-const BRIDGE_CSS = readFileSync(join(TOKENS_DIR, 'legacy-bridge.css'), 'utf8');
 const MOTION_CSS = readFileSync(join(TOKENS_DIR, 'motion.css'), 'utf8');
 
 function extractRuleBody(css: string, headerPattern: RegExp): string {
@@ -53,11 +52,10 @@ function contrastRatio(fgHex: string, bgHex: string): number {
 }
 
 describe('Meow Design System Tokens (PR P0-A)', () => {
-  it('wires theme, legacy-bridge, and motion tokens cleanly into globals.css after tailwindcss', () => {
-    const lines = GLOBALS_CSS.split(/\r?\n/).slice(0, 6).join('\n');
+  it('wires theme and motion tokens cleanly into globals.css after tailwindcss', () => {
+    const lines = GLOBALS_CSS.split(/\r?\n/).slice(0, 5).join('\n');
     expect(lines).toContain('@import "tailwindcss";');
     expect(lines).toContain('@import "../design-system/tokens/theme.css";');
-    expect(lines).toContain('@import "../design-system/tokens/legacy-bridge.css";');
     expect(lines).toContain('@import "../design-system/tokens/motion.css";');
   });
 
@@ -101,8 +99,8 @@ describe('Meow Design System Tokens (PR P0-A)', () => {
       extractRuleBody(THEME_CSS, /html\.theme-light,\s*body\.theme-light,\s*\.theme-light,\s*\[data-theme="light"\]\s*\{/),
     );
 
-    expect(rootVars['--meow-bg'].toUpperCase()).toBe('#080C11');
-    expect(rootVars['--meow-surface'].toUpperCase()).toBe('#111722');
+    expect(rootVars['--meow-bg'].toUpperCase()).toBe('#000000');
+    expect(rootVars['--meow-surface'].toUpperCase()).toBe('#151515');
     expect(rootVars['--meow-border'].toUpperCase()).toBe('#222A38');
     expect(rootVars['--meow-text'].toUpperCase()).toBe('#F1F4F8');
     expect(rootVars['--meow-secondary'].toUpperCase()).toBe('#929CAF');
@@ -179,20 +177,9 @@ describe('Meow Design System Tokens (PR P0-A)', () => {
     expect(contrastRatio('#687386', '#111722')).toBeLessThan(4.5);
   });
 
-  it('preserves global legacy variables unmodified outside [data-meow-tokens] during P0-A', () => {
-    const bridgeRoot = parseCustomProps(extractRuleBody(BRIDGE_CSS, /:root\s*\{/));
-    const scopedBridge = parseCustomProps(extractRuleBody(BRIDGE_CSS, /\[data-meow-tokens\]\s*\{/));
+  it('maps shared variable namespaces inside [data-meow-tokens] in theme.css', () => {
+    const scopedBridge = parseCustomProps(extractRuleBody(THEME_CSS, /\[data-meow-tokens\]\s*\{/));
 
-    // Only --meow-compat-* read-only baseline vars exist on :root
-    for (const key of Object.keys(bridgeRoot)) {
-      expect(key.startsWith('--meow-compat-'), `Unexpected global override on :root: ${key}`).toBe(true);
-    }
-    expect(bridgeRoot['--dark-canvas']).toBeUndefined();
-    expect(bridgeRoot['--oled-canvas']).toBeUndefined();
-    expect(bridgeRoot['--light-canvas']).toBeUndefined();
-    expect(bridgeRoot['--ui-surface']).toBeUndefined();
-
-    // Scoped progressive bridge maps all major legacy namespaces cleanly
     const requiredScopedMappings = [
       '--oled-canvas',
       '--oled-surface',
@@ -213,9 +200,8 @@ describe('Meow Design System Tokens (PR P0-A)', () => {
       '--quiz-surface',
     ];
     for (const key of requiredScopedMappings) {
-      expect(scopedBridge[key], `Missing [data-meow-tokens] bridge for ${key}`).toBeDefined();
+      expect(scopedBridge[key], `Missing [data-meow-tokens] mapping for ${key}`).toBeDefined();
     }
-    // Readable legacy muted vars route to --meow-secondary, and primary CTA actions route to --meow-action-fill
     expect(scopedBridge['--dark-text-muted']).toBe('var(--meow-secondary)');
     expect(scopedBridge['--text-muted']).toBe('var(--meow-secondary)');
     expect(scopedBridge['--dark-action']).toBe('var(--meow-action-fill)');
@@ -232,7 +218,7 @@ describe('Meow Design System Tokens (PR P0-A)', () => {
     expect(MOTION_CSS).toContain('@keyframes meow-shake');
     expect(MOTION_CSS).toContain('@media (prefers-reduced-motion: reduce)');
 
-    for (const css of [THEME_CSS, BRIDGE_CSS, MOTION_CSS]) {
+    for (const css of [THEME_CSS, MOTION_CSS]) {
       expect(css).not.toMatch(/\btransition(?:-property)?\s*:\s*all\b/i);
       expect(css).not.toMatch(/\b100vh\b/i);
     }

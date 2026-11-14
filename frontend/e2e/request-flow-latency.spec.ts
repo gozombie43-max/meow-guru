@@ -117,7 +117,7 @@ test('measure real local request flows through the Next rewrite', async ({ brows
       await measure('submit_answer_ui', { selector: 'button', text: 'Next', enabled: true }, () => page.getByRole('button', { name: 'Submit', exact: true }).click());
       await answer;
       await measure('open_solution', { selector: '[aria-label="Question solution"]', text: 'Subtract' }, () => page.getByRole('button', { name: /^View solution$/i }).click());
-      await page.getByRole('button', { name: 'Back to quiz' }).click();
+      await page.keyboard.press('Escape');
       await measure('open_ai_tutor', { selector: 'textarea.tutor-textarea' }, () => page.getByRole('button', { name: /Ask AI tutor/i }).click());
       await page.keyboard.press('Escape');
       await measure('next_question', { selector: 'main', text: 'x + 2 = 4' }, () => page.getByRole('button', { name: 'Next', exact: true }).click());

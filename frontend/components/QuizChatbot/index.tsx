@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
 import { useModalSurface } from "@/components/ui/Dialog";
 import TutorMarkdown from "./TutorMarkdown";
@@ -32,8 +32,6 @@ const LOCALIZED_CONTENT: Record<
   SupportedLang,
   {
     placeholder: string;
-    contextLoaded: string;
-    contextSubtitle: string;
     landingTitle: string;
     quickPrompts: string;
     landingOptions: Array<{
@@ -49,8 +47,6 @@ const LOCALIZED_CONTENT: Record<
 > = {
   en: {
     placeholder: "Ask anything",
-    contextLoaded: "Context loaded:",
-    contextSubtitle: "Ask anything about this submitted question.",
     landingTitle: "What can I help with?",
     quickPrompts: "Quick Prompts",
     landingOptions: [
@@ -88,8 +84,6 @@ const LOCALIZED_CONTENT: Record<
   },
   hi: {
     placeholder: "कुछ भी पूछें",
-    contextLoaded: "संदर्भ लोड हुआ:",
-    contextSubtitle: "इस प्रश्न के बारे में कुछ भी पूछें।",
     landingTitle: "मैं आपकी क्या मदद कर सकता हूँ?",
     quickPrompts: "त्वरित प्रश्न (Quick Prompts)",
     landingOptions: [
@@ -127,8 +121,6 @@ const LOCALIZED_CONTENT: Record<
   },
   bn: {
     placeholder: "যেকোনো প্রশ্ন জিজ্ঞাসা করুন",
-    contextLoaded: "প্রশ্ন লোড হয়েছে:",
-    contextSubtitle: "এই প্রশ্নটি সম্পর্কে যেকোনো কিছু জিজ্ঞাসা করুন।",
     landingTitle: "আমি কীভাবে সাহায্য করতে পারি?",
     quickPrompts: "দ্রুত প্রম্পট (Quick Prompts)",
     landingOptions: [
@@ -223,6 +215,133 @@ export default function QuizChatbot({
     setIsOpen(false);
   }, [setIsOpen]);
   useModalSurface(modalRef, isOpen, handleClose, { initialFocus: ":scope" });
+
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isHolding, setIsHolding] = useState(false);
+  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dragStartRef = useRef<{ startY: number; startTime: number; currentY: number } | null>(null);
+
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
+    if (!isOpen) {
+      setDragOffset(0);
+      setIsDragging(false);
+      setIsHolding(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!isOpen) {
+      dragStartRef.current = null;
+      if (holdTimerRef.current) {
+        clearTimeout(holdTimerRef.current);
+        holdTimerRef.current = null;
+      }
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+    };
+  }, []);
+
+  const handleHeaderPointerDown = (e: ReactPointerEvent<HTMLElement>) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.closest("button") ||
+      target.closest("a") ||
+      target.closest("input") ||
+      target.closest("textarea")
+    ) {
+      return;
+    }
+
+    if (e.button !== 0) return;
+
+    const startY = e.clientY;
+    const startTime = Date.now();
+    dragStartRef.current = { startY, startTime, currentY: startY };
+    setIsDragging(true);
+    setIsHolding(true);
+
+    if (e.currentTarget.setPointerCapture) {
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        // pointer capture fallback
+      }
+    }
+
+    if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+    holdTimerRef.current = setTimeout(() => {
+      holdTimerRef.current = null;
+      dragStartRef.current = null;
+      setIsHolding(false);
+      setIsDragging(false);
+      setDragOffset(0);
+      handleClose();
+    }, 450);
+  };
+
+  const handleHeaderPointerMove = (e: ReactPointerEvent<HTMLElement>) => {
+    if (!dragStartRef.current) return;
+    const { startY } = dragStartRef.current;
+    const currentY = e.clientY;
+    dragStartRef.current.currentY = currentY;
+    const deltaY = currentY - startY;
+
+    if (Math.abs(deltaY) > 8 && holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+      setIsHolding(false);
+    }
+
+    if (deltaY > 0) {
+      setDragOffset(deltaY);
+    } else {
+      setDragOffset(deltaY * 0.15);
+    }
+  };
+
+  const handleHeaderPointerUp = (e: ReactPointerEvent<HTMLElement>) => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    setIsHolding(false);
+
+    if (!dragStartRef.current) {
+      setIsDragging(false);
+      return;
+    }
+
+    const { startY, startTime } = dragStartRef.current;
+    const deltaY = e.clientY - startY;
+    const elapsed = Math.max(Date.now() - startTime, 1);
+    const velocity = deltaY / elapsed;
+
+    dragStartRef.current = null;
+    setIsDragging(false);
+    setDragOffset(0);
+
+    if (deltaY > 70 || (deltaY > 20 && velocity > 0.4)) {
+      handleClose();
+    }
+  };
+
+  const handleHeaderPointerCancel = () => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    dragStartRef.current = null;
+    setIsHolding(false);
+    setIsDragging(false);
+    setDragOffset(0);
+  };
 
   // Follow the visible viewport when the mobile keyboard reduces available space.
   useEffect(() => {
@@ -365,10 +484,36 @@ export default function QuizChatbot({
       )}
 
       {isOpen && createPortal(
-        <div ref={overlayRef} className="quiz-chatbot-overlay">
-          <button data-ui-decoration="true" className="tutor-backdrop" type="button" aria-label="Dismiss AI tutor" onClick={handleClose} />
-          <section ref={modalRef} className="quiz-chatbot-modal" role="dialog"
-            aria-modal="true" aria-labelledby="quiz-chatbot-title" tabIndex={-1}>
+        <div
+          ref={overlayRef}
+          className="quiz-chatbot-overlay"
+        >
+          <button
+            data-ui-decoration="true"
+            data-dialog-backdrop=""
+            className="tutor-backdrop"
+            type="button"
+            aria-label="Dismiss AI tutor"
+            onClick={handleClose}
+          />
+          <section
+            ref={modalRef}
+            className="quiz-chatbot-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="quiz-chatbot-title"
+            tabIndex={-1}
+            style={
+              dragOffset !== 0 || isDragging
+                ? {
+                    transform: `translateY(${dragOffset}px)`,
+                    opacity: dragOffset > 0 ? Math.max(1 - dragOffset / 500, 0.4) : 1,
+                    transition: isDragging ? "none" : "transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease",
+                    animation: "none",
+                  }
+                : undefined
+            }
+          >
             <div className={`quiz-chatbot-shell${isDark ? " dark" : ""}`} data-theme={isDark ? "dark" : "light"} lang={selectedLang}>
               {(isModelMenuOpen || isAddMenuOpen) && (
                 <div
@@ -380,7 +525,19 @@ export default function QuizChatbot({
                   }}
                 />
               )}
-              <header className="tutor-header">
+              <header
+                className={`tutor-header tutor-drag-zone${isHolding ? " is-holding" : ""}${isDragging ? " is-dragging" : ""}`}
+                onPointerDown={handleHeaderPointerDown}
+                onPointerMove={handleHeaderPointerMove}
+                onPointerUp={handleHeaderPointerUp}
+                onPointerCancel={handleHeaderPointerCancel}
+                title="Hold or drag down to close"
+              >
+                <div className="tutor-sheet-handle-container" aria-hidden="true">
+                  <div className="tutor-sheet-handle">
+                    <div className={`tutor-hold-indicator${isHolding ? " active" : ""}`} />
+                  </div>
+                </div>
                 <div className="topbar">
                   <div className="topbar-brand">
                     <svg
@@ -443,19 +600,7 @@ export default function QuizChatbot({
                 {!isChatView ? <div className="land">
                   <div className="lscroll">
                     <div className="ctx">
-                      <div className="ctxi">Q</div>
-                      <div>
-                        <div className="ctxl">
-                          {currentContent.contextLoaded}{" "}
-                          <span>
-                            Q{questionNumber} · {question.concept || topicTitle}
-                            {question.exam ? ` · ${question.exam}` : ""}
-                          </span>
-                        </div>
-                        <div className="ctxs">
-                          {currentContent.contextSubtitle}
-                        </div>
-                      </div>
+                      Q{questionNumber} · {question.concept || topicTitle}
                     </div>
 
                     <div className="ltitle">
@@ -495,10 +640,9 @@ export default function QuizChatbot({
 
                 : <div className="chat">
                   <div className="ca" ref={scrollRef}>
-                    <details className="tutor-question">
-                      <summary>Q{questionNumber} · {question.concept || topicTitle}</summary>
-                      <div className="sbody"><TutorMarkdown content={question.question} /></div>
-                    </details>
+                    <div className="tutor-question">
+                      Q{questionNumber} · {question.concept || topicTitle}
+                    </div>
                     {messages.length > 0 && <div className="chat-divider">Start of conversation</div>}
                     <MessageWindow messages={messages}>
                     {(message, index) => {
