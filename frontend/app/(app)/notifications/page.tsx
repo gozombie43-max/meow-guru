@@ -29,6 +29,7 @@ import {
 } from "@/lib/notificationPresentation";
 
 import "./notifications.css";
+import { ListingTemplate } from "@/design-system";
 
 type CategoryFilter = "all" | "battles" | "mocks" | "practice" | "announcements";
 
@@ -198,7 +199,17 @@ export default function NotificationsPage() {
   }, [items, activeCategory, searchQuery]);
 
   return (
-    <div className="notif-page">
+    <ListingTemplate
+      columns={1}
+      wide
+      maxWidth="100%"
+      header={null}
+      hasStickyHeader={false}
+      showNavRail={false}
+      showBottomNav={false}
+      mainClassName="notif-listing-main"
+    >
+      <div className="notif-page">
       {/* Pinned Fixed Top: Header, Category Filter Pills, and Search Bar */}
       <header data-ui-chrome="header" className="notif-fixed-top">
         <div className="notif-header">
@@ -483,5 +494,6 @@ export default function NotificationsPage() {
         </div>
       </main>
     </div>
+    </ListingTemplate>
   );
 }

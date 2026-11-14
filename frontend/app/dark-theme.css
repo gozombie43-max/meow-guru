@@ -71,102 +71,6 @@ html.theme-dark ::selection {
   color: var(--dark-text);
 }
 
-html.theme-dark body.theme-dark .bottom-pill-nav {
-  background: rgba(28, 28, 30, 0.85);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.60);
-  padding: 7px;
-  gap: 4px;
-  border-radius: 24px;
-}
-
-html.theme-dark .bottom-pill-nav::after,
-html.theme-dark .bottom-pill-nav::before {
-  display: none;
-}
-
-html.theme-dark .bottom-pill-nav .bottom-nav-item {
-  min-height: 56px;
-  padding: 7px 2px;
-  border-radius: 16px;
-  color: var(--dark-text-secondary);
-  gap: 4px;
-}
-
-html.theme-dark .bottom-pill-nav .bottom-nav-icon {
-  width: 28px;
-  height: 28px;
-  stroke-width: 1.8;
-  stroke: currentColor;
-}
-
-html.theme-dark .bottom-pill-nav .bottom-nav-item.is-active {
-  background: var(--dark-accent-soft);
-  color: var(--dark-accent) !important;
-}
-
-html.theme-dark .bottom-pill-nav .bottom-nav-item.is-active .bottom-nav-icon {
-  stroke: var(--dark-accent) !important;
-}
-
-html.theme-dark .bottom-pill-nav .bottom-nav-item.is-active::after {
-  display: none;
-}
-
-html.theme-dark .bottom-pill-nav .bottom-nav-item:not(.is-active):hover {
-  background: var(--dark-surface-muted);
-  color: var(--dark-text);
-}
-
-html.theme-dark .bottom-nav-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0;
-}
-
-@media (max-width: 1024px) {
-  html.theme-dark body.theme-dark .bottom-pill-nav {
-    width: 100%;
-    max-width: 100%;
-    border-radius: 20px 20px 0 0;
-    border-bottom: 0;
-    background: #0F0F0F;
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    padding: 8px max(8px, var(--safe-right)) calc(8px + var(--safe-bottom)) max(8px, var(--safe-left));
-    box-shadow: 0 -4px 28px rgba(0, 0, 0, 0.55);
-  }
-
-  /* Compact mobile dock: shorter items, near-black surface, white active state. */
-  html.theme-dark .bottom-pill-nav .bottom-nav-item {
-    min-height: 56px;
-    padding: 6px 2px;
-    gap: 4px;
-    border-radius: 12px;
-  }
-
-  html.theme-dark .bottom-pill-nav .bottom-nav-icon {
-    width: 28px;
-    height: 28px;
-  }
-
-  html.theme-dark .bottom-nav-label {
-    font-size: 11px;
-  }
-
-  html.theme-dark .bottom-pill-nav .bottom-nav-item.is-active {
-    background: transparent;
-    color: #FFFFFF !important;
-  }
-
-  html.theme-dark .bottom-pill-nav .bottom-nav-item.is-active .bottom-nav-icon {
-    stroke: #FFFFFF !important;
-  }
-}
-
 /* Play hub, dedicated setup, session, results and their portalled pickers. */
 html.theme-dark .training-dark {
   --tr-bg: var(--oled-canvas);
@@ -240,17 +144,8 @@ html.theme-dark .training-dark .trade-filter-tab { border: 0; border-radius: 999
 html.theme-dark .training-dark .trade-ledger-item:hover { background: var(--oled-hover) !important; box-shadow: none; }
 html.theme-dark .training-dark :is(.play-setup-cat-badge, .play-setup-pill-pos, .play-setup-pill-neg, .play-setup-pill-zero, .setup-cat-badge) { border: 0; box-shadow: none; }
 
-/* Mobile refinements: keep the established OLED surfaces, soften white text,
-   and reserve the brighter accent for focus, links and selected states. */
+/* Mobile route boundary styling */
 @media (max-width: 767px) {
-  html.theme-dark,
-  body.theme-dark {
-    --dark-text: #e5eaf0;
-    --dark-text-secondary: #a2a9b4;
-    --dark-text-muted: #929aa6;
-    --dark-border: #38383c;
-  }
-
   html.theme-dark .route-boundary__content--error,
   html.theme-dark .route-boundary__recovery {
     margin: 24px auto;

@@ -15,6 +15,7 @@ import { TrainingPace } from "./session/TrainingPace";
 import { TrainingConfidence } from "./session/TrainingConfidence";
 import { TrainingFooter } from "./session/TrainingFooter";
 const TrainingFinishDialog = dynamic(() => import("./session/TrainingFinishDialog").then(module => module.TrainingFinishDialog));
+import QuizTemplate from "@/design-system/layouts/QuizTemplate";
 import "@/app/(app)/play/play.css";
 import "./training-session.css";
 
@@ -41,7 +42,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
   const [showOverview, setShowOverview] = useState(false);
   const desktop = useMediaQuery('(min-width: 1024px)');
 
-  const mainRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLDivElement>(null);
   const finishRef = useRef<HTMLDialogElement>(null);
 
   useQuizLeaveGuard(session?.status === "active", "/play", "Leave this training quiz? Saved answers will remain, but the session timer may continue.");
@@ -59,100 +60,106 @@ export default function TrainingSessionView({ id }: { id: string }) {
   const unsaved = !!q && (choice !== (session?.answers[q.id]?.choice ?? null) || confidence !== (session?.answers[q.id]?.confidence ?? null));
 
   return (
-    <div className={`training-page training-session ${confirmFinish ? "has-finish-dialog" : ""} ${theme === "dark" ? "training-dark" : ""}`}>
-      <TrainingSessionHeader 
-        session={session} 
-        timeSync={timeSync}
-        busy={busy} 
-        setConfirmFinish={setConfirmFinish}
-        showOverview={showOverview}
-        setShowOverview={setShowOverview}
-        answered={answered}
-        canNavigate={canNavigate || false}
-      />
+    <QuizTemplate
+      lockedViewport={true}
+      readingMaxWidth="100%"
+      showSkipLink={false}
+    >
+      <div className={`training-page training-session ${confirmFinish ? "has-finish-dialog" : ""} ${theme === "dark" ? "training-dark" : ""}`}>
+        <TrainingSessionHeader 
+          session={session} 
+          timeSync={timeSync}
+          busy={busy} 
+          setConfirmFinish={setConfirmFinish}
+          showOverview={showOverview}
+          setShowOverview={setShowOverview}
+          answered={answered}
+          canNavigate={canNavigate || false}
+        />
 
-      <main ref={mainRef} className="training-session-main">
-        {session && busy && (
-          <div className="training-request-status" role="status">
-            <LoaderCircle className="training-loading-icon" size={18} aria-hidden="true" />
-            {pendingAction === "visit" ? "Loading question…" : pendingAction === "reload" ? "Reloading saved questions…" : pendingAction === "finish" ? "Preparing your results…" : pendingAction === "abandon" ? "Leaving session…" : "Saving your answer…"}
-          </div>
-        )}
-        
-        {error && (
-          <div role="alert" className="training-error">
-            <span>{error}</span>
-            <button data-ui-button="secondary" disabled={busy} onClick={reload}>
-              Reload saved session
-            </button>
-          </div>
-        )}
+        <div ref={mainRef} className="training-session-main">
+          {session && busy && (
+            <div className="training-request-status" role="status">
+              <LoaderCircle className="training-loading-icon" size={18} aria-hidden="true" />
+              {pendingAction === "visit" ? "Loading question…" : pendingAction === "reload" ? "Reloading saved questions…" : pendingAction === "finish" ? "Preparing your results…" : pendingAction === "abandon" ? "Leaving session…" : "Saving your answer…"}
+            </div>
+          )}
+          
+          {error && (
+            <div role="alert" className="training-error">
+              <span>{error}</span>
+              <button data-ui-button="secondary" disabled={busy} onClick={reload}>
+                Reload saved session
+              </button>
+            </div>
+          )}
 
-        {!session && !error && <TrainingLoading />}
+          {!session && !error && <TrainingLoading />}
 
-        {session?.status === "completed" && (
-          <TrainingResults session={session} accept={accept} />
-        )}
+          {session?.status === "completed" && (
+            <TrainingResults session={session} accept={accept} />
+          )}
+
+          {session?.status === "active" && q && (
+            <div className="training-session-columns">
+              {(desktop || showOverview) && <TrainingPalette
+                session={session}
+                showOverview={showOverview}
+                setShowOverview={setShowOverview}
+                canNavigate={canNavigate || false}
+                busy={busy}
+                act={act}
+              />}
+
+              <section className="training-question-panel">
+                <TrainingQuestion 
+                  q={q} 
+                  choice={choice} 
+                  setChoice={setChoice} 
+                  busy={busy} 
+                  expired={expired}
+                />
+
+                <TrainingPace q={q} session={session} timeSync={timeSync} />
+
+                {session.policy.confidence && (
+                  <TrainingConfidence 
+                    confidence={confidence} 
+                    setConfidence={setConfidence} 
+                    busy={busy} 
+                  />
+                )}
+              </section>
+            </div>
+          )}
+        </div>
 
         {session?.status === "active" && q && (
-          <div className="training-session-columns">
-            {(desktop || showOverview) && <TrainingPalette
-              session={session}
-              showOverview={showOverview}
-              setShowOverview={setShowOverview}
-              canNavigate={canNavigate || false}
-              busy={busy}
-              act={act}
-            />}
-
-            <section className="training-question-panel">
-              <TrainingQuestion 
-                q={q} 
-                choice={choice} 
-                setChoice={setChoice} 
-                busy={busy} 
-                expired={expired}
-              />
-
-              <TrainingPace q={q} session={session} timeSync={timeSync} />
-
-              {session.policy.confidence && (
-                <TrainingConfidence 
-                  confidence={confidence} 
-                  setConfidence={setConfidence} 
-                  busy={busy} 
-                />
-              )}
-            </section>
-          </div>
+          <TrainingFooter 
+            session={session} 
+            q={q} 
+            busy={busy} 
+            unsaved={unsaved} 
+            canNavigate={canNavigate || false} 
+            expired={expired}
+            choice={choice} 
+            confidence={confidence} 
+            act={act} 
+          />
         )}
-      </main>
 
-      {session?.status === "active" && q && (
-        <TrainingFooter 
+        {confirmFinish && <TrainingFinishDialog
+          finishRef={finishRef} 
+          confirmFinish={confirmFinish} 
+          setConfirmFinish={setConfirmFinish} 
           session={session} 
-          q={q} 
-          busy={busy} 
+          answered={answered} 
           unsaved={unsaved} 
-          canNavigate={canNavigate || false} 
-          expired={expired}
-          choice={choice} 
-          confidence={confidence} 
+          error={error} 
+          busy={busy} 
           act={act} 
-        />
-      )}
-
-      {confirmFinish && <TrainingFinishDialog
-        finishRef={finishRef} 
-        confirmFinish={confirmFinish} 
-        setConfirmFinish={setConfirmFinish} 
-        session={session} 
-        answered={answered} 
-        unsaved={unsaved} 
-        error={error} 
-        busy={busy} 
-        act={act} 
-      />}
-    </div>
+        />}
+      </div>
+    </QuizTemplate>
   );
 }

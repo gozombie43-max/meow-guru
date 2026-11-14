@@ -202,7 +202,6 @@
 .progress::-moz-progress-bar { background: var(--ios-system-blue); border-radius: 999px; }
 
 .card .resume {
-  --ui-action: var(--ios-system-blue);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -240,7 +239,7 @@
 .desktopList .progress { height: 6px; margin-top: 5px; }
 .desktopList .footer { margin-top: 8px; padding-top: 8px; }
 .desktopList .resume {
-  --ui-font-body: 12px;
+  font-size: 12px !important;
   min-height: 34px;
   padding: 6px 12px !important;
   border-radius: 9px;

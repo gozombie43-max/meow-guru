@@ -1,0 +1,417 @@
+/* ==========================================================================
+   Meow Design System — Canonical Tokens & Tailwind v4 Theme (PR P0-A)
+   --------------------------------------------------------------------------
+   - Defines Tailwind CSS v4 @theme inline exposure for bg-meow-*, text-meow-*,
+     border-meow-*, font-meow-*, radius-meow-* utilities without colliding
+     with built-in Tailwind utilities.
+   - Defines canonical Dark (#080C11) and Light (#F4F6F9) semantic variables
+     plus nested theme isolation (.theme-dark / .theme-light / [data-theme]).
+   - Does NOT overwrite existing legacy global variables (--dark-*, --oled-*,
+     --light-*, --ui-*) at :root so existing routes remain visually unchanged
+     until incrementally migrated.
+   ========================================================================== */
+
+@theme inline {
+  /* Core Surfaces & Borders */
+  --color-meow-bg: var(--meow-bg);
+  --color-meow-surface: var(--meow-surface);
+  --color-meow-surface-subtle: var(--meow-surface-subtle);
+  --color-meow-border: var(--meow-border);
+  --color-meow-border-strong: var(--meow-border-strong);
+
+  /* Typography Ink Hierarchy */
+  --color-meow-text: var(--meow-text);
+  --color-meow-secondary: var(--meow-secondary);
+  --color-meow-muted: var(--meow-muted);
+
+  /* Brand & Action Accents */
+  --color-meow-accent: var(--meow-accent);
+  --color-meow-accent-light: var(--meow-accent-light);
+  --color-meow-accent-hover: var(--meow-accent-hover);
+  --color-meow-accent-soft: var(--meow-accent-soft);
+  --color-meow-action-fill: var(--meow-action-fill);
+  --color-meow-action-fill-hover: var(--meow-action-fill-hover);
+  --color-meow-on-accent: var(--meow-on-accent);
+
+  /* Semantic Feedback */
+  --color-meow-success: var(--meow-success);
+  --color-meow-success-soft: var(--meow-success-soft);
+  --color-meow-warning: var(--meow-warning);
+  --color-meow-warning-soft: var(--meow-warning-soft);
+  --color-meow-error: var(--meow-error);
+  --color-meow-error-soft: var(--meow-error-soft);
+  --color-meow-info: var(--meow-info);
+  --color-meow-info-soft: var(--meow-info-soft);
+  --color-meow-danger-fill: var(--meow-danger-fill);
+
+  /* Font Families */
+  --font-meow-sans: var(--meow-font-sans);
+  --font-meow-display: var(--meow-font-display);
+  --font-meow-bengali: var(--meow-font-bengali);
+  --font-meow-mono: var(--meow-font-mono);
+
+  /* Discrete Type Sizes */
+  --text-meow-2xs: var(--meow-text-2xs);
+  --text-meow-xs: var(--meow-text-xs);
+  --text-meow-sm: var(--meow-text-sm);
+  --text-meow-base: var(--meow-text-base);
+  --text-meow-md: var(--meow-text-md);
+  --text-meow-lg: var(--meow-text-lg);
+  --text-meow-xl: var(--meow-text-xl);
+  --text-meow-2xl: var(--meow-text-2xl);
+  --text-meow-3xl: var(--meow-text-3xl);
+
+  /* Border Radii */
+  --radius-meow-xs: var(--meow-radius-xs);
+  --radius-meow-sm: var(--meow-radius-sm);
+  --radius-meow-md: var(--meow-radius-md);
+  --radius-meow-lg: var(--meow-radius-lg);
+  --radius-meow-xl: var(--meow-radius-xl);
+  --radius-meow-full: var(--meow-radius-full);
+
+  /* 4px-Based Spacing Helpers */
+  --spacing-meow-1: var(--meow-space-1);
+  --spacing-meow-2: var(--meow-space-2);
+  --spacing-meow-3: var(--meow-space-3);
+  --spacing-meow-4: var(--meow-space-4);
+  --spacing-meow-5: var(--meow-space-5);
+  --spacing-meow-6: var(--meow-space-6);
+  --spacing-meow-8: var(--meow-space-8);
+  --spacing-meow-10: var(--meow-space-10);
+  --spacing-meow-12: var(--meow-space-12);
+}
+
+/* --------------------------------------------------------------------------
+   Theme-Invariant Structural Tokens & Canonical Dark Default
+   -------------------------------------------------------------------------- */
+:root {
+  /* Typography Families */
+  --meow-font-sans: var(--font-geist-sans), "Noto Sans Bengali", system-ui, -apple-system, sans-serif;
+  --meow-font-display: var(--meow-font-sans);
+  --meow-font-bengali: "Noto Sans Bengali", "Hind Siliguri", system-ui, -apple-system, sans-serif;
+  --meow-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Discrete Typography Ramp */
+  --meow-text-2xs: 11px;
+  --meow-leading-2xs: 16px;
+  --meow-text-xs: 12px;
+  --meow-leading-xs: 16px;
+  --meow-text-sm: 13px;
+  --meow-leading-sm: 18px;
+  --meow-text-base: 14px;
+  --meow-leading-base: 20px;
+  --meow-text-md: 16px;
+  --meow-leading-md: 24px;
+  --meow-text-lg: 18px;
+  --meow-leading-lg: 24px;
+  --meow-text-xl: 20px;
+  --meow-leading-xl: 28px;
+  --meow-text-2xl: 24px;
+  --meow-leading-2xl: 32px;
+  --meow-text-3xl: 30px;
+  --meow-leading-3xl: 36px;
+
+  /* 4px-Based Spacing Scale */
+  --meow-space-1: 4px;
+  --meow-space-2: 8px;
+  --meow-space-3: 12px;
+  --meow-space-4: 16px;
+  --meow-space-5: 20px;
+  --meow-space-6: 24px;
+  --meow-space-8: 32px;
+  --meow-space-10: 40px;
+  --meow-space-12: 48px;
+  --meow-gutter-mobile: 16px;
+  --meow-gutter-desktop: 24px;
+
+  /* Radii Scale */
+  --meow-radius-xs: 6px;
+  --meow-radius-sm: 8px;
+  --meow-radius-md: 12px;
+  --meow-radius-lg: 16px;
+  --meow-radius-xl: 20px;
+  --meow-radius-full: 9999px;
+
+  /* Component Heights & Icon Dimensions */
+  --meow-control-h-sm: 36px;
+  --meow-control-h-md: 44px;
+  --meow-control-h-lg: 48px;
+  --meow-header-h: 56px;
+  --meow-bottom-nav-h: 84px;
+  --meow-icon-sm: 16px;
+  --meow-icon-md: 20px;
+  --meow-icon-lg: 24px;
+
+  /* Z-Index Hierarchy */
+  --meow-z-base: 0;
+  --meow-z-sticky: 20;
+  --meow-z-nav: 40;
+  --meow-z-popover: 60;
+  --meow-z-modal: 80;
+  --meow-z-toast: 100;
+
+  /* Breakpoint Reference Documentation Tokens */
+  --meow-bp-mobile-max: 767px;
+  --meow-bp-tablet-min: 768px;
+  --meow-bp-desktop-min: 1024px;
+
+  /* Canonical Meow Dark Palette (OLED-First Default) */
+  --meow-bg: #080C11;
+  --meow-surface: #111722;
+  --meow-surface-subtle: #192231;
+  --meow-border: #222A38;
+  --meow-border-strong: #334155;
+  --meow-text: #F1F4F8;
+  /* Accessible secondary copy: labels, placeholders, helper text, ordinary metadata (>= 5.78:1) */
+  --meow-secondary: #929CAF;
+  /* Strictly reserved for genuinely disabled controls and decorative/non-text elements */
+  --meow-muted: #687386;
+  --meow-accent: #3B82F6;
+  --meow-accent-light: #60A5FA;
+  --meow-accent-hover: #60A5FA;
+  --meow-accent-soft: #13243F;
+  --meow-accent-alpha: rgba(59, 130, 246, 0.16);
+  /* Separated primary CTA background achieving 5.17:1 contrast with white label */
+  --meow-action-fill: #2563EB;
+  --meow-action-fill-hover: #1D4ED8;
+  --meow-on-accent: #FFFFFF;
+
+  /* Dark Semantic Feedback Pairs (Verified >= 6.06:1) */
+  --meow-success: #34D399;
+  --meow-success-soft: #0E2923;
+  --meow-warning: #FBBF24;
+  --meow-warning-soft: #2C220D;
+  --meow-error: #F87171;
+  --meow-error-soft: #31151B;
+  --meow-info: #60A5FA;
+  --meow-info-soft: #13243F;
+  --meow-danger-fill: #DC2626;
+  --meow-danger-fill-hover: #B91C1C;
+
+  /* Dark Overlay Scrim & Elevation */
+  --meow-scrim: rgba(4, 7, 11, 0.72);
+  --meow-shadow-none: none;
+  --meow-shadow-overlay: 0 12px 32px rgba(0, 0, 0, 0.55);
+
+  /* Domain Subject & Mode Accent Tokens (Dark Default) */
+  --meow-subject-math: #5AABFF;
+  --meow-subject-math-glow: rgba(10, 132, 255, 0.14);
+  --meow-subject-reasoning: #F07AAA;
+  --meow-subject-reasoning-glow: rgba(240, 86, 140, 0.12);
+  --meow-subject-english: #3EC9B5;
+  --meow-subject-english-glow: rgba(30, 201, 174, 0.11);
+  --meow-subject-gk: #E8B840;
+  --meow-subject-gk-glow: rgba(232, 168, 37, 0.13);
+  --meow-subject-books: #E08C50;
+  --meow-subject-books-glow: rgba(224, 120, 48, 0.12);
+  --meow-subject-battle: #40B8F0;
+  --meow-subject-battle-glow: rgba(26, 174, 232, 0.13);
+  --meow-subject-recent: #9E8EF0;
+  --meow-subject-recent-glow: rgba(139, 118, 232, 0.11);
+  --meow-mode-speed: #EDBD66;
+  --meow-mode-sectional: #68D5B8;
+  --meow-mode-extreme: #F79AAA;
+}
+
+/* Explicit dark subtree scope (supports dark components nested inside light routes) */
+html.theme-dark,
+body.theme-dark,
+.theme-dark,
+[data-theme="dark"],
+.training-dark {
+  --meow-bg: #080C11;
+  --meow-surface: #111722;
+  --meow-surface-subtle: #192231;
+  --meow-border: #222A38;
+  --meow-border-strong: #334155;
+  --meow-text: #F1F4F8;
+  --meow-secondary: #929CAF;
+  --meow-muted: #687386;
+  --meow-accent: #3B82F6;
+  --meow-accent-light: #60A5FA;
+  --meow-accent-hover: #60A5FA;
+  --meow-accent-soft: #13243F;
+  --meow-accent-alpha: rgba(59, 130, 246, 0.16);
+  --meow-action-fill: #2563EB;
+  --meow-action-fill-hover: #1D4ED8;
+  --meow-on-accent: #FFFFFF;
+  --meow-success: #34D399;
+  --meow-success-soft: #0E2923;
+  --meow-warning: #FBBF24;
+  --meow-warning-soft: #2C220D;
+  --meow-error: #F87171;
+  --meow-error-soft: #31151B;
+  --meow-info: #60A5FA;
+  --meow-info-soft: #13243F;
+  --meow-danger-fill: #DC2626;
+  --meow-danger-fill-hover: #B91C1C;
+  --meow-scrim: rgba(4, 7, 11, 0.72);
+  --meow-shadow-overlay: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --meow-subject-math: #5AABFF;
+  --meow-subject-math-glow: rgba(10, 132, 255, 0.14);
+  --meow-subject-reasoning: #F07AAA;
+  --meow-subject-reasoning-glow: rgba(240, 86, 140, 0.12);
+  --meow-subject-english: #3EC9B5;
+  --meow-subject-english-glow: rgba(30, 201, 174, 0.11);
+  --meow-subject-gk: #E8B840;
+  --meow-subject-gk-glow: rgba(232, 168, 37, 0.13);
+  --meow-subject-books: #E08C50;
+  --meow-subject-books-glow: rgba(224, 120, 48, 0.12);
+  --meow-subject-battle: #40B8F0;
+  --meow-subject-battle-glow: rgba(26, 174, 232, 0.13);
+  --meow-subject-recent: #9E8EF0;
+  --meow-subject-recent-glow: rgba(139, 118, 232, 0.11);
+  --meow-mode-speed: #EDBD66;
+  --meow-mode-sectional: #68D5B8;
+  --meow-mode-extreme: #F79AAA;
+}
+
+/* Explicit light theme scope — identical semantic token names (verified >= 4.76:1) */
+html.theme-light,
+body.theme-light,
+.theme-light,
+[data-theme="light"] {
+  --meow-bg: #F4F6F9;
+  --meow-surface: #FFFFFF;
+  --meow-surface-subtle: #EBF0F5;
+  --meow-border: #DCE3EC;
+  --meow-border-strong: #CBD5E1;
+  --meow-text: #111827;
+  --meow-secondary: #4B5565;
+  --meow-muted: #5D6778;
+  --meow-accent: #2563EB;
+  --meow-accent-light: #1D4ED8;
+  --meow-accent-hover: #1D4ED8;
+  --meow-accent-soft: #EFF6FF;
+  --meow-accent-alpha: rgba(37, 99, 235, 0.12);
+  --meow-action-fill: #2563EB;
+  --meow-action-fill-hover: #1D4ED8;
+  --meow-on-accent: #FFFFFF;
+  --meow-success: #15803D;
+  --meow-success-soft: #ECFDF3;
+  --meow-warning: #92400E;
+  --meow-warning-soft: #FEF3C7;
+  --meow-error: #B91C1C;
+  --meow-error-soft: #FEE2E2;
+  --meow-info: #1D4ED8;
+  --meow-info-soft: #EFF6FF;
+  --meow-danger-fill: #DC2626;
+  --meow-danger-fill-hover: #B91C1C;
+  --meow-scrim: rgba(15, 23, 42, 0.45);
+  --meow-shadow-overlay: 0 8px 24px rgba(15, 23, 42, 0.12);
+  --meow-subject-math: #007AFF;
+  --meow-subject-math-glow: rgba(0, 122, 255, 0.07);
+  --meow-subject-reasoning: #E5387A;
+  --meow-subject-reasoning-glow: rgba(229, 56, 122, 0.07);
+  --meow-subject-english: #00A88E;
+  --meow-subject-english-glow: rgba(0, 168, 142, 0.07);
+  --meow-subject-gk: #B87C0A;
+  --meow-subject-gk-glow: rgba(184, 124, 10, 0.08);
+  --meow-subject-books: #C05F12;
+  --meow-subject-books-glow: rgba(192, 95, 18, 0.08);
+  --meow-subject-battle: #0E85C0;
+  --meow-subject-battle-glow: rgba(14, 133, 192, 0.08);
+  --meow-subject-recent: #6452C8;
+  --meow-subject-recent-glow: rgba(100, 82, 200, 0.07);
+  --meow-mode-speed: #A46B05;
+  --meow-mode-sectional: #12816E;
+  --meow-mode-extreme: #C14B61;
+}
+
+/* Ensure nested dark surfaces win when wrapped inside html.theme-light */
+html.theme-light :is(.theme-dark, [data-theme="dark"], .training-dark) {
+  --meow-bg: #080C11;
+  --meow-surface: #111722;
+  --meow-surface-subtle: #192231;
+  --meow-border: #222A38;
+  --meow-border-strong: #334155;
+  --meow-text: #F1F4F8;
+  --meow-secondary: #929CAF;
+  --meow-muted: #687386;
+  --meow-accent: #3B82F6;
+  --meow-accent-light: #60A5FA;
+  --meow-accent-hover: #60A5FA;
+  --meow-accent-soft: #13243F;
+  --meow-accent-alpha: rgba(59, 130, 246, 0.16);
+  --meow-action-fill: #2563EB;
+  --meow-action-fill-hover: #1D4ED8;
+  --meow-on-accent: #FFFFFF;
+  --meow-success: #34D399;
+  --meow-success-soft: #0E2923;
+  --meow-warning: #FBBF24;
+  --meow-warning-soft: #2C220D;
+  --meow-error: #F87171;
+  --meow-error-soft: #31151B;
+  --meow-info: #60A5FA;
+  --meow-info-soft: #13243F;
+  --meow-danger-fill: #DC2626;
+  --meow-danger-fill-hover: #B91C1C;
+  --meow-scrim: rgba(4, 7, 11, 0.72);
+  --meow-shadow-overlay: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --meow-subject-math: #5AABFF;
+  --meow-subject-math-glow: rgba(10, 132, 255, 0.14);
+  --meow-subject-reasoning: #F07AAA;
+  --meow-subject-reasoning-glow: rgba(240, 86, 140, 0.12);
+  --meow-subject-english: #3EC9B5;
+  --meow-subject-english-glow: rgba(30, 201, 174, 0.11);
+  --meow-subject-gk: #E8B840;
+  --meow-subject-gk-glow: rgba(232, 168, 37, 0.13);
+  --meow-subject-books: #E08C50;
+  --meow-subject-books-glow: rgba(224, 120, 48, 0.12);
+  --meow-subject-battle: #40B8F0;
+  --meow-subject-battle-glow: rgba(26, 174, 232, 0.13);
+  --meow-subject-recent: #9E8EF0;
+  --meow-subject-recent-glow: rgba(139, 118, 232, 0.11);
+  --meow-mode-speed: #EDBD66;
+  --meow-mode-sectional: #68D5B8;
+  --meow-mode-extreme: #F79AAA;
+}
+
+/* Ensure nested light previews (e.g., exam cards) win inside html.theme-dark */
+html.theme-dark :is(.theme-light, [data-theme="light"]) {
+  --meow-bg: #F4F6F9;
+  --meow-surface: #FFFFFF;
+  --meow-surface-subtle: #EBF0F5;
+  --meow-border: #DCE3EC;
+  --meow-border-strong: #CBD5E1;
+  --meow-text: #111827;
+  --meow-secondary: #4B5565;
+  --meow-muted: #5D6778;
+  --meow-accent: #2563EB;
+  --meow-accent-light: #1D4ED8;
+  --meow-accent-hover: #1D4ED8;
+  --meow-accent-soft: #EFF6FF;
+  --meow-accent-alpha: rgba(37, 99, 235, 0.12);
+  --meow-action-fill: #2563EB;
+  --meow-action-fill-hover: #1D4ED8;
+  --meow-on-accent: #FFFFFF;
+  --meow-success: #15803D;
+  --meow-success-soft: #ECFDF3;
+  --meow-warning: #92400E;
+  --meow-warning-soft: #FEF3C7;
+  --meow-error: #B91C1C;
+  --meow-error-soft: #FEE2E2;
+  --meow-info: #1D4ED8;
+  --meow-info-soft: #EFF6FF;
+  --meow-danger-fill: #DC2626;
+  --meow-danger-fill-hover: #B91C1C;
+  --meow-scrim: rgba(15, 23, 42, 0.45);
+  --meow-shadow-overlay: 0 8px 24px rgba(15, 23, 42, 0.12);
+  --meow-subject-math: #007AFF;
+  --meow-subject-math-glow: rgba(0, 122, 255, 0.07);
+  --meow-subject-reasoning: #E5387A;
+  --meow-subject-reasoning-glow: rgba(229, 56, 122, 0.07);
+  --meow-subject-english: #00A88E;
+  --meow-subject-english-glow: rgba(0, 168, 142, 0.07);
+  --meow-subject-gk: #B87C0A;
+  --meow-subject-gk-glow: rgba(184, 124, 10, 0.08);
+  --meow-subject-books: #C05F12;
+  --meow-subject-books-glow: rgba(192, 95, 18, 0.08);
+  --meow-subject-battle: #0E85C0;
+  --meow-subject-battle-glow: rgba(14, 133, 192, 0.08);
+  --meow-subject-recent: #6452C8;
+  --meow-subject-recent-glow: rgba(100, 82, 200, 0.07);
+  --meow-mode-speed: #A46B05;
+  --meow-mode-sectional: #12816E;
+  --meow-mode-extreme: #C14B61;
+}

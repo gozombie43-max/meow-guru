@@ -5,6 +5,7 @@ import { NotificationHistory } from '@/features/notifications/admin/Notification
 
 import ScheduledNotificationsPanel from '@/components/admin/ScheduledNotificationsPanel';
 import { useAdminNotifications } from '@/features/notifications/admin/useAdminNotifications';
+import { ConfigurationTemplate, Spinner } from '@/design-system';
 import {
   AlertCircle,
   AlertTriangle,
@@ -28,43 +29,51 @@ const ROUTE_PRESETS = [
 
 export default function AdminNotificationsPage() {
   const { authUser, authLoading, router, title, setTitle, body, setBody, route, setRoute, isConfirmOpen, setIsConfirmOpen, isSubmitting, error, result, setResult, historyItems, historyTotal, historyPage, historyTotalPages, historyLoading, historyError, analytics, analyticsLoading, health, loadHistory, loadAnalytics, handleOpenConfirm, handleSendBroadcast } = useAdminNotifications();
-  if (authLoading) return <div className={s.page}><div className={s.loadingWrap}><div className={s.spinnerPage} /></div></div>;
+  if (authLoading) return <div className={s.page}><div className={s.loadingWrap}><Spinner size="lg" /></div></div>;
   if (!authUser || !['admin', 'superadmin'].includes(authUser.role || '')) return null;
   const isFormValid = title.trim().length > 0 && body.trim().length > 0;
 
 
-  return (
-    <div className={s.page}>
-      {/* ── Header ──────────────────────────────────────── */}
-      <header data-ui-chrome="header" className={s.header}>
-        <div className={s.headerLeft}>
-          <button data-ui-button="icon"
-            type="button"
-            className={s.backBtn}
-            onClick={() => router.replace('/admin')}
-            title="Back to Admin"
-            aria-label="Back to Admin"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <div>
-            <div className={s.headerTitle}>Broadcast Notifications</div>
-            <div className={s.headerSubtitle}>
-              Push announcements to all registered Android users
-            </div>
+  const heroHeader = (
+    <header data-ui-chrome="header" className={s.header}>
+      <div className={s.headerLeft}>
+        <button data-ui-button="icon"
+          type="button"
+          className={s.backBtn}
+          onClick={() => router.replace('/admin')}
+          title="Back to Admin"
+          aria-label="Back to Admin"
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <div>
+          <div className={s.headerTitle}>Broadcast Notifications</div>
+          <div className={s.headerSubtitle}>
+            Push announcements to all registered Android users
           </div>
         </div>
+      </div>
 
-        <div className={s.headerRight}>
-          <Link href="/admin/users" className={s.navLinkBtn}>
-            <Users size={15} />
-            <span>Manage Users</span>
-          </Link>
-        </div>
-      </header>
+      <div className={s.headerRight}>
+        <Link href="/admin/users" className={s.navLinkBtn}>
+          <Users size={15} />
+          <span>Manage Users</span>
+        </Link>
+      </div>
+    </header>
+  );
 
-      {/* ── Content ─────────────────────────────────────── */}
-      <main className={s.content}>
+  return (
+    <ConfigurationTemplate
+      variant="setup"
+      hero={heroHeader}
+      showNavRail={false}
+      showBottomNav={false}
+      showSkipLink={false}
+    >
+      <div className={s.page} style={{ minHeight: 'auto', background: 'transparent' }}>
+        {/* ── Content ─────────────────────────────────────── */}
+        <div className={s.content}>
         {/* ── Error Banner ───────────────────────────────── */}
         {error && (
           <div className={s.errorBanner} role="alert">
@@ -335,7 +344,8 @@ export default function AdminNotificationsPage() {
         <NotificationHistory historyItems={historyItems} historyTotal={historyTotal} historyPage={historyPage} historyTotalPages={historyTotalPages} historyLoading={historyLoading} historyError={historyError} loadHistory={loadHistory} />
         {/* ── Scheduled Notifications Management ─────────── */}
         <ScheduledNotificationsPanel />
-      </main>
+        </div>
+      </div>
 
       {/* ── Confirmation Modal Dialog ────────────────────── */}
       {isConfirmOpen && (
@@ -400,7 +410,7 @@ export default function AdminNotificationsPage() {
               >
                 {isSubmitting ? (
                   <>
-                    <div className={s.spinner} />
+                    <Spinner size="sm" tone="on-accent" />
                     <span>Broadcasting...</span>
                   </>
                 ) : (
@@ -414,7 +424,7 @@ export default function AdminNotificationsPage() {
           </div>
         </Dialog>
       )}
-    </div>
+    </ConfigurationTemplate>
   );
 
 }

@@ -38,6 +38,7 @@ import { TrainingSelectDropdown } from "@/components/training/TrainingSelectDrop
 import { TrainingFilterPicker } from "@/components/training/TrainingFilterPicker";
 import { useTrainingCapabilities } from "../../hooks/useTrainingCapabilities";
 import { useTrainingDashboard } from "../../hooks/useTrainingDashboard";
+import ConfigurationTemplate from "@/design-system/layouts/ConfigurationTemplate";
 import "./setup.css";
 
 const modeIcons: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>> = {
@@ -193,45 +194,79 @@ export default function PlaySetupPage() {
   const requiresSubjectMissing = !!selectedPolicy?.requiresSubject && !subject;
 
   return (
-    <div className={`play-setup-page training-page ${theme === "dark" ? "training-dark" : ""}`} data-setup-loading={setupLoading || undefined}>
-      {/* ── Compact Mode Header ────────────────────────────────────────── */}
-      <header
-        className={`play-setup-header play-setup-header--${category}`}
-        data-ui-chrome="header"
-      >
-        <div className="play-setup-header-inner">
-          <div className="play-setup-header-left">
-            <Link
-              href={exam && exam !== "ssc-cgl" ? `/play?exam=${encodeURIComponent(exam)}` : "/play"}
-              data-ui-button="icon"
-              className="play-setup-back-btn"
-              aria-label="Back to Play"
-            >
-              <ArrowLeft size={18} strokeWidth={2.2} />
-            </Link>
+    <div
+      className={`play-setup-page training-page ${theme === "dark" ? "training-dark" : ""}`}
+      data-setup-loading={setupLoading ? "true" : undefined}
+    >
+      <ConfigurationTemplate
+        variant="setup"
+        mainClassName="play-setup-body"
+        header={
+          <header
+            className={`play-setup-header play-setup-header--${category}`}
+            data-ui-chrome="header"
+          >
+            <div className="play-setup-header-inner">
+              <div className="play-setup-header-left">
+                <Link
+                  href={exam && exam !== "ssc-cgl" ? `/play?exam=${encodeURIComponent(exam)}` : "/play"}
+                  data-ui-button="icon"
+                  className="play-setup-back-btn"
+                  aria-label="Back to Play"
+                >
+                  <ArrowLeft size={18} strokeWidth={2.2} />
+                </Link>
 
-            <div
-              className={`play-setup-hero-icon play-setup-hero-icon--${category}`}
-              aria-hidden="true"
-            >
-              <ModeIcon size={18} strokeWidth={2.2} />
+                <div
+                  className={`play-setup-hero-icon play-setup-hero-icon--${category}`}
+                  aria-hidden="true"
+                >
+                  <ModeIcon size={18} strokeWidth={2.2} />
+                </div>
+
+                <h1 className="play-setup-header-title">{selectedMode.title}</h1>
+              </div>
+
+              <div className="play-setup-header-right">
+                <span className={`play-setup-cat-badge play-setup-cat--${category}`}>
+                  <CategoryIcon size={11} strokeWidth={2.4} aria-hidden="true" />
+                  {selectedMode.category}
+                </span>
+              </div>
             </div>
+          </header>
+        }
+        footer={
+          <footer className="play-setup-sticky-footer" data-ui-chrome="footer">
+            <div className="play-setup-footer-inner">
+              <div className="play-setup-footer-meta">
+                <span className="play-setup-footer-meta-title">
+                  {count === "full" ? "Full section" : `${count} questions`} · {subject || "Personalized mix"}
+                </span>
+                <span className="play-setup-footer-meta-sub">
+                  {examLabel} · {selectedMode.title}
+                </span>
+              </div>
 
-            <h1 className="play-setup-header-title">{selectedMode.title}</h1>
-          </div>
-
-          <div className="play-setup-header-right">
-            <span className={`play-setup-cat-badge play-setup-cat--${category}`}>
-              <CategoryIcon size={11} strokeWidth={2.4} aria-hidden="true" />
-              {selectedMode.category}
-            </span>
-          </div>
-        </div>
-      </header>
-
-      {/* ── Main Setup Body ────────────────────────────────────────────── */}
-      <main className="play-setup-body" aria-label="Session setup">
-
+              <button
+                type="button"
+                data-ui-button="primary"
+                aria-busy={busy || setupLoading}
+                className="play-setup-start-btn"
+                disabled={isFormDisabled || !!capabilitiesError || !!dashboardError || requiresSubjectMissing}
+                onClick={startSession}
+              >
+                <span aria-live="polite">{busy ? "Building your session…" : setupLoading ? "Loading setup…" : "Begin training"}</span>
+                {busy || setupLoading ? (
+                  <LoaderCircle className="play-setup-loading-spin" size={18} aria-hidden="true" />
+                ) : (
+                  <ArrowRight size={18} strokeWidth={2.4} />
+                )}
+              </button>
+            </div>
+          </footer>
+        }
+      >
         {capabilitiesError && (
           <div role="alert" className="play-setup-error">
             <span>{capabilitiesError}</span>
@@ -382,37 +417,7 @@ export default function PlaySetupPage() {
             </p>
           </div>
         </section>
-      </main>
-
-      {/* ── Persistent Sticky Bottom Action Area ─────────────────────────── */}
-      <footer className="play-setup-sticky-footer" data-ui-chrome="footer">
-        <div className="play-setup-footer-inner">
-          <div className="play-setup-footer-meta">
-            <span className="play-setup-footer-meta-title">
-              {count === "full" ? "Full section" : `${count} questions`} · {subject || "Personalized mix"}
-            </span>
-            <span className="play-setup-footer-meta-sub">
-              {examLabel} · {selectedMode.title}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            data-ui-button="primary"
-            aria-busy={busy || setupLoading}
-            className="play-setup-start-btn"
-            disabled={isFormDisabled || !!capabilitiesError || !!dashboardError || requiresSubjectMissing}
-            onClick={startSession}
-          >
-            <span aria-live="polite">{busy ? "Building your session…" : setupLoading ? "Loading setup…" : "Begin training"}</span>
-            {busy || setupLoading ? (
-              <LoaderCircle className="play-setup-loading-spin" size={18} aria-hidden="true" />
-            ) : (
-              <ArrowRight size={18} strokeWidth={2.4} />
-            )}
-          </button>
-        </div>
-      </footer>
+      </ConfigurationTemplate>
     </div>
   );
 }

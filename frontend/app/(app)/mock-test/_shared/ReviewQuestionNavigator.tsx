@@ -28,6 +28,8 @@ export default function ReviewQuestionNavigator({ questions, filteredQuestions, 
   return <div className={styles.navigator}>
     <div className={styles.filterList} role="group" aria-label="Filter questions by status">
       {filters.map(item => <button
+        type="button"
+        data-ui-button="tab"
         key={item.key}
         className={`${styles.filterBtn} ${filter === item.key ? styles.activeFilter : ''}`}
         aria-pressed={filter === item.key}
@@ -41,6 +43,8 @@ export default function ReviewQuestionNavigator({ questions, filteredQuestions, 
     </div>
     <div className={styles.paletteGrid} aria-label="Question numbers">
       {filteredQuestions.map((item, index) => <button
+        type="button"
+        data-ui-button="state"
         key={item.question.id}
         className={`${styles.paletteBtn} ${item.status === 'correct' ? styles.itemCorrect : item.status === 'incorrect' ? styles.itemIncorrect : styles.itemSkipped} ${index === selectedIndex ? styles.selectedPaletteBtn : ''}`}
         aria-label={`Question ${item.index + 1}, ${item.status}`}

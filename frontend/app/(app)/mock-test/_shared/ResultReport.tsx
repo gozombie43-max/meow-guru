@@ -8,6 +8,7 @@ import { getAttempt, getSlotDetails, type MockAttempt } from './api';
 import ResultReportView from './ResultReportView';
 import styles from './ResultReport.module.css';
 import { paperDisplayTitle } from './paper-date';
+import { AnalyticsTemplate, Spinner } from '@/design-system';
 
 interface ResultReportProps {
   examSlug: string;
@@ -16,17 +17,36 @@ interface ResultReportProps {
 }
 
 function ResultState({ title, description, onBack, children, busy = false }: { title: string; description?: string; onBack: () => void; children?: ReactNode; busy?: boolean }) {
-  return <main className={styles.container}>
-    <div className={styles.contentWrap}>
-      <header className={styles.header}><button type="button" data-ui-button="icon" className={styles.backButton} aria-label="Back to tests" onClick={onBack}><ArrowLeft size={20} aria-hidden="true" /></button><div><p className={styles.examLabel}>Assessment report</p><h1>Test result</h1></div></header>
-      <section className={styles.stateCard} aria-busy={busy}>
-        {busy ? <span className={styles.spinner} aria-hidden="true" /> : <ChartNoAxesColumnIncreasing size={32} aria-hidden="true" />}
-        <h2 role={busy ? 'status' : undefined}>{title}</h2>
-        {description && <p>{description}</p>}
-        {children && <div className={styles.stateActions}>{children}</div>}
-      </section>
-    </div>
-  </main>;
+  const headerNode = (
+    <header className={styles.header}>
+      <button type="button" data-ui-button="icon" className={styles.backButton} aria-label="Back to tests" onClick={onBack}>
+        <ArrowLeft size={20} aria-hidden="true" />
+      </button>
+      <div>
+        <p className={styles.examLabel}>Assessment report</p>
+        <h1>Test result</h1>
+      </div>
+    </header>
+  );
+
+  return (
+    <AnalyticsTemplate
+      header={headerNode}
+      showBottomNav={false}
+      showNavRail={false}
+    >
+      <main className={styles.container}>
+        <div className={styles.contentWrap}>
+          <section className={styles.stateCard} aria-busy={busy}>
+            {busy ? <Spinner size="md" /> : <ChartNoAxesColumnIncreasing size={32} aria-hidden="true" />}
+            <h2 role={busy ? 'status' : undefined}>{title}</h2>
+            {description && <p>{description}</p>}
+            {children && <div className={styles.stateActions}>{children}</div>}
+          </section>
+        </div>
+      </main>
+    </AnalyticsTemplate>
+  );
 }
 
 export default function ResultReport({ examSlug, testId, attemptId }: ResultReportProps) {

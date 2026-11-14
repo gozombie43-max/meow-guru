@@ -1,24 +1,16 @@
 .scope { isolation: auto; }
+.res-listing-main {
+  padding: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
 /* ════════════════════════════════════════════
            THEME TOKENS: DARK (DEFAULT)
            ════════════════════════════════════════════ */
         .resource-page {
-          --bg: var(--dark-canvas);
-          --card-bg: var(--dark-surface);
-          --card-hover: var(--dark-surface-muted);
-          --border: var(--dark-border);
-          --header-bg: #000000;
-          --text-primary: var(--dark-text);
-          --text-secondary: var(--dark-text-secondary);
-          --text-tertiary: var(--dark-text-muted);
-          --tab-bg: rgba(255, 255, 255, 0.08);
-          --tab-color: rgba(235, 235, 245, 0.75);
-          --accent: var(--dark-accent);
-          --modal-bg: var(--dark-surface);
-          --modal-option-bg: var(--dark-surface-muted);
-          --notice-bg: rgba(255, 255, 255, 0.08);
-          --spinner-color: rgba(235, 235, 245, 0.75);
-
           height: 100dvh;
           width: 100%;
           box-sizing: border-box;
@@ -724,26 +716,6 @@
         /* ════════════════════════════════════════════
            LIGHT THEME OVERRIDES
            ════════════════════════════════════════════ */
-        :global(body.theme-light) .resource-page,
-        :global(html.theme-light) .resource-page {
-          --bg: var(--light-canvas);
-          --card-bg: var(--light-surface);
-          --card-hover: var(--light-only-canvas, #f8fafc);
-          --border: var(--light-only-border, rgba(0, 0, 0, 0.08));
-          --header-bg: rgba(246, 248, 250, 0.92);
-          --text-primary: var(--light-text);
-          --text-secondary: var(--light-text-secondary);
-          --text-tertiary: var(--light-text-muted);
-          --tab-bg: var(--light-only-surface-muted, rgba(0, 0, 0, 0.05));
-          --tab-color: var(--light-text-secondary);
-          --modal-bg: var(--light-surface);
-          --modal-option-bg: var(--light-canvas);
-          --notice-bg: var(--light-only-surface-muted, rgba(0, 0, 0, 0.04));
-          --spinner-color: var(--light-only-text-secondary, rgba(60, 60, 67, 0.6));
-          --segment-track: rgba(118, 118, 128, 0.12);
-          --segment-active-bg: var(--light-surface);
-        }
-
         :global(body.theme-light) .res-segment-btn.active,
         :global(html.theme-light) .res-segment-btn.active {
           color: var(--light-only-text, #000000);

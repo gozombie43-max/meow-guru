@@ -1,0 +1,490 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--meow-space-2);
+  width: 100%;
+  font-family: var(--meow-font-sans);
+}
+
+.fieldInline {
+  width: auto;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--meow-space-1);
+  font-size: var(--meow-text-sm);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--meow-secondary);
+}
+
+.labelDisabled {
+  color: var(--meow-muted);
+}
+
+.requiredMark {
+  color: var(--meow-error);
+}
+
+.controlShell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: var(--meow-control-h-md);
+  background: var(--meow-surface-subtle);
+  border: 1px solid var(--meow-border);
+  border-radius: var(--meow-radius-md);
+  color: var(--meow-text);
+  transition:
+    border-color var(--meow-duration-fast) var(--meow-ease-standard),
+    box-shadow var(--meow-duration-fast) var(--meow-ease-standard),
+    background-color var(--meow-duration-fast) var(--meow-ease-standard);
+}
+
+.controlShell:hover:not(.controlShellDisabled, .controlShellError) {
+  border-color: var(--meow-border-strong);
+}
+
+.controlShell:focus-within:not(.controlShellDisabled) {
+  border-color: var(--meow-accent);
+  box-shadow: 0 0 0 3px var(--meow-accent-alpha);
+}
+
+.controlShellError {
+  border-color: var(--meow-error);
+}
+
+.controlShellError:focus-within:not(.controlShellDisabled) {
+  border-color: var(--meow-error);
+  box-shadow: 0 0 0 3px var(--meow-error-soft);
+}
+
+.controlShellDisabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  color: var(--meow-muted);
+}
+
+.leadingIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  margin-left: var(--meow-space-3);
+  color: var(--meow-secondary);
+  pointer-events: none;
+}
+
+.controlShellDisabled .leadingIcon {
+  color: var(--meow-muted);
+}
+
+.trailingSlot {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: var(--meow-space-1);
+  margin-right: var(--meow-space-1);
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: var(--meow-text);
+  font-family: var(--meow-font-sans);
+  font-size: var(--meow-text-base);
+  line-height: 1.45;
+  outline: none;
+}
+
+.input {
+  min-height: 42px;
+  padding: 10px var(--meow-space-3);
+}
+
+.inputWithLeading {
+  padding-left: var(--meow-space-2);
+}
+
+.inputWithTrailing {
+  padding-right: var(--meow-space-1);
+}
+
+.input[type='search']::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.controlShell .input::placeholder,
+.controlShell .textarea::placeholder {
+  color: var(--meow-secondary);
+  opacity: 1;
+}
+
+.input:disabled,
+.textarea:disabled,
+.select:disabled {
+  color: var(--meow-muted);
+  cursor: not-allowed;
+}
+
+.controlShell .input:disabled::placeholder,
+.controlShell .textarea:disabled::placeholder {
+  color: var(--meow-muted);
+}
+
+.textareaShell {
+  align-items: stretch;
+}
+
+.textarea {
+  min-height: 96px;
+  padding: var(--meow-space-3);
+  resize: vertical;
+}
+
+.textareaResizeNone {
+  resize: none;
+}
+
+.textareaResizeBoth {
+  resize: both;
+}
+
+.select {
+  min-height: 42px;
+  padding: 10px 40px 10px var(--meow-space-3);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.selectWithLeading {
+  padding-left: var(--meow-space-2);
+}
+
+.selectPlaceholder {
+  color: var(--meow-secondary);
+}
+
+.select option {
+  background-color: var(--meow-surface);
+  color: var(--meow-text);
+}
+
+.selectChevron {
+  position: absolute;
+  right: var(--meow-space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--meow-secondary);
+  display: inline-flex;
+  align-items: center;
+}
+
+.controlShellDisabled .selectChevron {
+  color: var(--meow-muted);
+}
+
+.clearButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  margin: -1px -4px -1px 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--meow-radius-md);
+  background: transparent;
+  color: var(--meow-secondary);
+  cursor: pointer;
+  transition:
+    color var(--meow-duration-fast) var(--meow-ease-standard),
+    background-color var(--meow-duration-fast) var(--meow-ease-standard);
+}
+
+.clearButton:hover:not(:disabled) {
+  color: var(--meow-text);
+  background: var(--meow-border);
+}
+
+.clearButton:focus-visible {
+  outline: 2px solid var(--meow-accent);
+  outline-offset: -2px;
+}
+
+.clearButton:disabled {
+  color: var(--meow-muted);
+  cursor: not-allowed;
+}
+
+.shortcutHint {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .shortcutHint {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 7px;
+    margin-right: var(--meow-space-2);
+    border-radius: var(--meow-radius-xs);
+    border: 1px solid var(--meow-border);
+    background: var(--meow-surface);
+    color: var(--meow-secondary);
+    font-family: var(--meow-font-mono);
+    font-size: var(--meow-text-xs);
+    line-height: 1.4;
+    pointer-events: none;
+    user-select: none;
+  }
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--meow-text-xs);
+  line-height: 1.45;
+  color: var(--meow-secondary);
+}
+
+.errorText {
+  margin: 0;
+  font-size: var(--meow-text-xs);
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--meow-error);
+}
+
+/* Mobile / coarse pointer typography guard against iOS Safari auto-zoom */
+@media (max-width: 767px), (pointer: coarse) {
+  .input,
+  .textarea,
+  .select {
+    font-size: max(16px, var(--meow-text-md));
+  }
+}
+
+/* Checkbox & Switch */
+.choiceGroup {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--meow-space-1);
+  font-family: var(--meow-font-sans);
+}
+
+.choiceGroupFull {
+  width: 100%;
+}
+
+.choiceRow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--meow-space-2);
+  min-height: 44px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.choiceRowBetween {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.choiceRowDisabled {
+  cursor: not-allowed;
+}
+
+.checkboxHitBox {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  flex: 0 0 44px;
+}
+
+.checkboxNative {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkboxNative:disabled {
+  cursor: not-allowed;
+}
+
+.checkboxIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--meow-radius-xs);
+  border: 1.5px solid var(--meow-border-strong);
+  background: var(--meow-surface-subtle);
+  color: var(--meow-on-accent);
+  pointer-events: none;
+  transition:
+    background-color var(--meow-duration-fast) var(--meow-ease-standard),
+    border-color var(--meow-duration-fast) var(--meow-ease-standard);
+}
+
+.checkboxError .checkboxIndicator {
+  border-color: var(--meow-error);
+}
+
+.checkboxNative:checked + .checkboxIndicator,
+.checkboxNative:indeterminate + .checkboxIndicator {
+  background: var(--meow-action-fill);
+  border-color: var(--meow-action-fill);
+}
+
+.checkGlyph,
+.mixedGlyph {
+  opacity: 0;
+}
+
+.checkboxNative:checked:not(:indeterminate) + .checkboxIndicator .checkGlyph {
+  opacity: 1;
+}
+
+.checkboxNative:indeterminate + .checkboxIndicator .mixedGlyph {
+  opacity: 1;
+}
+
+.checkboxNative:focus-visible + .checkboxIndicator {
+  outline: 2px solid var(--meow-accent);
+  outline-offset: 3px;
+}
+
+.checkboxNative:disabled + .checkboxIndicator {
+  opacity: 0.45;
+}
+
+.switchButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--meow-radius-full);
+  background: transparent;
+  cursor: pointer;
+  flex: 0 0 44px;
+}
+
+.switchButton:focus-visible {
+  outline: 2px solid var(--meow-accent);
+  outline-offset: 2px;
+}
+
+.switchButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.switchTrack {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 44px;
+  height: 26px;
+  padding: 2px;
+  border-radius: var(--meow-radius-full);
+  background: var(--meow-surface-subtle);
+  border: 1px solid var(--meow-border-strong);
+  box-sizing: border-box;
+  transition:
+    background-color var(--meow-duration-fast) var(--meow-ease-standard),
+    border-color var(--meow-duration-fast) var(--meow-ease-standard);
+}
+
+.switchButton[aria-checked='true'] .switchTrack {
+  background: var(--meow-action-fill);
+  border-color: var(--meow-action-fill);
+}
+
+.switchThumb {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--meow-radius-full);
+  background: var(--meow-secondary);
+  transform: translateX(0);
+  transition:
+    transform var(--meow-duration-fast) var(--meow-ease-standard),
+    background-color var(--meow-duration-fast) var(--meow-ease-standard);
+}
+
+.switchButton[aria-checked='true'] .switchThumb {
+  background: var(--meow-on-accent);
+  transform: translateX(18px);
+}
+
+.choiceText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 0;
+  min-width: 0;
+}
+
+.choiceLabel {
+  font-size: var(--meow-text-base);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--meow-text);
+  cursor: pointer;
+}
+
+.choiceLabelDisabled {
+  color: var(--meow-muted);
+  cursor: not-allowed;
+}
+
+.choiceDescription {
+  font-size: var(--meow-text-xs);
+  line-height: 1.45;
+  color: var(--meow-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .controlShell,
+  .clearButton,
+  .checkboxIndicator,
+  .switchTrack,
+  .switchThumb {
+    transition: none;
+  }
+}
+
+:global([data-meow-motion='reduced']) .controlShell,
+:global([data-meow-motion='reduced']) .clearButton,
+:global([data-meow-motion='reduced']) .checkboxIndicator,
+:global([data-meow-motion='reduced']) .switchTrack,
+:global([data-meow-motion='reduced']) .switchThumb {
+  transition: none;
+}

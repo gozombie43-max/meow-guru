@@ -1,0 +1,72 @@
+.spinner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+  color: inherit;
+}
+
+.sm {
+  width: var(--meow-icon-sm);
+  height: var(--meow-icon-sm);
+}
+
+.md {
+  width: var(--meow-icon-md);
+  height: var(--meow-icon-md);
+}
+
+.lg {
+  width: var(--meow-icon-lg);
+  height: var(--meow-icon-lg);
+}
+
+.toneInherit {
+  color: inherit;
+}
+
+.toneAccent {
+  color: var(--meow-accent-light);
+}
+
+.toneSecondary {
+  color: var(--meow-secondary);
+}
+
+.toneOnAccent {
+  color: var(--meow-on-accent);
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  animation: meow-spin 700ms linear infinite;
+}
+
+.track {
+  opacity: 0.24;
+}
+
+.arc {
+  opacity: 1;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svg {
+    animation-duration: 0.01ms;
+  }
+}

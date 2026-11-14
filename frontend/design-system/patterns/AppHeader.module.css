@@ -1,0 +1,112 @@
+.header {
+  box-sizing: border-box;
+  position: relative;
+  width: 100%;
+  min-height: calc(var(--meow-header-h) + var(--safe-top, 0px));
+  padding-top: var(--safe-top, 0px);
+  padding-inline: max(var(--meow-gutter-mobile), var(--safe-left, 0px))
+    max(var(--meow-gutter-mobile), var(--safe-right, 0px));
+  background-color: var(--meow-surface);
+  border-bottom: 1px solid var(--meow-border);
+  color: var(--meow-text);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  display: flex;
+  align-items: center;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  z-index: var(--meow-z-sticky);
+}
+
+.variantCompact {
+  min-height: calc(48px + var(--safe-top, 0px));
+}
+
+.variantTransparent {
+  background-color: var(--meow-bg);
+  border-bottom-color: transparent;
+}
+
+.inner {
+  width: 100%;
+  min-height: calc(var(--meow-header-h) - 1px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--meow-space-3);
+}
+
+.variantCompact .inner {
+  min-height: 47px;
+}
+
+.innerCentered {
+  display: grid;
+  grid-template-columns: minmax(44px, 1fr) minmax(0, auto) minmax(44px, 1fr);
+  align-items: center;
+  gap: var(--meow-space-3);
+}
+
+.leading {
+  display: flex;
+  align-items: center;
+  gap: var(--meow-space-2);
+  flex-shrink: 0;
+}
+
+.titleGroup {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.innerCentered .titleGroup {
+  text-align: center;
+  align-items: center;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--meow-font-display);
+  font-size: var(--meow-text-md);
+  line-height: var(--meow-leading-md);
+  font-weight: 600;
+  color: var(--meow-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subtitle {
+  margin: 0;
+  font-family: var(--meow-font-sans);
+  font-size: var(--meow-text-xs);
+  line-height: var(--meow-leading-xs);
+  color: var(--meow-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--meow-space-2);
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .header {
+    padding-inline: max(var(--meow-gutter-desktop), var(--safe-left, 0px))
+      max(var(--meow-gutter-desktop), var(--safe-right, 0px));
+  }
+}

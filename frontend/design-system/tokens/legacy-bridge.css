@@ -1,0 +1,386 @@
+/* ==========================================================================
+   Meow Design System — Progressive Legacy Token Bridge (PR P0-A)
+   --------------------------------------------------------------------------
+   SAFEGUARD CONTRACT:
+   1. Does NOT overwrite legacy global tokens (--dark-*, --oled-*, --light-*,
+      --ui-*, --background, --color-*) at :root / html / body so un-migrated
+      screens preserve 100% identical computed styling during P0-A.
+   2. Provides read-only compatibility reference variables (--meow-compat-*)
+      documenting existing dark/light defaults.
+   3. Provides the opt-in `[data-meow-tokens]` scope used progressively by
+      P0-B through P5 PRs to bind legacy variable namespaces onto canonical
+      `--meow-*` semantic tokens for both dark and light modes.
+   ========================================================================== */
+
+:root {
+  /* Legacy visual compatibility baseline references (read-only) */
+  --meow-compat-dark-bg: #000000;
+  --meow-compat-dark-surface: #1c1c1e;
+  --meow-compat-dark-surface-muted: #2c2c2e;
+  --meow-compat-dark-accent: #0a84ff;
+  --meow-compat-light-bg: #f4f5f7;
+  --meow-compat-light-surface: #ffffff;
+  --meow-compat-light-accent: #007aff;
+}
+
+/* --------------------------------------------------------------------------
+   Opt-In Progressive Scope: `[data-meow-tokens]`
+   Any component, shell, or route container tagged `data-meow-tokens` shifts
+   legacy variables within that subtree onto canonical `--meow-*` tokens.
+   -------------------------------------------------------------------------- */
+[data-meow-tokens] {
+  /* Generic & globals.css shared surface/text aliases */
+  --background: var(--meow-bg);
+  --foreground: var(--meow-text);
+  --bg-gradient: var(--meow-bg);
+  --bg: var(--meow-bg);
+  --bg-page: var(--meow-bg);
+  --bg-elevated: var(--meow-surface);
+  --surface: var(--meow-surface);
+  --surface-soft: var(--meow-surface-subtle);
+  --surface-muted: var(--meow-surface-subtle);
+  --surface-transparent: transparent;
+  --card: var(--meow-surface);
+  --card-bg: var(--meow-surface);
+  --card-hover: var(--meow-surface-subtle);
+  --card-shadow: var(--meow-shadow-overlay);
+  --shadow: var(--meow-shadow-overlay);
+  --inset: var(--meow-surface-subtle);
+  --fill: var(--meow-surface-subtle);
+  --header-bg: var(--meow-bg);
+  --topbar-bg: var(--meow-surface);
+  --desktop-bg: var(--meow-bg);
+  --sidebar-bg: var(--meow-surface-subtle);
+  --workspace-bg: var(--meow-bg);
+  --window-border: var(--meow-border);
+  --divider: var(--meow-border);
+  --separator: var(--meow-border);
+  --border: var(--meow-border);
+  --line: var(--meow-border);
+  --muted: var(--meow-surface-subtle);
+  --text: var(--meow-text);
+  --ink: var(--meow-text);
+  --label: var(--meow-text);
+  --secondary-label: var(--meow-secondary);
+  --tertiary-label: var(--meow-secondary);
+  --text-primary: var(--meow-text);
+  --text-dark: var(--meow-text);
+  --text-secondary: var(--meow-secondary);
+  --text-tertiary: var(--meow-secondary);
+  /* Readable metadata/muted slots route to --meow-secondary (#929CAF dark / #4B5565 light) */
+  --text-muted: var(--meow-secondary);
+  --text-light: var(--meow-secondary);
+  --primary: var(--meow-accent);
+  --primary-light: var(--meow-accent-light);
+  --primary-bg: var(--meow-accent-soft);
+  --accent: var(--meow-accent);
+  --accent-dark: var(--meow-action-fill-hover);
+  --blue: var(--meow-accent);
+  --system-blue: var(--meow-accent);
+  --purple: var(--meow-accent);
+  --purple-2: var(--meow-accent-hover);
+  --orange: var(--meow-warning);
+  --green: var(--meow-success);
+  --correct: var(--meow-success);
+  --incorrect: var(--meow-error);
+  --correct-bg: var(--meow-success-soft);
+  --incorrect-bg: var(--meow-error-soft);
+  --input-bg: var(--meow-surface);
+  --input-border: var(--meow-border);
+  --input-focus-border: var(--meow-accent);
+  --btn-bg: var(--meow-surface);
+  --btn-hover: var(--meow-accent-soft);
+  --btn-border: var(--meow-border);
+  --preview-bg: var(--meow-surface-subtle);
+  --preview-card: var(--meow-surface);
+  --chip-bg: var(--meow-surface-subtle);
+  --chip-text: var(--meow-text);
+  --chip-hover: var(--meow-accent-soft);
+  --table-header-bg: var(--meow-surface-subtle);
+  --table-row-hover: var(--meow-accent-soft);
+  --table-row-border: var(--meow-border);
+  --drawer-bg: var(--meow-surface);
+  --tab-bg: var(--meow-surface-subtle);
+  --tab-color: var(--meow-secondary);
+  --modal-bg: var(--meow-surface);
+  --modal-option-bg: var(--meow-surface-subtle);
+  --notice-bg: var(--meow-surface-subtle);
+  --notice-color: var(--meow-secondary);
+  --spinner-color: var(--meow-secondary);
+  --segment-track: var(--meow-surface-subtle);
+  --segment-active-bg: var(--meow-surface);
+  --item-hover: var(--meow-surface-subtle);
+  --table-header: var(--meow-surface-subtle);
+  --table-alt: var(--meow-surface);
+  --quote-bg: var(--meow-surface-subtle);
+  --quote-border: var(--meow-accent);
+  --bubble-ai: var(--meow-surface-subtle);
+  --bubble-user: var(--meow-action-fill);
+  --bubble-user-text: var(--meow-on-accent);
+  --bubble-ai-text: var(--meow-text);
+  --catalog-control: var(--meow-surface-subtle);
+  --catalog-success: var(--meow-success);
+  --catalog-warning: var(--meow-warning);
+
+  --color-background: var(--meow-bg);
+  --color-foreground: var(--meow-text);
+  --color-text-primary: var(--meow-text);
+  --color-text-secondary: var(--meow-secondary);
+  --color-text-tertiary: var(--meow-secondary);
+  --color-border-secondary: var(--meow-border);
+  --color-border-tertiary: var(--meow-border);
+  --color-background-primary: var(--meow-surface);
+  --color-background-secondary: var(--meow-bg);
+  --color-background-danger: var(--meow-error-soft);
+  --color-text-danger: var(--meow-error);
+
+  /* Legacy OLED / Dark namespaces (dark-theme.css) */
+  --oled-canvas: var(--meow-bg);
+  --oled-surface: var(--meow-surface);
+  --oled-hover: var(--meow-surface-subtle);
+  --oled-inset: var(--meow-surface-subtle);
+  --oled-text: var(--meow-text);
+  --oled-secondary: var(--meow-secondary);
+  --oled-selected: var(--meow-action-fill);
+  --oled-selected-soft: var(--meow-accent-soft);
+
+  --dark-canvas: var(--meow-bg);
+  --dark-surface: var(--meow-surface);
+  --dark-surface-muted: var(--meow-surface-subtle);
+  --dark-border: var(--meow-border);
+  --dark-text: var(--meow-text);
+  --dark-text-secondary: var(--meow-secondary);
+  --dark-text-muted: var(--meow-secondary);
+  --dark-accent: var(--meow-accent);
+  --dark-accent-hover: var(--meow-accent-hover);
+  --dark-action: var(--meow-action-fill);
+  --dark-accent-soft: var(--meow-accent-soft);
+  --dark-shadow: var(--meow-shadow-overlay);
+  --theme-action: var(--meow-action-fill);
+
+  /* Legacy Light namespace (light-theme.css) */
+  --light-canvas: var(--meow-bg);
+  --light-surface: var(--meow-surface);
+  --light-surface-muted: var(--meow-surface-subtle);
+  --light-border: var(--meow-border);
+  --light-text: var(--meow-text);
+  --light-text-secondary: var(--meow-secondary);
+  --light-text-muted: var(--meow-secondary);
+  --light-accent: var(--meow-accent);
+  --light-accent-hover: var(--meow-accent-hover);
+  --light-accent-soft: var(--meow-accent-soft);
+  --light-shadow: var(--meow-shadow-overlay);
+  --light-success: var(--meow-success);
+  --light-success-soft: var(--meow-success-soft);
+  --light-danger: var(--meow-error);
+  --light-danger-soft: var(--meow-error-soft);
+  --light-warning: var(--meow-warning);
+  --light-warning-soft: var(--meow-warning-soft);
+
+  /* Legacy interface.css contract namespace */
+  --ui-space-1: var(--meow-space-1);
+  --ui-space-2: var(--meow-space-2);
+  --ui-space-3: var(--meow-space-3);
+  --ui-space-4: var(--meow-space-4);
+  --ui-space-6: var(--meow-space-6);
+  --ui-space-8: var(--meow-space-8);
+  --ui-font-meta: var(--meow-text-xs);
+  --ui-font-secondary: var(--meow-text-sm);
+  --ui-font-body: var(--meow-text-base);
+  --ui-font-title: var(--meow-text-xl);
+  --ui-radius-sm: var(--meow-radius-sm);
+  --ui-radius-lg: var(--meow-radius-lg);
+  --ui-control-height: var(--meow-control-h-md);
+  --ui-control-radius: var(--meow-radius-md);
+  --ui-icon-size: var(--meow-icon-md);
+  --ui-surface: var(--meow-surface);
+  --ui-header-surface: var(--meow-bg);
+  --ui-muted-surface: var(--meow-surface-subtle);
+  --ui-border: var(--meow-border);
+  --ui-text: var(--meow-text);
+  --ui-secondary: var(--meow-secondary);
+  --ui-accent: var(--meow-accent);
+  --ui-action: var(--meow-action-fill);
+  --ui-danger: var(--meow-danger-fill);
+
+  /* Feature-scoped namespaces (Training, Admin, Mac Hub, Quiz, Notifications, Battle, Results, GA, Profile) */
+  --tr-bg: var(--meow-bg);
+  --tr-surface: var(--meow-surface);
+  --tr-muted: var(--meow-surface-subtle);
+  --tr-border: var(--meow-border);
+  --tr-text: var(--meow-text);
+  --tr-secondary: var(--meow-secondary);
+  --tr-accent: var(--meow-accent);
+
+  --tfp-bg: var(--meow-bg);
+  --tfp-surface: var(--meow-surface);
+  --tfp-muted: var(--meow-surface-subtle);
+  --tfp-border: var(--meow-border);
+  --tfp-text: var(--meow-text);
+  --tfp-secondary: var(--meow-secondary);
+
+  --admin-bg: var(--meow-bg);
+  --admin-surface: var(--meow-surface);
+  --admin-surface-solid: var(--meow-surface);
+  --admin-surface-muted: var(--meow-surface-subtle);
+  --admin-text: var(--meow-text);
+  --admin-text-secondary: var(--meow-secondary);
+  --admin-text-tertiary: var(--meow-secondary);
+  --admin-border: var(--meow-border);
+  --admin-separator: var(--meow-border);
+  --admin-blue: var(--meow-accent);
+  --admin-blue-soft: var(--meow-accent-soft);
+  --admin-shadow: var(--meow-shadow-overlay);
+  --admin-success: var(--meow-success);
+  --admin-success-soft: var(--meow-success-soft);
+  --admin-success-border: var(--meow-border);
+  --admin-danger: var(--meow-error);
+  --admin-danger-soft: var(--meow-error-soft);
+  --admin-danger-border: var(--meow-border);
+
+  --mac-bg-outer: transparent;
+  --mac-window-bg: var(--meow-surface);
+  --mac-window-border: var(--meow-border);
+  --mac-sidebar-bg: var(--meow-surface-subtle);
+  --mac-canvas-bg: var(--meow-bg);
+  --mac-surface: var(--meow-surface);
+  --mac-surface-hover: var(--meow-surface-subtle);
+  --mac-surface-active: var(--meow-accent-soft);
+  --mac-border: var(--meow-border);
+  --mac-border-subtle: var(--meow-border);
+  --mac-border-hover: var(--meow-border-strong);
+  --mac-border-focus: var(--meow-accent);
+  --mac-card-bg: var(--meow-surface);
+  --mac-card-subtle: var(--meow-surface-subtle);
+  --mac-card-border: var(--meow-border);
+  --mac-primary: var(--meow-accent);
+  --mac-primary-hover: var(--meow-accent-hover);
+  --mac-primary-soft: var(--meow-accent-soft);
+  --mac-blue: var(--meow-accent);
+  --mac-blue-hover: var(--meow-accent-hover);
+  --mac-blue-subtle: var(--meow-accent-soft);
+  --mac-text-primary: var(--meow-text);
+  --mac-text-secondary: var(--meow-secondary);
+  --mac-text-tertiary: var(--meow-secondary);
+  --mac-text-muted: var(--meow-secondary);
+  --mac-shadow-window: none;
+  --mac-shadow-card: none;
+  --mac-shadow-hover: none;
+  --mac-font: var(--meow-font-sans);
+  --mac-font-mono: var(--meow-font-mono);
+
+  --quiz-background: var(--meow-bg);
+  --quiz-surface: var(--meow-surface);
+  --quiz-answer-surface: var(--meow-surface-subtle);
+  --quiz-surface-hover: var(--meow-surface-subtle);
+  --quiz-surface-selected: var(--meow-accent-soft);
+  --quiz-text-primary: var(--meow-text);
+  --quiz-text-secondary: var(--meow-secondary);
+  --quiz-accent: var(--meow-accent);
+  --quiz-success: var(--meow-success);
+  --quiz-error: var(--meow-error);
+
+  --notif-bg: var(--meow-bg);
+  --notif-card: var(--meow-surface);
+  --notif-border: var(--meow-border);
+  --notif-border-hover: var(--meow-border-strong);
+  --notif-text: var(--meow-text);
+  --notif-muted: var(--meow-secondary);
+  --notif-soft: var(--meow-surface-subtle);
+  --notif-accent: var(--meow-accent);
+  --notif-accent-strong: var(--meow-action-fill-hover);
+  --notif-accent-soft: var(--meow-accent-soft);
+  --notif-unread-dot: var(--meow-accent);
+  --notif-shadow: none;
+  --notif-shadow-hover: none;
+
+  --battle-ink: var(--meow-text);
+  --battle-muted: var(--meow-secondary);
+  --battle-accent: var(--meow-accent);
+  --battle-accent-strong: var(--meow-action-fill-hover);
+  --battle-surface: var(--meow-surface);
+  --battle-line: var(--meow-border);
+  --battle-soft: var(--meow-surface-subtle);
+  --battle-green: var(--meow-success);
+  --battle-red: var(--meow-error);
+  --battle-header-bg: var(--meow-surface-overlay);
+  --battle-header-divider: var(--meow-border);
+  --battle-header-primary: var(--meow-text);
+  --battle-header-secondary: var(--meow-secondary);
+  --battle-header-exit: var(--meow-error);
+  --battle-header-live: var(--meow-success);
+
+  --result-bg: var(--meow-bg);
+  --result-card: var(--meow-surface);
+  --result-inset: var(--meow-surface-subtle);
+  --result-text: var(--meow-text);
+  --result-muted: var(--meow-secondary);
+  --result-border: var(--meow-border);
+  --result-blue: var(--meow-accent);
+  --result-green: var(--meow-success);
+  --result-red: var(--meow-error);
+  --result-icon: var(--meow-warning);
+
+  --geo-bg: var(--meow-bg);
+  --geo-surface: var(--meow-surface);
+  --geo-surface-muted: var(--meow-surface-subtle);
+  --geo-border: var(--meow-border);
+  --geo-text: var(--meow-text);
+  --geo-secondary: var(--meow-secondary);
+  --geo-tertiary: var(--meow-secondary);
+  --geo-accent: var(--meow-accent);
+  --geo-accent-soft: var(--meow-accent-soft);
+
+  --play-accent-soft: var(--meow-accent-soft);
+  --play-action-bg: var(--meow-accent-soft);
+  --play-action-text: var(--meow-accent);
+  --play-action-hover: var(--meow-surface-subtle);
+  --play-action-pressed: var(--meow-surface-subtle);
+  --mode-color: var(--meow-accent);
+
+  --profile-background: var(--meow-bg);
+  --profile-surface: var(--meow-surface);
+  --profile-muted: var(--meow-secondary);
+  --profile-border: var(--meow-border);
+}
+
+/* Preserve light-only opt-in aliases only inside light mode for migrated trees */
+html.theme-light [data-meow-tokens] {
+  --light-only-canvas: var(--meow-bg);
+  --light-only-surface: var(--meow-surface);
+  --light-only-surface-muted: var(--meow-surface-subtle);
+  --light-only-border: var(--meow-border);
+  --light-only-text: var(--meow-text);
+  --light-only-text-secondary: var(--meow-secondary);
+  --light-only-text-muted: var(--meow-secondary);
+  --light-only-success: var(--meow-success);
+  --light-only-success-soft: var(--meow-success-soft);
+  --light-only-danger: var(--meow-error);
+  --light-only-danger-soft: var(--meow-error-soft);
+}
+
+/* Preserve dark subtree isolation inside migrated light pages */
+[data-meow-tokens] :is(.theme-dark, [data-theme="dark"], .training-dark) {
+  --light-only-canvas: initial;
+  --light-only-surface: initial;
+  --light-only-surface-muted: initial;
+  --light-only-border: initial;
+  --light-only-text: initial;
+  --light-only-text-secondary: initial;
+  --light-only-text-muted: initial;
+  --light-only-success: initial;
+  --light-only-success-soft: initial;
+  --light-only-danger: initial;
+  --light-only-danger-soft: initial;
+}
+
+/* Mode category accent bridges for Play Hub */
+[data-meow-tokens] .training-category-speed {
+  --mode-color: var(--meow-mode-speed);
+}
+[data-meow-tokens] .training-category-sectional {
+  --mode-color: var(--meow-mode-sectional);
+}
+[data-meow-tokens] .training-category-extreme {
+  --mode-color: var(--meow-mode-extreme);
+}

@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useEffect,useMemo,useRef,useState } from "react";
 import styles from "./RankedTopicGroupPage.module.css";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { ListingTemplate } from "@/design-system";
 
 type PriorityFilter = RankedTopicPriority | "All";
 
@@ -142,7 +143,17 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
   );
 
   return (
-    <div className={styles.page}>
+    <ListingTemplate
+      columns={1}
+      wide
+      maxWidth="100%"
+      header={null}
+      hasStickyHeader={false}
+      showNavRail={false}
+      showBottomNav={false}
+      mainClassName={styles.listingMain}
+    >
+      <div className={styles.page}>
       {/* =========================================================================
           DESKTOP VIEW (>= 768px)
           Only rendered when isDesktop is true — prevents the old desktop design
@@ -407,5 +418,6 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
         </div>
       </dialog>
     </div>
+    </ListingTemplate>
   );
 }

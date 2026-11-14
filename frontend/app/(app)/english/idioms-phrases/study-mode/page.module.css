@@ -1,15 +1,4 @@
 .container {
-  --bg: var(--light-canvas);
-  --bg-elevated: var(--light-surface);
-  --label: var(--light-only-text, #000000);
-  --secondary-label: var(--light-only-text-muted, #6e6e73);
-  --tertiary-label: var(--light-only-text-muted, #8e8e93);
-  --separator: var(--light-only-border, rgba(60,60,67,0.29));
-  --blue: var(--ios-system-blue);
-  --green: #34c759;
-  --fill: var(--light-only-surface-muted, rgba(120,120,128,0.12));
-  --shadow: rgba(0,0,0,0.06);
-
   background: var(--bg);
   color: var(--label);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
@@ -20,19 +9,6 @@
   -webkit-font-smoothing: antialiased;
   touch-action: manipulation;
   overscroll-behavior-y: none;
-}
-
-.container[data-theme="dark"] {
-  --bg: var(--dark-canvas);
-  --bg-elevated: var(--dark-surface);
-  --label: #ffffff;
-  --secondary-label: #98989f;
-  --tertiary-label: #6c6c70;
-  --separator: var(--dark-border);
-  --blue: var(--dark-accent);
-  --green: #30d158;
-  --fill: rgba(120,120,128,0.24);
-  --shadow: rgba(0,0,0,0.3);
 }
 
 .container * {
@@ -88,7 +64,7 @@
   transform: translate(-50%, -50%) scale(0.95);
   width: 90%;
   max-width: 520px;
-  max-height: 85vh;
+  max-height: 85dvh;
   z-index: 21;
   background: var(--bg);
   border-radius: 20px;

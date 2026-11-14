@@ -139,7 +139,7 @@ export function QuestionPalettePanel({
 }) {
   return (
     <div
-      className="flex flex-col rounded-2xl border shadow-sm max-h-[540px] xl:max-h-[calc(100vh-180px)] overflow-hidden"
+      className="flex flex-col rounded-2xl border shadow-sm max-h-[540px] xl:max-h-[calc(100dvh-180px)] overflow-hidden"
       style={{ background: "var(--quiz-card-bg)", borderColor: "var(--quiz-border)" }}
     >
       {/* Fixed Sticky Header */}

@@ -2,6 +2,23 @@
    TRAINING SESSION & QUIZ SURFACE STYLES
    ========================================================================== */
 
+[data-meow-layout="quiz"]:has(.training-page.training-session) main,
+[data-meow-layout="quiz"]:has(.training-page.training-session) [data-meow-slot="reading-pane"],
+[data-meow-layout="quiz"]:has(.training-page.training-session) [data-meow-slot="reading-pane"] > div {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  height: 100dvh !important;
+}
+
+[data-meow-layout="quiz"]:has(.training-page.training-session) main > div {
+  gap: 0 !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+}
+
 .training-page.training-session {
   height: 100dvh;
   min-height: 0;
@@ -342,20 +359,6 @@
   font-size: 14px;
 }
 
-.training-loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--tr-border);
-  border-top-color: var(--tr-accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 /* ==========================================================================
    MAIN QUIZ COLUMNS

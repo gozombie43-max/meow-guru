@@ -60,6 +60,7 @@ function SwitchToggle({ checked, onChange, ariaLabel }: SwitchToggleProps) {
   return (
     <button
       type="button"
+      data-ui-button="state"
       role="switch"
       aria-checked={checked}
       aria-label={ariaLabel}
@@ -198,6 +199,7 @@ export function QuizSettingsModal({
                 <span className="ios-settings-title">Quiz Settings</span>
                 <button
                   type="button"
+                  data-ui-button="icon"
                   className="ios-settings-close-btn"
                   onClick={onClose}
                   aria-label="Close settings"
@@ -293,13 +295,13 @@ export function QuizSettingsModal({
                 <section className="ios-settings-group ios-settings-visibility" aria-label="Tool visibility">
                   <h3 className="ios-settings-section-title">Hide Tools</h3>
                   <div className="ios-settings-tool-options" role="group" aria-label="Hide quiz tools">
-                    <button type="button" className="ios-settings-tool-btn" title="Hide solution" aria-label="Toggle hide view solution" aria-pressed={hideViewSolution} onClick={() => onToggleHideViewSolution(!hideViewSolution)}>
+                    <button type="button" data-ui-button="state" className="ios-settings-tool-btn" title="Hide solution" aria-label="Toggle hide view solution" aria-pressed={hideViewSolution} onClick={() => onToggleHideViewSolution(!hideViewSolution)}>
                       <FileText size={20} aria-hidden="true" /><span className="sr-only">Solution</span>
                     </button>
-                    <button type="button" className="ios-settings-tool-btn" title="Hide AI tutor" aria-label="Toggle hide AI tutor" aria-pressed={hideAiTutor} onClick={() => onToggleHideAiTutor(!hideAiTutor)}>
+                    <button type="button" data-ui-button="state" className="ios-settings-tool-btn" title="Hide AI tutor" aria-label="Toggle hide AI tutor" aria-pressed={hideAiTutor} onClick={() => onToggleHideAiTutor(!hideAiTutor)}>
                       <Bot size={20} aria-hidden="true" /><span className="sr-only">AI tutor</span>
                     </button>
-                    <button type="button" className="ios-settings-tool-btn" title="Hide both" aria-label="Toggle hide both Solution and AI Tutor" aria-pressed={hideBoth} onClick={() => onToggleHideBoth(!hideBoth)}>
+                    <button type="button" data-ui-button="state" className="ios-settings-tool-btn" title="Hide both" aria-label="Toggle hide both Solution and AI Tutor" aria-pressed={hideBoth} onClick={() => onToggleHideBoth(!hideBoth)}>
                       <Layers size={20} aria-hidden="true" /><span className="sr-only">Both</span>
                     </button>
                   </div>
@@ -309,6 +311,7 @@ export function QuizSettingsModal({
               {onLeaveQuiz && (
                 <button
                   type="button"
+                  data-ui-button="danger"
                   className="ios-settings-leave-btn"
                   onClick={onLeaveQuiz}
                 >

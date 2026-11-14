@@ -7,13 +7,6 @@
    ========================================================================== */
 
 .play-setup-page {
-  --tr-bg: var(--light-canvas, #f6f7f9);
-  --tr-surface: var(--light-surface, #ffffff);
-  --tr-muted: var(--light-surface-muted, #f0f2f5);
-  --tr-border: var(--light-border, #e3e6eb);
-  --tr-text: var(--light-text, #1c2533);
-  --tr-secondary: var(--light-text-secondary, #647084);
-  --tr-accent: var(--light-accent, var(--ios-system-blue));
   --setup-max-width: 860px;
 
   color: var(--tr-text);
@@ -28,16 +21,6 @@
 html.theme-dark .play-setup-header {
   background: #000000 !important;
   border-bottom: none !important;
-}
-
-.play-setup-page.training-dark {
-  --tr-bg: var(--dark-canvas, #17191d);
-  --tr-surface: var(--dark-surface, #22252b);
-  --tr-muted: var(--dark-surface-muted, #2a2e35);
-  --tr-border: var(--dark-border, #363b44);
-  --tr-text: var(--dark-text, #f0f2f5);
-  --tr-secondary: var(--dark-text-secondary, #a5aebc);
-  --tr-accent: var(--dark-accent, #85aaff);
 }
 
 /* ── Compact Top Header ─────────────────────────────────────────────────── */
@@ -460,7 +443,7 @@ html.theme-dark .play-setup-header {
   padding: 12px max(16px, var(--safe-right, 16px)) calc(12px + var(--safe-bottom, 0px)) max(16px, var(--safe-left, 16px));
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   body.has-bottom-nav .play-setup-sticky-footer {
     bottom: calc(var(--app-bottom-nav-height, 0px) + var(--safe-bottom, 0px));
     padding-bottom: 12px;
@@ -556,11 +539,7 @@ html.theme-dark .play-setup-header {
 }
 
 .play-setup-loading-spin {
-  animation: setupSpin 0.8s linear infinite;
-}
-
-@keyframes setupSpin {
-  to { transform: rotate(360deg); }
+  animation: meow-spin 0.8s linear infinite;
 }
 
 /* ── Mobile Viewport Fine-Tuning (< 480px) ───────────────────────────────── */

@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { DashboardTemplate } from "@/design-system";
 import AdminControlSkeleton from "./AdminControlSkeleton";
 import styles from "./AdminControlPage.module.css";
 
@@ -137,75 +138,89 @@ export default function AdminControlPage() {
     return <AdminControlSkeleton />;
   }
 
-  return (
-    <div className={styles.page}>
-      <main className={styles.content}>
-            <header data-ui-chrome="header" className={styles.header}>
-              <span className={styles.eyebrow}>YOUR WORKSPACE, SIMPLIFIED</span>
-              <h1>
-                Admin Control<span>.</span>
-              </h1>
-              <p>A little more control. A lot less searching.</p>
-            </header>
-            <nav className={styles.segments} aria-label="Filter tools">
-              {["Manage", "Create & upload"].map((filter) => (
-                <button data-ui-button="state"
-                  key={filter}
-                  aria-pressed={activeFilter === filter}
-                  onClick={() =>
-                    toggleFilter(filter as AdminRouteGroup["title"])
-                  }
-                >
-                  {filter}
-                </button>
-              ))}
-            </nav>
-            <div className={styles.groups}>
-              {groups.map((group) => (
-                <section className={styles.group} key={group.title}>
-                  <div className={styles.groupHeading}>
-                    <h2>{group.title}</h2>
-                    <p>{group.description}</p>
-                  </div>
-
-                  <div className={styles.grid}>
-                    {group.routes.map((route) => {
-                      const Icon = route.icon;
-
-                      return (
-                        <Link
-                          className={styles.card}
-                          href={route.href}
-                          key={route.href}
-                          data-tool={route.href.split("/").pop()}
-                        >
-                          <span className={styles.icon} aria-hidden="true">
-                            <Icon size={22} strokeWidth={2} />
-                          </span>
-                          <span className={styles.cardCopy}>
-                            <strong>{route.title}</strong>
-                            <span>{route.description}</span>
-                          </span>
-                          <ChevronRight
-                            className={styles.arrow}
-                            size={20}
-                            aria-hidden="true"
-                          />
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </section>
-              ))}
-            </div>
-            <footer data-ui-chrome="footer" className={styles.footer}>
-              <ShieldCheck size={14} aria-hidden="true" />
-              <span>Meow Guru · Admin workspace</span>
-              <span className={styles.footerHint}>
-                Choose a tool to get started
-              </span>
-            </footer>
-      </main>
+  const heroSection = (
+    <div>
+      <header data-ui-chrome="header" className={styles.header}>
+        <span className={styles.eyebrow}>YOUR WORKSPACE, SIMPLIFIED</span>
+        <h1>
+          Admin Control<span>.</span>
+        </h1>
+        <p>A little more control. A lot less searching.</p>
+      </header>
+      <nav className={styles.segments} aria-label="Filter tools">
+        {["Manage", "Create & upload"].map((filter) => (
+          <button
+            data-ui-button="state"
+            key={filter}
+            aria-pressed={activeFilter === filter}
+            onClick={() =>
+              toggleFilter(filter as AdminRouteGroup["title"])
+            }
+          >
+            {filter}
+          </button>
+        ))}
+      </nav>
     </div>
+  );
+
+  const footerSection = (
+    <footer data-ui-chrome="footer" className={styles.footer}>
+      <ShieldCheck size={14} aria-hidden="true" />
+      <span>Meow Guru · Admin workspace</span>
+      <span className={styles.footerHint}>
+        Choose a tool to get started
+      </span>
+    </footer>
+  );
+
+  return (
+    <DashboardTemplate
+      hero={heroSection}
+      footer={footerSection}
+      gridColumns={1}
+      showNavRail={false}
+      showBottomNav={false}
+      showSkipLink={false}
+    >
+      <div className={styles.groups}>
+        {groups.map((group) => (
+          <section className={styles.group} key={group.title}>
+            <div className={styles.groupHeading}>
+              <h2>{group.title}</h2>
+              <p>{group.description}</p>
+            </div>
+
+            <div className={styles.grid}>
+              {group.routes.map((route) => {
+                const Icon = route.icon;
+
+                return (
+                  <Link
+                    className={styles.card}
+                    href={route.href}
+                    key={route.href}
+                    data-tool={route.href.split("/").pop()}
+                  >
+                    <span className={styles.icon} aria-hidden="true">
+                      <Icon size={22} strokeWidth={2} />
+                    </span>
+                    <span className={styles.cardCopy}>
+                      <strong>{route.title}</strong>
+                      <span>{route.description}</span>
+                    </span>
+                    <ChevronRight
+                      className={styles.arrow}
+                      size={20}
+                      aria-hidden="true"
+                    />
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+    </DashboardTemplate>
   );
 }

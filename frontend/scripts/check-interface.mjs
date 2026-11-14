@@ -12,9 +12,9 @@ const language = (await read('components/LangToggle.tsx')).split('<style>{`')[1]
 const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || undefined });
 try {
   const page = await browser.newPage();
-  for (const width of [320, 390, 768, 1366, 1440]) {
+  for (const width of [320, 360, 390, 430, 768, 1024, 1366, 1440]) {
     let lightGeometry;
-    await page.setViewportSize({ width, height: width === 320 ? 568 : width === 390 ? 844 : 900 });
+    await page.setViewportSize({ width, height: width === 320 ? 568 : width <= 430 ? 844 : 900 });
     for (const theme of ['light', 'dark']) {
       await page.setContent(`<style>
         * { box-sizing: border-box; } body { margin: 0; }

@@ -1,0 +1,75 @@
+.region {
+  position: fixed;
+  right: max(var(--meow-space-4), var(--safe-right, env(safe-area-inset-right, 0px)));
+  bottom: max(
+    var(--meow-bottom-nav-h),
+    calc(var(--safe-bottom, env(safe-area-inset-bottom, 0px)) + 68px)
+  );
+  z-index: var(--meow-z-toast);
+  pointer-events: none;
+}
+
+.toast {
+  --_toast-accent: var(--meow-info);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--meow-space-3);
+  max-width: min(22rem, calc(100vw - 2 * var(--meow-space-4)));
+  padding: var(--meow-space-3) var(--meow-space-4);
+  border: 1px solid color-mix(in srgb, var(--_toast-accent) 42%, var(--meow-border));
+  border-radius: var(--meow-radius-md);
+  background-color: var(--meow-surface);
+  color: var(--meow-text);
+  box-shadow: var(--meow-shadow-overlay);
+  font-family: var(--meow-font-sans);
+  font-size: var(--meow-text-base);
+  font-weight: 600;
+  line-height: var(--meow-leading-base);
+  animation: meow-toast-in var(--meow-duration-base) var(--meow-ease-enter);
+}
+
+.toneSuccess {
+  --_toast-accent: var(--meow-success);
+}
+
+.toneError {
+  --_toast-accent: var(--meow-error);
+}
+
+.toneWarning {
+  --_toast-accent: var(--meow-warning);
+}
+
+.toneInfo {
+  --_toast-accent: var(--meow-info);
+}
+
+.indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--meow-radius-full);
+  background-color: var(--_toast-accent);
+  flex-shrink: 0;
+}
+
+.message {
+  min-width: 0;
+}
+
+@keyframes meow-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--meow-space-2));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation-duration: 0.01ms;
+  }
+}

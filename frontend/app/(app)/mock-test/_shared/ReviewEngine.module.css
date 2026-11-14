@@ -1,15 +1,4 @@
 .page {
-  --primary: var(--ios-system-blue, #007aff);
-  --bg: var(--light-canvas, #f5f5f7);
-  --card: color-mix(in srgb, var(--light-canvas, #f5f5f7) 48%, var(--light-surface, #ffffff));
-  --inset: color-mix(in srgb, var(--text-dark) 4%, var(--card));
-  --text-dark: var(--light-text, #1c1c1e);
-  --text-muted: var(--light-text-secondary, #63636b);
-  --border: color-mix(in srgb, var(--light-border, #e5e5ea) 65%, transparent);
-  --correct: #168258;
-  --incorrect: #d63741;
-  --correct-bg: color-mix(in srgb, var(--correct) 6%, var(--card));
-  --incorrect-bg: color-mix(in srgb, var(--incorrect) 6%, var(--card));
   background: var(--bg);
   height: 100dvh;
   display: flex;
@@ -18,17 +7,6 @@
   color: var(--text-dark);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-variant-numeric: tabular-nums;
-}
-:global(html.theme-dark) .page, :global(body.theme-dark) .page {
-  --bg: #000000;
-  --card: #222225;
-  --text-dark: #f5f5f7;
-  --text-muted: #b3b3bc;
-  --border: rgb(255 255 255 / 7%);
-  --correct: #32d19a;
-  --incorrect: #ff696e;
-  --correct-bg: color-mix(in srgb, var(--correct) 16%, var(--card));
-  --incorrect-bg: color-mix(in srgb, var(--incorrect) 16%, var(--card));
 }
 .header {
   flex-shrink: 0;
@@ -121,9 +99,9 @@
 .loadingContainer { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: var(--text-secondary); }
 .loadingContainer p { font-size: 14px; }
 .loadingContainer .btnPrimary[data-ui-button] { background: transparent !important; color: var(--ios-system-blue) !important; border: 1px solid var(--ios-system-blue) !important; border-radius: 12px !important; }
-.spinner { width: 28px; height: 28px; border: 2px solid var(--ui-border, #d1d1d6); border-top-color: var(--ios-system-blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } .languageSwitch::after, .languageSwitch button { transition: none; } }
+
+
+@media (prefers-reduced-motion: reduce) { .languageSwitch::after, .languageSwitch button { transition: none; } }
 @media (max-width: 767px) {
   .sidebar { display: none; }
   .layout { display: flex; padding: 12px; }

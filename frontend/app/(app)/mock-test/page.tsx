@@ -11,6 +11,7 @@ import styles from './page.module.css';
 import { examLogos } from './_shared/exam-logos';
 import { fetchCatalogSummary, type ExamPaperCounts } from './_shared/catalog-summary';
 import { subscribeMockCatalog } from '@/lib/mock-catalog-revision';
+import { ListingTemplate } from '@/design-system';
 
 type ExamType = 'ssc' | 'rrb' | 'banking' | 'upsc' | 'defence' | 'other';
 
@@ -198,7 +199,20 @@ const examCards: ExamCard[] = [
 
 export default function MockTestPage() {
   const { isJam } = useExamMode();
-  return isJam ? <JamMockCatalog /> : <StandardMockTestPage />;
+  return (
+    <ListingTemplate
+      columns={1}
+      wide
+      maxWidth="100%"
+      header={null}
+      hasStickyHeader={false}
+      showNavRail={false}
+      showBottomNav={false}
+      mainClassName={styles.listingMain}
+    >
+      {isJam ? <JamMockCatalog /> : <StandardMockTestPage />}
+    </ListingTemplate>
+  );
 }
 
 function StandardMockTestPage() {

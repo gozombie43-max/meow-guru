@@ -1,0 +1,159 @@
+.nav {
+  /* Preserve previous bottom navigation palette across dark (#0f0f0f + white active)
+     and light (#ffffff + blue accent) viewports. */
+  --_nav-bg: #0f0f0f;
+  --_nav-border: rgba(255, 255, 255, 0.12);
+  --_nav-shadow: 0 -4px 28px rgba(0, 0, 0, 0.55);
+  --_nav-item-color: #a2a9b4;
+  --_nav-item-hover-bg: #2c2c2e;
+  --_nav-item-hover-color: #ffffff;
+  --_nav-active-bg: transparent;
+  --_nav-active-color: #ffffff;
+
+  position: fixed;
+  inset-block-end: 0;
+  inset-inline: 0;
+  z-index: var(--meow-z-nav);
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: var(--meow-space-1);
+  padding: var(--meow-space-2) max(var(--meow-space-2), var(--safe-right, 0px))
+    calc(var(--meow-space-2) + var(--safe-bottom, 0px))
+    max(var(--meow-space-2), var(--safe-left, 0px));
+  background-color: var(--_nav-bg);
+  border-top: 1px solid var(--_nav-border);
+  box-shadow: var(--_nav-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition:
+    transform var(--meow-duration-base) var(--meow-ease-standard),
+    opacity var(--meow-duration-fast) var(--meow-ease-standard);
+}
+
+:global(:is(html.theme-light, body.theme-light, .theme-light, [data-theme='light'])) .nav {
+  --_nav-bg: #ffffff;
+  --_nav-border: #e1e4e8;
+  --_nav-shadow: 0 -4px 24px rgba(24, 36, 56, 0.05);
+  --_nav-item-color: #606773;
+  --_nav-item-hover-bg: #eef0f3;
+  --_nav-item-hover-color: #242830;
+  --_nav-active-bg: #e0f0ff;
+  --_nav-active-color: #0062cc;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(calc(100% + var(--safe-bottom, 0px)));
+}
+
+.item {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 56px;
+  padding: 6px var(--meow-space-1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--meow-space-1);
+  border-radius: var(--meow-radius-md);
+  color: var(--_nav-item-color);
+  background-color: transparent;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--meow-duration-fast) var(--meow-ease-standard),
+    color var(--meow-duration-fast) var(--meow-ease-standard);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--meow-accent);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .item:not(.itemActive):hover {
+    background-color: var(--_nav-item-hover-bg);
+    color: var(--_nav-item-hover-color);
+  }
+}
+
+.itemActive {
+  background-color: var(--_nav-active-bg);
+  color: var(--_nav-active-color);
+}
+
+.itemActive .label {
+  font-weight: 600;
+}
+
+.iconWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.icon {
+  width: var(--meow-icon-lg);
+  height: var(--meow-icon-lg);
+  flex-shrink: 0;
+}
+
+.label {
+  font-family: var(--meow-font-sans);
+  font-size: var(--meow-text-xs);
+  line-height: var(--meow-leading-xs);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.badge {
+  position: absolute;
+  inset-block-start: -4px;
+  inset-inline-end: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--meow-radius-full);
+  background-color: var(--meow-action-fill);
+  color: var(--meow-on-accent);
+  font-family: var(--meow-font-sans);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badgeDot {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: -2px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--meow-radius-full);
+  background-color: var(--meow-accent);
+}
+
+@media (min-width: 1024px) {
+  .nav {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav,
+  .item {
+    transition: none;
+  }
+}

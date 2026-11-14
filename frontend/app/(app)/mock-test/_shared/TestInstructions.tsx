@@ -4,7 +4,6 @@ import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { useEffect,useRef,useState } from 'react';
-import BackButton from '@/components/BackButton';
 import { ChevronDown } from 'lucide-react';
 import { seedStartResponse, startResponseEpoch } from '@/lib/start-response-cache';
 import { getMockStartKey, mockStartStorageKey } from './startKey';
@@ -13,6 +12,7 @@ import { getExamConfig,getSlotById,getTotalQuestions,type MockTestSlot } from '.
 import styles from './TestInstructions.module.css';
 import MockTestLoading from './MockTestLoading';
 import { ApiError } from '@/shared/api/error';
+import ConfigurationTemplate from '@/design-system/layouts/ConfigurationTemplate';
 
 interface TestInstructionsProps {
   examSlug: string;
@@ -74,13 +74,19 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId, is
 
   if (!slot || !config) {
     if (slotError?.key === slotKey || loadedSlot?.key === slotKey) return (
-      <div className={styles.container}>
-        <div className={styles.card}>
-          <BackButton href={`/mock-test/${examSlug}`} label="Back to mock tests" />
-          <p role="alert">{slotError?.key === slotKey ? slotError.message : 'This test has no valid instructions.'}</p>
-          <button data-ui-button="primary" onClick={() => { setSlotError(null); retryLoad(value => value + 1); }}>Retry loading instructions</button>
-        </div>
-      </div>
+      <ConfigurationTemplate
+        variant="setup"
+        headerProps={{
+          title: "Test Instructions",
+          backHref: `/mock-test/${examSlug}`,
+          backLabel: "Back to mock tests",
+        }}
+        error={slotError?.key === slotKey ? slotError.message : 'This test has no valid instructions.'}
+        onRetry={() => { setSlotError(null); retryLoad(value => value + 1); }}
+        retryLabel="Retry loading instructions"
+      >
+        <div />
+      </ConfigurationTemplate>
     );
     return <MockTestLoading label="Loading test instructions…" />;
   }
@@ -141,11 +147,13 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId, is
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <div className={styles.topbar} data-ui-chrome="header">
-          <BackButton href={`/mock-test/${examSlug}`} label="Back to mock tests" />
-          <span>Test details</span>
+    <ConfigurationTemplate
+      variant="setup"
+      headerProps={{
+        title: "Test Instructions",
+        backHref: `/mock-test/${examSlug}`,
+        backLabel: "Back to mock tests",
+        actions: (
           <div className={styles.languagePicker}>
             <select aria-label="Test language" value={effectiveLanguage} onChange={event => setLanguage(event.target.value)} disabled={loading}>
               <option value="en">English</option>
@@ -154,7 +162,9 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId, is
             </select>
             <ChevronDown size={14} aria-hidden="true" />
           </div>
-        </div>
+        ),
+      }}
+      hero={
         <div className={styles.header}>
           <h1 className={styles.title}>{config.name}</h1>
           <h2 className={styles.subtitle}>{slot.title}</h2>
@@ -174,53 +184,69 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId, is
             </div>
           </div>
         </div>
-
-        <div className={styles.section}>
-          <h3 className={styles.sectionHeading}>Sections <span>{config.sections.length}</span></h3>
-          <ul className={styles.sectionList}>
-              {config.sections.map((sec, idx) => (
-                <li className={styles.sectionRow} key={idx}>
-                  <div className={styles.sectionInfo}>
-                    <strong>{sec.label}</strong>
-                    <span>{sec.questionCount} questions{sec.timeLimitMin > 0 ? ` · ${sec.timeLimitMin} min` : ''}</span>
-                  </div>
-                  <div className={styles.marks}>
-                    <span>+{sec.marking.correct} <small>correct</small></span>
-                    <span>−{sec.marking.incorrect} <small>wrong</small></span>
-                  </div>
-                </li>
-              ))}
-          </ul>
+      }
+      summary={
+        <div className="flex flex-col gap-3 rounded-2xl border border-[var(--meow-border)] bg-[var(--meow-surface)] p-4 shadow-sm">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--meow-text-muted,#94a3b8)]">Exam Structure</h3>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-[var(--meow-text-muted,#94a3b8)]">Sections</span>
+            <span className="font-semibold text-[var(--meow-text)]">{config.sections.length} sections</span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-[var(--meow-text-muted,#94a3b8)]">Total Time</span>
+            <span className="font-semibold text-[var(--meow-text)]">{config.totalDurationMin ? `${config.totalDurationMin} min` : 'Untimed'}</span>
+          </div>
+          <div className="mt-2 rounded-xl border border-dashed border-[var(--meow-border)] p-2.5 text-xs text-[var(--meow-text-muted,#94a3b8)]">
+            Answers auto-save continuously. Flag questions to review later.
+          </div>
         </div>
-
-        <div className={styles.section}>
-          <h3 className={styles.sectionHeading}>Before you start</h3>
-          <ul className={styles.rulesList}>
-            {config.compositeTimer ? (
-              <li>{config.totalDurationMin ? 'One timer. Switch sections anytime.' : 'No time limit. Switch sections anytime.'}</li>
-            ) : (
-              <li>Each section locks when its timer ends.</li>
-            )}
-            <li>Answers save automatically. Flag questions to review.</li>
-            <li>Refresh to resume saved progress. Timed sections continue while you are away.</li>
-          </ul>
-        </div>
-
-          {startError && <div ref={errorRef} id="mock-start-error" className={styles.startError} role="alert">
-            <p>{startError.message}</p>
-            {startError.signIn && <Link data-ui-button="secondary" href="/login">Sign in again</Link>}
-          </div>}
-        <div className={styles.footer} data-ui-chrome="footer">
-          <button data-ui-button="primary"
-            className={styles.startBtn} 
-            onClick={handleStart}
-            disabled={loading || (slot.assessmentMode === 'confidential' && isRetake)}
-            aria-describedby={startError ? 'mock-start-error' : undefined}
-          >
-            {loading ? 'Preparing…' : startError && !startError.signIn ? 'Retry Start Mock Test' : isResume ? 'Resume Mock Test' : 'Start Mock Test'}
-          </button>
-        </div>
+      }
+      actionBar={
+        <button data-ui-button="primary"
+          className={styles.startBtn} 
+          onClick={handleStart}
+          disabled={loading || (slot.assessmentMode === 'confidential' && isRetake)}
+          aria-describedby={startError ? 'mock-start-error' : undefined}
+        >
+          {loading ? 'Preparing…' : startError && !startError.signIn ? 'Retry Start Mock Test' : isResume ? 'Resume Mock Test' : 'Start Mock Test'}
+        </button>
+      }
+    >
+      <div className={styles.section}>
+        <h3 className={styles.sectionHeading}>Sections <span>{config.sections.length}</span></h3>
+        <ul className={styles.sectionList}>
+            {config.sections.map((sec, idx) => (
+              <li className={styles.sectionRow} key={idx}>
+                <div className={styles.sectionInfo}>
+                  <strong>{sec.label}</strong>
+                  <span>{sec.questionCount} questions{sec.timeLimitMin > 0 ? ` · ${sec.timeLimitMin} min` : ''}</span>
+                </div>
+                <div className={styles.marks}>
+                  <span>+{sec.marking.correct} <small>correct</small></span>
+                  <span>−{sec.marking.incorrect} <small>wrong</small></span>
+                </div>
+              </li>
+            ))}
+        </ul>
       </div>
-    </div>
+
+      <div className={styles.section}>
+        <h3 className={styles.sectionHeading}>Before you start</h3>
+        <ul className={styles.rulesList}>
+          {config.compositeTimer ? (
+            <li>{config.totalDurationMin ? 'One timer. Switch sections anytime.' : 'No time limit. Switch sections anytime.'}</li>
+          ) : (
+            <li>Each section locks when its timer ends.</li>
+          )}
+          <li>Answers save automatically. Flag questions to review.</li>
+          <li>Refresh to resume saved progress. Timed sections continue while you are away.</li>
+        </ul>
+      </div>
+
+      {startError && <div ref={errorRef} id="mock-start-error" className={styles.startError} role="alert">
+        <p>{startError.message}</p>
+        {startError.signIn && <Link data-ui-button="secondary" href="/login">Sign in again</Link>}
+      </div>}
+    </ConfigurationTemplate>
   );
 }

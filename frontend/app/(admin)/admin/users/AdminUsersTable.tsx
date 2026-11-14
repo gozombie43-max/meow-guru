@@ -2,6 +2,7 @@
 import { relativeTime, formatDate, formatNumber, canonicalRole, roleLabel, statusLabel } from './adminUsers.model';
 
 import type { UserRole, UserStatus } from '@/types/admin';
+import { Spinner } from '@/design-system';
 import { Search, ChevronLeft, ChevronRight, Users, UserCheck, UserPlus, ShieldAlert, MoreVertical, AlertCircle, Smartphone } from 'lucide-react';
 import s from './AdminUsersPage.module.css';
 import type { AdminUsersView } from './useAdminUsers';
@@ -134,7 +135,7 @@ export function AdminUsersTable({ view }: { view: AdminUsersView }) {
 
           {loading ? (
             <div className={s.loadingWrap}>
-              <div className={s.spinner} />
+              <Spinner size="md" />
             </div>
           ) : !data || data.users.length === 0 ? (
             <div className={s.emptyState}>

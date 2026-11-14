@@ -183,20 +183,6 @@
   color: var(--color-text-secondary, #6e6e73);
 }
 
-.zipSpinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--color-border-secondary, rgba(0, 0, 0, 0.15));
-  border-top-color: var(--admin-blue, #0071e3);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 .previewSection {
   display: grid;

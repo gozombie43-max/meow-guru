@@ -2,6 +2,7 @@
 import { useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { Dialog } from '@/components/ui/Dialog';
+import { Spinner } from '@/design-system';
 import Image from 'next/image';
 import { MoveDiagonal, X, RefreshCw } from 'lucide-react';
 import { API_BASE } from '@/lib/api-base';
@@ -133,7 +134,7 @@ function QuestionImageContent({
         {/* Shimmer skeleton while loading */}
         {!isLoaded && !isError && (
           <span className={styles.skeleton} aria-hidden="true">
-            <span className={styles.spinner} />
+            <Spinner size="sm" tone="secondary" />
           </span>
         )}
 
@@ -141,7 +142,7 @@ function QuestionImageContent({
         {isError && (
           <span className={styles.errorState} role="alert">
             <span>Unable to load image</span>
-            <button type="button" className={styles.retryBtn} onClick={handleRetry}>
+            <button type="button" data-ui-button="secondary" className={styles.retryBtn} onClick={handleRetry}>
               <RefreshCw size={12} /> Retry
             </button>
           </span>
@@ -170,6 +171,7 @@ function QuestionImageContent({
         {canZoom && isLoaded && !isError && (
           <button
             type="button"
+            data-ui-button="icon"
             className={styles.zoomTrigger}
             onClick={handleOpenZoom}
             aria-label="Enlarge image"
@@ -188,7 +190,7 @@ function QuestionImageContent({
           initialFocus="[data-image-close]"
         >
           <button type="button" className={styles.modalDismiss} onClick={handleCloseZoom} aria-label="Dismiss enlarged image" tabIndex={-1} />
-          <button type="button" data-image-close className={styles.modalClose} onClick={handleCloseZoom} aria-label="Close enlarged view">
+          <button type="button" data-ui-button="icon" data-image-close className={styles.modalClose} onClick={handleCloseZoom} aria-label="Close enlarged view">
             <X size={20} aria-hidden="true" />
           </button>
           <div className={styles.modalImgWrapper}>

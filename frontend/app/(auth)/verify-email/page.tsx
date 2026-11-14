@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { CheckCircle2, CircleAlert, LoaderCircle } from 'lucide-react';
 
 import api from '@/shared/api/client';
+import { ConfigurationTemplate } from '@/design-system';
 import styles from '@/components/auth/verification.module.css';
 
 type VerifyState =
@@ -80,7 +81,7 @@ function VerifyEmailContent() {
   }, [searchParams]);
 
   return (
-    <main className={styles.screen}>
+    <ConfigurationTemplate variant="auth" maxWidth={440} showNavRail={false} showBottomNav={false} showSkipLink={false}>
       <section className={styles.card}>
         <div className={styles.icon}>
           {status === 'verifying' && (
@@ -136,7 +137,7 @@ function VerifyEmailContent() {
           </Link>
         )}
       </section>
-    </main>
+    </ConfigurationTemplate>
   );
 }
 
@@ -144,13 +145,15 @@ export default function VerifyEmailPage() {
   return (
     <Suspense
       fallback={
-        <main role="status" aria-label="Loading email verification" className={styles.screen}>
-          <LoaderCircle
-            size={28}
-            className={styles.spin}
-            aria-hidden="true"
-          />
-        </main>
+        <ConfigurationTemplate variant="auth" maxWidth={440} showNavRail={false} showBottomNav={false} showSkipLink={false}>
+          <div role="status" aria-label="Loading email verification" className={styles.card} style={{ display: 'grid', placeItems: 'center', minHeight: 200 }}>
+            <LoaderCircle
+              size={28}
+              className={styles.spin}
+              aria-hidden="true"
+            />
+          </div>
+        </ConfigurationTemplate>
       }
     >
       <VerifyEmailContent />

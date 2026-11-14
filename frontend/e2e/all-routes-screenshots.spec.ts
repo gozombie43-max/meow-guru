@@ -43,13 +43,15 @@ const dynamicRoutes: Record<string, string> = {
   '/mock-test/[examSlug]/[testId]/review/[attemptId]': '/mock-test/ssc-cgl/browser-test/review/screenshot-attempt',
 };
 
-// This route is deliberately protected by build-time development and Convex
+// These routes are deliberately protected by build-time development and Convex
 // configuration flags.  The production-like browser fixture leaves Convex off,
 // so it correctly returns Next's 404 page and cannot be captured as an app
-// route. Keep it out of this public-route screenshot suite rather than making
+// routes and return Next's 404 page in non-development/non-Convex builds. Keep them out of this public-route screenshot suite rather than bypassing guards or making
 // the fixture enable a real Convex deployment.
 const screenshotExcludedRoutes = new Set([
   '/dev/convex-auth',
+  '/glass-test',
+  '/preview-palette',
 ]);
 
 for (const [template, route] of Object.entries(dynamicRoutes)) {

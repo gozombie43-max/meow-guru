@@ -1,0 +1,226 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--meow-z-modal);
+  background: var(--meow-scrim);
+  animation: meow-backdrop-in var(--meow-duration-fast) var(--meow-ease-enter) both;
+}
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  z-index: var(--meow-z-modal);
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 32px);
+  max-height: 85dvh;
+  height: fit-content;
+  background: var(--meow-surface);
+  color: var(--meow-text);
+  border: 1px solid var(--meow-border);
+  border-radius: var(--meow-radius-xl);
+  box-shadow: var(--meow-shadow-overlay);
+  font-family: var(--meow-font-sans);
+  overflow: hidden;
+  outline: none;
+  animation: meow-dialog-in var(--meow-duration-base) var(--meow-ease-enter) both;
+}
+
+.dialog:focus-visible {
+  outline: 2px solid var(--meow-accent);
+  outline-offset: 2px;
+}
+
+.sizeSm {
+  max-width: 400px;
+}
+
+.sizeMd {
+  max-width: 500px;
+}
+
+.sizeLg {
+  max-width: 640px;
+}
+
+.handleRow {
+  display: none;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--meow-space-3);
+  padding: var(--meow-space-5) var(--meow-space-6) var(--meow-space-4);
+  border-bottom: 1px solid var(--meow-border);
+  flex-shrink: 0;
+}
+
+.headerText {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--meow-text-lg);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--meow-text);
+}
+
+.description {
+  margin: var(--meow-space-1) 0 0;
+  font-size: var(--meow-text-sm);
+  line-height: 1.5;
+  color: var(--meow-secondary);
+}
+
+.closeButton {
+  flex: 0 0 auto;
+  margin-top: -6px;
+  margin-right: -8px;
+  color: var(--meow-secondary);
+}
+
+.closeButton:hover:not(:disabled) {
+  color: var(--meow-text);
+}
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--meow-space-5) var(--meow-space-6);
+  font-size: var(--meow-text-base);
+  line-height: 1.5;
+  color: var(--meow-text);
+}
+
+.bodyCompact {
+  padding-top: var(--meow-space-4);
+  padding-bottom: var(--meow-space-5);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--meow-space-3);
+  flex-wrap: wrap;
+  padding: var(--meow-space-4) var(--meow-space-6);
+  border-top: 1px solid var(--meow-border);
+  background: var(--meow-surface);
+  flex-shrink: 0;
+}
+
+.confirmFooter {
+  padding: var(--meow-space-4) var(--meow-space-6);
+  padding-bottom: max(var(--meow-space-4), env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 767px) {
+  .header {
+    padding: var(--meow-space-4) var(--meow-space-4) var(--meow-space-3);
+  }
+
+  .body {
+    padding: var(--meow-space-4);
+  }
+
+  .footer {
+    padding: var(--meow-space-3) var(--meow-space-4);
+    padding-bottom: max(var(--meow-space-3), env(safe-area-inset-bottom, 0px));
+  }
+
+  .dialog.sheet {
+    inset: auto 0 0 0;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 100%;
+    max-height: 85dvh;
+    border-radius: var(--meow-radius-xl) var(--meow-radius-xl) 0 0;
+    border-bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    animation: meow-sheet-in var(--meow-duration-base) var(--meow-ease-enter) both;
+  }
+
+  .dialog.sheet .handleRow {
+    display: flex;
+    justify-content: center;
+    padding-top: var(--meow-space-2);
+    padding-bottom: var(--meow-space-1);
+    flex-shrink: 0;
+  }
+
+  .dialog.sheet .footer {
+    padding-bottom: var(--meow-space-3);
+  }
+
+  .handle {
+    width: 36px;
+    height: 4px;
+    border-radius: var(--meow-radius-full);
+    background: var(--meow-border-strong);
+  }
+}
+
+@media (max-width: 479px) {
+  .confirmFooter {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .confirmFooter > button {
+    width: 100%;
+  }
+}
+
+@keyframes meow-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes meow-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes meow-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .dialog,
+  .sheet {
+    animation: none;
+  }
+}
+
+:global([data-meow-motion='reduced']) .backdrop,
+:global([data-meow-motion='reduced']) .dialog,
+:global([data-meow-motion='reduced']) .sheet {
+  animation: none;
+}

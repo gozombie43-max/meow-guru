@@ -35,6 +35,7 @@ type MockTestSlot,
 import styles from './ExamLandingPage.module.css';
 import ExamLandingLoader from './ExamLandingLoader';
 import { useExamCatalog } from './useExamCatalog';
+import { ListingTemplate } from '@/design-system';
 
 interface ExamLandingPageProps {
   examSlug: string;
@@ -245,7 +246,17 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
   };
 
   return (
-    <main className={`${styles.page} ${styles.loadedPage}`}>
+    <ListingTemplate
+      columns={1}
+      wide
+      maxWidth="100%"
+      header={null}
+      hasStickyHeader={false}
+      showNavRail={false}
+      showBottomNav={false}
+      mainClassName={styles.listingMain}
+    >
+      <main className={`${styles.page} ${styles.loadedPage}`}>
       <div className={styles.macosWindow}>
         {/* Desktop macOS Sidebar */}
         <aside className={styles.macosSidebar}>
@@ -477,6 +488,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
         </div>
       </div>
     </main>
+    </ListingTemplate>
   );
 }
 

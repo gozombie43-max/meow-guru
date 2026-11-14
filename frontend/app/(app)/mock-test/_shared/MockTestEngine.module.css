@@ -1,10 +1,4 @@
 .container {
-  --bg: var(--light-canvas);
-  --card: var(--light-surface);
-  --text-dark: var(--light-text);
-  --text-muted: var(--light-text-secondary);
-  --border: var(--light-border);
-  --primary: var(--light-accent);
   color-scheme: light;
   display: flex;
   flex-direction: column;
@@ -446,9 +440,6 @@
 
 /* Respect the app theme during an attempt, including its palette and dialogs. */
 :global(html.theme-dark) .container {
-  --bg: var(--oled-canvas); --card: var(--oled-surface);
-  --text-dark: var(--oled-text); --text-muted: var(--oled-secondary);
-  --border: transparent; --primary: var(--oled-selected);
   color-scheme: dark;
 }
 :global(html.theme-dark) .container :is(.topBar, .mobileHeader) { background: var(--dark-canvas) !important; border-bottom: none !important; }
@@ -466,12 +457,6 @@
 .container :is(.actionsBar, .mobileBottomBar) {
   background: var(--light-surface-muted) !important;
   border-top: 0 !important;
-  --ui-control-height: 44px;
-  --ui-control-radius: 8px;
-  --ui-surface: transparent;
-  --ui-border: #64748b;
-  --ui-text: var(--light-only-text-secondary, #334155);
-  --ui-action: var(--ios-system-blue, #007aff);
 }
 .container :is(.actionsBar, .mobileBottomBar) :is(.btnOutline, .btnPrimary) {
   height: 44px;
@@ -488,8 +473,6 @@
 }
 :global(html.theme-dark) .container :is(.actionsBar, .mobileBottomBar) {
   background: var(--dark-surface) !important;
-  --ui-border: #ffffff;
-  --ui-text: #ffffff;
 }
 :global(html.theme-dark) .container :is(.actionsBar, .mobileBottomBar) :is(.btnOutline, .btnPrimary) {
   border-radius: 8px !important;

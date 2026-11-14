@@ -131,7 +131,7 @@ export function TrainingSetupDialog({
         </div>
         <button
           type="button"
-          className="setup-close-btn"
+          data-ui-button="icon" className="setup-close-btn"
           aria-label="Close setup"
           disabled={busy}
           onClick={() => setSelected(null)}
@@ -276,7 +276,7 @@ export function TrainingSetupDialog({
 
       <footer className="setup-footer" data-ui-chrome="footer">
         <button
-          className="setup-start-btn"
+          type="button" data-ui-button="primary" className="setup-start-btn"
           disabled={
             busy ||
             loading ||

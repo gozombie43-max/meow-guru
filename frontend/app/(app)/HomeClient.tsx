@@ -164,7 +164,7 @@ export default function HomeClient({
   );
 
   return (
-    <main className={`${styles.pageWrapper} ${isDark ? styles.dark : ''}`}>
+    <div className={`${styles.pageWrapper} ${isDark ? styles.dark : ''}`}>
       {/* =========================================================================
           DESKTOP PC VIEW (macOS Application Window Frame)
           ========================================================================= */}
@@ -400,6 +400,6 @@ export default function HomeClient({
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

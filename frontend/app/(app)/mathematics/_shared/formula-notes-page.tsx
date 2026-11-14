@@ -1,6 +1,5 @@
 "use client";
 import styles from "./FormulaNotes.module.css";
-import "./FormulaNotes.globals.css";
 import { bindStyleClasses } from "@/lib/styleClasses";
 const styleClasses = bindStyleClasses(styles);
 import { Dialog } from "@/components/ui/Dialog";
@@ -12,6 +11,7 @@ import { fetchWithRetry } from "@/lib/api/http";
 import { ChevronLeft,ChevronRight,FileText,Plus,Search,X } from "lucide-react";
 import { useParams,useRouter } from "next/navigation";
 import { useCallback,useEffect,useMemo,useRef,useState } from "react";
+import { ListingTemplate } from "@/design-system";
 
 const pendingPdfs = new Map<string, Promise<TopicPdf[]>>();
 
@@ -368,7 +368,16 @@ export default function FormulaNotesPage({
   };
 
   return (
-    <main className={styleClasses("formula-notes-page")}>
+    <ListingTemplate
+      columns={1}
+      maxWidth={820}
+      header={null}
+      hasStickyHeader={false}
+      showNavRail={false}
+      showBottomNav={false}
+      mainClassName={styleClasses("fn-listing-main")}
+    >
+      <main className={styleClasses("formula-notes-page")}>
       {/* ── Fixed Position Top Area: Header + Filter Box ── */}
       <div className={styleClasses("fn-top-pinned")}>
         <header data-ui-chrome="header" className={styleClasses("fn-header")}>
@@ -602,5 +611,6 @@ export default function FormulaNotesPage({
         </div>
       ) : null}
     </main>
+    </ListingTemplate>
   );
 }

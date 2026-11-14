@@ -9,6 +9,7 @@ import { Bell, Bookmark, BookOpen, ChevronRight, LayoutDashboard, LogOut, Pencil
 import GoogleAvatarRing from '@/components/GoogleAvatarRing';
 import { useAuth } from '@/context/AuthContext';
 import { useNotificationCenter } from '@/context/NotificationCenterContext';
+import { DashboardTemplate, Spinner } from '@/design-system';
 import styles from './profile.module.css';
 
 const EditProfileModal = dynamic(() => import('@/components/EditProfileModal'));
@@ -39,14 +40,19 @@ export default function ProfileClient() {
     }
   };
 
-  if (loading) return (
-    <main className={styles.page} aria-label="Profile" aria-busy="true">
-      <div className={styles.loading} role="status">
-        <span className={styles.spinner} aria-hidden="true" />
-        <p>Loading your profile…</p>
-      </div>
-    </main>
-  );
+  if (loading) {
+    return (
+      <DashboardTemplate
+        isLoading
+        loadingState={
+          <div className={styles.loading} role="status">
+            <Spinner size="lg" tone="accent" aria-hidden="true" />
+            <p>Loading your profile…</p>
+          </div>
+        }
+      />
+    );
+  }
   if (!user) return null;
 
   const attempted = Object.values(user.progress || {}).reduce((sum, item) => sum + (item.attempted || 0), 0);
@@ -54,49 +60,109 @@ export default function ProfileClient() {
   const accuracy = attempted ? `${Math.round(correct / attempted * 100)}%` : '—';
   const isAdmin = user.role === 'admin' || user.role === 'superadmin';
 
-  return (
-    <main className={styles.page} aria-label="Profile">
-      <header className={styles.header}>
-        <section className={styles.profileCard} aria-label="Your account">
-          <Image src="/images/home-carousel/study-focus.webp" alt="" fill sizes="(max-width: 640px) calc(100vw - 40px), 600px" loading="eager" className={styles.studyImage} />
-          <div className={styles.cardContent}>
-            <div className={styles.identity}>
-              <GoogleAvatarRing initial={user.name?.trim().charAt(0).toUpperCase() || 'U'} avatarUrl={user.avatar || undefined} size={58} className={styles.avatar} />
-              <div className={styles.identityDetails}>
-                <h2>{user.name}</h2>
-                <p title={user.email}>{user.email}</p>
-              </div>
-              <button type="button" data-ui-button="icon" aria-label="Edit profile" title="Edit profile" className={styles.edit} onClick={() => { setMessage(''); setPanel('edit'); }}><Pencil size={18} aria-hidden="true" /></button>
-            </div>
-            <p className={styles.studyNote}>Keep learning, every day.</p>
-            <dl className={styles.stats} aria-label="Study statistics across all exams">
-              <div><dt><BookOpen size={14} aria-hidden="true" />Attempted</dt><dd>{attempted.toLocaleString()}</dd></div>
-              <div><dt><Target size={14} aria-hidden="true" />Accuracy</dt><dd>{accuracy}</dd></div>
-              <div><dt><Bookmark size={14} aria-hidden="true" />Saved</dt><dd>{(user.bookmarks?.length || 0).toLocaleString()}</dd></div>
-            </dl>
+  const heroNode = (
+    <div className={styles.profileCard} aria-label="Your account">
+      <Image
+        src="/images/home-carousel/study-focus.webp"
+        alt=""
+        fill
+        sizes="(max-width: 640px) calc(100vw - 40px), 600px"
+        loading="eager"
+        className={styles.studyImage}
+      />
+      <div className={styles.cardContent}>
+        <div className={styles.identity}>
+          <GoogleAvatarRing
+            initial={user.name?.trim().charAt(0).toUpperCase() || 'U'}
+            avatarUrl={user.avatar || undefined}
+            size={58}
+            className={styles.avatar}
+          />
+          <div className={styles.identityDetails}>
+            <h2>{user.name}</h2>
+            <p title={user.email}>{user.email}</p>
           </div>
-        </section>
-      </header>
+          <button
+            type="button"
+            data-ui-button="icon"
+            aria-label="Edit profile"
+            title="Edit profile"
+            className={styles.edit}
+            onClick={() => { setMessage(''); setPanel('edit'); }}
+          >
+            <Pencil size={18} aria-hidden="true" />
+          </button>
+        </div>
+        <p className={styles.studyNote}>Keep learning, every day.</p>
+        <dl className={styles.stats} aria-label="Study statistics across all exams">
+          <div><dt><BookOpen size={14} aria-hidden="true" />Attempted</dt><dd>{attempted.toLocaleString()}</dd></div>
+          <div><dt><Target size={14} aria-hidden="true" />Accuracy</dt><dd>{accuracy}</dd></div>
+          <div><dt><Bookmark size={14} aria-hidden="true" />Saved</dt><dd>{(user.bookmarks?.length || 0).toLocaleString()}</dd></div>
+        </dl>
+      </div>
+    </div>
+  );
 
-      <div className={styles.scrollContent}>
-      <div className={styles.group} aria-label="Account settings">
-        <button type="button" data-ui-button="state" className={styles.row} onClick={() => setPanel('settings')}><span className={styles.icon}><Settings /></span><span>Preferences & reminders</span><ChevronRight /></button>
-        <Link href="/notifications" className={styles.row}><span className={styles.icon}><Bell /></span><span>Notifications</span>{unreadCount > 0 && <span className={styles.badge} aria-label={`${unreadCount} unread notifications`}>{unreadCount > 99 ? '99+' : unreadCount}</span>}<ChevronRight /></Link>
-        {isAdmin && <Link href="/admincontrol" className={styles.row}><span className={styles.icon}><Shield /></span><span>Admin Panel</span><ChevronRight /></Link>}
+  return (
+    <DashboardTemplate
+      hero={heroNode}
+      gridColumns={1}
+      maxWidth={680}
+      showNavRail={true}
+      showBottomNav={true}
+    >
+      <div className={styles.bodyWrap}>
+        <div className={styles.group} aria-label="Account settings">
+          <button type="button" data-ui-button="state" className={styles.row} onClick={() => setPanel('settings')}>
+            <span className={styles.icon}><Settings /></span>
+            <span>Preferences & reminders</span>
+            <ChevronRight />
+          </button>
+          <Link href="/notifications" className={styles.row}>
+            <span className={styles.icon}><Bell /></span>
+            <span>Notifications</span>
+            {unreadCount > 0 && <span className={styles.badge} aria-label={`${unreadCount} unread notifications`}>{unreadCount > 99 ? '99+' : unreadCount}</span>}
+            <ChevronRight />
+          </Link>
+          {isAdmin && (
+            <Link href="/admincontrol" className={styles.row}>
+              <span className={styles.icon}><Shield /></span>
+              <span>Admin Panel</span>
+              <ChevronRight />
+            </Link>
+          )}
+        </div>
+
+        <nav className={styles.group} aria-label="Your learning">
+          <Link href="/dashboard" className={styles.row}>
+            <span className={styles.icon}><LayoutDashboard /></span>
+            <span>My dashboard</span>
+            <ChevronRight />
+          </Link>
+          <Link href="/battle/profile" className={styles.row}>
+            <span className={styles.icon}><Swords /></span>
+            <span>Battle profile & rewards</span>
+            <ChevronRight />
+          </Link>
+        </nav>
+
+        <div className={styles.group}>
+          <button
+            type="button"
+            data-ui-button="state"
+            className={`${styles.row} ${styles.logout}`}
+            disabled={signingOut}
+            onClick={() => void handleLogout()}
+          >
+            <span className={styles.icon}><LogOut /></span>
+            <span>{signingOut ? 'Logging out…' : 'Log out'}</span>
+          </button>
+        </div>
+        {message && <p role="status" className={styles.message}>{message}</p>}
       </div>
 
-      <nav className={styles.group} aria-label="Your learning">
-        <Link href="/dashboard" className={styles.row}><span className={styles.icon}><LayoutDashboard /></span><span>My dashboard</span><ChevronRight /></Link>
-        <Link href="/battle/profile" className={styles.row}><span className={styles.icon}><Swords /></span><span>Battle profile & rewards</span><ChevronRight /></Link>
-      </nav>
-
-      <div className={styles.group}>
-        <button type="button" data-ui-button="state" className={`${styles.row} ${styles.logout}`} disabled={signingOut} onClick={() => void handleLogout()}><span className={styles.icon}><LogOut /></span><span>{signingOut ? 'Logging out…' : 'Log out'}</span></button>
-      </div>
-      {message && <p role="status" className={styles.message}>{message}</p>}
-      </div>
       {panel === 'edit' && <EditProfileModal isOpen onClose={closePanel} onSuccess={() => setMessage('Profile updated successfully.')} />}
       {panel === 'settings' && <UserSettingsModal isOpen onClose={closePanel} />}
-    </main>
+    </DashboardTemplate>
   );
 }

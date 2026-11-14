@@ -1,32 +1,5 @@
 .shell {
-  --color-text-primary: var(--admin-text);
-  --color-text-secondary: var(--admin-text-secondary);
-  --color-text-tertiary: var(--admin-text-tertiary);
-  --color-border-secondary: var(--admin-border);
-  --color-border-tertiary: var(--admin-border);
-  --color-background-primary: var(--admin-surface-solid);
-  --color-background-secondary: var(--admin-surface-muted);
-  --color-background-danger: var(--admin-danger-soft);
-  --color-text-danger: var(--admin-danger);
   --app-header-height: 105px;
-  --admin-bg: var(--light-canvas);
-  --admin-surface: var(--light-only-surface, rgba(255, 255, 255, 0.88));
-  --admin-surface-solid: var(--light-surface);
-  --admin-surface-muted: var(--light-surface-muted);
-  --admin-text: var(--light-text);
-  --admin-text-secondary: var(--light-text-secondary);
-  --admin-text-tertiary: var(--light-text-muted);
-  --admin-border: var(--light-border);
-  --admin-separator: var(--light-only-border, rgba(60, 60, 67, 0.12));
-  --admin-blue: var(--light-accent);
-  --admin-blue-soft: rgb(var(--ios-system-blue-rgb) / 0.12);
-  --admin-shadow: 0 8px 30px rgba(18, 18, 23, 0.07);
-  --admin-success: var(--light-only-success, #18743b);
-  --admin-success-soft: var(--light-only-success-soft, #e8f6ed);
-  --admin-success-border: #b4dbc1;
-  --admin-danger: var(--light-only-danger, #c62828);
-  --admin-danger-soft: var(--light-only-danger-soft, #fcebec);
-  --admin-danger-border: #efbfc3;
   width: 100%;
   min-height: 100dvh;
   padding-top: calc(var(--app-header-height) + var(--safe-top));
@@ -42,24 +15,6 @@
 :global(body.theme-dark) .shell,
 :global(html.theme-dark) .shell,
 :global(.dark) .shell {
-  --admin-bg: var(--dark-canvas);
-  --admin-surface: var(--dark-surface);
-  --admin-surface-solid: var(--dark-surface);
-  --admin-surface-muted: var(--dark-surface-muted);
-  --admin-text: var(--dark-text);
-  --admin-text-secondary: var(--dark-text-secondary);
-  --admin-text-tertiary: var(--dark-text-muted);
-  --admin-border: var(--dark-border);
-  --admin-separator: var(--dark-border);
-  --admin-blue: var(--dark-accent);
-  --admin-blue-soft: var(--dark-accent-soft);
-  --admin-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
-  --admin-success: #75d99a;
-  --admin-success-soft: #173424;
-  --admin-success-border: #305c40;
-  --admin-danger: #ff999f;
-  --admin-danger-soft: #3c2024;
-  --admin-danger-border: #683039;
   color-scheme: dark;
 }
 

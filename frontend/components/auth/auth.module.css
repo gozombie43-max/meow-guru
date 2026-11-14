@@ -3,36 +3,38 @@
    Optimized for both PC (Desktop) and Mobile devices.
    ========================================================================= */
 
+.authCard,
 .authContainer,
 .modalOverlay {
   /* Light Theme (Default) */
-  --ios-bg: var(--light-canvas);
-  --ios-card-bg: var(--light-only-surface, rgba(255, 255, 255, 0.82));
-  --ios-card-border: rgba(255, 255, 255, 0.95);
-  --ios-card-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
-  --ios-text: var(--light-text);
-  --ios-secondary: var(--light-text-secondary);
-  --ios-blue: var(--light-accent);
-  --ios-blue-hover: var(--light-accent-hover);
-  --ios-input-bg: var(--light-canvas);
-  --ios-input-border: var(--light-border);
-  --ios-input-focus-border: var(--light-accent);
-  --ios-input-focus-ring: rgb(var(--ios-system-blue-rgb) / 0.18);
-  --ios-segmented-bg: var(--light-surface-muted);
-  --ios-segmented-active: var(--light-surface);
-  --ios-segmented-active-text: var(--light-text);
-  --ios-segmented-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --ios-google-bg: var(--light-surface);
-  --ios-google-border: var(--light-border);
-  --ios-google-hover: var(--light-only-canvas, #f9f9fb);
-  --ios-google-text: var(--light-text);
-  --ios-divider: var(--light-border);
-  --ios-divider-text: var(--light-text-muted);
-  --ios-error-bg: rgba(255, 59, 48, 0.1);
-  --ios-error-text: #d70015;
-  --ios-error-border: rgba(255, 59, 48, 0.25);
-  --ios-modal-bg: var(--light-surface);
-  --ios-modal-border: var(--light-only-border, rgba(0, 0, 0, 0.1));
+  --ios-bg: var(--meow-bg, #F4F6F9);
+  --ios-card-bg: var(--meow-surface, #FFFFFF);
+  --ios-card-border: var(--meow-border, #DCE3EC);
+  --ios-card-shadow: 0 12px 32px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --ios-text: var(--meow-text, #111827);
+  --ios-secondary: var(--meow-secondary, #4B5565);
+  --ios-blue: var(--meow-accent, #2563EB);
+  --ios-blue-hover: var(--meow-accent-hover, #1D4ED8);
+  --ios-input-bg: var(--meow-bg, #F4F6F9);
+  --ios-input-focus-bg: var(--meow-surface, #FFFFFF);
+  --ios-input-border: var(--meow-border-strong, #CBD5E1);
+  --ios-input-focus-border: var(--meow-accent, #2563EB);
+  --ios-input-focus-ring: var(--meow-accent-alpha, rgba(37, 99, 235, 0.14));
+  --ios-segmented-bg: var(--meow-surface-subtle, #EBF0F5);
+  --ios-segmented-active: var(--meow-surface, #FFFFFF);
+  --ios-segmented-active-text: var(--meow-text, #111827);
+  --ios-segmented-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 1px rgba(15, 23, 42, 0.04);
+  --ios-google-bg: var(--meow-surface, #FFFFFF);
+  --ios-google-border: var(--meow-border-strong, #CBD5E1);
+  --ios-google-hover: var(--meow-surface-subtle, #EBF0F5);
+  --ios-google-text: var(--meow-text, #111827);
+  --ios-divider: var(--meow-border, #DCE3EC);
+  --ios-divider-text: var(--meow-muted, #5D6778);
+  --ios-error-bg: var(--meow-error-soft, #FEE2E2);
+  --ios-error-text: var(--meow-error, #B91C1C);
+  --ios-error-border: color-mix(in srgb, var(--meow-error, #B91C1C) 28%, transparent);
+  --ios-modal-bg: var(--meow-surface, #FFFFFF);
+  --ios-modal-border: var(--meow-border, #DCE3EC);
 }
 
 .authContainer {
@@ -56,6 +58,10 @@
 }
 
 /* Dark Theme Overrides */
+:global(html.theme-dark) .authCard,
+:global(body.theme-dark) .authCard,
+:global(.theme-dark) .authCard,
+:global([data-theme="dark"]) .authCard,
 :global(html.theme-dark) .authContainer,
 :global(body.theme-dark) .authContainer,
 :global(.theme-dark) .authContainer,
@@ -64,33 +70,34 @@
 :global(body.theme-dark) .modalOverlay,
 :global(.theme-dark) .modalOverlay,
 .modalOverlay:global(.theme-dark) {
-  --ios-bg: var(--dark-canvas);
-  --ios-card-bg: var(--dark-surface);
-  --ios-card-border: var(--dark-border);
-  --ios-card-shadow: var(--dark-shadow);
-  --ios-text: var(--dark-text);
-  --ios-secondary: var(--dark-text-muted);
-  --ios-blue: var(--dark-accent);
-  --ios-blue-hover: var(--light-accent);
-  --ios-input-bg: var(--dark-surface-muted);
-  --ios-input-border: var(--dark-border);
-  --ios-input-focus-border: var(--dark-border);
-  --ios-input-focus-ring: rgb(var(--ios-system-blue-rgb) / 0.25);
-  --ios-segmented-bg: var(--dark-surface-muted);
-  --ios-segmented-active: var(--dark-accent-soft);
-  --ios-segmented-active-text: var(--dark-text);
-  --ios-segmented-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
-  --ios-google-bg: var(--dark-surface-muted);
-  --ios-google-border: var(--dark-border);
-  --ios-google-hover: var(--dark-accent-soft);
-  --ios-google-text: var(--dark-text);
-  --ios-divider: rgba(255, 255, 255, 0.1);
-  --ios-divider-text: var(--dark-text);
-  --ios-error-bg: rgba(255, 69, 58, 0.16);
-  --ios-error-text: #ff6961;
-  --ios-error-border: rgba(255, 69, 58, 0.3);
-  --ios-modal-bg: var(--dark-surface);
-  --ios-modal-border: var(--dark-border);
+  --ios-bg: var(--meow-bg, #080C11);
+  --ios-card-bg: var(--meow-surface, #111722);
+  --ios-card-border: var(--meow-border, #222A38);
+  --ios-card-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --ios-text: var(--meow-text, #F1F4F8);
+  --ios-secondary: var(--meow-secondary, #929CAF);
+  --ios-blue: var(--meow-accent, #3B82F6);
+  --ios-blue-hover: var(--meow-accent-hover, #60A5FA);
+  --ios-input-bg: var(--meow-bg, #080C11);
+  --ios-input-focus-bg: var(--meow-surface-subtle, #192231);
+  --ios-input-border: var(--meow-border-strong, #334155);
+  --ios-input-focus-border: var(--meow-accent, #3B82F6);
+  --ios-input-focus-ring: var(--meow-accent-alpha, rgba(59, 130, 246, 0.2));
+  --ios-segmented-bg: var(--meow-bg, #080C11);
+  --ios-segmented-active: var(--meow-surface-subtle, #192231);
+  --ios-segmented-active-text: var(--meow-text, #F1F4F8);
+  --ios-segmented-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), inset 0 0 0 1px var(--meow-border-strong, #334155);
+  --ios-google-bg: var(--meow-surface-subtle, #192231);
+  --ios-google-border: var(--meow-border-strong, #334155);
+  --ios-google-hover: var(--meow-border, #222A38);
+  --ios-google-text: var(--meow-text, #F1F4F8);
+  --ios-divider: var(--meow-border, #222A38);
+  --ios-divider-text: var(--meow-muted, #687386);
+  --ios-error-bg: var(--meow-error-soft, #31151B);
+  --ios-error-text: var(--meow-error, #F87171);
+  --ios-error-border: color-mix(in srgb, var(--meow-error, #F87171) 30%, transparent);
+  --ios-modal-bg: var(--meow-surface, #111722);
+  --ios-modal-border: var(--meow-border, #222A38);
 }
 
 /* =========================================================================
@@ -233,12 +240,18 @@
   align-items: center;
 }
 
-/* Right Form Card Pane */
+/* Right Form Card Pane / Standalone Elevated Auth Card */
 .authCard {
-  padding: 22px 24px;
+  background: var(--ios-card-bg);
+  border: 1px solid var(--ios-card-border);
+  border-radius: 20px;
+  box-shadow: var(--ios-card-shadow);
+  color: var(--ios-text);
+  padding: 28px 24px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 14px;
   box-sizing: border-box;
   width: 100%;
 }
@@ -249,13 +262,13 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-bottom: 14px;
+  margin-bottom: 4px;
 }
 
 .desktopCardHeader {
   display: flex;
   flex-direction: column;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .brandSquircle {
@@ -313,14 +326,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 8px;
-  font-size: 12.5px;
-  font-weight: 600;
+  min-height: 44px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--ios-secondary);
   text-decoration: none;
-  border-radius: 8px;
-  transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 9px;
+  transition: color 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: center;
+  white-space: nowrap;
 }
 
 .segmentedTab:hover {
@@ -330,6 +345,7 @@
 .segmentedTabActive {
   background: var(--ios-segmented-active);
   color: var(--ios-segmented-active-text) !important;
+  font-weight: 600;
   box-shadow: var(--ios-segmented-shadow);
 }
 
@@ -337,10 +353,11 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
-  padding: 5px;
-  margin-bottom: 20px;
+  padding: 4px;
+  margin-bottom: 2px;
   border-radius: 12px;
   background: var(--ios-segmented-bg);
+  border: 1px solid var(--ios-divider);
 }
 
 .loginMethods button {
@@ -379,9 +396,9 @@
 }
 
 .otpHelp {
-  margin: 0 0 8px;
-  font-size: 12px;
-  line-height: 1.5;
+  margin: -2px 0 4px;
+  font-size: 12.5px;
+  line-height: 1.45;
   color: var(--ios-secondary);
 }
 
@@ -415,19 +432,20 @@
 
 .googleBtn {
   width: 100%;
-  height: 40px;
-  border-radius: 11px;
+  height: 46px;
+  min-height: 44px;
+  border-radius: 12px;
   background: var(--ios-google-bg);
   border: 1px solid var(--ios-google-border);
   color: var(--ios-google-text);
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   transition: background-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), color 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-tap-highlight-color: transparent;
 }
@@ -454,8 +472,8 @@
 .divider {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 10px 0;
+  gap: 12px;
+  margin: 2px 0;
 }
 
 .dividerLine {
@@ -488,19 +506,12 @@
   font-size: 12.5px;
   line-height: 1.35;
   margin-bottom: 12px;
-  animation: shake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  animation: meow-shake var(--meow-duration-base) var(--meow-ease-standard);
 }
 
 .alertBanner svg {
   flex-shrink: 0;
   margin-top: 1px;
-}
-
-@keyframes shake {
-  10%, 90% { transform: translate3d(-1px, 0, 0); }
-  20%, 80% { transform: translate3d(2px, 0, 0); }
-  30%, 50%, 70% { transform: translate3d(-2px, 0, 0); }
-  40%, 60% { transform: translate3d(2px, 0, 0); }
 }
 
 /* =========================================================================
@@ -542,11 +553,11 @@
 
 .inputField {
   width: 100%;
-  height: 40px;
+  height: 46px;
   min-height: 44px;
-  padding: 0 38px 0 36px;
-  font-size: 14px;
-  border-radius: 11px;
+  padding: 0 14px 0 38px;
+  font-size: 15px;
+  border-radius: 12px;
   border: 1px solid var(--ios-input-border);
   background: var(--ios-input-bg);
   color: var(--ios-text);
@@ -562,6 +573,7 @@
 
 .inputField:focus {
   outline: none;
+  background: var(--ios-input-focus-bg);
   border-color: var(--ios-input-focus-border);
   box-shadow: 0 0 0 3px var(--ios-input-focus-ring);
 }
@@ -583,17 +595,21 @@
 }
 
 .passwordInput {
-  padding-right: 60px;
+  padding-right: 48px;
 }
 
 .passwordToggleBtn {
   position: absolute;
-  right: 10px;
+  right: 4px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   background: transparent;
   border: none;
   color: var(--ios-secondary);
   cursor: pointer;
-  padding: 6px;
+  padding: 0;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -740,27 +756,28 @@
 
 .primaryBtn {
   margin-top: 4px;
-  height: 40px;
+  height: 46px;
+  min-height: 44px;
   width: 100%;
-  border-radius: 11px;
+  border-radius: 12px;
   border: none;
-  background: var(--theme-action, var(--ios-blue));
+  background: var(--meow-action-fill, var(--ios-blue));
   color: #ffffff;
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  box-shadow: 0 3px 12px rgb(var(--ios-system-blue-rgb) / 0.28);
+  box-shadow: 0 3px 12px var(--ios-input-focus-ring);
   transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-tap-highlight-color: transparent;
 }
 
 .primaryBtn:hover:not(:disabled) {
-  background: var(--theme-action, var(--ios-blue-hover));
-  box-shadow: 0 4px 16px rgb(var(--ios-system-blue-rgb) / 0.36);
+  background: var(--meow-action-fill-hover, var(--ios-blue-hover));
+  box-shadow: 0 4px 16px var(--ios-input-focus-ring);
 }
 
 .primaryBtn:active:not(:disabled) {
@@ -774,35 +791,32 @@
   box-shadow: none;
 }
 
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 2.2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 
 /* =========================================================================
    CARD FOOTER (CLEAN BOTTOM HINT)
    ========================================================================= */
 
 .cardFooter {
-  margin-top: 10px;
+  margin-top: 2px;
+  padding-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
   text-align: center;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--ios-secondary);
 }
 
 .footerLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 4px 2px;
   color: var(--ios-blue);
   font-weight: 600;
   text-decoration: none;
-  margin-left: 4px;
   transition: opacity 0.18s ease;
 }
 
@@ -837,7 +851,7 @@
   border-radius: 22px;
   padding: 24px 22px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
-  animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: meow-fade-in var(--meow-duration-base) var(--meow-ease-enter);
   color: var(--light-only-text, #1c1c1e);
   box-sizing: border-box;
 }
@@ -928,15 +942,6 @@
   background: var(--theme-action, var(--ios-blue-hover));
 }
 
-@keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes modalPop {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
 
 /* =========================================================================
    RESPONSIVENESS (TABLETS & MOBILE FINE TUNING)
@@ -995,7 +1000,9 @@
   }
 
   .authCard {
-    padding: 20px 16px;
+    padding: 22px 18px;
+    border-radius: 18px;
+    gap: 14px;
   }
 
   .brandTitle {
@@ -1003,10 +1010,10 @@
   }
 
   .brandSquircle {
-    width: 46px;
-    height: 46px;
-    border-radius: 12px;
-    margin-bottom: 8px;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    margin-bottom: 10px;
   }
 
   .inputField {
@@ -1018,6 +1025,17 @@
   .googleBtn {
     height: 46px;
     font-size: 15px;
+  }
+}
+
+@media (max-width: 360px) {
+  .authCard {
+    padding: 20px 14px;
+  }
+
+  .segmentedTab {
+    font-size: 12px;
+    padding-inline: 6px;
   }
 }
 

@@ -1,0 +1,15 @@
+.backButton[data-meow-component='back-button'] {
+  width: var(--meow-control-h-md);
+  height: var(--meow-control-h-md);
+  min-width: var(--meow-control-h-md);
+  min-height: var(--meow-control-h-md);
+  border-radius: var(--meow-radius-full);
+  color: var(--meow-text);
+  flex-shrink: 0;
+}
+
+.icon {
+  width: var(--meow-icon-md);
+  height: var(--meow-icon-md);
+  flex-shrink: 0;
+}

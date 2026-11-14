@@ -4,6 +4,7 @@ import { useState, type CSSProperties } from 'react';
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, ChartNoAxesColumnIncreasing, Check, ChevronLeft, ChevronRight, ClipboardList, LockKeyhole, Minus, RotateCcw, Target, X } from 'lucide-react';
 import type { MockAttempt, MockResultSection } from './api';
 import styles from './ResultReport.module.css';
+import { AnalyticsTemplate } from '@/design-system';
 
 const numberFormat = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
 const percentFormat = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 1 });
@@ -106,70 +107,93 @@ export default function ResultReportView({ data, paperTitle, onReview, onRetake,
     ?? sections.find(section => (section.skipped ?? 0) > 0);
   const focusLabel = focusSection?.label || focusSection?.key || 'this paper';
 
-  return <main className={styles.container}>
-    <div className={styles.contentWrap}>
-      <header className={styles.header}>
-        <button type="button" data-ui-button="icon" className={styles.backButton} aria-label="Back to tests" onClick={onBack}><ArrowLeft size={20} aria-hidden="true" /></button>
-        <div><h1>Test result</h1><p className={styles.examLabel} title={paperTitle || data.paper?.examName}>{paperTitle || data.paper?.examName || 'Mock test'}</p></div>
-      </header>
-
-      <div id="result-summary" className={styles.summaryGrid}>
-        <section className={styles.scoreCard} aria-label="Score summary">
-          <div className={styles.scoreSummary}>
-            <span className={styles.eyebrow}>TOTAL SCORE</span>
-            <div className={styles.scoreNumber}>{formatNumber(score)}<span>/ {formatNumber(maxScore)}</span></div>
-            <p>{score < 0 ? 'Includes negative marking' : 'Your final score'}</p>
-          </div>
-          <div className={styles.scoreRing} role="img" aria-label={`Score percentage: ${percentFormat.format(percentage)}%`} style={{ '--score-progress': `${Math.min(100, Math.max(0, percentage))}%` } as CSSProperties}>
-            <div><strong>{percentFormat.format(percentage)}<small>%</small></strong><span>of total marks</span></div>
-          </div>
-          <div className={styles.scoreFootnote}>
-            <span><Check size={14} aria-hidden="true" />Assessment complete</span>
-            {result?.percentile != null && <span className={styles.percentile}><ChartNoAxesColumnIncreasing size={14} aria-hidden="true" />{formatNumber(result.percentile)} percentile</span>}
-          </div>
-        </section>
-
-        <section className={styles.performanceCard} aria-labelledby="performance-title">
-          <div className={styles.sectionHeading}><h2 id="performance-title">Performance overview</h2><Target size={19} aria-hidden="true" /></div>
-          <div className={styles.performanceMetrics}>
-            <div><span>Accuracy</span><strong>{accuracy == null ? '—' : `${percentFormat.format(accuracy)}%`}</strong><small>of attempted questions</small></div>
-            <div><span>Attempted</span><strong>{attempted}<small> / {total}</small></strong><small>questions answered</small></div>
-          </div>
-          <div className={styles.coverageTrack} aria-label={`${attempted} of ${total} questions attempted`}><span style={{ width: `${coverage}%` }} /></div>
-          <div className={styles.stats} aria-label="Answer summary">
-            <div><span className={styles.correct}><Check size={13} aria-hidden="true" />Correct</span><strong>{totals.correct}</strong></div>
-            <div><span className={styles.incorrect}><X size={13} aria-hidden="true" />Wrong</span><strong>{totals.incorrect}</strong></div>
-            <div><span className={styles.skipped}><Minus size={13} aria-hidden="true" />Skipped</span><strong>{totals.skipped}</strong></div>
-          </div>
-        </section>
+  const headerNode = (
+    <header className={styles.header}>
+      <button type="button" data-ui-button="icon" className={styles.backButton} aria-label="Back to tests" onClick={onBack}>
+        <ArrowLeft size={20} aria-hidden="true" />
+      </button>
+      <div>
+        <h1>Test result</h1>
+        <p className={styles.examLabel} title={paperTitle || data.paper?.examName}>
+          {paperTitle || data.paper?.examName || 'Mock test'}
+        </p>
       </div>
+    </header>
+  );
 
-      <div className={styles.analysisGrid}>
-        <SectionResults sections={sections} onReview={confidential ? undefined : onReview} />
-        <aside className={styles.nextSteps} aria-labelledby="next-steps-title">
-          <div className={styles.nextStepIcon}>{confidential ? <LockKeyhole size={23} aria-hidden="true" /> : <BookOpen size={23} aria-hidden="true" />}</div>
-          <span className={styles.eyebrow}>{confidential ? 'ASSESSMENT POLICY' : 'KEEP IMPROVING'}</span>
-          <h2 id="next-steps-title">{confidential ? 'Your result is saved' : 'Your next step'}</h2>
-          {confidential ? <p className={styles.confidentialNote}>Confidential · Review and retakes unavailable.</p> : <>
-            <h3>{focusSection ? `Revisit ${focusLabel}` : attempted > 0 && totals.correct === total ? 'Keep the momentum' : 'Review your answers'}</h3>
-            <p>{focusSection ? `${focusSection.incorrect ?? 0} wrong · ${focusSection.skipped ?? 0} skipped. Work through the solutions before your next attempt.` : 'Check the explanations, then try the paper again with a fresh timer.'}</p>
-            {focusSection?.key && <button type="button" data-ui-button="state" className={styles.textAction} onClick={() => onReview(focusSection.key)}>Review this section<ArrowUpRight size={16} aria-hidden="true" /></button>}
-            {!!data.weakAreas?.length && <FocusTopics areas={data.weakAreas} />}
-            <div className={styles.savedNote}><RotateCcw size={16} aria-hidden="true" /><span>A retake keeps this result saved.</span></div>
-          </>}
-        </aside>
-      </div>
-      <footer className={styles.actionDock} role="region" aria-label="Result actions">
-        {actionError && <p className={styles.actionError} role="alert">{actionError}</p>}
-        <div className={styles.dockInner}>
-          <div className={styles.dockCaption}><BookOpen size={21} aria-hidden="true" /><div><strong>{confidential ? 'Assessment complete' : 'Result saved'}</strong><span>{confidential ? 'Your score and section results are saved.' : 'Review your answers or try again.'}</span></div></div>
-          <div className={styles.actions}>
-            <button type="button" data-ui-button="secondary" className={`${styles.btnOutline} ${styles.allTestsAction}`} onClick={onBack}><ClipboardList size={16} aria-hidden="true" />All tests</button>
-            {!confidential && <button type="button" data-ui-button="secondary" className={styles.btnOutline} onClick={onRetake} disabled={retakePending}><RotateCcw size={16} aria-hidden="true" />{retakePending ? 'Preparing…' : 'Retake'}</button>}
-            {!confidential && <button type="button" data-ui-button="primary" className={styles.btnPrimary} onClick={() => onReview()}>Review answers<ArrowRight size={17} aria-hidden="true" /></button>}
-          </div>
+  const heroNode = (
+    <div id="result-summary" className={styles.summaryGrid}>
+      <section className={styles.scoreCard} aria-label="Score summary">
+        <div className={styles.scoreSummary}>
+          <span className={styles.eyebrow}>TOTAL SCORE</span>
+          <div className={styles.scoreNumber}>{formatNumber(score)}<span>/ {formatNumber(maxScore)}</span></div>
+          <p>{score < 0 ? 'Includes negative marking' : 'Your final score'}</p>
         </div>
-      </footer>
+        <div className={styles.scoreRing} role="img" aria-label={`Score percentage: ${percentFormat.format(percentage)}%`} style={{ '--score-progress': `${Math.min(100, Math.max(0, percentage))}%` } as CSSProperties}>
+          <div><strong>{percentFormat.format(percentage)}<small>%</small></strong><span>of total marks</span></div>
+        </div>
+        <div className={styles.scoreFootnote}>
+          <span><Check size={14} aria-hidden="true" />Assessment complete</span>
+          {result?.percentile != null && <span className={styles.percentile}><ChartNoAxesColumnIncreasing size={14} aria-hidden="true" />{formatNumber(result.percentile)} percentile</span>}
+        </div>
+      </section>
+
+      <section className={styles.performanceCard} aria-labelledby="performance-title">
+        <div className={styles.sectionHeading}><h2 id="performance-title">Performance overview</h2><Target size={19} aria-hidden="true" /></div>
+        <div className={styles.performanceMetrics}>
+          <div><span>Accuracy</span><strong>{accuracy == null ? '—' : `${percentFormat.format(accuracy)}%`}</strong><small>of attempted questions</small></div>
+          <div><span>Attempted</span><strong>{attempted}<small> / {total}</small></strong><small>questions answered</small></div>
+        </div>
+        <div className={styles.coverageTrack} aria-label={`${attempted} of ${total} questions attempted`}><span style={{ width: `${coverage}%` }} /></div>
+        <div className={styles.stats} aria-label="Answer summary">
+          <div><span className={styles.correct}><Check size={13} aria-hidden="true" />Correct</span><strong>{totals.correct}</strong></div>
+          <div><span className={styles.incorrect}><X size={13} aria-hidden="true" />Wrong</span><strong>{totals.incorrect}</strong></div>
+          <div><span className={styles.skipped}><Minus size={13} aria-hidden="true" />Skipped</span><strong>{totals.skipped}</strong></div>
+        </div>
+      </section>
     </div>
-  </main>;
+  );
+
+  const breakdownNode = (
+    <div className={styles.analysisGrid}>
+      <SectionResults sections={sections} onReview={confidential ? undefined : onReview} />
+      <aside className={styles.nextSteps} aria-labelledby="next-steps-title">
+        <div className={styles.nextStepIcon}>{confidential ? <LockKeyhole size={23} aria-hidden="true" /> : <BookOpen size={23} aria-hidden="true" />}</div>
+        <span className={styles.eyebrow}>{confidential ? 'ASSESSMENT POLICY' : 'KEEP IMPROVING'}</span>
+        <h2 id="next-steps-title">{confidential ? 'Your result is saved' : 'Your next step'}</h2>
+        {confidential ? <p className={styles.confidentialNote}>Confidential · Review and retakes unavailable.</p> : <>
+          <h3>{focusSection ? `Revisit ${focusLabel}` : attempted > 0 && totals.correct === total ? 'Keep the momentum' : 'Review your answers'}</h3>
+          <p>{focusSection ? `${focusSection.incorrect ?? 0} wrong · ${focusSection.skipped ?? 0} skipped. Work through the solutions before your next attempt.` : 'Check the explanations, then try the paper again with a fresh timer.'}</p>
+          {focusSection?.key && <button type="button" data-ui-button="state" className={styles.textAction} onClick={() => onReview(focusSection.key)}>Review this section<ArrowUpRight size={16} aria-hidden="true" /></button>}
+          {!!data.weakAreas?.length && <FocusTopics areas={data.weakAreas} />}
+          <div className={styles.savedNote}><RotateCcw size={16} aria-hidden="true" /><span>A retake keeps this result saved.</span></div>
+        </>}
+      </aside>
+    </div>
+  );
+
+  const actionsNode = (
+    <footer className={styles.actionDock} role="region" aria-label="Result actions">
+      {actionError && <p className={styles.actionError} role="alert">{actionError}</p>}
+      <div className={styles.dockInner}>
+        <div className={styles.dockCaption}><BookOpen size={21} aria-hidden="true" /><div><strong>{confidential ? 'Assessment complete' : 'Result saved'}</strong><span>{confidential ? 'Your score and section results are saved.' : 'Review your answers or try again.'}</span></div></div>
+        <div className={styles.actions}>
+          <button type="button" data-ui-button="secondary" className={`${styles.btnOutline} ${styles.allTestsAction}`} onClick={onBack}><ClipboardList size={16} aria-hidden="true" />All tests</button>
+          {!confidential && <button type="button" data-ui-button="secondary" className={styles.btnOutline} onClick={onRetake} disabled={retakePending}><RotateCcw size={16} aria-hidden="true" />{retakePending ? 'Preparing…' : 'Retake'}</button>}
+          {!confidential && <button type="button" data-ui-button="primary" className={styles.btnPrimary} onClick={() => onReview()}>Review answers<ArrowRight size={17} aria-hidden="true" /></button>}
+        </div>
+      </div>
+    </footer>
+  );
+
+  return (
+    <AnalyticsTemplate
+      header={headerNode}
+      hero={heroNode}
+      breakdown={breakdownNode}
+      actions={actionsNode}
+      showBottomNav={false}
+      showNavRail={false}
+    />
+  );
 }

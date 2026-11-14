@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { ChevronLeft, Bell } from 'lucide-react';
+import { ListingTemplate, Spinner } from '@/design-system';
 import s from './AdminUsersPage.module.css';
 import { useAdminUsers } from './useAdminUsers';
 import { AdminUsersTable } from './AdminUsersTable';
@@ -17,33 +18,43 @@ if (authLoading) {
     return (
       <div className={s.page}>
         <div className={s.loadingWrap}>
-          <div className={s.spinner} />
+          <Spinner size="md" />
         </div>
       </div>
     );
   }
 if (!authUser) return null;
-return (
-    <div className={s.page}>
-      {/* ── Header ──────────────────────────────────────── */}
-      <header data-ui-chrome="header" className={s.header}>
-        <div className={s.headerLeft}>
-          <Link replace href="/admin" data-ui-button="icon" className={s.backBtn} aria-label="Back to questions">
-            <ChevronLeft size={20} aria-hidden="true" />
-          </Link>
-          <div>
-            <div className={s.headerTitle}>User Management</div>
-            <div className={s.headerSubtitle}>Manage accounts, roles, access and activity</div>
-          </div>
-        </div>
-        <div className={s.headerRight}>
-          <Link href="/admin/notifications" className={s.navLinkBtn}>
-            <Bell size={15} />
-            <span>Broadcast Push</span>
-          </Link>
-        </div>
-      </header>
 
+const headerIntro = (
+  <header data-ui-chrome="header" className={s.header}>
+    <div className={s.headerLeft}>
+      <Link replace href="/admin" data-ui-button="icon" className={s.backBtn} aria-label="Back to questions">
+        <ChevronLeft size={20} aria-hidden="true" />
+      </Link>
+      <div>
+        <div className={s.headerTitle}>User Management</div>
+        <div className={s.headerSubtitle}>Manage accounts, roles, access and activity</div>
+      </div>
+    </div>
+    <div className={s.headerRight}>
+      <Link href="/admin/notifications" className={s.navLinkBtn}>
+        <Bell size={15} />
+        <span>Broadcast Push</span>
+      </Link>
+    </div>
+  </header>
+);
+
+return (
+  <ListingTemplate
+    intro={headerIntro}
+    columns={1}
+    wide={true}
+    showNavRail={false}
+    showBottomNav={false}
+    showSkipLink={false}
+  >
+    <div className={s.page} style={{ minHeight: 'auto', background: 'transparent' }}>
       <AdminUsersTable view={view} />
 
       {/* ── User Detail Drawer ────────────────────────────── */}
@@ -58,5 +69,6 @@ return (
       {/* ── Delete Confirm Modal ──────────────────────────── */}
       <AdminUserDeleteDialog view={view} />
     </div>
+  </ListingTemplate>
   );
 }

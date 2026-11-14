@@ -13,9 +13,6 @@ import '@fontsource/noto-sans-bengali/500.css';
 import '@fontsource/noto-sans-bengali/600.css';
 import '@fontsource/noto-sans-bengali/700.css';
 import './globals.css';
-import './light-theme.css';
-import './dark-theme.css';
-import './interface.css';
 
 // Most study/auth surfaces use the system font stack. Only fetch Geist where
 // it is actually used instead of preloading it ahead of every route's content.

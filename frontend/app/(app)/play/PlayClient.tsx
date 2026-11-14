@@ -184,7 +184,7 @@ export default function PlayClient({
             <PlayNavigation tab={tab} onChange={navigate} />
             {sideNote}
           </aside>
-          <main
+          <section
             ref={contentRef}
             className="training-main"
             aria-label="Training content"
@@ -303,7 +303,7 @@ export default function PlayClient({
                 choose={handleChooseMode}
               />
             )}
-          </main>
+          </section>
         </div>
       </div>
     </PlayExamContext.Provider>

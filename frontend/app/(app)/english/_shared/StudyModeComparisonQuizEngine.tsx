@@ -4,6 +4,8 @@ import { ArrowLeft, LogOut, Volume2, X } from "lucide-react";
 import styles from './StudyModeComparison.module.css';
 import { bindStyleClasses } from '@/lib/styleClasses';
 import loadingStyles from './StudyModeLoading.module.css';
+import QuizTemplate from '@/design-system/layouts/QuizTemplate';
+import { Spinner } from '@/design-system';
 
 const styleClasses = bindStyleClasses(styles);
 const loadingClasses = bindStyleClasses(loadingStyles);
@@ -64,13 +66,19 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
   useNativeDialog(exitRef, showExitConfirm && !loading, () => setShowExitConfirm(false));
   if (loading) {
     return (
-      <main className={loadingClasses("apple-dict-viewport")} data-theme={theme}>
-        <div className={loadingClasses("loading-state")}>
-          <div className={loadingClasses("spinner")} />
-          <p role="status">Loading your vocabulary…</p>
-          <BackButton href={`/english/${config.topic}/study-mode`} label="Back to study setup" />
-        </div>
-      </main>
+      <QuizTemplate
+        lockedViewport={false}
+        readingMaxWidth="100%"
+        showSkipLink={false}
+      >
+        <main className={loadingClasses("apple-dict-viewport")} data-theme={theme}>
+          <div className={loadingClasses("loading-state")}>
+            <Spinner size="lg" />
+            <p role="status">Loading your vocabulary…</p>
+            <BackButton href={`/english/${config.topic}/study-mode`} label="Back to study setup" />
+          </div>
+        </main>
+      </QuizTemplate>
     );
   }
 
@@ -80,7 +88,12 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
   const posLabel = activeCard.meanings.map((m) => m.pos).filter(Boolean).join(" · ");
 
   return (
-    <main className={styleClasses("apple-dict-viewport scope")} data-theme={theme}>
+    <QuizTemplate
+      lockedViewport={false}
+      readingMaxWidth="100%"
+      showSkipLink={false}
+    >
+      <main className={styleClasses("apple-dict-viewport scope")} data-theme={theme}>
       {/* Mini Middle Pop-up Exit Confirmation Modal */}
       {showExitConfirm && (
         <dialog ref={exitRef}
@@ -627,5 +640,6 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
         </div>
       </div>
     </main>
+    </QuizTemplate>
   );
 }

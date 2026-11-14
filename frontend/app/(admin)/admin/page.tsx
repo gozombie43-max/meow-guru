@@ -5,6 +5,7 @@ import styles from "./QuestionBank.module.css";
 import QuestionBankZipUpload from "@/features/admin/questions/QuestionBankZipUpload";
 import RichContent from "@/components/RichContent";
 import { useAdminQuestionBank } from '@/features/admin/questions/useAdminQuestionBank';
+import { ListingTemplate } from "@/design-system";
 import { ChevronLeft,ChevronRight,ChevronsLeft,ChevronsRight } from "lucide-react";
 import {
 DIFFICULTIES,
@@ -23,11 +24,9 @@ export default function AdminPanel() {
   const { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterChapter, setFilterChapter, filterSubject, setFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muChapter, setMuChapter, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, selectingAll, allMatchingSelected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, exporting, handleDownloadNdjson, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, chapters, exams, quizNames, muTopicOptions, muChapterOptions, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, selectAllMatching, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor, fetchQuestions } = useAdminQuestionBank();
 
 
-  return (
-    <div className={layout.page}>
-
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: "1.5rem" }}>
+  const introSection = (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: "1rem" }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 500, margin: 0, color: "var(--color-text-primary)" }}>{isJam ? 'IIT JAM' : 'SSC'} Question Bank</h1>
           <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "4px 0 0" }}>
@@ -73,7 +72,152 @@ export default function AdminPanel() {
           {error || success}
         </div>
       )}
+    </div>
+  );
 
+  const filtersSection = (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))", gap: 10, marginBottom: "0.5rem" }}>
+        <input type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off" placeholder="Search question, chapter, ID..." value={search} onChange={(e) => setSearch(e.target.value)}
+          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}  aria-label="Search question, chapter, ID..."/>
+        <select aria-label="Filter by subject" value={filterSubject} onChange={(e) => setFilterSubject(e.target.value)}
+          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
+          <option value="">All subjects</option>
+          {SUBJECT_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+        </select>
+        <select aria-label="Filter by topic" value={filterTopic} onChange={(e) => setFilterTopic(e.target.value)}
+          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
+          <option value="">All topics</option>
+          {topics.map((t) => <option key={t} value={t}>{adminTopicLabel(t)}</option>)}
+        </select>
+        {filterSubject === "general-awareness" && (
+          <select aria-label="Filter by chapter" value={filterChapter} onChange={(e) => setFilterChapter(e.target.value)} disabled={!filterTopic || chapters.length === 0}
+            style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
+            <option value="">All chapters</option>
+            {chapters.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
+        )}
+        <select aria-label="Filter by difficulty" value={filterDifficulty} onChange={(e) => setFilterDifficulty(e.target.value)}
+          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
+          <option value="">All difficulties</option>
+          {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
+        </select>
+        <select aria-label="Filter by exam" value={filterExam} onChange={(e) => setFilterExam(e.target.value)}
+          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
+          <option value="">All exams</option>
+          {exams.map((e) => <option key={e} value={e}>{e}</option>)}
+        </select>
+        <select aria-label="Filter by quiz" value={filterQuizName} onChange={(e) => setFilterQuizName(e.target.value)}
+          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
+          <option value="">All quiz names</option>
+          {quizNames.map((name) => <option key={name} value={name}>{name}</option>)}
+        </select>
+        <select aria-label="Sort questions" value={sortOrder} onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
+          <option value="asc">Sort by ID ↑</option>
+          <option value="desc">Sort by ID ↓</option>
+        </select>
+        <button
+          data-ui-button="state"
+          type="button"
+          onClick={() => void (allMatchingSelected ? clearSelection() : selectAllMatching())}
+          disabled={selectingAll || loading || totalCount === 0}
+          style={{
+            padding: "8px 14px",
+            borderRadius: 8,
+            border: "0.5px solid var(--admin-blue)",
+            background: allMatchingSelected ? "var(--admin-blue)" : "transparent",
+            color: allMatchingSelected ? "#fff" : "var(--admin-blue)",
+            cursor: selectingAll || loading || totalCount === 0 ? "default" : "pointer",
+            fontSize: 13,
+            fontWeight: 600,
+            opacity: selectingAll || loading || totalCount === 0 ? 0.6 : 1,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {selectingAll
+            ? `Selecting (${totalCount})...`
+            : allMatchingSelected
+              ? `All ${selected.size} selected`
+              : filterTopic
+                ? `Select all topic (${totalCount})`
+                : `Select all (${totalCount})`}
+        </button>
+        <button
+          data-ui-button="state"
+          type="button"
+          onClick={() => void handleDownloadNdjson()}
+          disabled={exporting || loading || totalCount === 0}
+          style={{
+            padding: "8px 14px",
+            borderRadius: 8,
+            border: "0.5px solid var(--admin-blue)",
+            background: "var(--admin-blue-soft)",
+            color: "var(--admin-blue)",
+            cursor: exporting || loading || totalCount === 0 ? "default" : "pointer",
+            fontSize: 13,
+            fontWeight: 600,
+            opacity: exporting || loading || totalCount === 0 ? 0.6 : 1,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {exporting ? "Downloading..." : `Download NDJSON (${totalCount})`}
+        </button>
+      </div>
+
+      {/* Select all banner */}
+      {selected.size > 0 && (
+        <div style={{ padding: "8px 14px", background: "var(--admin-blue-soft)", borderRadius: 8, marginBottom: 10, fontSize: 13, color: "var(--admin-blue)", display: "flex", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <span>{selected.size} question{selected.size > 1 ? "s" : ""} selected</span>
+          {!allPageSelected && filtered.length > 0 && (
+            <button data-ui-button="state" type="button" onClick={selectAll} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontWeight: 500, fontSize: 13, padding: 0, textDecoration: "underline" }}>
+              Select all {filtered.length} on this page
+            </button>
+          )}
+          {selected.size < totalCount && (
+            <button
+              data-ui-button="state"
+              type="button"
+              onClick={() => void selectAllMatching()}
+              disabled={selectingAll}
+              style={{ background: "none", border: "none", cursor: selectingAll ? "wait" : "pointer", color: "var(--admin-blue)", fontWeight: 600, fontSize: 13, padding: 0, textDecoration: "underline" }}
+            >
+              {selectingAll
+                ? `Selecting all ${totalCount} questions...`
+                : filterTopic
+                  ? `Select all ${totalCount} questions in ${adminTopicLabel(filterTopic)}`
+                  : `Select all ${totalCount} matching questions`}
+            </button>
+          )}
+          <button data-ui-button="state" type="button" onClick={clearSelection} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontSize: 13, padding: 0, marginLeft: "auto" }}>
+            Clear selection
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  const paginationSection = totalPages > 1 ? (
+    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: "1rem", justifyContent: "center" }}>
+      <button data-ui-button="state" data-ui-shape="icon" aria-label="First page" onClick={() => setPage(1)} disabled={page === 1} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.4 : 1 }}><ChevronsLeft aria-hidden="true" /></button>
+      <button data-ui-button="state" data-ui-shape="icon" aria-label="Previous page" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.4 : 1 }}><ChevronLeft aria-hidden="true" /></button>
+      <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>Page {page} of {totalPages}</span>
+      <button data-ui-button="state" data-ui-shape="icon" aria-label="Next page" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === totalPages ? "default" : "pointer", opacity: page === totalPages ? 0.4 : 1 }}><ChevronRight aria-hidden="true" /></button>
+      <button data-ui-button="state" data-ui-shape="icon" aria-label="Last page" onClick={() => setPage(totalPages)} disabled={page === totalPages} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === totalPages ? "default" : "pointer", opacity: page === totalPages ? 0.4 : 1 }}><ChevronsRight aria-hidden="true" /></button>
+    </div>
+  ) : null;
+
+  return (
+    <ListingTemplate
+      intro={introSection}
+      filters={filtersSection}
+      pagination={paginationSection}
+      columns={1}
+      wide={true}
+      showNavRail={false}
+      showBottomNav={false}
+      showSkipLink={false}
+    >
       {/* ── Mass Upload ── */}
       <AdminDisclosure title="Import questions (NDJSON/JSONL)">
       <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
@@ -207,125 +351,6 @@ export default function AdminPanel() {
         onUpload={handleBulkImageUpload}
       />
 
-      {/* Filters */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))", gap: 10, marginBottom: "1rem" }}>
-        <input type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off" placeholder="Search question, chapter, ID..." value={search} onChange={(e) => setSearch(e.target.value)}
-          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}  aria-label="Search question, chapter, ID..."/>
-        <select aria-label="Filter by subject" value={filterSubject} onChange={(e) => setFilterSubject(e.target.value)}
-          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
-          <option value="">All subjects</option>
-          {SUBJECT_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
-        <select aria-label="Filter by topic" value={filterTopic} onChange={(e) => setFilterTopic(e.target.value)}
-          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
-          <option value="">All topics</option>
-          {topics.map((t) => <option key={t} value={t}>{adminTopicLabel(t)}</option>)}
-        </select>
-        {filterSubject === "general-awareness" && (
-          <select aria-label="Filter by chapter" value={filterChapter} onChange={(e) => setFilterChapter(e.target.value)} disabled={!filterTopic || chapters.length === 0}
-            style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
-            <option value="">All chapters</option>
-            {chapters.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-          </select>
-        )}
-        <select aria-label="Filter by difficulty" value={filterDifficulty} onChange={(e) => setFilterDifficulty(e.target.value)}
-          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
-          <option value="">All difficulties</option>
-          {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
-        </select>
-        <select aria-label="Filter by exam" value={filterExam} onChange={(e) => setFilterExam(e.target.value)}
-          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
-          <option value="">All exams</option>
-          {exams.map((e) => <option key={e} value={e}>{e}</option>)}
-        </select>
-        <select aria-label="Filter by quiz" value={filterQuizName} onChange={(e) => setFilterQuizName(e.target.value)}
-          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
-          <option value="">All quiz names</option>
-          {quizNames.map((name) => <option key={name} value={name}>{name}</option>)}
-        </select>
-        <select aria-label="Sort questions" value={sortOrder} onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
-          <option value="asc">Sort by ID ↑</option>
-          <option value="desc">Sort by ID ↓</option>
-        </select>
-        <button
-          data-ui-button="state"
-          type="button"
-          onClick={() => void (allMatchingSelected ? clearSelection() : selectAllMatching())}
-          disabled={selectingAll || loading || totalCount === 0}
-          style={{
-            padding: "8px 14px",
-            borderRadius: 8,
-            border: "0.5px solid var(--admin-blue)",
-            background: allMatchingSelected ? "var(--admin-blue)" : "transparent",
-            color: allMatchingSelected ? "#fff" : "var(--admin-blue)",
-            cursor: selectingAll || loading || totalCount === 0 ? "default" : "pointer",
-            fontSize: 13,
-            fontWeight: 600,
-            opacity: selectingAll || loading || totalCount === 0 ? 0.6 : 1,
-            whiteSpace: "nowrap",
-          }}
-        >
-          {selectingAll
-            ? `Selecting (${totalCount})...`
-            : allMatchingSelected
-              ? `All ${selected.size} selected`
-              : filterTopic
-                ? `Select all topic (${totalCount})`
-                : `Select all (${totalCount})`}
-        </button>
-        <button
-          data-ui-button="state"
-          type="button"
-          onClick={() => void handleDownloadNdjson()}
-          disabled={exporting || loading || totalCount === 0}
-          style={{
-            padding: "8px 14px",
-            borderRadius: 8,
-            border: "0.5px solid var(--admin-blue)",
-            background: "var(--admin-blue-soft)",
-            color: "var(--admin-blue)",
-            cursor: exporting || loading || totalCount === 0 ? "default" : "pointer",
-            fontSize: 13,
-            fontWeight: 600,
-            opacity: exporting || loading || totalCount === 0 ? 0.6 : 1,
-            whiteSpace: "nowrap",
-          }}
-        >
-          {exporting ? "Downloading..." : `Download NDJSON (${totalCount})`}
-        </button>
-      </div>
-
-      {/* Select all banner */}
-      {selected.size > 0 && (
-        <div style={{ padding: "8px 14px", background: "var(--admin-blue-soft)", borderRadius: 8, marginBottom: 10, fontSize: 13, color: "var(--admin-blue)", display: "flex", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-          <span>{selected.size} question{selected.size > 1 ? "s" : ""} selected</span>
-          {!allPageSelected && filtered.length > 0 && (
-            <button data-ui-button="state" type="button" onClick={selectAll} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontWeight: 500, fontSize: 13, padding: 0, textDecoration: "underline" }}>
-              Select all {filtered.length} on this page
-            </button>
-          )}
-          {selected.size < totalCount && (
-            <button
-              data-ui-button="state"
-              type="button"
-              onClick={() => void selectAllMatching()}
-              disabled={selectingAll}
-              style={{ background: "none", border: "none", cursor: selectingAll ? "wait" : "pointer", color: "var(--admin-blue)", fontWeight: 600, fontSize: 13, padding: 0, textDecoration: "underline" }}
-            >
-              {selectingAll
-                ? `Selecting all ${totalCount} questions...`
-                : filterTopic
-                  ? `Select all ${totalCount} questions in ${adminTopicLabel(filterTopic)}`
-                  : `Select all ${totalCount} matching questions`}
-            </button>
-          )}
-          <button data-ui-button="state" type="button" onClick={clearSelection} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontSize: 13, padding: 0, marginLeft: "auto" }}>
-            Clear selection
-          </button>
-        </div>
-      )}
-
       {/* Table */}
       <div className={`${layout.tableWrap} ${styles.questionList}`}>
         <table className={`${layout.table} ${styles.questionTable}`}>
@@ -445,17 +470,6 @@ export default function AdminPanel() {
         </table>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: "1rem", justifyContent: "center" }}>
-          <button data-ui-button="state" data-ui-shape="icon" aria-label="First page" onClick={() => setPage(1)} disabled={page === 1} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.4 : 1 }}><ChevronsLeft aria-hidden="true" /></button>
-          <button data-ui-button="state" data-ui-shape="icon" aria-label="Previous page" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.4 : 1 }}><ChevronLeft aria-hidden="true" /></button>
-          <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>Page {page} of {totalPages}</span>
-          <button data-ui-button="state" data-ui-shape="icon" aria-label="Next page" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === totalPages ? "default" : "pointer", opacity: page === totalPages ? 0.4 : 1 }}><ChevronRight aria-hidden="true" /></button>
-          <button data-ui-button="state" data-ui-shape="icon" aria-label="Last page" onClick={() => setPage(totalPages)} disabled={page === totalPages} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === totalPages ? "default" : "pointer", opacity: page === totalPages ? 0.4 : 1 }}><ChevronsRight aria-hidden="true" /></button>
-        </div>
-      )}
-
       {editing && (
         <QuestionEditorDialog
           formData={formData}
@@ -490,7 +504,7 @@ export default function AdminPanel() {
       {imagePreview && (
         <ImagePreviewDialog preview={imagePreview} onClose={() => setImagePreview(null)} />
       )}
-    </div>
+    </ListingTemplate>
   );
 
 }

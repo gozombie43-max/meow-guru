@@ -1,10 +1,4 @@
 .container {
-  --bg: var(--light-canvas);
-  --card: var(--light-surface);
-  --text-dark: var(--light-text);
-  --text-muted: var(--light-text-secondary);
-  --border: var(--light-border);
-  --action-bar-height: 80px;
   display: block;
   width: 100%;
   min-height: 100dvh;
@@ -12,14 +6,6 @@
   padding: calc(16px + var(--safe-top)) max(16px, var(--safe-right)) 24px max(16px, var(--safe-left));
   background: var(--bg);
   color: var(--text-dark);
-}
-:global(html.theme-dark) .container,
-:global(body.theme-dark) .container {
-  --bg: var(--oled-canvas);
-  --card: var(--oled-surface);
-  --text-dark: var(--oled-text);
-  --text-muted: var(--oled-secondary);
-  --border: var(--dark-border);
 }
 .card { max-width: 680px; margin: 0 auto; }
 .topbar { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; margin-bottom: 16px; }
@@ -50,7 +36,7 @@
 .startError p { margin: 0; }
 .startError button { min-height: 44px; margin-top: 8px; }
 @media (max-width: 767px) {
-  .container { padding-top: calc(8px + var(--safe-top)); padding-bottom: calc(var(--action-bar-height) + var(--safe-bottom) + 16px); }
+  .container { padding-top: calc(8px + var(--safe-top)); padding-bottom: calc(80px + var(--safe-bottom) + 16px); }
   .topbar { margin-bottom: 12px; }
   .footer {
     position: fixed;

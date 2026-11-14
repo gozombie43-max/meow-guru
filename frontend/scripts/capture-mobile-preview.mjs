@@ -1,11 +1,12 @@
 import { chromium } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 const css = (await Promise.all(['app/light-theme.css', 'app/dark-theme.css', 'app/interface.css'].map(p => read(p)))).join('\n');
 const mobile = await read('features/quiz/components/views/mobile-quiz-view.css');
 const language = (await read('components/LangToggle.tsx')).split('<style>{`')[1].split('`}</style>')[0];
 
+await mkdir('screenshots', { recursive: true });
 const browser = await chromium.launch();
 
 // 1. Unsubmitted State (Option B selected)
@@ -154,7 +155,7 @@ const browser = await chromium.launch();
   </body>
   </html>
   `);
-  await page.screenshot({ path: 'public/mobile-quiz-refined-dark.png' });
+  await page.screenshot({ path: 'screenshots/mobile-quiz-refined-dark.png' });
   await page.close();
 }
 
@@ -304,7 +305,7 @@ const browser = await chromium.launch();
   </body>
   </html>
   `);
-  await page.screenshot({ path: 'public/mobile-quiz-submitted-dark.png' });
+  await page.screenshot({ path: 'screenshots/mobile-quiz-submitted-dark.png' });
   await page.close();
 }
 

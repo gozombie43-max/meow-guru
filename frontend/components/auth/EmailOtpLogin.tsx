@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowRight, Mail, ShieldCheck } from 'lucide-react';
 import api from '@/shared/api/client';
+import { Spinner } from '@/design-system';
 import AuthInput from './AuthInput';
 import { signInErrorMessage } from './signInError';
 import styles from './auth.module.css';
@@ -103,7 +104,7 @@ export default function EmailOtpLogin({ email, onEmailChange, onSuccess }: Email
       )}
       {error && <p className={styles.fieldErrorText} role="alert">{error}</p>}
       <button type="submit" className={styles.primaryBtn} data-ui-button="primary" disabled={pending || (!challengeId && cooldown > 0)}>
-        {pending ? <><span className={styles.spinner} aria-hidden="true" /> {challengeId ? 'Signing in…' : 'Sending code…'}</>
+        {pending ? <><Spinner size="sm" tone="on-accent" /> {challengeId ? 'Signing in…' : 'Sending code…'}</>
           : <><span>{challengeId ? 'Verify & sign in' : cooldown ? `Send code in ${cooldown}s` : 'Send code'}</span><ArrowRight size={16} /></>}
       </button>
       {challengeId && <button type="button" className={styles.otpResend} disabled={pending || cooldown > 0}

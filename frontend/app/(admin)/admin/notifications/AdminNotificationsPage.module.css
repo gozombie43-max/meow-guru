@@ -1,29 +1,6 @@
 /* ── Admin Notifications Page — AdminNotificationsPage.module.css ──────── */
 
 .page {
-  /* Light mode default */
-  --color-text-primary: var(--admin-text);
-  --color-text-secondary: var(--admin-text-secondary);
-  --color-text-tertiary: var(--admin-text-tertiary);
-  --color-border-secondary: var(--admin-border);
-  --color-background-primary: var(--admin-surface-solid);
-  --color-background-secondary: var(--admin-surface-muted);
-  --bg-page: var(--admin-bg);
-  --card-bg: var(--admin-surface-solid);
-  --card-shadow: var(--admin-shadow);
-  --header-bg: var(--admin-surface-solid);
-  --input-bg: var(--admin-surface-solid);
-  --input-border: var(--admin-border);
-  --input-focus-border: var(--admin-border);
-  --btn-bg: var(--admin-surface-solid);
-  --btn-hover: var(--admin-blue-soft);
-  --btn-border: var(--admin-border);
-  --preview-bg: var(--admin-surface-muted);
-  --preview-card: var(--admin-surface-solid);
-  --chip-bg: var(--admin-surface-muted);
-  --chip-text: var(--admin-text);
-  --chip-hover: var(--admin-blue-soft);
-
   min-height: 100dvh;
   width: 100%;
   background: var(--bg-page);
@@ -446,18 +423,7 @@
   padding: 24px;
   box-shadow: var(--card-shadow);
   margin-bottom: 24px;
-  animation: fadeIn 0.25s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  animation: meow-fade-in var(--meow-duration-base) var(--meow-ease-enter);
 }
 
 .resultHeader {
@@ -630,7 +596,7 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
-  animation: fadeIn 0.15s ease-out;
+  animation: meow-fade-in var(--meow-duration-fast) var(--meow-ease-enter);
 }
 
 .modalDialog {
@@ -772,37 +738,11 @@
   cursor: not-allowed;
 }
 
-/* ── Spinner ────────────────────────────────────────────── */
-
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-.spinnerPage {
-  width: 36px;
-  height: 36px;
-  border: 3px solid rgb(var(--ios-system-blue-rgb) / 0.2);
-  border-top-color: var(--ios-system-blue);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
 .loadingWrap {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 60vh;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  min-height: 60dvh;
 }
 
 /* ── Recent Notifications History Section ───────────────── */
