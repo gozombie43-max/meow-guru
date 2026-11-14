@@ -2,7 +2,7 @@
 
 import { Dialog } from "@/components/ui/Dialog";
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Check, User as UserIcon, Image as ImageIcon, Sparkles, Loader2, RotateCcw, Upload } from 'lucide-react';
+import { X, Check, User as UserIcon, Sparkles, Loader2, RotateCcw, Upload } from 'lucide-react';
 import GoogleAvatarRing from './GoogleAvatarRing';
 import { useAuth } from '@/context/AuthContext';
 import styles from './UserProfileMenu.module.css';
@@ -90,7 +90,6 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState<string | null>(null);
-  const [customUrl, setCustomUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -99,9 +98,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     if (user) {
       const timer = window.setTimeout(() => {
         setName(user.name || '');
-        const existingAvatar = user.avatar || null;
-        setAvatar(existingAvatar);
-        setCustomUrl(existingAvatar && !existingAvatar.startsWith('data:') ? existingAvatar : '');
+        setAvatar(user.avatar || null);
       }, 0);
       return () => window.clearTimeout(timer);
     }
@@ -111,24 +108,15 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
 
   const handleSelectPreset = (url: string) => {
     setAvatar(url);
-    setCustomUrl(url);
     setError(null);
   };
 
   const handleResetToInitials = () => {
     setAvatar(null);
-    setCustomUrl('');
     setError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
-
-  const handleCustomUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setCustomUrl(val);
-    setAvatar(val.trim() ? val.trim() : null);
-    setError(null);
   };
 
   const handleLocalFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,7 +135,6 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     try {
       const processedDataUrl = await readLocalAvatarFile(file);
       setAvatar(processedDataUrl);
-      setCustomUrl('');
       setError(null);
     } catch {
       setError('Unable to load the selected image. Please try another file.');
@@ -187,7 +174,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     <Dialog onClose={onClose} busy={saving} className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="edit-profile-title">
       <div className={styles.modalCard}>
         {/* Header */}
-        <div data-ui-chrome="header" className={styles.modalHeader}>
+        <div className={styles.modalHeader}>
           <div className={styles.modalTitleGroup}>
             <div className={styles.modalTitleIcon}>
               <UserIcon size={18} />
@@ -207,7 +194,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
         {/* Form Body */}
         <form onSubmit={handleSave} className={styles.modalBody}>
           {error && (
-            <div style={{ padding: '8px 12px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontSize: '12.5px', fontWeight: 600 }}>
+            <div className={styles.errorBanner} role="alert">
               {error}
             </div>
           )}
@@ -229,25 +216,23 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
               style={{ display: 'none' }}
               aria-label="Upload profile image"
             />
-            <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
-              <button data-ui-button="secondary"
+            <div className={styles.avatarActions}>
+              <button data-ui-button="state"
                 type="button"
-                className={styles.cancelBtn}
-                style={{ padding: '4px 10px', fontSize: '11.5px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                className={styles.avatarActionBtn}
                 onClick={() => fileInputRef.current?.click()}
                 title="Upload image from your device"
               >
-                <Upload size={12} />
+                <Upload size={14} />
                 <span>Upload Photo</span>
               </button>
-              <button data-ui-button="secondary"
+              <button data-ui-button="state"
                 type="button"
-                className={styles.cancelBtn}
-                style={{ padding: '4px 10px', fontSize: '11.5px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                className={styles.avatarActionBtn}
                 onClick={handleResetToInitials}
                 title="Use letter initial avatar"
               >
-                <RotateCcw size={12} />
+                <RotateCcw size={14} />
                 <span>Default Initial</span>
               </button>
             </div>
@@ -270,16 +255,17 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
               maxLength={60}
               className={styles.formInput}
               required
-             aria-label="Enter your name"/>
+              aria-label="Enter your name"
+            />
           </div>
 
           {/* Preset Avatars Grid */}
           <div className={styles.formGroup}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div className={styles.formLabel}>
+            <div className={styles.formLabelRow}>
+              <span className={styles.formLabel}>
                 Choose Avatar
-              </div>
-              <span className={styles.formHelp} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              </span>
+              <span className={styles.formBadge}>
                 <Sparkles size={12} /> Quick Presets
               </span>
             </div>
@@ -301,26 +287,10 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
               })}
             </div>
           </div>
-
-          {/* Custom Image URL Input */}
-          <div className={styles.formGroup}>
-            <label htmlFor="edit-profile-custom-url" className={styles.formLabel} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <ImageIcon size={14} /> Custom Image URL
-            </label>
-            <input
-              id="edit-profile-custom-url"
-              type="url"
-              value={customUrl}
-              onChange={handleCustomUrlChange}
-              placeholder="https://example.com/my-photo.jpg"
-              className={styles.formInput}
-             aria-label="https://example.com/my-photo.jpg"/>
-            <span className={styles.formHelp}>Upload a local image, choose a preset, or paste a direct image link.</span>
-          </div>
         </form>
 
         {/* Footer */}
-        <div data-ui-chrome="footer" className={styles.modalFooter}>
+        <div className={styles.modalFooter}>
           <button data-ui-button="secondary"
             type="button"
             className={styles.cancelBtn}
