@@ -44,6 +44,9 @@ export default function ProfileClient() {
     return (
       <DashboardTemplate
         isLoading
+        showBottomNav={false}
+        className={styles.root}
+        mainClassName={styles.main}
         loadingState={
           <div className={styles.loading} role="status">
             <Spinner size="lg" tone="accent" aria-hidden="true" />
@@ -109,7 +112,9 @@ export default function ProfileClient() {
       gridColumns={1}
       maxWidth={680}
       showNavRail={true}
-      showBottomNav={true}
+      showBottomNav={false}
+      className={styles.root}
+      mainClassName={styles.main}
     >
       <div className={styles.bodyWrap}>
         <div className={styles.group} aria-label="Account settings">
