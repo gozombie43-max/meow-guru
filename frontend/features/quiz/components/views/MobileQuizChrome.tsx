@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { LangToggle } from "@/components/LangToggle";
+import QuizChatbot from "@/components/QuizChatbot";
 import { Settings, ArrowLeft, ArrowRight, BookOpenText, Check } from "lucide-react";
-import dynamic from "next/dynamic";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
 
 function SolutionIcon({ className }: { className?: string }) {
@@ -11,10 +11,6 @@ function SolutionIcon({ className }: { className?: string }) {
 function GeminiIcon({ className }: { className?: string }) {
   return <span className={className} aria-hidden="true" style={{ backgroundColor: "currentColor", mask: 'url("/icons8-gemini-ai.svg") center / contain no-repeat', WebkitMask: 'url("/icons8-gemini-ai.svg") center / contain no-repeat' }} />;
 }
-
-const QuizChatbot = dynamic(() => import("@/components/QuizChatbot"), {
-  ssr: false,
-});
 
 type HeaderProps = Pick<
   QuizController,
@@ -89,7 +85,7 @@ type FooterProps = Pick<
 };
 
 export function MobileQuizFooter(props: FooterProps) {
-  return <MobileQuizFooterControls key={props.currentQ?.id ?? props.currentIndex} {...props} />;
+  return <MobileQuizFooterControls key={props.currentIndex} {...props} />;
 }
 
 function MobileQuizFooterControls({
@@ -108,7 +104,6 @@ function MobileQuizFooterControls({
   hideViewSolution = false,
   hideAiTutor = false,
 }: FooterProps) {
-  const [tutorLoaded, setTutorLoaded] = useState(false);
   const [tutorOpen, setTutorOpen] = useState(false);
 
   const handleNextOrSubmit = () => {
@@ -126,7 +121,6 @@ function MobileQuizFooterControls({
 
   const handleOpenAiTutor = () => {
     if (!isCurrentSubmitted || hideAiTutor) return;
-    setTutorLoaded(true);
     setTutorOpen(true);
   };
 
@@ -134,10 +128,10 @@ function MobileQuizFooterControls({
 
   return (
     <footer data-ui-chrome="footer" className="ios-series-footer">
-      {/* Retain the conversation after its first opening; submission alone loads nothing. */}
-      {tutorLoaded && !hideAiTutor && isCurrentSubmitted && currentQ && (
+      {/* Keep the tutor dialog ready as soon as the current question is submitted so opening is instant. */}
+      {!hideAiTutor && isCurrentSubmitted && currentQ && (
         <QuizChatbot
-          key={`ios-chat-${currentQ.id}`}
+          key={`ios-chat-${currentQ.id ?? currentIndex}`}
           isVisible={isCurrentSubmitted}
           questionNumber={currentIndex + 1}
           topicTitle={title}

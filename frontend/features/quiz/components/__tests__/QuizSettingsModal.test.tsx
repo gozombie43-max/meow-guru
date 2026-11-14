@@ -29,7 +29,8 @@ describe("QuizSettingsModal", () => {
   it("changes text boldness", () => {
     const onTextWeightChange = vi.fn();
     render(<QuizSettingsModal {...defaultProps} textWeight="medium" onTextWeightChange={onTextWeightChange} />);
-    const select = screen.getByRole("combobox", { name: "Text boldness" });
+    const select = screen.getByRole("combobox", { name: "Text boldness" }) as HTMLSelectElement;
+    expect(Array.from(select.options).map((opt) => opt.textContent)).toEqual(["Low", "Medium", "High"]);
     expect(select).toHaveValue("medium");
     fireEvent.change(select, { target: { value: "high" } });
     expect(onTextWeightChange).toHaveBeenCalledWith("high");
@@ -74,7 +75,8 @@ describe("QuizSettingsModal", () => {
   it("calls onTextSizeChange when text size dropdown changes", () => {
     const onTextSizeChange = vi.fn();
     render(<QuizSettingsModal {...defaultProps} onTextSizeChange={onTextSizeChange} />);
-    const select = screen.getByRole("combobox", { name: "Text size" });
+    const select = screen.getByRole("combobox", { name: "Text size" }) as HTMLSelectElement;
+    expect(Array.from(select.options).map((opt) => opt.textContent)).toEqual(["Small", "Medium", "Big"]);
     fireEvent.change(select, { target: { value: "sm" } });
     expect(onTextSizeChange).toHaveBeenCalledWith("sm");
 
@@ -96,15 +98,21 @@ describe("QuizSettingsModal", () => {
   it("changes custom size via dropdown and updates preset selection", () => {
     const onTextSizeChange = vi.fn();
     const { rerender } = render(<QuizSettingsModal {...defaultProps} onTextSizeChange={onTextSizeChange} />);
+    const presetSelect = screen.getByRole("combobox", { name: "Text size" });
     const customSelect = screen.getByRole("combobox", { name: "Custom text size" });
+    const presetRow = presetSelect.closest(".ios-settings-item");
+    const customRow = customSelect.closest(".ios-settings-item");
+    expect(presetRow).not.toHaveAttribute("data-inactive");
+    expect(customRow).toHaveAttribute("data-inactive", "true");
     expect(customSelect).toHaveValue("20");
     fireEvent.change(customSelect, { target: { value: "21" } });
     expect(onTextSizeChange).toHaveBeenLastCalledWith(21);
 
     rerender(<QuizSettingsModal {...defaultProps} textSize={21} onTextSizeChange={onTextSizeChange} />);
     expect(customSelect).toHaveValue("21");
-    const presetSelect = screen.getByRole("combobox", { name: "Text size" });
     expect(presetSelect).toHaveValue("custom");
+    expect(presetRow).toHaveAttribute("data-inactive", "true");
+    expect(customRow).not.toHaveAttribute("data-inactive");
 
     fireEvent.change(presetSelect, { target: { value: "md" } });
     expect(onTextSizeChange).toHaveBeenLastCalledWith("md");

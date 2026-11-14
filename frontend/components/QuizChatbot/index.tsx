@@ -210,36 +210,33 @@ export default function QuizChatbot({
   const addMenuRef = useRef<HTMLDivElement>(null);
   const addButtonRef = useRef<HTMLButtonElement>(null);
 
-  const handleClose = useCallback(() => {
-    setSavedDraft(composerRef.current?.getDraft() ?? '');
-    setIsOpen(false);
-  }, [setIsOpen]);
-  useModalSurface(modalRef, isOpen, handleClose, { initialFocus: ":scope" });
-
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dragStartRef = useRef<{ startY: number; startTime: number; currentY: number } | null>(null);
 
-  const [wasOpen, setWasOpen] = useState(isOpen);
-  if (wasOpen !== isOpen) {
-    setWasOpen(isOpen);
-    if (!isOpen) {
-      setDragOffset(0);
-      setIsDragging(false);
-      setIsHolding(false);
-    }
-  }
+  const handleClose = useCallback(() => {
+    setDragOffset(0);
+    setIsDragging(false);
+    setIsHolding(false);
+    setSavedDraft(composerRef.current?.getDraft() ?? '');
+    setIsOpen(false);
+  }, [setIsOpen]);
+  useModalSurface(modalRef, isOpen, handleClose, { initialFocus: ":scope" });
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isOpen) return;
+    return () => {
       dragStartRef.current = null;
       if (holdTimerRef.current) {
         clearTimeout(holdTimerRef.current);
         holdTimerRef.current = null;
       }
-    }
+      setDragOffset(0);
+      setIsDragging(false);
+      setIsHolding(false);
+    };
   }, [isOpen]);
 
   useEffect(() => {

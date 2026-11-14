@@ -1,7 +1,7 @@
 import React from 'react';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
-import { MobileQuizHeader } from '../views/MobileQuizChrome';
+import { MobileQuizFooter, MobileQuizHeader } from '../views/MobileQuizChrome';
 
 vi.mock('@/components/LangToggle', () => ({ LangToggle: () => null }));
 afterEach(cleanup);
@@ -24,4 +24,52 @@ it('uses the saved exact total, independently of loaded pages', () => {
 it('does not invent a total or imply infinity while metadata is unavailable', () => {
   render(<MobileQuizHeader {...props} availableCount={0} />);
   expect(screen.getByRole('button', { name: 'Question 7 - Open question navigator' })).toHaveTextContent('Question 7');
+});
+
+it('opens the AI Tutor dialog immediately on first click and keeps it open when currentQ updates on the same index', () => {
+  const baseQuestion = {
+    id: 'q-1',
+    concept: 'Percentages',
+    formula: '',
+    question: 'What is 10% of 50?',
+    options: ['5', '10', '15', '20'],
+    correctAnswer: -1,
+    answer: '',
+    difficulty: 'easy' as const,
+    estimatedTime: 30,
+    year: '',
+    exam: '',
+    solution: '',
+  };
+  const footerProps: React.ComponentProps<typeof MobileQuizFooter> = {
+    currentIndex: 0,
+    handleNext: vi.fn(),
+    handlePrev: vi.fn(),
+    handleSubmitCurrent: vi.fn(),
+    questions: [baseQuestion],
+    currentQ: baseQuestion,
+    openSolution: vi.fn(),
+    title: 'Percentages',
+    theme: 'dark',
+    activeLang: 'en',
+    hideViewSolution: false,
+    hideAiTutor: false,
+    canSubmit: true,
+    isCurrentSubmitted: true,
+  };
+
+  const view = render(<MobileQuizFooter {...footerProps} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Ask AI tutor' }));
+
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  expect(screen.getByText('AI Solution')).toBeInTheDocument();
+
+  view.rerender(
+    <MobileQuizFooter
+      {...footerProps}
+      currentQ={{ ...baseQuestion, id: 'q-1-revealed', correctAnswer: 0, answer: '5', solution: '10% of 50 is 5.' }}
+    />
+  );
+
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
 });
