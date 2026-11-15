@@ -1,88 +1,54 @@
 "use client";
 import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
 import SubjectHub from "@/components/subject-hub/SubjectHub";
+import { useSubjectTopicDetails } from "@/components/subject-hub/build-topic-details";
 import { Calculator } from "lucide-react";
 import { CATEGORIES, TOPICS } from "./topic-data";
 
-interface TopicMobileConfig {
-  color: string;
-  defaultCount?: number;
-  defaultSolved?: number;
-  defaultProgress?: number;
-}
+const TOPIC_COLORS: Record<string, string> = {
+  percentages: "#5DA6FF",
+  "ratio-and-proportion": "#B06DFF",
+  "profit-and-loss": "#45D2B2",
+  "simple-interest": "#F3B54A",
+  "compound-interest": "#EE6F9C",
+  "time-and-work": "#7F84FF",
+  "time-and-distance": "#EF7C88",
+  algebra: "#C374FF",
+  geometry: "#42C49F",
+  mensuration: "#33C6F2",
+  trigonometry: "#4DA6B7",
+  "number-system": "#BD9646",
+  averages: "#7FA850",
+  discount: "#C37D4A",
+  "mixture-and-alligation": "#4F93BF",
+  partnership: "#9E67A8",
+  "square-roots": "#4BA4AD",
+  "statistics-probability": "#B56B7F",
+  simplification: "#a3e635",
+  "lcm-and-hcf": "#34d399",
+  "problems-on-ages": "#fb923c",
+  "pipes-and-cisterns": "#60a5fa",
+  "calendar-and-clock": "#a78bfa",
+};
 
-const config: {
-  subjectId: string;
-  label: string;
-  icon: typeof Calculator;
-  topics: typeof TOPICS;
-  categories: typeof CATEGORIES;
-  mobileTopicDetails: Record<string, TopicMobileConfig>;
-  mobileSearchPlaceholder: string;
-} = {
+const config = {
   subjectId: "mathematics",
   label: "Mathematics",
   icon: Calculator,
   topics: TOPICS,
   categories: CATEGORIES,
-  mobileTopicDetails: {
-    percentages: { color: "#5DA6FF", defaultCount: 705, defaultSolved: 0, defaultProgress: 0 },
-    "ratio-and-proportion": { color: "#B06DFF", defaultCount: 284, defaultSolved: 0, defaultProgress: 0 },
-    "profit-and-loss": { color: "#45D2B2", defaultCount: 300, defaultSolved: 0, defaultProgress: 0 },
-    "simple-interest": { color: "#F3B54A", defaultCount: 0 },
-    "compound-interest": { color: "#EE6F9C", defaultCount: 0 },
-    "time-and-work": { color: "#7F84FF", defaultCount: 299, defaultSolved: 0, defaultProgress: 0 },
-    "time-and-distance": { color: "#EF7C88", defaultCount: 45, defaultSolved: 0, defaultProgress: 0 },
-    algebra: { color: "#C374FF", defaultCount: 853, defaultSolved: 0, defaultProgress: 0 },
-    geometry: { color: "#42C49F", defaultCount: 0 },
-    mensuration: { color: "#33C6F2", defaultCount: 361, defaultSolved: 0, defaultProgress: 0 },
-    trigonometry: { color: "#4DA6B7", defaultCount: 240, defaultSolved: 0, defaultProgress: 0 },
-    "number-system": { color: "#BD9646", defaultCount: 215, defaultSolved: 0, defaultProgress: 0 },
-    averages: { color: "#7FA850", defaultCount: 160, defaultSolved: 0, defaultProgress: 0 },
-    discount: { color: "#C37D4A", defaultCount: 0 },
-    "mixture-and-alligation": { color: "#4F93BF", defaultCount: 112, defaultSolved: 0, defaultProgress: 0 },
-    partnership: { color: "#9E67A8", defaultCount: 0 },
-    "square-roots": { color: "#4BA4AD", defaultCount: 125, defaultSolved: 0, defaultProgress: 0 },
-    "statistics-probability": { color: "#B56B7F", defaultCount: 182, defaultSolved: 0, defaultProgress: 0 },
-    simplification: { color: "#a3e635", defaultCount: 0 },
-    "lcm-and-hcf": { color: "#34d399", defaultCount: 0 },
-    "problems-on-ages": { color: "#fb923c", defaultCount: 0 },
-    "pipes-and-cisterns": { color: "#60a5fa", defaultCount: 0 },
-    "calendar-and-clock": { color: "#a78bfa", defaultCount: 0 },
-  },
   mobileSearchPlaceholder: "Search topics",
 };
 
 export default function MathematicsHubClient() {
-  const { data } = useTopicQuestionTotals();
-  const mobileTopicDetails = Object.fromEntries(
-    TOPICS.map((topic) => {
-      const topicSlug = topic.slug;
-      const mockConfig: TopicMobileConfig | undefined = config.mobileTopicDetails[topicSlug];
-      const hasApiTotal = Boolean(data?.totals && typeof data.totals[topicSlug] === "number");
-      const totalQuestions = hasApiTotal
-        ? (data?.totals?.[topicSlug] ?? 0)
-        : (mockConfig?.defaultCount ?? 0);
+  const { data, totalsPending, progressPending } = useTopicQuestionTotals();
+  const mobileTopicDetails = useSubjectTopicDetails(TOPICS, data, {
+    colorOverrides: TOPIC_COLORS,
+  });
 
-      const hasApiSolved = Boolean(data?.userProgress && typeof data.userProgress[topicSlug]?.userSolved === "number");
-      const userSolved = hasApiSolved
-        ? (data?.userProgress?.[topicSlug]?.userSolved ?? 0)
-        : (mockConfig?.defaultSolved ?? 0);
-
-      const progress = totalQuestions > 0 
-        ? Math.round((userSolved / totalQuestions) * 100) 
-        : (mockConfig?.defaultProgress ?? 0);
-
-      return [
-        topicSlug,
-        {
-          color: mockConfig?.color ?? topic.color,
-          questionCount: totalQuestions,
-          userSolved,
-          progress,
-        },
-      ];
-    })
+  return (
+    <SubjectHub
+      config={{ ...config, mobileTopicDetails, totalsPending, progressPending }}
+    />
   );
-  return <SubjectHub config={{ ...config, mobileTopicDetails }} />;
 }

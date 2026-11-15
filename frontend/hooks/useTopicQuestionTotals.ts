@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import useSWR, { unstable_serialize, useSWRConfig } from "swr";
 import { API_BASE } from "@/lib/api-base";
 import { fetchWithRetry } from "@/lib/api/http";
@@ -10,13 +10,19 @@ import { useAbortableResource } from "@/lib/use-abortable-resource";
 
 type Progress = Record<string, { userSolved: number; userMastered: number }>;
 type Snapshot = { subject: string; revision: number; totals: Record<string, number>; updatedAt: string };
+export type TopicQuestionSnapshot = Snapshot & { userProgress?: Progress };
+type CachedProgress = { owner: string; subject: string; userProgress: Progress; version: number };
+
 const cacheBySubject = new Map<string, Snapshot | undefined>();
 const subscribe = () => () => {};
 const serverSnapshot = () => undefined;
-let lastProgressInvalidatedAt = 0;
+let progressVersion = 0;
+const progressListeners = new Set<() => void>();
 
+/** Marks cached personal topic progress stale and refreshes any mounted hub. */
 export function invalidateTopicProgressCache() {
-  lastProgressInvalidatedAt = Date.now();
+  progressVersion += 1;
+  progressListeners.forEach((listener) => listener());
 }
 
 function publicSnapshot(value: unknown, subject: string): Snapshot | undefined {
@@ -61,29 +67,113 @@ export function useTopicQuestionTotals(subject = "mathematics") {
   const { fallback, cache } = useSWRConfig();
   const url = `${API_BASE}/api/questions/topic-counts?subject=${encodeURIComponent(subject)}`;
   const stored = useSyncExternalStore(subscribe, () => getStoredSnapshot(subject), serverSnapshot);
-  const seeded = publicSnapshot(fallback?.[url], subject);
+  const fallbackEntry = fallback?.[url];
+  const seeded = useMemo(() => publicSnapshot(fallbackEntry, subject), [fallbackEntry, subject]);
+  const cachedCatalog = cache.get(url)?.data as Snapshot | undefined;
+  const hasCachedCatalog = Boolean(cachedCatalog);
+
+  const initialCatalog =
+    seeded && (!stored || seeded.revision >= stored.revision)
+      ? seeded
+      : (cachedCatalog ?? stored ?? seeded);
+
   const catalog = useSWR<Snapshot>(url, fetchSnapshot, {
     ...PUBLIC_QUESTION_QUERY,
-    fallbackData: seeded ?? stored,
-    revalidateOnMount: !seeded,
+    fallbackData: initialCatalog,
+    revalidateOnMount: !seeded && !hasCachedCatalog,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    revalidateIfStale: false,
     dedupingInterval: 60_000,
     shouldRetryOnError: false,
   });
-  const key = ready ? ['topic-progress', owner, subject] : null;
+
+  const mutateCatalog = catalog.mutate;
+  useEffect(() => {
+    if (seeded && !cache.get(url)?.data) {
+      void mutateCatalog(seeded, { revalidate: false });
+    }
+  }, [seeded, url, cache, mutateCatalog]);
+
+  const key = ready ? ["topic-progress", owner, subject] : null;
   const serialized = key ? unstable_serialize(key) : null;
+  const cachedEntry = serialized
+    ? (cache.get(serialized)?.data as CachedProgress | undefined)
+    : undefined;
+  const isFreshPersonal = Boolean(
+    cachedEntry &&
+      cachedEntry.owner === owner &&
+      cachedEntry.subject === subject &&
+      cachedEntry.version === progressVersion
+  );
   const read = useAbortableResource(serialized);
-  const personal = useSWR(key, async () => {
-    const cached = serialized ? cache.get(serialized)?.data as { owner: string; subject: string; userProgress: Progress; fetchedAt: number } | undefined : undefined;
-    if (cached && cached.fetchedAt > lastProgressInvalidatedAt && Date.now() - cached.fetchedAt < 5000) return cached;
-    return read(async signal => {
-      const response = await fetchWithRetry(`${API_BASE}/api/progress/topics/private?subject=${encodeURIComponent(subject)}`, { signal });
-      if (!response.ok) throw new Error("Unable to load topic progress");
-      const data = await response.json() as { subject: string; userProgress: Progress };
-      if (data.subject !== subject || !data.userProgress || typeof data.userProgress !== 'object') throw new Error("Invalid topic progress");
-      return { owner: owner!, subject, userProgress: data.userProgress, fetchedAt: Date.now() };
-    });
-  }, { revalidateOnMount: true, dedupingInterval: 0, shouldRetryOnError: false });
-  const userProgress = ready && personal.data?.owner === owner && personal.data.subject === subject ? personal.data.userProgress : {};
-  return { ...catalog, data: catalog.data ? { ...catalog.data, userProgress } : undefined,
-    error: catalog.error ?? personal.error };
+  const personal = useSWR(
+    key,
+    async () => {
+      const cached = serialized
+        ? (cache.get(serialized)?.data as CachedProgress | undefined)
+        : undefined;
+      if (
+        cached &&
+        cached.owner === owner &&
+        cached.subject === subject &&
+        cached.version === progressVersion
+      ) {
+        return cached;
+      }
+      const fetchVersion = progressVersion;
+      return read(async (signal) => {
+        const response = await fetchWithRetry(
+          `${API_BASE}/api/progress/topics/private?subject=${encodeURIComponent(subject)}`,
+          { signal }
+        );
+        if (!response.ok) throw new Error("Unable to load topic progress");
+        const data = (await response.json()) as { subject: string; userProgress: Progress };
+        if (data.subject !== subject || !data.userProgress || typeof data.userProgress !== "object") {
+          throw new Error("Invalid topic progress");
+        }
+        return { owner: owner!, subject, userProgress: data.userProgress, version: fetchVersion };
+      });
+    },
+    {
+      revalidateOnMount: !isFreshPersonal,
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 60_000,
+      shouldRetryOnError: false,
+    }
+  );
+
+  const mutatePersonal = personal.mutate;
+  useEffect(() => {
+    const handleInvalidate = () => {
+      void mutatePersonal();
+    };
+    progressListeners.add(handleInvalidate);
+    return () => {
+      progressListeners.delete(handleInvalidate);
+    };
+  }, [mutatePersonal]);
+
+  const personalData = personal.data;
+  const hasValidPersonal = Boolean(
+    ready && personalData?.owner === owner && personalData.subject === subject
+  );
+  const combinedData = useMemo(() => {
+    if (!catalog.data) return undefined;
+    const userProgress = hasValidPersonal && personalData ? personalData.userProgress : {};
+    return { ...catalog.data, userProgress };
+  }, [catalog.data, hasValidPersonal, personalData]);
+
+  const totalsPending = !catalog.data && !catalog.error;
+  const progressPending = loading || (ready && !hasValidPersonal && !personal.error);
+
+  return {
+    ...catalog,
+    data: combinedData,
+    error: catalog.error ?? personal.error,
+    totalsPending,
+    progressPending,
+  };
 }

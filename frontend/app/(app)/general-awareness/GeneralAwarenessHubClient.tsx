@@ -1,6 +1,7 @@
 "use client";
-import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
+import { useTopicQuestionTotals, type TopicQuestionSnapshot } from "@/hooks/useTopicQuestionTotals";
 import SubjectHub from "@/components/subject-hub/SubjectHub";
+import { useSubjectTopicDetails } from "@/components/subject-hub/build-topic-details";
 import { Globe, Zap, TrendingUp, CircleDot } from "lucide-react";
 import { TOPICS } from "./topic-data";
 import { getGeneralAwarenessTopicGroup, getGeneralAwarenessTopicSolved } from "@/lib/general-awareness-topic-groups";
@@ -20,32 +21,18 @@ const config = {
   chapterBasePrefix: "/general-awareness",
 };
 
+const resolveGeneralAwarenessSolved = (
+  topic: { slug: string; name: string },
+  userProgress: TopicQuestionSnapshot["userProgress"]
+) => getGeneralAwarenessTopicSolved(topic.slug, userProgress, topic.name);
+
 export default function GeneralAwarenessHubClient() {
-  const { data } = useTopicQuestionTotals("general-awareness");
+  const { data, totalsPending, progressPending } = useTopicQuestionTotals("general-awareness");
+  const mobileTopicDetails = useSubjectTopicDetails(TOPICS, data, resolveGeneralAwarenessSolved);
 
-  const mobileTopicDetails = Object.fromEntries(
-    TOPICS.map((topic) => {
-      const topicSlug = topic.slug;
-      const hasApiTotal = Boolean(data?.totals && typeof data.totals[topicSlug] === "number");
-      const totalQuestions = hasApiTotal ? (data?.totals?.[topicSlug] ?? 0) : 0;
-      const rawSolved = getGeneralAwarenessTopicSolved(topicSlug, data?.userProgress, topic.name);
-      const userSolved = hasApiTotal && totalQuestions > 0 ? Math.min(rawSolved, totalQuestions) : rawSolved;
-
-      const progress = totalQuestions > 0
-        ? Math.round((userSolved / totalQuestions) * 100)
-        : 0;
-
-      return [
-        topicSlug,
-        {
-          color: topic.color,
-          questionCount: totalQuestions,
-          userSolved,
-          progress,
-        },
-      ];
-    })
+  return (
+    <SubjectHub
+      config={{ ...config, mobileTopicDetails, totalsPending, progressPending }}
+    />
   );
-
-  return <SubjectHub config={{ ...config, mobileTopicDetails }} />;
 }

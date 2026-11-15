@@ -26,7 +26,7 @@ import { ListingTemplate } from "@/design-system";
 type PriorityFilter = RankedTopicPriority | "All";
 
 // Rows visible on first paint of a typical phone; the rest lazy-load near the viewport.
-const EAGER_THUMBNAILS = 6;
+const EAGER_THUMBNAILS = 8;
 
 const PRIORITY_CLASS: Record<RankedTopicPriority, string> = {
   "Very High": styles.veryHigh,
@@ -35,6 +35,37 @@ const PRIORITY_CLASS: Record<RankedTopicPriority, string> = {
   Medium: styles.medium,
   Lower: styles.lower,
 };
+
+function ChapterAttemptCount({
+  solved,
+  total,
+  totalsPending,
+  progressPending,
+}: {
+  solved: number;
+  total: number;
+  totalsPending: boolean;
+  progressPending: boolean;
+}) {
+  return (
+    <span className={styles.chapterQuestionCount}>
+      {totalsPending ? (
+        <span className={styles.countSkeleton} aria-hidden="true" />
+      ) : (
+        <>
+          {progressPending ? (
+            <span className={styles.attemptedSkeleton} aria-hidden="true" />
+          ) : (
+            <span className={styles.attemptedCount}>{solved}</span>
+          )}
+          <span className={styles.attemptedSlash}>/</span>
+          <span className={styles.totalCount}>{total}</span>{" "}
+          <span className={styles.attemptedLabel}>attempted</span>
+        </>
+      )}
+    </span>
+  );
+}
 
 export default function RankedTopicGroupPage({ group, subject = "general-awareness", routeBase = `/general-awareness/${group.slug}`, backHref = "/general-awareness", backLabel = "General Awareness" }: {
   group: RankedTopicGroup;
@@ -49,7 +80,7 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
   // (and vice-versa), which was causing the overlap / flash-of-wrong-design.
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  const { data } = useTopicQuestionTotals(subject);
+  const { data, totalsPending, progressPending } = useTopicQuestionTotals(subject);
   // Uploads are keyed by chapter slug; fall back to the slugified chapter title.
   const questionTotal = (topic: { slug: string; title: string }) =>
     data?.totals?.[topic.slug] ?? data?.totals?.[slugifyGeneralAwarenessTitle(topic.title)] ?? 0;
@@ -272,12 +303,12 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                         {topic.priority}
                       </span>
                       <span className={styles.desktopProgressCell}>
-                        <span className={styles.chapterQuestionCount}>
-                          <span className={styles.attemptedCount}>{solved}</span>
-                          <span className={styles.attemptedSlash}>/</span>
-                          <span className={styles.totalCount}>{total}</span>{" "}
-                          <span className={styles.attemptedLabel}>attempted</span>
-                        </span>
+                        <ChapterAttemptCount
+                          solved={solved}
+                          total={total}
+                          totalsPending={Boolean(totalsPending)}
+                          progressPending={Boolean(progressPending)}
+                        />
                       </span>
                       <span className={styles.rowActionWrap}>
                         <span className={isRecent ? styles.rowContinueBtn : styles.rowOpenBtn}>
@@ -345,7 +376,7 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                   const isRecent = topic.slug === recentChapterSlug;
                   const percent = total > 0 ? Math.min(100, Math.round((solved / total) * 100)) : 0;
                   // Progress ring around the thumbnail; keep a visible sliver once started.
-                  const ringProgress = percent > 0 ? Math.max(4, percent) : 0;
+                  const ringProgress = !progressPending && percent > 0 ? Math.max(4, percent) : 0;
                   return (
                     <Link
                       key={topic.slug}
@@ -371,12 +402,12 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                       <span className={styles.chapterText}>
                         <span className={styles.mobileTopicName}>{topic.title}</span>
                         <span className={styles.chapterMetaRow}>
-                          <span className={styles.chapterQuestionCount}>
-                            <span className={styles.attemptedCount}>{solved}</span>
-                            <span className={styles.attemptedSlash}>/</span>
-                            <span className={styles.totalCount}>{total}</span>{" "}
-                            <span className={styles.attemptedLabel}>attempted</span>
-                          </span>
+                          <ChapterAttemptCount
+                            solved={solved}
+                            total={total}
+                            totalsPending={Boolean(totalsPending)}
+                            progressPending={Boolean(progressPending)}
+                          />
                         </span>
                       </span>
                       {isRecent ? (

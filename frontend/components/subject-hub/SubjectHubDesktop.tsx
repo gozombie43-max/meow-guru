@@ -62,7 +62,7 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
             <h1 className={styles.windowTitle}>{config.label}</h1>
             <span className={styles.windowMeta}>
               {orderedTopics.length} topics
-              {totalQuestions > 0 && ` · ${totalQuestions.toLocaleString()} questions`}
+              {!config.totalsPending && totalQuestions > 0 && ` · ${totalQuestions.toLocaleString()} questions`}
             </span>
           </div>
         </div>
@@ -187,11 +187,17 @@ export function SubjectHubDesktop({ view }: { view: SubjectHubView }) {
                           </td>
                           <td>
                             <span className={styles.tableProgressText}>
-                              {count > 0 ? (
+                              {config.totalsPending ? (
+                                <span className={styles.tableCountSkeleton} aria-hidden="true" />
+                              ) : count > 0 ? (
                                 <>
-                                  <span className={styles.tableSolvedNum}>
-                                    {solved.toLocaleString()}
-                                  </span>
+                                  {config.progressPending ? (
+                                    <span className={styles.tableSolvedSkeleton} aria-hidden="true" />
+                                  ) : (
+                                    <span className={styles.tableSolvedNum}>
+                                      {solved.toLocaleString()}
+                                    </span>
+                                  )}
                                   <span> / {count.toLocaleString()} solved</span>
                                 </>
                               ) : (

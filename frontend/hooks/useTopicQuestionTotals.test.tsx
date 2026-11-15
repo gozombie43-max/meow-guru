@@ -1,7 +1,7 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { useTopicQuestionTotals } from "./useTopicQuestionTotals";
+import { invalidateTopicProgressCache, useTopicQuestionTotals } from "./useTopicQuestionTotals";
 import { fetchWithRetry } from "@/lib/api/http";
 const mocks = vi.hoisted(() => ({ auth: { user: { id: 'one' } as { id: string } | null, token: 'token' as string | null, loading: false } }));
 vi.mock("@/context/AuthContext", () => ({ useAuth: () => mocks.auth }));
@@ -52,4 +52,44 @@ it('migrates only public fields from old storage and starts public data during a
   expect(vi.mocked(fetchWithRetry).mock.calls[0][2]).toEqual({ auth: 'none' });
   expect(localStorage.getItem('reasoning-topic-counts:v3')).toBeNull();
   expect(JSON.parse(localStorage.getItem('reasoning-topic-counts:v4')!)).not.toHaveProperty('userProgress');
+});
+it('keeps personal progress warm across remounts even after >5s and only refetches when invalidated', async () => {
+  const cache = new Map();
+  const seed = snapshot('mathematics');
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <SWRConfig value={{ provider: () => cache, shouldRetryOnError: false,
+      fallback: { [`/backend-api/api/questions/topic-counts?subject=${seed.subject}`]: seed } }}>
+      {children}
+    </SWRConfig>
+  );
+  vi.mocked(fetchWithRetry)
+    .mockResolvedValueOnce(new Response(JSON.stringify({ subject: 'mathematics', userProgress: { algebra: { userSolved: 4, userMastered: 1 } } })))
+    .mockResolvedValueOnce(new Response(JSON.stringify({ subject: 'mathematics', userProgress: { algebra: { userSolved: 5, userMastered: 1 } } })));
+
+  const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(1_000);
+  try {
+    const first = renderHook(() => useTopicQuestionTotals(), { wrapper: Wrapper });
+    expect(first.result.current.progressPending).toBe(true);
+    await waitFor(() => expect(first.result.current.data?.userProgress.algebra.userSolved).toBe(4));
+    expect(first.result.current.progressPending).toBe(false);
+    expect(fetchWithRetry).toHaveBeenCalledTimes(1);
+    first.unmount();
+
+    // Advance clock well past the old 5s threshold without invalidating progress.
+    nowSpy.mockReturnValue(60_000);
+    const second = renderHook(() => useTopicQuestionTotals(), { wrapper: Wrapper });
+    expect(second.result.current.progressPending).toBe(false);
+    expect(second.result.current.data?.userProgress.algebra.userSolved).toBe(4);
+    expect(fetchWithRetry).toHaveBeenCalledTimes(1);
+    second.unmount();
+
+    // After answer submission invalidates progress, remounting fetches the updated count once.
+    invalidateTopicProgressCache();
+    const third = renderHook(() => useTopicQuestionTotals(), { wrapper: Wrapper });
+    expect(third.result.current.data?.userProgress.algebra.userSolved).toBe(4);
+    await waitFor(() => expect(third.result.current.data?.userProgress.algebra.userSolved).toBe(5));
+    expect(fetchWithRetry).toHaveBeenCalledTimes(2);
+  } finally {
+    nowSpy.mockRestore();
+  }
 });

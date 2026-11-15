@@ -7,16 +7,17 @@ import type { SyntheticEvent } from "react";
 // priority only for above-the-fold rows, and a fade-in once the image is decoded.
 // The parent box paints a shimmer skeleton until `data-loaded` is set.
 
-const markLoaded = (img: HTMLImageElement) => {
+const markReady = (img: HTMLImageElement, cached: boolean) => {
+  if (cached) img.dataset.cached = "";
   img.dataset.loaded = "";
 };
 
 // Cached images can finish before hydration attaches onLoad, so check on mount.
 const syncCached = (img: HTMLImageElement | null) => {
-  if (img?.complete && img.naturalWidth > 0) markLoaded(img);
+  if (img?.complete && img.naturalWidth > 0) markReady(img, true);
 };
 
-const handleLoad = (event: SyntheticEvent<HTMLImageElement>) => markLoaded(event.currentTarget);
+const handleLoad = (event: SyntheticEvent<HTMLImageElement>) => markReady(event.currentTarget, false);
 
 export default function ChapterThumbnail({
   src,
@@ -29,6 +30,7 @@ export default function ChapterThumbnail({
 }) {
   return (
     <Image
+      key={src}
       ref={syncCached}
       src={src}
       alt=""
