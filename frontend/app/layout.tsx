@@ -1,5 +1,6 @@
 import type { Metadata,Viewport } from 'next';
 import localFont from 'next/font/local';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { AuthProvider } from '@/context/AuthContext';
 import { MeowConvexProvider } from '@/components/MeowConvexProvider';
 import { VirtualKeyboardProvider } from '@/components/VirtualKeyboardProvider';
@@ -96,6 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </AuthProvider>
         </VirtualKeyboardProvider>
         <SelectionPopover />
+        <SpeedInsights />
       </body>
     </html>
   );
