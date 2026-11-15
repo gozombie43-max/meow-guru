@@ -61,10 +61,11 @@ const ResultView = dynamic(() => import('./views/ResultView').then(module => mod
 function QuizEngineContent(props: QuizEngineProps) {
   const controller = useQuizController(props);
   const { showAnalytics, started, currentQ, subjectConfig, theme, themeStyles, submittedQuestions, currentIndex, selectedAnswer, title, isMac, isIos, resumeRequested } = controller;
-  const isDark = theme === "dark";
-  const shellBackground = isDark ? "var(--oled-canvas, #000000)" : "var(--light-canvas, #f5f7fa)";
-  const shellText = isDark ? "var(--oled-text, #e5eaf0)" : "var(--light-text, #182438)";
-  const shellSecondary = isDark ? "var(--oled-secondary, #a2a9b4)" : "var(--light-text-secondary, #526176)";
+  const isDark = !isMac && theme === "dark";
+  const effectiveTheme = isMac ? "light" : theme;
+  const shellBackground = isDark ? "var(--oled-canvas, #000000)" : "var(--light-canvas, #f8fafc)";
+  const shellText = isDark ? "var(--oled-text, #e5eaf0)" : "var(--light-text, #0f172a)";
+  const shellSecondary = isDark ? "var(--oled-secondary, #a2a9b4)" : "var(--light-text-secondary, #475569)";
 
   if (showAnalytics)
     return (
@@ -76,7 +77,7 @@ function QuizEngineContent(props: QuizEngineProps) {
       return (
         <div
           className={`${subjectConfig.cssClassName} min-h-dvh relative flex items-center justify-center`}
-          data-theme={theme}
+          data-theme={effectiveTheme}
           style={{ background: shellBackground, color: shellText }}
           role="status"
         >
@@ -99,7 +100,7 @@ function QuizEngineContent(props: QuizEngineProps) {
     return (
       <div
         className={`${subjectConfig.cssClassName} min-h-dvh relative flex items-center justify-center`}
-        data-theme={theme}
+        data-theme={effectiveTheme}
         style={{ background: shellBackground, color: shellText }}
       >
         {themeStyles}
@@ -123,8 +124,6 @@ function QuizEngineContent(props: QuizEngineProps) {
         (part, index, parts) => Boolean(part) && parts.indexOf(part) === index,
       )
       .join(" ") || fullExamLabel;
-  const hasDetailedExamLabel =
-    Boolean(currentQ.exam.trim()) && compactExamLabel !== fullExamLabel;
   if (isMac)
     return (
       <DesktopQuizView {...desktopQuizViewModel({ ...controller, isCurrentSubmitted, canSubmit, canViewSolution })} />
@@ -132,7 +131,7 @@ function QuizEngineContent(props: QuizEngineProps) {
 
   if (isIos)
     return (
-      <MobileQuizView {...mobileQuizViewModel({ ...controller, isCurrentSubmitted, canSubmit, canViewSolution, hasDetailedExamLabel, compactExamLabel, fullExamLabel })} />
+      <MobileQuizView {...mobileQuizViewModel({ ...controller, isCurrentSubmitted, canSubmit, compactExamLabel, fullExamLabel })} />
     );
 
   return null;

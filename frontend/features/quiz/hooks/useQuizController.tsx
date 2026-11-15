@@ -37,12 +37,12 @@ export function useQuizController({
   presentation = "default",
 }: QuizEngineProps) {
   const searchParams = useSearchParams();
-  const { activeRailBtnRef, activeMacBtnRef, examDetailsRef, isIos, isMac, theme, toggleTheme,
+  const { activeRailBtnRef, activeMacBtnRef, isIos, isMac, theme, toggleTheme,
     modeLabels, themeStyles, isPaletteOpen, isSettingsOpen, setIsSettingsOpen,
     hideQuestionNumbers, hideSubtopic, handleToggleHideSubtopic, hideViewSolution, hideAiTutor, textSize, textWeight, spacing,
     handleToggleHideQuestionNumbers, handleToggleHideViewSolution, handleToggleHideAiTutor,
     handleToggleHideBoth, handleSetTextSize, handleSetTextWeight, handleSetSpacing, openPalette, closePalette,
-    isDesktop, touchStartXRef, touchStartYRef, scrollActiveQuestion, renderQuestionLine } = useQuizPresentation(subjectConfig, presentation);
+    scrollActiveQuestion, renderQuestionLine } = useQuizPresentation(subjectConfig, presentation);
   const mode = normalizeMode(searchParams.get("mode"));
   const resumeRequested = searchParams.get("resume") === "1";
   const jumpIdRaw = searchParams.get("qid");
@@ -55,23 +55,18 @@ export function useQuizController({
     setExamFilter,
     classificationSearch,
     setClassificationSearch,
-    classificationCategory,
-    setClassificationCategory,
     hasMore,
     isFetchingMore,
     fetchMore,
     conceptOptions,
-    conceptColours,
     examOptions,
     classificationGroups,
     groupingStatus,
-    isClassificationConceptMode,
     selectedLetters,
     availableLetters,
     letterCounts,
     handleToggleLetter,
     handleSelectAllLetters,
-    classificationCategoryCounts,
     questions,
     availableCount,
     isLoading,
@@ -89,7 +84,6 @@ export function useQuizController({
 
   useEffect(() => { scrollActiveQuestion(); }, [currentIndex, scrollActiveQuestion]);
 
-  const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const isImageQuestion = currentQ?.questionType === "image_mcq";
   const hasQuestionText = Boolean(currentQ?.question?.trim());
   const upcomingQuestions = useMemo(
@@ -155,25 +149,20 @@ export function useQuizController({
     results,
     questions: gradedQuestions,
     conceptOptions,
-    conceptColours,
     weakConcepts,
     handleRestart,
     routeBase,
     slug,
     started,
-    isClassificationConceptMode,
     title,
     classificationGroups,
     groupingStatus,
-    classificationCategory,
-    classificationCategoryCounts,
     examFilter,
     setExamFilter,
     examOptions,
     selectedClassificationConcepts,
     availableCount,
     isLoading,
-    setClassificationCategory,
     setSelectedClassificationConcepts,
     handleStart,
     classificationSearch,
@@ -237,17 +226,12 @@ export function useQuizController({
     handleSetTextWeight,
     handleSetSpacing,
     activeRailBtnRef,
-    examDetailsRef,
     isPaletteOpen,
     closePalette,
     timerRef,
     maxTime,
-    touchStartXRef,
-    touchStartYRef,
     showQuestion,
-    isLongQuestion,
     handleClearResponse,
-    isDesktop,
     resumeRequested,
   };
 }

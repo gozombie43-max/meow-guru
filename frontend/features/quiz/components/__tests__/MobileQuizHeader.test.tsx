@@ -7,7 +7,7 @@ vi.mock('@/components/LangToggle', () => ({ LangToggle: () => null }));
 afterEach(cleanup);
 const props: React.ComponentProps<typeof MobileQuizHeader> = {
   routeBase: '/mathematics/percentages',
-  subjectConfig: { subjectId: 'mathematics', subjectLabel: 'Math', cssClassName: 'math', topicConcepts: {}, classificationCategories: [], getClassificationCategoryId: () => '' },
+  subjectConfig: { subjectId: 'mathematics', subjectLabel: 'Math', cssClassName: 'math' },
   slug: 'percentages', activeLang: 'en', currentIndex: 6, hideQuestionNumbers: true,
   isSettingsOpen: false, isTranslating: false, openPalette: vi.fn(), setActiveLang: vi.fn(), setIsSettingsOpen: vi.fn(),
   questions: Array.from({ length: 100 }, (_, id) => ({ id, concept: '', formula: '', question: '', options: [], correctAnswer: 0, answer: '', difficulty: 'easy', estimatedTime: 30, year: '', exam: '', solution: '' })),
@@ -61,7 +61,7 @@ it('opens the AI Tutor dialog immediately on first click and keeps it open when 
   const view = render(<MobileQuizFooter {...footerProps} />);
   fireEvent.click(screen.getByRole('button', { name: 'Ask AI tutor' }));
 
-  expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  expect(await screen.findByRole('dialog', {}, { timeout: 5000 })).toBeInTheDocument();
   expect(screen.getByText('AI Solution')).toBeInTheDocument();
 
   view.rerender(

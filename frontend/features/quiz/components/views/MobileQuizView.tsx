@@ -62,8 +62,6 @@ export type MobileQuizFields = Pick<
   | "activeRailBtnRef"
   | "goToQuestion"
   | "currentQ"
-  | "conceptColours"
-  | "examDetailsRef"
   | "hasQuestionText"
   | "displayedQuestion"
   | "renderQuestionLine"
@@ -84,20 +82,16 @@ export type MobileQuizFields = Pick<
   | "timerRef"
   | "results"
 > & {
-  hasDetailedExamLabel: boolean;
   compactExamLabel: string;
   fullExamLabel: string;
   isCurrentSubmitted: boolean;
-  canViewSolution: boolean;
   canSubmit: boolean;
-  handleBookmark?: () => void;
-  bookmarked?: Set<string>;
 };
 
 export interface MobileQuizViewProps {
   configuration: Pick<MobileQuizFields, "routeBase" | "slug" | "subjectConfig" | "theme" | "themeStyles" | "toggleTheme" | "title">;
   settings: Pick<MobileQuizFields, "isSettingsOpen" | "setIsSettingsOpen" | "hideQuestionNumbers" | "handleToggleHideQuestionNumbers" | "hideSubtopic" | "handleToggleHideSubtopic" | "hideViewSolution" | "handleToggleHideViewSolution" | "hideAiTutor" | "handleToggleHideAiTutor" | "handleToggleHideBoth" | "textSize" | "handleSetTextSize" | "textWeight" | "handleSetTextWeight" | "spacing" | "handleSetSpacing">;
-  question: Pick<MobileQuizFields, "activeLang" | "isTranslating" | "setActiveLang" | "currentQ" | "conceptColours" | "hasDetailedExamLabel" | "examDetailsRef" | "compactExamLabel" | "fullExamLabel" | "hasQuestionText" | "displayedQuestion" | "renderQuestionLine" | "displayedOptions" | "displayedSolution">;
+  question: Pick<MobileQuizFields, "activeLang" | "isTranslating" | "setActiveLang" | "currentQ" | "compactExamLabel" | "fullExamLabel" | "hasQuestionText" | "displayedQuestion" | "renderQuestionLine" | "displayedOptions" | "displayedSolution">;
   navigation: Pick<MobileQuizFields, "availableCount" | "hasMore" | "isFetchingMore" | "fetchMore" | "currentIndex" | "openPalette" | "questions" | "selectedAnswers" | "submittedQuestions" | "activeRailBtnRef" | "goToQuestion" | "handlePrev" | "handleNext" | "isPaletteOpen" | "closePalette">;
   answer: Pick<MobileQuizFields, "isCurrentSubmitted" | "selectedAnswer" | "handleSelectAnswer" | "submitError" | "handleSubmitCurrent" | "canSubmit" | "timerRef" | "results">;
   solution: Pick<MobileQuizFields, "openSolution" | "isSolutionOpen" | "closeSolution">;

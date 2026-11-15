@@ -9,19 +9,6 @@
   align-items: start;
 }
 
-.desktopList {
-  flex: 1;
-  min-height: 0;
-  align-content: start;
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
-  scrollbar-width: none;
-}
-
-.desktopList::-webkit-scrollbar {
-  display: none;
-}
-
 .carousel {
   grid-auto-flow: column;
   grid-auto-columns: 100%;
@@ -227,23 +214,6 @@
 .resume:focus-visible { outline: 3px solid var(--mac-primary); outline-offset: 3px; }
 
 .card > .resume { margin-top: 12px; }
-
-.desktopList .card { padding: 12px; border-radius: 26px; }
-.desktopList .header { gap: 10px; }
-.desktopList .copy h3 { font-size: 15px; }
-.desktopList .copy p,
-.desktopList .detail,
-.desktopList .count { font-size: 12px; }
-.desktopList .icon { flex-basis: 42px; height: 44px; border-radius: 12px; }
-.desktopList .icon svg { width: 26px; height: 26px; }
-.desktopList .progress { height: 6px; margin-top: 5px; }
-.desktopList .footer { margin-top: 8px; padding-top: 8px; }
-.desktopList .resume {
-  font-size: 12px !important;
-  min-height: 34px;
-  padding: 6px 12px !important;
-  border-radius: 9px;
-}
 
 @media (max-width: 360px) {
   .card { padding: 12px; }

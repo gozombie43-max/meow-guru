@@ -1,28 +1,22 @@
 "use client";
-import {
-  SeriesConceptStart,
-  SeriesFormulaStart,
-} from "@/features/quiz/components/ui/SeriesStartViews";
+import { UnifiedQuizStartView } from "@/features/quiz/components/ui/SeriesStartViews";
 import { QuizResumeDialog } from "@/features/quiz/components/ui/QuizResumeDialog";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
 import styles from "@/features/quiz/components/views/QuizStartView.module.css";
+
 export function QuizStartView({
-  isClassificationConceptMode,
   subjectConfig,
   title,
   slug,
   routeBase,
   classificationGroups,
   groupingStatus,
-  classificationCategory,
-  classificationCategoryCounts,
   examFilter,
   examOptions,
   selectedClassificationConcepts,
   conceptOptions,
   availableCount,
   isLoading,
-  setClassificationCategory,
   setExamFilter,
   setSelectedClassificationConcepts,
   handleStart,
@@ -32,7 +26,6 @@ export function QuizStartView({
   handleToggleLetter,
   handleSelectAllLetters,
   letterCounts,
-  availableLetters,
   setClassificationSearch,
   resumeData,
   theme,
@@ -41,22 +34,18 @@ export function QuizStartView({
   handleCancelResume,
 }: Pick<
   QuizController,
-  | "isClassificationConceptMode"
   | "subjectConfig"
   | "title"
   | "slug"
   | "routeBase"
   | "classificationGroups"
   | "groupingStatus"
-  | "classificationCategory"
-  | "classificationCategoryCounts"
   | "examFilter"
   | "examOptions"
   | "selectedClassificationConcepts"
   | "conceptOptions"
   | "availableCount"
   | "isLoading"
-  | "setClassificationCategory"
   | "setExamFilter"
   | "setSelectedClassificationConcepts"
   | "handleStart"
@@ -66,7 +55,6 @@ export function QuizStartView({
   | "handleToggleLetter"
   | "handleSelectAllLetters"
   | "letterCounts"
-  | "availableLetters"
   | "setClassificationSearch"
   | "resumeData"
   | "theme"
@@ -74,86 +62,19 @@ export function QuizStartView({
   | "handleRestartFromPopup"
   | "handleCancelResume"
 >) {
-  let startScreen;
-  if (isClassificationConceptMode) {
-    startScreen = (
-      <SeriesConceptStart
-        subjectConfig={subjectConfig}
-        title={title}
-        slug={slug}
-        routeBase={routeBase}
-        groups={classificationGroups}
-        groupingStatus={groupingStatus}
-        category={classificationCategory}
-        categoryCounts={classificationCategoryCounts}
-        examFilter={examFilter}
-        examOptions={examOptions}
-        selected={selectedClassificationConcepts}
-        conceptCount={conceptOptions.length}
-        questionCount={availableCount}
-        isLoading={isLoading}
-        onCategoryChange={setClassificationCategory}
-        onExamChange={setExamFilter}
-        onToggleGroup={(concepts) => {
-          const allSelected = concepts.every((concept) =>
-            selectedClassificationConcepts.has(concept),
-          );
-          setSelectedClassificationConcepts((previous) => {
-            const next = new Set(previous);
-            concepts.forEach((concept) => {
-              if (allSelected) next.delete(concept);
-              else next.add(concept);
-            });
-            return next;
-          });
-        }}
-        onStart={handleStart}
-      />
+  const handleToggleGroup = (concepts: string[]) => {
+    const allSelected = concepts.every((concept) =>
+      selectedClassificationConcepts.has(concept),
     );
-  } else {
-    startScreen = (
-      <SeriesFormulaStart
-        subjectConfig={subjectConfig}
-        title={title}
-        slug={slug}
-        routeBase={routeBase}
-        mode={mode}
-        examFilter={examFilter}
-        examOptions={examOptions}
-        questionCount={availableCount}
-        isLoading={isLoading}
-        onExamChange={setExamFilter}
-        groups={classificationGroups}
-        groupingStatus={groupingStatus}
-        category={classificationCategory}
-        categoryCounts={classificationCategoryCounts}
-        search={classificationSearch}
-        selected={selectedClassificationConcepts}
-        conceptCount={conceptOptions.length}
-        selectedLetters={selectedLetters}
-        onToggleLetter={handleToggleLetter}
-        onSelectAllLetters={handleSelectAllLetters}
-        letterCounts={letterCounts}
-        availableLetters={availableLetters}
-        onCategoryChange={setClassificationCategory}
-        onSearchChange={setClassificationSearch}
-        onToggleGroup={(concepts) => {
-          const allSelected = concepts.every((concept) =>
-            selectedClassificationConcepts.has(concept),
-          );
-          setSelectedClassificationConcepts((previous) => {
-            const next = new Set(previous);
-            concepts.forEach((concept) => {
-              if (allSelected) next.delete(concept);
-              else next.add(concept);
-            });
-            return next;
-          });
-        }}
-        onStart={handleStart}
-      />
-    );
-  }
+    setSelectedClassificationConcepts((previous) => {
+      const next = new Set(previous);
+      concepts.forEach((concept) => {
+        if (allSelected) next.delete(concept);
+        else next.add(concept);
+      });
+      return next;
+    });
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -161,7 +82,30 @@ export function QuizStartView({
         className={`${styles.content} ${resumeData ? styles.isBlurred : ""}`}
         aria-hidden={Boolean(resumeData)}
       >
-        {startScreen}
+        <UnifiedQuizStartView
+          subjectConfig={subjectConfig}
+          title={title}
+          slug={slug}
+          routeBase={routeBase}
+          mode={mode}
+          groups={classificationGroups}
+          groupingStatus={groupingStatus}
+          examFilter={examFilter}
+          examOptions={examOptions}
+          selected={selectedClassificationConcepts}
+          conceptCount={conceptOptions.length}
+          questionCount={availableCount}
+          isLoading={isLoading}
+          search={classificationSearch}
+          selectedLetters={selectedLetters}
+          onToggleLetter={handleToggleLetter}
+          onSelectAllLetters={handleSelectAllLetters}
+          letterCounts={letterCounts}
+          onExamChange={setExamFilter}
+          onSearchChange={setClassificationSearch}
+          onToggleGroup={handleToggleGroup}
+          onStart={handleStart}
+        />
       </div>
       {resumeData && (
         <QuizResumeDialog

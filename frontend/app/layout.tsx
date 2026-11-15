@@ -29,34 +29,37 @@ const themeBootstrapScript = `
     const themeClasses = ['theme-light', 'theme-dark'];
 
     try {
+      const isDesktop = typeof window.matchMedia === 'function' && window.matchMedia('(min-width: 768px)').matches;
       const savedTheme = window.localStorage.getItem(themeKey);
-      const theme = savedTheme === 'light' || savedTheme === 'dark'
-        ? savedTheme
-        : 'dark';
+      const theme = isDesktop
+        ? 'light'
+        : savedTheme === 'light' || savedTheme === 'dark'
+          ? savedTheme
+          : 'dark';
 
-      const applyTheme = (element) => {
+      const applyTheme = (element, nextTheme) => {
         element.classList.remove(...themeClasses);
-        element.classList.add('theme-' + theme);
-        element.dataset.theme = theme;
-        element.style.colorScheme = theme;
+        element.classList.add('theme-' + nextTheme);
+        element.dataset.theme = nextTheme;
+        element.style.colorScheme = nextTheme;
       };
 
-      applyTheme(document.documentElement);
+      applyTheme(document.documentElement, theme);
 
       if (document.body) {
-        applyTheme(document.body);
+        applyTheme(document.body, theme);
       } else {
         const observer = new MutationObserver(() => {
           if (!document.body) return;
-          applyTheme(document.body);
+          applyTheme(document.body, theme);
           observer.disconnect();
         });
         observer.observe(document.documentElement, { childList: true });
       }
     } catch {
-      document.documentElement.classList.add('theme-dark');
-      document.documentElement.dataset.theme = 'dark';
-      document.documentElement.style.colorScheme = 'dark';
+      document.documentElement.classList.add('theme-light');
+      document.documentElement.dataset.theme = 'light';
+      document.documentElement.style.colorScheme = 'light';
     }
   })();
 `;

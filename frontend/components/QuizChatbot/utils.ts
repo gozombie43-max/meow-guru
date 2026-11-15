@@ -33,6 +33,7 @@ export interface QuizChatbotProps {
   renderTrigger?: (onClick: () => void) => React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  inline?: boolean;
 }
 
 export function resolveCorrectAnswer(question?: QuizChatbotQuestion) {

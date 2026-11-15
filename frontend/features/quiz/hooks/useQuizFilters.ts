@@ -4,7 +4,6 @@ import {
   ClassificationGroup,
 } from "@/features/quiz/model/types";
 import {
-  buildConceptColours,
   ensureUniqueQuestionIds,
   isStudyModeQuestion,
   toQuizQuestion,
@@ -41,9 +40,6 @@ export function useQuizFilters({
     useState<Set<string>>(() => new Set(parseConceptSelection(resumeEntry?.sessionFilters?.concept)));
   const [examFilter, setExamFilter] = useState<string>(resumeEntry?.sessionFilters?.exam ?? '');
   const [classificationSearch, setClassificationSearch] = useState("");
-  const [classificationCategory, setClassificationCategory] = useState<
-    "All" | string
-  >("All");
 
   const [selectedLetters, setSelectedLetters] = useState<Set<string>>(() => {
     const letterParam = resumeEntry?.sessionFilters?.letter ?? initialLetterParam;
@@ -116,11 +112,6 @@ export function useQuizFilters({
     [meta?.concepts],
   );
 
-  const conceptColours = useMemo(
-    () => buildConceptColours(conceptOptions),
-    [conceptOptions],
-  );
-
   const examOptions = useMemo(() => {
     const set = new Set<string>();
     (meta?.exams ?? []).forEach((e) => {
@@ -134,10 +125,8 @@ export function useQuizFilters({
     (meta?.conceptGroups ?? [])
       .map((group) => ({
         ...group,
-        icon: "",
         accent: "var(--ui-accent)",
         bg: "var(--ui-muted-surface)",
-        border: "var(--ui-border)",
       }))
       .sort(
         (a, b) =>
@@ -146,8 +135,6 @@ export function useQuizFilters({
       ),
     [meta?.conceptGroups],
   );
-
-  const isClassificationConceptMode = mode === "concept";
 
   const availableLetters = useMemo(() => {
     return Object.keys(meta?.letters ?? {}).sort();
@@ -170,11 +157,6 @@ export function useQuizFilters({
   const handleSelectAllLetters = useCallback(() => {
     setSelectedLetters(new Set());
   }, []);
-
-  const classificationCategoryCounts = useMemo(
-    () => Object.fromEntries(classificationGroups.map(group => [group.label, group.concepts.length])),
-    [classificationGroups],
-  );
 
   const questions = useMemo(() => {
     if (!apiQuestions) return [];
@@ -207,23 +189,18 @@ export function useQuizFilters({
     setExamFilter,
     classificationSearch,
     setClassificationSearch,
-    classificationCategory,
-    setClassificationCategory,
     hasMore,
     isFetchingMore,
     fetchMore,
     conceptOptions,
-    conceptColours,
     examOptions,
     classificationGroups,
     groupingStatus: meta?.groupingStatus,
-    isClassificationConceptMode,
     selectedLetters,
     availableLetters,
     letterCounts,
     handleToggleLetter,
     handleSelectAllLetters,
-    classificationCategoryCounts,
     questions,
     availableCount,
     isLoading: isLoading || authLoading,

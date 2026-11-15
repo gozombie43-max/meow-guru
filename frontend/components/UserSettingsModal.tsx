@@ -376,7 +376,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
         <div className={styles.modalBody}>
           <div className={styles.settingsList}>
             {/* Dark Mode Toggle */}
-            <div className={styles.settingItem}>
+            <div className={`${styles.settingItem} ${styles.mobileOnlySetting}`}>
               <div className={styles.settingInfo}>
                 <div className={`${styles.settingIconBox} ${styles.iconPurple}`}>
                   {isDark ? <Moon size={18} /> : <Sun size={18} />}

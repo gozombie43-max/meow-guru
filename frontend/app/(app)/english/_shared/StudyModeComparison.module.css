@@ -180,6 +180,11 @@
         .appearance-toggle:active {
           transform: scale(0.94);
         }
+        @media (min-width: 768px) {
+          .appearance-toggle {
+            display: none !important;
+          }
+        }
 
         .icon-theme { width: 14px; height: 14px; }
 

@@ -4,11 +4,7 @@ import ExamModeSwitch from '@/components/ExamModeSwitch';
 import { useModalSurface } from '@/components/ui/Dialog';
 import ExamHomeContent from '@/components/ExamHomeContent';
 import { useExamMode } from '@/context/ExamModeContext';
-import { JAM_SECTIONS, jamSectionHref } from '@/lib/exam-mode';
-import { Atom } from 'lucide-react';
 import { AiChatIcon } from '@/components/AiChatIcon';
-import MacTrafficLights from '@/components/MacTrafficLights';
-import QuizChartArt from '@/components/QuizChartArt';
 import NotificationBell from '@/components/NotificationBell';
 import UserProfileMenu from '@/components/UserProfileMenu';
 import { useAuth } from '@/context/AuthContext';
@@ -19,8 +15,8 @@ import {
   ArrowUpRight,
   Home as HomeIcon,
   Menu,
+  MessageSquare,
   Moon,
-  Search,
   Sun,
   UserRound,
   X,
@@ -29,16 +25,58 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { desktopSubjects, recentQuizzesData } from './home-data';
+import d from './home-desktop.module.css';
 import styles from './page.module.css';
 
+const BRAND_PATH =
+  'M56,41.7c0,0 -2.11,-0.54 -4,-0.7c0,0 1.22,1.92 1.5,4.5c0,0 -2.26,-0.55 -4.42,-0.5c0,0 1.62,1.91 1.92,4c0,0 -1.915,1.62 -6.315,4.12c0,0 -0.073,-2.17 -1.185,-6.12h-2c0,0 -0.068,4.899 -1.5,10.3c-3,3.7 -8,3.7 -8,3.7c0,0 -5,0 -8,-3.7c-1.432,-5.401 -1.5,-10.3 -1.5,-10.3h-2c-1.111,3.95 -1.185,6.12 -1.185,6.12c-4.4,-2.5 -6.315,-4.12 -6.315,-4.12c0.3,-2.09 1.92,-4 1.92,-4c-2.16,-0.05 -4.42,0.5 -4.42,0.5c0.28,-2.58 1.5,-4.5 1.5,-4.5c-1.89,0.16 -4,0.7 -4,0.7c0.36,-2.4 2,-4.7 2,-4.7c-2.41,0.27 -4,1 -4,1c3,-14 15,-21 15,-21c-4.02,-4.35 -7.4,-7 -7.4,-7c0,0 -1.17,4.47 -0.6,10.4l-4,4.1c-1,-9.5 1.8,-20.5 1.8,-20.5l1.5,-0.5l12.7,10.5c0,0 2.46,-0.48 7,-0.48c4.54,0 7,0.48 7,0.48l12.7,-10.5l1.5,0.5c0,0 2.8,11 1.8,20.5l-4,-4.1c0.57,-5.93 -0.6,-10.4 -0.6,-10.4c0,0 -3.38,2.65 -7.4,7c0,0 12,7 15,21c0,0 -1.59,-0.73 -4,-1c0,0 1.64,2.3 2,4.7zM26.799,38c-0.143,-2.57 -1.082,-3.92 -1.614,-4.38c-1.741,-0.59 -3.813,-0.58 -5.185,-0.43c2.15,4.75 6.297,4.81 6.348,4.81zM37.652,38c0.051,0 4.198,-0.06 6.348,-4.81c-1.372,-0.15 -3.444,-0.16 -5.185,0.43c-0.532,0.46 -1.471,1.81 -1.614,4.38zM32,52c-2,0 -4,1 -4,1c1,4 4,4 4,4c0,0 3,0 4,-4c0,0 -2,-1 -4,-1z';
+
 const railItems = [
-  { label: 'Home', href: '/', icon: HomeIcon },
-  { label: 'Mock Tests', href: '/mock-test', icon: FileCheck2 },
-  { label: 'Books & Notes', href: '/resource', icon: BookOpen },
-  { label: 'AI Chat', href: '/ai-chat', icon: AiChatIcon },
-  { label: 'Profile', href: '/profile', icon: UserRound },
+  { label: 'Home', href: '/', icon: HomeIcon, desktopIcon: HomeIcon },
+  { label: 'Mock Tests', href: '/mock-test', icon: FileCheck2, desktopIcon: FileCheck2 },
+  { label: 'Books & Notes', href: '/resource', icon: BookOpen, desktopIcon: BookOpen },
+  { label: 'AI Chat', href: '/ai-chat', icon: AiChatIcon, desktopIcon: MessageSquare },
+  { label: 'Profile', href: '/profile', icon: UserRound, desktopIcon: UserRound },
 ] as const;
+
+function DesktopHelpCard() {
+  return (
+    <section className={d.help} aria-label="Contact Admin: Guru Charan Murmu">
+      <div className={d.helpPerson}>
+        <Image className={d.helpAvatar} src="/images/admin-portrait-wide.webp" alt="" width={36} height={36} />
+        <div>
+          <h2>Guru Charan Murmu</h2>
+          <p>Your admin</p>
+        </div>
+      </div>
+      <p className={d.helpCopy}>Have a question or an idea? Reach out directly.</p>
+      <a
+        className={d.helpPrimary}
+        href={adminContacts[0].href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Contact Guru Charan Murmu on WhatsApp (opens in a new tab)"
+      >
+        <span>Message on WhatsApp</span>
+        <ArrowUpRight size={15} strokeWidth={1.75} aria-hidden="true" />
+      </a>
+      <div className={d.helpLinks}>
+        {adminContacts.slice(1).map((contact) => (
+          <a
+            key={contact.label}
+            href={contact.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Contact Guru Charan Murmu on ${contact.label} (opens in a new tab)`}
+          >
+            <span>{contact.label}</span>
+            <ArrowUpRight size={13} strokeWidth={1.75} aria-hidden="true" />
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 const adminContacts = [
   { label: 'WhatsApp', href: 'https://wa.me/919064084753', icon: '/icons8-whatsapp.svg' },
@@ -100,16 +138,12 @@ export default function HomeClient({
   mobileContent: ReactNode;
 }) {
   const { isJam } = useExamMode();
-  const searchSubjects = isJam ? JAM_SECTIONS.map(s => ({ title: s.title, subtitle: 'IIT JAM Physics', href: jamSectionHref(s.slug), Icon: Atom })) : desktopSubjects;
   const pathname = usePathname() || '/';
   const { user } = useAuth();
   const { theme, toggleThemeMode } = useThemeMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
   useModalSurface(sidebarRef, sidebarOpen, () => setSidebarOpen(false), { initialFocus: '[aria-label="Close sidebar"]' });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const isDark = theme === 'dark';
 
   useEffect(() => {
@@ -130,16 +164,9 @@ export default function HomeClient({
     };
   }, []);
 
-  // Keyboard shortcut ⌘K / Ctrl+K for search & ESC to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-        setSearchOpen(true);
-      }
       if (e.key === 'Escape') {
-        setSearchOpen(false);
         setSidebarOpen(false);
       }
     };
@@ -165,154 +192,57 @@ export default function HomeClient({
 
   return (
     <div className={`${styles.pageWrapper} ${isDark ? styles.dark : ''}`}>
-      {/* =========================================================================
-          DESKTOP PC VIEW (macOS Application Window Frame)
-          ========================================================================= */}
       <div className={styles.desktopOnly}>
-        <div className={styles.macWindow}>
-          {/* Left Sidebar */}
-          <aside className={styles.desktopSidebar}>
-            {/* Traffic Lights */}
-            <div className={styles.sidebarHeader}>
-              <MacTrafficLights />
+        <div className={d.window}>
+          <aside className={d.sidebar}>
+            <Link href="/" className={d.brand} aria-label="Study Guru home">
+              <span className={d.brandMark} aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="22" height="22">
+                  <g><path d={BRAND_PATH} /></g>
+                </svg>
+              </span>
+              <span className={d.brandName}>Study <span>Guru</span></span>
+            </Link>
+
+            <div className={d.examSlot}>
+              <ExamModeSwitch />
             </div>
 
-            {/* Logo */}
-            <div className={styles.sidebarBrand}>
-              <SkillLearnLogo />
-            </div>
-
-            <ExamModeSwitch />
-            {/* Navigation Items */}
-            <nav className={styles.railNav} aria-label="Primary Desktop">
+            <p className={d.navLabel} id="desktop-nav-label">Menu</p>
+            <nav className={d.nav} aria-labelledby="desktop-nav-label">
               {railItems.map((item) => {
                 const active = pathname === item.href;
-                const Icon = item.icon;
+                const Icon = item.desktopIcon;
                 return (
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`${styles.railLink} ${active ? styles.railActive : ''}`}
+                    className={`${d.navLink} ${active ? d.navActive : ''}`}
                     aria-current={active ? 'page' : undefined}
                   >
-                    <Icon size={20} strokeWidth={active ? 2.5 : 1.8} className={styles.railIcon} />
+                    <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
                     <span>{item.label}</span>
                   </Link>
                 );
               })}
             </nav>
 
-            <AdminContactCard />
+            <DesktopHelpCard />
           </aside>
 
-          {/* Main Desktop Workspace */}
-          <div className={styles.desktopWorkspace}>
-            {/* Top Bar across Center and Right */}
-            <header data-ui-chrome="header" className={styles.topbar}>
-              {/* macOS Search Pill */}
-              <div className={styles.searchContainer}>
-                <Search size={18} className={styles.searchIcon} />
-                <input
-                  ref={searchInputRef}
-                  type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setSearchOpen(true)}
-                  placeholder="Search anything..."
-                  className={styles.searchInput}
-                  aria-label="Search anything"
-                />
-                <kbd className={styles.searchShortcut} onClick={() => searchInputRef.current?.focus()} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
-                  ⌘ K
-                </kbd>
+          <div className={d.workspace}>
+            <div className={d.actions}>
+              <NotificationBell size={36} iconSize={17} />
+              {user ? (
+                <UserProfileMenu size={36} align="right" />
+              ) : (
+                <Link href="/login" className={d.iconBtn} aria-label="Log in" title="Log in">
+                  <UserRound size={17} strokeWidth={1.75} aria-hidden="true" />
+                </Link>
+              )}
+            </div>
 
-                {/* Spotlight-style Quick Results */}
-                {searchOpen && searchQuery.trim().length > 0 && (
-                  <div className={styles.searchDropdown}>
-                    <div className={styles.searchDropdownHeader}>
-                      <span>Quick Search Results</span>
-                      <button data-ui-button="icon"
-                        type="button"
-                        className={styles.searchCloseBtn}
-              aria-label="Close search"
-                        onClick={() => {
-                          setSearchQuery('');
-                          setSearchOpen(false);
-                        }}
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                    <div className={styles.searchDropdownList}>
-                      {searchSubjects
-                        .filter(
-                          (s) =>
-                            s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            s.subtitle.toLowerCase().includes(searchQuery.toLowerCase())
-                        )
-                        .map((s) => (
-                          <Link
-                            key={s.title}
-                            href={s.href}
-                            className={styles.searchDropdownItem}
-                            onClick={() => setSearchOpen(false)}
-                          >
-                            <s.Icon size={24} />
-                            <div>
-                              <strong>{s.title}</strong>
-                              <small>{s.subtitle}</small>
-                            </div>
-                          </Link>
-                        ))}
-                      {(isJam ? [] : recentQuizzesData)
-                        .filter((q) => q.title.toLowerCase().includes(searchQuery.toLowerCase()))
-                        .map((q) => (
-                          <Link
-                            key={q.title}
-                            href={q.href}
-                            className={styles.searchDropdownItem}
-                            onClick={() => setSearchOpen(false)}
-                          >
-                            <QuizChartArt size={24} />
-                            <div>
-                              <strong>{q.title}</strong>
-                              <small>{q.tag} Quiz • {q.progress}</small>
-                            </div>
-                          </Link>
-                        ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Top Right User & System Controls */}
-              <div className={styles.topActions}>
-                {/* Theme Toggle */}
-                <button data-ui-button="state" data-ui-shape="icon"
-                  type="button"
-                  className={styles.actionButton}
-                  onClick={toggleThemeMode}
-                  aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-                  title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-                >
-                  {isDark ? <Sun size={17} /> : <Moon size={17} />}
-                </button>
-
-                {/* Notifications */}
-                <NotificationBell size={34} iconSize={17} />
-
-                {/* Profile link or LOGIN pill button */}
-                {user ? (
-                  <UserProfileMenu size={34} align="right" />
-                ) : (
-                  <Link data-ui-button="icon" href="/login" className={styles.loginIconButton} aria-label="Log in" title="Log in">
-                    <UserRound size={21} strokeWidth={1.8} aria-hidden="true" />
-                  </Link>
-                )}
-              </div>
-            </header>
-
-            {isJam ? <ExamHomeContent /> : desktopContent}
+            {isJam ? <div className={d.jamSlot}><ExamHomeContent /></div> : desktopContent}
           </div>
         </div>
       </div>

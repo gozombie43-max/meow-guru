@@ -182,6 +182,7 @@ export default function QuizChatbot({
   renderTrigger,
   open: controlledOpen,
   onOpenChange,
+  inline = false,
 }: QuizChatbotProps) {
   const [localOpen, setLocalOpen] = useState(false);
   const isOpen = controlledOpen ?? localOpen;
@@ -223,7 +224,7 @@ export default function QuizChatbot({
     setSavedDraft(composerRef.current?.getDraft() ?? '');
     setIsOpen(false);
   }, [setIsOpen]);
-  useModalSurface(modalRef, isOpen, handleClose, { initialFocus: ":scope" });
+  useModalSurface(modalRef, isOpen && !inline, handleClose, { initialFocus: ":scope" });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -342,7 +343,7 @@ export default function QuizChatbot({
 
   // Follow the visible viewport when the mobile keyboard reduces available space.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || inline) return;
     const viewport = window.visualViewport;
     const updateViewport = () => {
       if (!overlayRef.current || !viewport) return;
@@ -358,7 +359,7 @@ export default function QuizChatbot({
       viewport?.removeEventListener("scroll", updateViewport);
       document.body.classList.remove("tutor-modal-open");
     };
-  }, [isOpen]);
+  }, [isOpen, inline]);
 
   const currentContent = LOCALIZED_CONTENT[selectedLang] || LOCALIZED_CONTENT.en;
 
@@ -455,87 +456,34 @@ export default function QuizChatbot({
     },
   ];
 
-  return (
-    <>
-      {renderTrigger ? (
-        renderTrigger(() => setIsOpen(true))
-      ) : (
-        <button data-ui-button="state"
-          type="button"
-          className="quiz-chatbot-fab"
-          onClick={() => setIsOpen(true)}
-          title="Ask AI Tutor"
-          aria-label="Ask AI Tutor"
-        >
-          <svg className="fab-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12C2 14.05 2.63 15.96 3.7 17.54L2.29 21.71L6.46 20.3C8.04 21.37 9.95 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"
-              fill="white"
-              fillOpacity="0.95"
-            />
-            <circle cx="8.5" cy="12" r="1.3" fill="#7c6df0" />
-            <circle cx="12" cy="12" r="1.3" fill="#7c6df0" />
-            <circle cx="15.5" cy="12" r="1.3" fill="#7c6df0" />
-          </svg>
-        </button>
-      )}
-
-      {isOpen && createPortal(
+  const shellContent = (
+    <div className={`quiz-chatbot-shell${isDark ? " dark" : ""}${inline ? " is-inline" : ""}`} data-theme={isDark ? "dark" : "light"} lang={selectedLang}>
+      {(isModelMenuOpen || isAddMenuOpen) && (
         <div
-          ref={overlayRef}
-          className="quiz-chatbot-overlay"
-        >
-          <button
-            data-ui-decoration="true"
-            data-dialog-backdrop=""
-            className="tutor-backdrop"
-            type="button"
-            aria-label="Dismiss AI tutor"
-            onClick={handleClose}
-          />
-          <section
-            ref={modalRef}
-            className="quiz-chatbot-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="quiz-chatbot-title"
-            tabIndex={-1}
-            style={
-              dragOffset !== 0 || isDragging
-                ? {
-                    transform: `translateY(${dragOffset}px)`,
-                    opacity: dragOffset > 0 ? Math.max(1 - dragOffset / 500, 0.4) : 1,
-                    transition: isDragging ? "none" : "transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease",
-                    animation: "none",
-                  }
-                : undefined
-            }
-          >
-            <div className={`quiz-chatbot-shell${isDark ? " dark" : ""}`} data-theme={isDark ? "dark" : "light"} lang={selectedLang}>
-              {(isModelMenuOpen || isAddMenuOpen) && (
-                <div
-                  className="tutor-menu-scrim"
-                  aria-hidden="true"
-                  onClick={() => {
-                    setIsModelMenuOpen(false);
-                    setIsAddMenuOpen(false);
-                  }}
-                />
-              )}
-              <header
-                className={`tutor-header tutor-drag-zone${isHolding ? " is-holding" : ""}${isDragging ? " is-dragging" : ""}`}
-                onPointerDown={handleHeaderPointerDown}
-                onPointerMove={handleHeaderPointerMove}
-                onPointerUp={handleHeaderPointerUp}
-                onPointerCancel={handleHeaderPointerCancel}
-                title="Hold or drag down to close"
-              >
-                <div className="tutor-sheet-handle-container" aria-hidden="true">
-                  <div className="tutor-sheet-handle">
-                    <div className={`tutor-hold-indicator${isHolding ? " active" : ""}`} />
-                  </div>
-                </div>
-                <div className="topbar">
+          className="tutor-menu-scrim"
+          aria-hidden="true"
+          onClick={() => {
+            setIsModelMenuOpen(false);
+            setIsAddMenuOpen(false);
+          }}
+        />
+      )}
+      <header
+        className={`tutor-header${inline ? "" : ` tutor-drag-zone${isHolding ? " is-holding" : ""}${isDragging ? " is-dragging" : ""}`}`}
+        onPointerDown={inline ? undefined : handleHeaderPointerDown}
+        onPointerMove={inline ? undefined : handleHeaderPointerMove}
+        onPointerUp={inline ? undefined : handleHeaderPointerUp}
+        onPointerCancel={inline ? undefined : handleHeaderPointerCancel}
+        title={inline ? undefined : "Hold or drag down to close"}
+      >
+        {!inline && (
+          <div className="tutor-sheet-handle-container" aria-hidden="true">
+            <div className="tutor-sheet-handle">
+              <div className={`tutor-hold-indicator${isHolding ? " active" : ""}`} />
+            </div>
+          </div>
+        )}
+        <div className="topbar">
                   <div className="topbar-brand">
                     <svg
                       className="tutor-brand-icon"
@@ -713,6 +661,74 @@ export default function QuizChatbot({
                   addMenuRef={addMenuRef} addButtonRef={addButtonRef} iconsByTone={ICONS_BY_TONE} onSend={sendMessage} />
               </footer>
             </div>
+  );
+
+  if (inline) {
+    return (
+      <>
+        {renderTrigger ? renderTrigger(() => setIsOpen(true)) : null}
+        {isOpen && <div className="quiz-chatbot-inline">{shellContent}</div>}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {renderTrigger ? (
+        renderTrigger(() => setIsOpen(true))
+      ) : (
+        <button data-ui-button="state"
+          type="button"
+          className="quiz-chatbot-fab"
+          onClick={() => setIsOpen(true)}
+          title="Ask AI Tutor"
+          aria-label="Ask AI Tutor"
+        >
+          <svg className="fab-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12C2 14.05 2.63 15.96 3.7 17.54L2.29 21.71L6.46 20.3C8.04 21.37 9.95 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"
+              fill="white"
+              fillOpacity="0.95"
+            />
+            <circle cx="8.5" cy="12" r="1.3" fill="#7c6df0" />
+            <circle cx="12" cy="12" r="1.3" fill="#7c6df0" />
+            <circle cx="15.5" cy="12" r="1.3" fill="#7c6df0" />
+          </svg>
+        </button>
+      )}
+
+      {isOpen && createPortal(
+        <div
+          ref={overlayRef}
+          className="quiz-chatbot-overlay"
+        >
+          <button
+            data-ui-decoration="true"
+            data-dialog-backdrop=""
+            className="tutor-backdrop"
+            type="button"
+            aria-label="Dismiss AI tutor"
+            onClick={handleClose}
+          />
+          <section
+            ref={modalRef}
+            className="quiz-chatbot-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="quiz-chatbot-title"
+            tabIndex={-1}
+            style={
+              dragOffset !== 0 || isDragging
+                ? {
+                    transform: `translateY(${dragOffset}px)`,
+                    opacity: dragOffset > 0 ? Math.max(1 - dragOffset / 500, 0.4) : 1,
+                    transition: isDragging ? "none" : "transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease",
+                    animation: "none",
+                  }
+                : undefined
+            }
+          >
+            {shellContent}
           </section>
         </div>, document.body
       )}

@@ -108,12 +108,18 @@ export default function SubjectTopicPage({
             <Link replace href={resolvedBackHref} className="sg-back" aria-label={`Back to ${eyebrow ?? defaults.eyebrow}`}>
               <IconBack />
             </Link>
-            <h1 className="sg-nav-title">{title}</h1>
+            <span className="sg-nav-divider" aria-hidden="true" />
+            <div className="sg-nav-title-group">
+              <span className="sg-nav-eyebrow">{eyebrow ?? defaults.eyebrow}</span>
+              <span className="sg-nav-sep" aria-hidden="true">/</span>
+              <h1 className="sg-nav-title">{title}</h1>
+            </div>
           </div>
         </header>
 
         <div className="sg-desktop-container">
           <div className="sg-left-pane">
+            <div className="sg-section sg-desktop-only-label">Study resources</div>
             {/* BANNER */}
             <div className="sg-banner-wrap">
               <Link href={notesHref} className="sg-banner" aria-label={bannerAriaLabel || bannerActionLabel || "Open formula notes"}>

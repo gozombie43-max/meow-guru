@@ -1481,3 +1481,38 @@ body.tutor-modal-open [data-next-badge-root] {
   visibility: hidden !important;
   pointer-events: none !important;
 }
+
+.quiz-chatbot-inline {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.quiz-chatbot-shell.is-inline {
+  background: #ffffff;
+  border: 0;
+}
+
+.quiz-chatbot-shell.is-inline .tutor-header {
+  padding: 6px 14px;
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.quiz-chatbot-shell.is-inline :is(.lscroll, .ca) {
+  padding: 16px 14px 20px;
+}
+
+.quiz-chatbot-shell.is-inline .ltitle {
+  font-size: 20px;
+}
+
+.quiz-chatbot-shell.is-inline .bbar {
+  padding: 10px 12px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+}
+

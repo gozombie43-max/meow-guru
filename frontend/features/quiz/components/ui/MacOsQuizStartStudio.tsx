@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-
 import { useRouter } from "next/navigation";
-import { Brain, Sparkles, Target, ChevronLeft, ChevronDown, Check, CheckCircle2, X, Search, Sun, Moon } from "lucide-react";
-import MacTrafficLights from "@/components/MacTrafficLights";
-
-import { useQuizTheme, useQuizThemeControls } from "@/features/quiz/components/QuizThemeProvider";
+import { ArrowLeft, Target, ChevronDown, Check, X, Search } from "lucide-react";
+import TopicThumbnail from "@/components/subject-hub/TopicThumbnail";
+import { chapterImage } from "@/lib/topic-images";
 import styles from "@/features/quiz/components/ui/SeriesStartViews.module.css";
-import { TOPIC_ICONS, SUBJECT_DEFAULT_ICONS, MODE_DETAILS, ALPHABET, MacOsQuizStartStudioProps } from './seriesStart.model';
+import { MODE_DETAILS, ALPHABET, MacOsQuizStartStudioProps } from "./seriesStart.model";
 
 export function MacOsQuizStartStudio({
   subjectConfig,
@@ -17,8 +15,6 @@ export function MacOsQuizStartStudio({
   routeBase,
   mode = "concept",
   groups,
-  category,
-  categoryCounts,
   examFilter,
   examOptions,
   selected,
@@ -29,8 +25,6 @@ export function MacOsQuizStartStudio({
   onToggleLetter,
   onSelectAllLetters,
   letterCounts,
-  availableLetters: _availableLetters,
-  onCategoryChange,
   onExamChange,
   onSearchChange,
   onToggleGroup,
@@ -39,8 +33,6 @@ export function MacOsQuizStartStudio({
   groupingStatus,
 }: MacOsQuizStartStudioProps) {
   const router = useRouter();
-  const quizTheme = useQuizTheme();
-  const { toggleTheme } = useQuizThemeControls();
   const [internalSearch, setInternalSearch] = useState("");
   const activeSearch = externalSearch !== undefined ? externalSearch : internalSearch;
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
@@ -59,12 +51,10 @@ export function MacOsQuizStartStudio({
     else setInternalSearch(val);
   };
 
-  const fallbackSubjectIcon = SUBJECT_DEFAULT_ICONS[subjectConfig.subjectId] || Brain;
-  const TopicIcon = TOPIC_ICONS[slug] || fallbackSubjectIcon;
   const baseModeInfo = MODE_DETAILS[mode] || MODE_DETAILS.concept;
   const label = subjectConfig.modeLabels?.[mode];
   const modeInfo = label ? { ...baseModeInfo, label, badge: label } : baseModeInfo;
-  const ModeIcon = modeInfo.icon;
+  const thumbnailSrc = chapterImage(slug, slug);
 
   const handleBack = useCallback(() => {
     router.replace(routeBase ?? `/${subjectConfig.subjectId}/${slug}`);
@@ -87,7 +77,7 @@ export function MacOsQuizStartStudio({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onStart, handleBack]);
 
-  // Filter groups by search query and category
+  // Filter groups by search query
   const filteredGroups = useMemo(() => {
     return groups
       .filter((group) => {
@@ -138,50 +128,41 @@ export function MacOsQuizStartStudio({
 
   return (
     <div className={styles.macWindow}>
-        {/* ── macOS Titlebar ── */}
-        <div className={styles.titleBar}>
-          <div className={styles.titleBarLeft}>
-            <MacTrafficLights onClose={handleBack} />
-            <button
-              type="button"
-              onClick={handleBack}
-              className={styles.backBtn}
-              title={`Return to ${subjectConfig.subjectLabel} Studio (Esc)`}
-            >
-              <ChevronLeft size={13} strokeWidth={2.5} />
-              <span>Studio</span>
-            </button>
-          </div>
+      {/* ── Top Workspace Bar (56px) ── */}
+      <header className={styles.titleBar}>
+        <div className={styles.titleBarLeft}>
+          <button
+            type="button"
+            onClick={handleBack}
+            className={styles.backBtn}
+            aria-label="Back to topic"
+            title={`Back to ${title} (Esc)`}
+          >
+            <ArrowLeft size={16} strokeWidth={1.75} />
+          </button>
 
-          <div className={styles.titleBarCenter}>
-            <span className={styles.windowTitle}>
-              {title} • {modeInfo.label} Setup
-            </span>
+          <span className={styles.titleBarDivider} aria-hidden="true" />
+
+          <div className={styles.titleBarHeadingGroup}>
+            <h1 className={styles.windowTitle}>{title}</h1>
             <span className={styles.titleModePill}>{modeInfo.badge}</span>
-          </div>
-
-          <div className={styles.titleBarRight}>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className={styles.themeBtn}
-              title={`Switch to ${quizTheme === "dark" ? "Light" : "Dark"} mode`}
-              aria-label="Toggle Theme"
-            >
-              {quizTheme === "dark" ? <Sun size={13} /> : <Moon size={13} />}
-            </button>
+            <span className={styles.windowMeta}>
+              {questionCount.toLocaleString()} questions · {conceptCount.toLocaleString()} concepts
+            </span>
           </div>
         </div>
+      </header>
 
-        {/* ── 2-Pane Studio Body ── */}
-        <div className={styles.studioBody}>
-          {/* ── Left Inspector Pane ── */}
+      {/* ── 2-Pane Workspace Body ── */}
+      <div className={styles.studioBody}>
+        <div className={styles.studioWorkspace}>
+          {/* ── Left Configuration Card ── */}
           <aside className={styles.leftInspector}>
-            {/* Topic Hero Card */}
+            {/* Topic Summary */}
             <div className={styles.heroCard}>
               <div className={styles.heroHeader}>
                 <div className={styles.heroIconBox}>
-                  <TopicIcon size={18} strokeWidth={2.2} />
+                  <TopicThumbnail src={thumbnailSrc} size={48} priority />
                 </div>
                 <div className={styles.heroTitleGroup}>
                   <h2 className={styles.heroTitle}>{title}</h2>
@@ -190,18 +171,18 @@ export function MacOsQuizStartStudio({
               </div>
             </div>
 
-            {/* Exam Target Selector */}
+            {/* Target Exam Selector */}
             <div className={styles.selectSection}>
-              <span className={styles.sectionLabel}>Target Exam</span>
+              <span className={styles.sectionLabel}>Target exam</span>
               <div className={styles.examSelectRow}>
-                <Target size={14} className={styles.examSelectIcon} />
+                <Target size={15} strokeWidth={1.75} className={styles.examSelectIcon} />
                 <select
                   value={examFilter || "all"}
                   aria-label="Filter by exam"
                   onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
                   className={styles.examSelect}
                 >
-                  <option value="all">All Exams Combined</option>
+                  <option value="all">All exams combined</option>
                   {examOptions
                     .filter((ex) => ex !== "all")
                     .map((ex) => (
@@ -210,37 +191,37 @@ export function MacOsQuizStartStudio({
                       </option>
                     ))}
                 </select>
-                <ChevronDown size={13} className={styles.examChevron} />
+                <ChevronDown size={14} strokeWidth={1.75} className={styles.examChevron} />
               </div>
             </div>
 
-            {/* Metrics Stats Grid */}
+            {/* Session Metrics */}
             <div className={styles.statsGrid}>
               <div className={styles.statItem}>
-                <span className={styles.statLabel}>Available Qs</span>
-                <span className={styles.statValue}>{questionCount} Questions</span>
+                <span className={styles.statLabel}>Available questions</span>
+                <span className={styles.statValue}>{questionCount.toLocaleString()}</span>
               </div>
               <div className={styles.statItem}>
                 <span className={styles.statLabel}>
-                  {isEnglishSynonymsFormula ? "Active Letter" : "Selected Concepts"}
+                  {isEnglishSynonymsFormula ? "Active letters" : "Selected concepts"}
                 </span>
                 <span className={styles.statValue}>
                   {isEnglishSynonymsFormula
                     ? selectedLetters && selectedLetters.size > 0
-                      ? `Letter ${Array.from(selectedLetters).sort().join(", ")}`
-                      : "All Letters"
+                      ? Array.from(selectedLetters).sort().join(", ")
+                      : "All letters"
                     : selectedCount === 0
-                      ? "All"
+                      ? `All (${conceptCount})`
                       : `${selectedCount} of ${conceptCount}`}
                 </span>
               </div>
             </div>
 
-            {/* Coverage Progress Bar */}
+            {/* Syllabus Coverage Bar */}
             {!isEnglishSynonymsFormula && (
               <div className={styles.coverageSection}>
                 <div className={styles.coverageHeader}>
-                  <span>Syllabus Coverage</span>
+                  <span>Syllabus coverage</span>
                   <span className={styles.coveragePct}>{coveragePercent}%</span>
                 </div>
                 <div className={styles.progressBar}>
@@ -249,64 +230,62 @@ export function MacOsQuizStartStudio({
               </div>
             )}
 
-            {/* Batch Action Buttons */}
+            {/* Batch Actions */}
             <div className={styles.batchActions}>
               {isEnglishSynonymsFormula ? (
-                <button data-ui-button="state"
+                <button
+                  data-ui-button="state"
                   type="button"
                   onClick={onSelectAllLetters}
                   className={styles.batchBtn}
                   disabled={!selectedLetters || selectedLetters.size === 0}
                 >
-                  <CheckCircle2 size={12} />
-                  <span>Show All Letters</span>
+                  <span>Show all letters</span>
                 </button>
               ) : (
                 <>
-                  <button data-ui-button="state"
+                  <button
+                    data-ui-button="state"
                     type="button"
                     onClick={handleSelectAll}
                     className={styles.batchBtn}
                     disabled={isAllSelected}
                   >
-                    <CheckCircle2 size={12} />
-                    <span>Select All</span>
+                    <span>Select all</span>
                   </button>
-                  <button data-ui-button="state"
+                  <button
+                    data-ui-button="state"
                     type="button"
                     onClick={handleClearAll}
                     className={styles.batchBtn}
                     disabled={selectedCount === 0}
                   >
-                    <X size={12} />
-                    <span>Clear All</span>
+                    <span>Clear selection</span>
                   </button>
                 </>
               )}
             </div>
           </aside>
 
-          {/* ── Right Concept Canvas ── */}
+          {/* ── Right Concept Selection Panel ── */}
           <main className={styles.rightCanvas}>
             {isEnglishSynonymsFormula ? (
-              <div className={styles.letterBarSection} style={{ borderBottom: "none", padding: "20px 24px" }}>
+              <div className={styles.letterBarSection}>
                 <div className={styles.letterBarHeader}>
-                  <span style={{ fontSize: "13px" }}>Filter by Letter (A–Z)</span>
-                  <span className={styles.letterBarCount} style={{ fontSize: "12px" }}>
+                  <span>Filter by letter (A–Z)</span>
+                  <span className={styles.letterBarCount}>
                     {isLoading ? (
-                      <span className="inline-flex items-center gap-1.5 opacity-90 animate-pulse text-[color:var(--quiz-accent,#3b82f6)]">
-                        <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                        <span>Loading...</span>
-                      </span>
+                      "Loading..."
                     ) : selectedLetters && selectedLetters.size > 0 ? (
-                      `Letter ${Array.from(selectedLetters).sort().join(", ")} (${questionCount} questions ready)`
+                      `Letter ${Array.from(selectedLetters).sort().join(", ")} · ${questionCount} questions ready`
                     ) : (
-                      `All letters (${questionCount} questions ready)`
+                      `All letters · ${questionCount} questions ready`
                     )}
                   </span>
                 </div>
                 <div className={styles.letterBarGrid} role="toolbar" aria-label="Alphabet filter">
-                  <button data-ui-button="state"
+                  <button
+                    data-ui-button="state"
                     type="button"
                     className={`${styles.letterBtn} ${styles.letterBtnAll} ${
                       !selectedLetters || selectedLetters.size === 0 ? styles.letterBtnActive : ""
@@ -320,7 +299,8 @@ export function MacOsQuizStartStudio({
                     const isSelected = selectedLetters?.has(letter);
                     const hasQuestions = count > 0;
                     return (
-                      <button data-ui-button="state"
+                      <button
+                        data-ui-button="state"
                         key={letter}
                         type="button"
                         className={`${styles.letterBtn} ${isSelected ? styles.letterBtnActive : ""} ${
@@ -338,60 +318,43 @@ export function MacOsQuizStartStudio({
               </div>
             ) : (
               <>
-                {/* Top Filter & Search Toolbar */}
+                {/* Concept Panel Toolbar */}
                 <div className={styles.canvasToolbar}>
-                  <div className={styles.chipsScroll} role="tablist">
-                    <button data-ui-button="state"
-                      type="button"
-                      className={`${styles.chipBtn} ${category === "All" ? styles.chipBtnActive : ""}`}
-                      onClick={() => onCategoryChange("All")}
-                    >
-                      <span className={styles.chipDot} />
-                      <span>All</span>
-                      <span className={styles.chipCount}>{conceptCount}</span>
-                    </button>
-                    {groups
-                      .filter((item) => (categoryCounts[item.label] || 0) > 0)
-                      .map((item) => (
-                        <button data-ui-button="state"
-                          key={item.id}
-                          type="button"
-                          className={`${styles.chipBtn} ${
-                            category === item.label ? styles.chipBtnActive : ""
-                          }`}
-                          onClick={() => onCategoryChange(item.label)}
-                        >
-                          <span className={styles.chipDot} />
-                          <span>{item.label}</span>
-                          <span className={styles.chipCount}>{categoryCounts[item.label]}</span>
-                        </button>
-                      ))}
+                  <div className={styles.canvasTitleGroup}>
+                    <h2 className={styles.canvasHeading}>Concept groups</h2>
+                    <span className={styles.canvasCountBadge}>{filteredGroups.length}</span>
                   </div>
 
-                  {/* Instant Search Bar */}
+                  {/* Search Input */}
                   <div className={styles.searchBox}>
-                    <Search size={12} className={styles.searchIcon} />
+                    <Search size={14} strokeWidth={1.75} className={styles.searchIcon} />
                     <input
-                      type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
+                      type="search"
+                      spellCheck={false}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      autoComplete="off"
                       value={activeSearch}
                       onChange={(e) => handleSearchChange(e.target.value)}
                       placeholder="Filter concepts..."
                       className={styles.searchInput}
-                     aria-label="Filter concepts..."/>
+                      aria-label="Filter concepts..."
+                    />
                     {activeSearch && (
-                      <button data-ui-button="secondary"
+                      <button
+                        data-ui-button="secondary"
                         type="button"
                         onClick={() => handleSearchChange("")}
                         className={styles.clearSearchBtn}
                         aria-label="Clear search"
                       >
-                        <X size={11} />
+                        <X size={13} strokeWidth={1.75} />
                       </button>
                     )}
                   </div>
                 </div>
 
-                {/* Concept Groups Grid */}
+                {/* Concept Groups List */}
                 <div className={styles.conceptGrid}>
                   {filteredGroups.map((group) => {
                     const selectedInGroup = group.concepts.filter((concept) =>
@@ -422,20 +385,24 @@ export function MacOsQuizStartStudio({
                               }
                             }}
                           >
-                            <div className={styles.conceptIconBox}>
-                              <ModeIcon size={15} strokeWidth={2.2} />
-                            </div>
-                            <div className={styles.conceptTextGroup}>
-                              <span className={styles.conceptName}>{group.label}</span>
-                              <span className={styles.conceptMeta}>
-                                {group.concepts.length} concept
-                                {group.concepts.length === 1 ? "" : "s"}
-                                {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
-                              </span>
-                            </div>
+                            <span
+                              className={`${styles.conceptCheckbox} ${
+                                isSelected || isPartial ? styles.conceptCheckboxChecked : ""
+                              }`}
+                              aria-hidden="true"
+                            >
+                              {(isSelected || isPartial) && <Check size={12} strokeWidth={2.75} />}
+                            </span>
+                            <span className={styles.conceptName}>{group.label}</span>
                           </div>
 
                           <div className={styles.conceptCardRight}>
+                            <span className={styles.conceptMeta}>
+                              {group.concepts.length}{" "}
+                              {group.concepts.length === 1 ? "concept" : "concepts"}
+                              {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
+                            </span>
+
                             <button
                               type="button"
                               className={`${styles.conceptExpandBtn} ${
@@ -453,31 +420,12 @@ export function MacOsQuizStartStudio({
                               aria-expanded={isExpanded}
                               title={isExpanded ? "Collapse concepts" : "View concepts"}
                             >
-                              <ChevronDown size={14} strokeWidth={2} />
+                              <ChevronDown size={15} strokeWidth={1.75} />
                             </button>
-
-                            <div
-                              className={`${styles.conceptCheckbox} ${
-                                isSelected || isPartial ? styles.conceptCheckboxChecked : ""
-                              }`}
-                              onClick={() => onToggleGroup(group.concepts)}
-                              onKeyDown={event => {
-                                if (event.key === "Enter" || event.key === " ") {
-                                  event.preventDefault();
-                                  event.stopPropagation();
-                                  onToggleGroup(group.concepts);
-                                }
-                              }}
-                              role="button"
-                              tabIndex={0}
-                              aria-label={`Toggle all concepts in ${group.label}`}
-                            >
-                              {(isSelected || isPartial) && <Check size={11} strokeWidth={3} />}
-                            </div>
                           </div>
                         </div>
 
-                        {/* Concept Dropdown */}
+                        {/* Expanded Sub-concepts */}
                         {isExpanded && (
                           <div className={styles.conceptDropdownGrid}>
                             {group.concepts.map((concept) => {
@@ -508,7 +456,7 @@ export function MacOsQuizStartStudio({
                                       isConceptSelected ? styles.conceptCheckboxChecked : ""
                                     }`}
                                   >
-                                    {isConceptSelected && <Check size={9} strokeWidth={3} />}
+                                    {isConceptSelected && <Check size={10} strokeWidth={2.75} />}
                                   </span>
                                   <span className={styles.conceptSubName}>{concept}</span>
                                 </div>
@@ -521,7 +469,13 @@ export function MacOsQuizStartStudio({
                   })}
                   {filteredGroups.length === 0 && (
                     <div className={styles.emptyState}>
-                      <p role="status">{groupingStatus === "processing" ? "Organizing concepts into related groups… You can still start the quiz." : groupingStatus === "failed" ? "Concept groups are temporarily unavailable. You can still start the quiz." : "No concept groups match your filter."}</p>
+                      <p role="status">
+                        {groupingStatus === "processing"
+                          ? "Organizing concepts into related groups… You can still start the quiz."
+                          : groupingStatus === "failed"
+                            ? "Concept groups are temporarily unavailable. You can still start the quiz."
+                            : "No concept groups match your filter."}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -529,42 +483,38 @@ export function MacOsQuizStartStudio({
             )}
           </main>
         </div>
+      </div>
 
-        {/* ── Bottom Dock / Sticky Launch Footer ── */}
-        <footer data-ui-chrome="footer" className={styles.studioFooter}>
+      {/* ── Sticky Bottom Launch Bar ── */}
+      <footer data-ui-chrome="footer" className={styles.studioFooter}>
+        <div className={styles.studioFooterInner}>
           <div className={styles.footerLeft}>
-            <div className={styles.statusIndicator} />
+            <span className={styles.statusIndicator} aria-hidden="true" />
             <span className={styles.statusText}>
               {isLoading ? (
-                <span className="inline-flex items-center gap-2 animate-pulse text-[color:var(--quiz-accent,#3b82f6)]">
-                  <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  <span>Loading...</span>
-                </span>
+                "Loading questions..."
               ) : (
                 <>
-                  <span className={styles.statusBold}>{questionCount} Questions</span> Ready •{" "}
-                  {selectedCount === 0 ? "All Concepts" : `${selectedCount} Concepts`} Selected
+                  <span className={styles.statusBold}>{questionCount.toLocaleString()} questions</span>{" "}
+                  ready · {selectedCount === 0 ? "All concepts selected" : `${selectedCount} concepts selected`}
                 </>
               )}
             </span>
           </div>
 
-          <button data-ui-button="primary"
+          <button
+            data-ui-button="primary"
             type="button"
             onClick={onStart}
             className={styles.startBtn}
-            title="Launch Quiz (Enter)"
+            title="Start Quiz (Enter)"
             disabled={isLoading || questionCount === 0}
           >
-            {isLoading ? (
-              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-            ) : (
-              <Sparkles size={14} fill="currentColor" />
-            )}
             <span>{isLoading ? "Loading..." : "Start Quiz"}</span>
             <kbd className={styles.returnKey}>↵</kbd>
           </button>
-        </footer>
-      </div>
+        </div>
+      </footer>
+    </div>
   );
 }

@@ -2,7 +2,7 @@
 import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
 import SubjectHub from "@/components/subject-hub/SubjectHub";
 import { Calculator } from "lucide-react";
-import { CATEGORIES, PRACTICE_MODES, PRIORITY_CONFIG, TOPICS } from "./topic-data";
+import { CATEGORIES, TOPICS } from "./topic-data";
 
 interface TopicMobileConfig {
   color: string;
@@ -17,12 +17,7 @@ const config: {
   icon: typeof Calculator;
   topics: typeof TOPICS;
   categories: typeof CATEGORIES;
-  priorityConfig: typeof PRIORITY_CONFIG;
-  practiceModes: typeof PRACTICE_MODES;
-  mobileAppearance: "oled";
   mobileTopicDetails: Record<string, TopicMobileConfig>;
-  notesLabel: string;
-  searchPlaceholder: string;
   mobileSearchPlaceholder: string;
 } = {
   subjectId: "mathematics",
@@ -30,9 +25,6 @@ const config: {
   icon: Calculator,
   topics: TOPICS,
   categories: CATEGORIES,
-  priorityConfig: PRIORITY_CONFIG,
-  practiceModes: PRACTICE_MODES,
-  mobileAppearance: "oled" as const,
   mobileTopicDetails: {
     percentages: { color: "#5DA6FF", defaultCount: 705, defaultSolved: 0, defaultProgress: 0 },
     "ratio-and-proportion": { color: "#B06DFF", defaultCount: 284, defaultSolved: 0, defaultProgress: 0 },
@@ -58,8 +50,6 @@ const config: {
     "pipes-and-cisterns": { color: "#60a5fa", defaultCount: 0 },
     "calendar-and-clock": { color: "#a78bfa", defaultCount: 0 },
   },
-  notesLabel: "Formula & Tricks Bank",
-  searchPlaceholder: "Search math topics, formulas, rules... (⌘K)",
   mobileSearchPlaceholder: "Search topics",
 };
 

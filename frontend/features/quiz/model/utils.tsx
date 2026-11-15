@@ -1,6 +1,6 @@
 import { quizCorrectIndex } from '@meow/contracts/quiz-grading';
 import { type Question as ApiQuestion } from '@/features/quiz/api/questions';
-import { QuizMode, Difficulty, QuizQuestionRecord, ConceptColour, QuizQuestion } from '@/features/quiz/model/types';
+import { QuizMode, Difficulty, QuizQuestionRecord, QuizQuestion } from '@/features/quiz/model/types';
 
 export const MODE_LABELS: Record<QuizMode, string> = {
   concept: "PYQ",
@@ -10,23 +10,6 @@ export const MODE_LABELS: Record<QuizMode, string> = {
   easy: "Topic Mix",
   hard: "Tier 2",
 };
-
-export const DEFAULT_CONCEPT_COLOUR: ConceptColour = {
-  border: "#7C3AED",
-  bg: "#F5F3FF",
-  text: "#5B21B6",
-};
-
-export const CONCEPT_PALETTE: ConceptColour[] = [
-  DEFAULT_CONCEPT_COLOUR,
-  { border: "#0EA5E9", bg: "#ECFEFF", text: "#0369A1" },
-  { border: "#10B981", bg: "#ECFDF5", text: "#047857" },
-  { border: "#F59E0B", bg: "#FFFBEB", text: "#B45309" },
-  { border: "#F43F5E", bg: "#FFF1F2", text: "#BE123C" },
-  { border: "#2563EB", bg: "#EFF6FF", text: "#1D4ED8" },
-  { border: "#14B8A6", bg: "#F0FDFA", text: "#0F766E" },
-  { border: "#6B7280", bg: "#F8FAFC", text: "#475569" },
-];
 
 export function normalizeMode(value: string | null): QuizMode {
   if (
@@ -58,16 +41,6 @@ export function resolveCorrectIndex(question: ApiQuestion, options: string[]): n
   // never grades against a guessed option before the server responds.
   return quizCorrectIndex(question, options) ?? -1;
 }
-
-export function buildConceptColours(concepts: string[]): Record<string, ConceptColour> {
-  const colours: Record<string, ConceptColour> = {};
-  concepts.forEach((concept, index) => {
-    colours[concept] = CONCEPT_PALETTE[index % CONCEPT_PALETTE.length];
-  });
-  return colours;
-}
-
-
 
 export { isStudyModeQuestion } from "@/features/quiz/api/questions";
 
@@ -229,29 +202,6 @@ export function getQuestionStatus({
   return "wrong";
 }
 
-export function statusClasses(status: QuestionStatus) {
-  const base = "qstatus border transition-colors duration-200";
-  if (status === "current") return `${base} qstatus--current`;
-  if (status === "answered") return `${base} qstatus--answered`;
-  if (status === "correct") return `${base} qstatus--correct`;
-  if (status === "wrong") return `${base} qstatus--wrong`;
-  return `${base} qstatus--empty`;
-}
-
-export const prefetchQuestionImage = (url?: string) => {
-  if (!url || typeof window === "undefined") return;
-  const img = new window.Image();
-  img.src = url;
-};
-
-
-
-export function clamp(val: number, min: number, max: number): number {
-  return Math.min(Math.max(val, min), max);
-}
-
-
-
 export function formatMathBookSolutionLines(solution: string): string[] {
   if (!solution) return [];
   return solution
@@ -259,4 +209,11 @@ export function formatMathBookSolutionLines(solution: string): string[] {
     .map((line) => line.trim())
     .filter((line) => line.length > 0 && !/^[.,;]+$/.test(line));
 }
+
+export function prefetchQuestionImage(url: string) {
+  if (typeof window === "undefined" || !url) return;
+  const img = new window.Image();
+  img.src = url;
+}
+
 

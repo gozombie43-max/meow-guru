@@ -8,12 +8,11 @@ import { MODE_LABELS } from "@/features/quiz/model/utils";
 import { useBackLayer } from "@/hooks/useAppNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { preferredScrollBehavior } from "@/lib/motion";
-import { useCallback,useEffect,useMemo,useRef,useState } from "react";
+import { useCallback,useMemo,useRef,useState } from "react";
 
 export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: string = "default") {
   const activeRailBtnRef = useRef<HTMLButtonElement | null>(null);
   const activeMacBtnRef = useRef<HTMLButtonElement | null>(null);
-  const examDetailsRef = useRef<HTMLDetailsElement | null>(null);
 
   const isLargeScreen = useMediaQuery("(min-width: 769px)");
 
@@ -60,9 +59,6 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
   const openPalette = useCallback(() => setIsPaletteOpen(true), []);
   const closePalette = useCallback(() => setIsPaletteOpen(false), []);
   useBackLayer(isPaletteOpen && !isIos, closePalette);
-  const isDesktop = useMediaQuery("(min-width: 1024px)");
-  const touchStartXRef = useRef<number | null>(null);
-  const touchStartYRef = useRef<number | null>(null);
   const scrollActiveQuestion = useCallback(() => {
     if (activeRailBtnRef.current) {
       try {
@@ -82,23 +78,6 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
         });
       } catch {}
     }
-  }, []);
-
-  useEffect(() => {
-    const dismissExamDetails = (event: PointerEvent) => {
-      const details = examDetailsRef.current;
-      if (!details?.open) return;
-
-      const summary = details.querySelector("summary");
-      if (event.target instanceof Node && summary?.contains(event.target))
-        return;
-
-      details.removeAttribute("open");
-    };
-
-    document.addEventListener("pointerdown", dismissExamDetails);
-    return () =>
-      document.removeEventListener("pointerdown", dismissExamDetails);
   }, []);
 
   const renderQuestionLine = useCallback((line: string) => {
@@ -141,10 +120,10 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
     return nodes;
   }, []);
 
-  return { activeRailBtnRef, activeMacBtnRef, examDetailsRef, isIos, isMac, theme, toggleTheme,
+  return { activeRailBtnRef, activeMacBtnRef, isIos, isMac, theme, toggleTheme,
     modeLabels, themeStyles, isPaletteOpen, isSettingsOpen, setIsSettingsOpen,
     hideQuestionNumbers, hideSubtopic, handleToggleHideSubtopic, hideViewSolution, hideAiTutor, textSize, textWeight, spacing,
     handleToggleHideQuestionNumbers, handleToggleHideViewSolution, handleToggleHideAiTutor,
     handleToggleHideBoth, handleSetTextSize, handleSetTextWeight, handleSetSpacing, openPalette, closePalette,
-    isDesktop, touchStartXRef, touchStartYRef, scrollActiveQuestion, renderQuestionLine };
+    scrollActiveQuestion, renderQuestionLine };
 }

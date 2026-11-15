@@ -10,6 +10,7 @@ html.theme-dark .bs-header { background: rgba(28, 28, 30, 0.92); border-bottom-c
 .bs-brand { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 650; text-decoration: none; color: inherit; }
 .bs-brand svg { color: var(--bs-blue); }
 .bs-theme { margin-left: auto; border: none; background: transparent; cursor: pointer; }
+@media (min-width: 768px) { .bs-theme { display: none !important; } }
 .bs-scroll-body { flex: 1; min-height: 0; width: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
 .bs-scroll-body::-webkit-scrollbar { width: 6px; }
 .bs-scroll-body::-webkit-scrollbar-track { background: transparent; }

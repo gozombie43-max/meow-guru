@@ -9,9 +9,6 @@ const subjectConfig: SubjectConfig = {
   subjectId: 'english',
   subjectLabel: 'English',
   cssClassName: 'english',
-  topicConcepts: {},
-  classificationCategories: [],
-  getClassificationCategoryId: () => '',
 };
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (

@@ -9,8 +9,7 @@ import type { SubjectConfig } from '@/features/quiz/model/types';
 const mocks = vi.hoisted(() => ({ loading: true, user: null as null | { id: string; recentQuizzes?: Record<string, unknown>[] }, fetch: vi.fn() }));
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ loading: mocks.loading, user: mocks.user }) }));
 vi.mock('@/lib/api/http', () => ({ fetchWithRetry: mocks.fetch }));
-const config: SubjectConfig = { subjectId: 'mathematics', subjectLabel: 'Mathematics', cssClassName: 'math',
-  topicConcepts: {}, classificationCategories: [], getClassificationCategoryId: () => 'all' };
+const config: SubjectConfig = { subjectId: 'mathematics', subjectLabel: 'Mathematics', cssClassName: 'math' };
 const wrapper = ({ children }: { children: ReactNode }) => <ApplicationProviders>{children}</ApplicationProviders>;
 beforeEach(() => {
   mocks.loading = true; mocks.user = null; mocks.fetch.mockReset();

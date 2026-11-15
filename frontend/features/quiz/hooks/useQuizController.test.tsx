@@ -46,7 +46,7 @@ vi.mock('@/features/quiz/hooks/useQuizKeyboard', () => ({ useQuizKeyboard: vi.fn
 vi.mock('@/features/quiz/hooks/useQuizSync', () => ({ useQuizSync: vi.fn() }));
 vi.mock('@/features/quiz/hooks/useQuizTimer', () => ({ useQuizTimer: () => ({ timerRef: { current: { getTimeLeft: () => 45 } }, maxTime: 60, startTimer: mocks.start, stopTimer: mocks.stop }) }));
 
-const subjectConfig: SubjectConfig = { subjectId: 'math', subjectLabel: 'Math', cssClassName: 'math', topicConcepts: {}, classificationCategories: [], getClassificationCategoryId: () => '' };
+const subjectConfig: SubjectConfig = { subjectId: 'math', subjectLabel: 'Math', cssClassName: 'math' };
 const question = (id: number): QuizQuestion => ({ id, concept: 'percentages', formula: '', question: 'One plus one?', options: ['1', '2'], correctAnswer: 1, answer: '2', difficulty: 'medium', estimatedTime: 60, year: '', exam: '', solution: '2' });
 const unrevealedQuestion = (id: number, overrides: Partial<QuizQuestion> = {}): QuizQuestion => ({
   ...question(id),

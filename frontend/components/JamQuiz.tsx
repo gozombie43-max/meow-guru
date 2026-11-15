@@ -4,10 +4,11 @@ import QuizEngine from '@/features/quiz/components/QuizEngine';
 import { JAM_SECTIONS, JAM_SUBJECT, jamSectionHref, jamQuestionTopic } from '@/lib/exam-mode';
 import type { SubjectConfig } from '@/features/quiz/model/types';
 const config: SubjectConfig = {
-  subjectId: JAM_SUBJECT, subjectLabel: 'IIT JAM Physics', cssClassName: 'physics-quiz',
-  topicConcepts: Object.fromEntries(JAM_SECTIONS.map(s => [jamQuestionTopic(s.slug), [...s.topics]])),
+  subjectId: JAM_SUBJECT,
+  subjectLabel: 'IIT JAM Physics',
+  cssClassName: 'physics-quiz',
   modeLabels: { formula: 'Formula practice', mixed: 'Mixed practice', 'ai-challenge': 'Speed practice', hard: 'Advanced practice' },
-  formulaModeLabel: 'Formula practice', classificationCategories: [], getClassificationCategoryId: () => 'all',
+  formulaModeLabel: 'Formula practice',
 };
 export default function JamQuiz({ slug, chapterSlug }: { slug: string; chapterSlug?: string }) {
   const section = JAM_SECTIONS.find(s => s.slug === slug)!;

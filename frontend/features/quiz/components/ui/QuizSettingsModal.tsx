@@ -265,14 +265,16 @@ export function QuizSettingsModal({
                 </section>
 
                 <section className="ios-settings-group" aria-label="Display and features">
-                  <SettingsRow icon={isDark ? <Moon size={17} /> : <Sun size={17} />} label="Dark theme">
-                    <SwitchToggle
-                      checked={isDark}
-                      onChange={onToggleTheme}
-                      label="Theme"
-                      ariaLabel="Toggle dark/light theme"
-                    />
-                  </SettingsRow>
+                  <div className="ios-settings-mobile-only">
+                    <SettingsRow icon={isDark ? <Moon size={17} /> : <Sun size={17} />} label="Dark theme">
+                      <SwitchToggle
+                        checked={isDark}
+                        onChange={onToggleTheme}
+                        label="Theme"
+                        ariaLabel="Toggle dark/light theme"
+                      />
+                    </SettingsRow>
+                  </div>
                   <SettingsRow icon={<ListOrdered size={17} />} label="Hide question strip">
                     <SwitchToggle
                       checked={hideQuestionNumbers}
@@ -645,6 +647,11 @@ export function QuizSettingsModal({
         .ios-settings-leave-btn:focus-visible {
           outline: 2px solid var(--qs-accent);
           outline-offset: 2px;
+        }
+        @media (min-width: 768px) {
+          .ios-settings-mobile-only {
+            display: none !important;
+          }
         }
       `}</style>
     </>
