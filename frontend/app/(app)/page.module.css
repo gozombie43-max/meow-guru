@@ -6,7 +6,7 @@
   width: 100%;
   background: transparent;
   color: var(--mac-text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+  font-family: var(--font-geist-sans), var(--meow-font-sans), -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   display: flex;
   justify-content: stretch;
   align-items: stretch;
@@ -30,19 +30,6 @@
 
 :global(html:not(.theme-dark)) .pageWrapper:not(.dark) :is(.mobileSubjectCard, .resourceCard, .battleCard) {
   border-radius: 22px;
-}
-
-:global(html:not(.theme-dark)) .pageWrapper:not(.dark) .mobileHero {
-  border: 1px solid var(--line);
-  background: var(--surface);
-}
-
-:global(html:not(.theme-dark)) .pageWrapper:not(.dark) .mobileHeroStudyBackdrop {
-  opacity: .5;
-}
-
-:global(html:not(.theme-dark)) .pageWrapper:not(.dark) .mobileHeroStudyOverlay {
-  background: linear-gradient(90deg, rgb(245 248 252 / 35%) 0%, rgb(245 248 252 / 65%) 36%, rgb(255 255 255 / 94%) 54%, rgb(255 255 255 / 82%) 100%);
 }
 
 :global(html:not(.theme-dark)) .pageWrapper:not(.dark) :is(.resourceCard small, .battleCard small) {
@@ -112,31 +99,34 @@
 }
 
 .logoMark {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.logoMark svg g {
+  fill: var(--mac-primary);
+  transition: fill 200ms ease;
 }
 
 .logoText {
-  display: flex;
-  flex-direction: column;
-  line-height: 0.95;
-}
-
-.logoText strong {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--mac-primary);
-  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  color: var(--mac-text-primary);
+  white-space: nowrap;
 }
 
 .logoText span {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--mac-text-primary);
-  letter-spacing: 0.5px;
+  font-weight: 500;
+  color: var(--mac-primary);
 }
 
 .railNav {
@@ -299,6 +289,38 @@
   padding: 6px;
 }
 
+/* Home hero header: transparent over the hero photo, solid once scrolled. */
+.heroWorkspace { position: relative; }
+.heroWorkspace > .mobileTopbar.topbarOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: transparent !important;
+  border-bottom: 1px solid transparent !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: background-color 200ms ease, border-color 200ms ease;
+}
+.heroWorkspace > .topbarOverlay:not([data-scrolled]) .logoMark svg g { fill: #5b9bff; }
+.heroWorkspace > .topbarOverlay:not([data-scrolled]) .logoText { color: #ffffff; text-shadow: 0 1px 10px rgb(0 0 0 / 35%); }
+.heroWorkspace > .topbarOverlay:not([data-scrolled]) .logoText span { color: #9ec5ff; }
+.heroWorkspace > .topbarOverlay:not([data-scrolled]) .menuButton { color: #ffffff; filter: drop-shadow(0 1px 6px rgb(0 0 0 / 35%)); }
+.heroWorkspace > .mobileTopbar.topbarOverlay[data-scrolled] {
+  background: var(--light-only-surface, rgba(255, 255, 255, 0.88)) !important;
+  border-bottom-color: var(--line) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+:global(html.theme-dark) .heroWorkspace > .mobileTopbar.topbarOverlay[data-scrolled] {
+  background: rgb(0 0 0 / 86%) !important;
+  border-bottom-color: transparent !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .logoMark svg g,
+  .heroWorkspace > .mobileTopbar.topbarOverlay { transition: none; }
+}
+
 .sidebarBackdrop {
   display: none;
   position: fixed;
@@ -439,10 +461,11 @@
   transform: translateX(20px);
 }
 
-/* Mobile Hero Banner */
+/* Mobile Hero Banner: first carousel slide, full-bleed photo with copy at the
+   bottom-left, matching the other study slides. Size comes from the carousel. */
 .mobileHeroStudyBackdrop {
   object-fit: cover;
-  object-position: left center;
+  object-position: center;
   transform: scaleX(-1);
   pointer-events: none;
 }
@@ -451,78 +474,61 @@
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: linear-gradient(270deg, rgb(246 248 251 / 12%), rgb(246 248 251 / 72%) 38%, rgb(246 248 251 / 90%) 65%);
-}
-:global(html.theme-dark) .mobileHeroStudyOverlay {
-  background: linear-gradient(270deg, rgb(8 18 31 / 20%), rgb(8 18 31 / 70%) 38%, rgb(8 18 31 / 90%) 65%);
+  background:
+    linear-gradient(90deg, rgb(6 10 18 / 64%) 0%, rgb(6 10 18 / 28%) 55%, rgb(6 10 18 / 8%) 100%),
+    linear-gradient(180deg, rgb(6 10 18 / 58%) 0%, rgb(6 10 18 / 0%) 30%, rgb(6 10 18 / 48%) 65%, rgb(6 10 18 / 76%) 100%);
 }
 .mobileHero {
-  border-radius: 26px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
   position: relative;
   overflow: hidden;
   display: flex;
-  min-height: 180px;
-  margin-top: 10px;
+  align-items: flex-end;
+  background: #101d2c;
 }
 
 .mobileHeroCopy {
   position: relative;
   z-index: 3;
-  width: 57%;
-  margin-left: auto;
-  padding: 22px 12px 22px 4px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  width: 100%;
+  max-width: 34ch;
+  padding: var(--hero-top, 68px) 20px 102px;
+  text-shadow: 0 2px 14px rgb(0 0 0 / 45%);
 }
 
 .mobileHeroCopy h1 {
   margin: 0;
-  font-size: clamp(24px, 5.8vw, 28px);
-  line-height: 1.12;
-  letter-spacing: -0.6px;
-  font-weight: 700;
+  color: #ffffff;
+  font-size: clamp(21px, 5.4vw, 24px);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  font-weight: 600;
 }
-.mobileHeroCopy h1 span { color: var(--purple); }
+.mobileHeroCopy h1 span {
+  color: inherit;
+  font-weight: 600;
+}
 
 .mobileHeroDesc {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.5;
-  margin: 12px 0 0;
+  color: rgb(241 245 249 / 82%);
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -0.005em;
+  margin: 5px 0 0;
 }
 
-.mobileHeroVisual {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 41%;
-  height: 100%;
-  background-color: transparent;
-  overflow: hidden;
+/* Recent Quizzes sheet rises seamlessly over the bottom of the hero. */
+.mobileRecentLift {
+  position: relative;
   z-index: 2;
-  transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  contain: paint;
-  isolation: isolate;
+  margin: -40px -16px 0;
+  padding: 18px 16px 0;
+  border-radius: 24px 24px 0 0;
+  background: var(--bg, #f4f6f9);
 }
-
-.mobileHeroImage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center bottom;
-  transform: translateY(4px) scale(1.08) translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  image-rendering: -webkit-optimize-contrast;
+.mobileRecentLift .sectionHeader { margin-bottom: 12px; }
+:global(html.theme-dark) .mobileRecentLift {
+  background: var(--oled-canvas, #000);
 }
 
 /* Mobile Content Grid */
@@ -530,7 +536,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  margin-top: 24px;
+  margin-top: 20px;
 }
 
 .mobileLeftColumn {
@@ -702,15 +708,8 @@
   font-size: 13px;
 }
 
-@media (max-width: 480px) {
-  .mobileHero {
-    min-height: 174px;
-  }
-  .mobileHeroCopy {
-    width: 57%;
-    padding: 20px 10px 20px 2px;
-  }
-  .mobileHeroCopy h1 { font-size: clamp(21px, 5.5vw, 25px); line-height: 1.18; letter-spacing: -0.6px; }
+@media (max-width: 360px) {
+  .mobileHeroCopy h1 { font-size: 20px; }
 }
 
 @media (max-width: 360px) {
@@ -727,7 +726,7 @@
 :global(html.theme-dark) .pageWrapper {
   background: var(--oled-canvas);
 }
-:global(html.theme-dark) .pageWrapper :is(.mobileHero, .mobileSubjectCard, .resourceCard, .battleCard) {
+:global(html.theme-dark) .pageWrapper :is(.mobileSubjectCard, .resourceCard, .battleCard) {
   background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 26px;
 }
 :global(html.theme-dark) .pageWrapper :is(.mobileSubjectCard, .resourceCard, .battleCard):hover {
@@ -748,7 +747,7 @@
   opacity: 1 !important;
 }
 
-:global(html.theme-dark) .pageWrapper :is(.mobileHeroDesc, .resourceCard small, .battleCard small) { color: var(--oled-secondary); }
+:global(html.theme-dark) .pageWrapper :is(.resourceCard small, .battleCard small) { color: var(--oled-secondary); }
 
 /* Drawer controls share one scale, alignment, and focus treatment. */
 .pageWrapper .mobileOnly:has(> .sidebarOpen) { z-index: 300; }

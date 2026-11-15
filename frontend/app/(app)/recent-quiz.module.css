@@ -16,7 +16,8 @@
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
-  padding-bottom: 0;
+  margin: -2px -4px -6px;
+  padding: 2px 4px 6px;
 }
 
 .carousel > .card {
@@ -34,52 +35,16 @@
   display: none;
 }
 
-.dots {
-  display: flex;
-  justify-content: center;
-  margin-top: -10px;
-}
-
-.dots .dot {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  min-width: 24px;
-  flex: 0 0 24px;
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.dot span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--mac-text-muted);
-  opacity: 0.4;
-}
-
-.dot[aria-current='true'] span {
-  background: var(--mac-primary);
-  opacity: 1;
-}
-
-.dot:focus-visible {
-  outline: 2px solid var(--mac-primary);
-  outline-offset: -4px;
-}
-
 .card {
   position: relative;
   isolation: isolate;
   min-width: 0;
   padding: 16px;
-  border: 1px solid var(--mac-border);
-  border-radius: 26px;
-  background: var(--mac-card-bg);
+  border: 1px solid var(--mac-border, #dce3ec);
+  border-radius: 22px;
+  background: var(--mac-card-bg, #ffffff);
   color: var(--mac-text-primary);
+  box-shadow: 0 2px 12px rgb(15 23 42 / 5%);
   overflow: hidden;
 }
 
@@ -88,9 +53,18 @@
   z-index: 2;
 }
 
+.card > [class*="artwork"] svg {
+  opacity: 0.22;
+}
+
 :global(html.theme-dark) .card {
-  background: var(--oled-surface);
-  border-color: transparent;
+  background: var(--oled-surface, #1c1c1e);
+  border-color: rgb(255 255 255 / 7%);
+  box-shadow: none;
+}
+
+:global(html.theme-dark) .card > [class*="artwork"] svg {
+  opacity: 0.42;
 }
 
 :global(html.theme-dark) .card .copy h3 {
@@ -103,25 +77,29 @@
   color: var(--oled-secondary) !important;
 }
 
-:global(html.theme-dark) .card .icon {
-  background: rgba(10, 132, 255, 0.16);
-  color: #5aabff;
-}
-
 .header {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
 }
 
-.icon {
+.card .icon {
   display: grid;
   place-items: center;
-  flex: 0 0 52px;
-  height: 54px;
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--ios-system-blue) 14%, transparent);
-  color: #0088ff;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+}
+
+.iconFallback {
+  background: rgb(37 99 235 / 10%);
+  color: #2563eb;
+}
+
+:global(html.theme-dark) .card .iconFallback {
+  background: rgb(59 130 246 / 16%);
+  color: #60a5fa;
 }
 
 .copy {
@@ -133,46 +111,64 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .count {
   flex-shrink: 0;
   color: var(--mac-text-secondary);
-  font-size: 13px;
+  font-size: 12.5px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 .copy h3 {
-  margin: 0 0 3px;
-  font-size: 16px;
+  margin: 0;
+  font-size: 15.5px;
   line-height: 1.3;
-  font-weight: 700;
-  letter-spacing: -0.35px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   overflow-wrap: anywhere;
 }
 
 .copy p,
 .detail {
-  margin: 0;
+  margin: 2px 0 0;
   color: var(--mac-text-secondary);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.4;
   font-variant-numeric: tabular-nums;
+}
+
+.detail {
+  margin: 0;
+  font-weight: 500;
 }
 
 .progress {
   display: block;
   appearance: none;
   width: 100%;
-  height: 8px;
+  height: 6px;
   border: 0;
   border-radius: 999px;
   overflow: hidden;
-  background: var(--mac-card-subtle);
-  color: var(--ios-system-blue);
-  margin: 7px 0 0;
+  background: #edf1f6;
+  color: #2563eb;
+  margin: 14px 0 0;
 }
+
+:global(html.theme-dark) .progress {
+  background: rgb(255 255 255 / 9%);
+  color: #3b82f6;
+}
+
+.progress::-webkit-progress-bar { background: #edf1f6; border-radius: 999px; }
+.progress::-webkit-progress-value { background: #2563eb; border-radius: 999px; }
+.progress::-moz-progress-bar { background: #2563eb; border-radius: 999px; }
+:global(html.theme-dark) .progress::-webkit-progress-bar { background: rgb(255 255 255 / 9%); }
+:global(html.theme-dark) .progress::-webkit-progress-value { background: #3b82f6; }
+:global(html.theme-dark) .progress::-moz-progress-bar { background: #3b82f6; }
 
 .footer {
   display: flex;
@@ -180,47 +176,70 @@
   justify-content: space-between;
   gap: 12px;
   margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid color-mix(in srgb, var(--mac-text-secondary) 20%, transparent);
 }
 
-.progress::-webkit-progress-bar { background: var(--mac-card-subtle); border-radius: 999px; }
-.progress::-webkit-progress-value { background: var(--ios-system-blue); border-radius: 999px; }
-.progress::-moz-progress-bar { background: var(--ios-system-blue); border-radius: 999px; }
-
-.card .resume {
+.emptyRow {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: auto;
-  flex-shrink: 0;
-  box-sizing: border-box;
-  min-height: 36px;
-  margin-top: 0;
-  padding: 8px 16px;
-  border: 0;
-  border-radius: 10px;
-  background: #0088ff;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 650;
-  line-height: 1.4;
-  text-decoration: none;
-  text-align: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.resume:hover { filter: brightness(1.08); }
-.resume:focus-visible { outline: 3px solid var(--mac-primary); outline-offset: 3px; }
+.card .resume {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #3d3d3d;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
 
-.card > .resume { margin-top: 12px; }
+/* Expand vertical tap area to 44px without inflating the visual pill. */
+.card .resume::after {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
+}
+
+.card .resume svg {
+  flex-shrink: 0;
+}
+
+.card .resume:hover {
+  background: #2b2b2b;
+}
+
+:global(html.theme-dark) .card .resume:hover {
+  background: #4d4d4d;
+}
+
+.card .resume:active { transform: scale(0.97); }
+.card .resume:focus-visible { outline: 2px solid var(--mac-primary); outline-offset: 2px; }
 
 @media (max-width: 360px) {
-  .card { padding: 12px; }
+  .card { padding: 14px; border-radius: 20px; }
   .header { gap: 10px; }
-  .icon { flex-basis: 44px; height: 48px; border-radius: 12px; }
-  .titleRow { gap: 6px; }
-  .copy h3 { font-size: 15px; }
-  .detail { font-size: 12px; }
-  .card .resume { padding-inline: 12px; }
+  .card .icon { flex-basis: 40px; width: 40px; height: 40px; border-radius: 12px; }
+  .copy h3 { font-size: 14.5px; }
+  .detail { font-size: 12.5px; }
+  .card .resume { height: 34px; min-height: 34px; padding: 0 14px; font-size: 12.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card .resume { transition: none; }
 }

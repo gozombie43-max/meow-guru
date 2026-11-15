@@ -3,17 +3,15 @@
 import { useExamMode } from '@/context/ExamModeContext';
 import { isJamContent, JAM_SUBJECT } from '@/lib/exam-mode';
 import { useAuth } from '@/context/AuthContext';
-import { Atom, BookOpen, Brain, Globe, Play, Sigma } from 'lucide-react';
+import { Atom, Globe, Play } from 'lucide-react';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { getMobileSubjectVisual } from './home-data';
 import HomeCardArtwork from './HomeCardArtwork';
 import styles from './page.module.css';
 import cardStyles from './recent-quiz.module.css';
 
 export default function MobileRecentQuiz() {
   const { user, loading } = useAuth();
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const [activeSlide, setActiveSlide] = useState(0);
   const { isJam } = useExamMode();
   const recent = user?.recentQuizzes?.filter(quiz => isJamContent(quiz.href || '') === isJam).slice(0, 5) ?? [];
 
@@ -24,20 +22,7 @@ export default function MobileRecentQuiz() {
         <Link href="/dashboard" className={styles.viewAllLink}>View All</Link>
       </div>
       <div
-        ref={carouselRef}
         className={`${cardStyles.list} ${cardStyles.carousel}`}
-        onScroll={(event) => {
-          const carousel = event.currentTarget;
-          const cards = Array.from(carousel.children) as HTMLElement[];
-          const left = carousel.getBoundingClientRect().left;
-          let nearest = 0;
-          let distance = Infinity;
-          cards.forEach((card, index) => {
-            const delta = Math.abs(card.getBoundingClientRect().left - left);
-            if (delta < distance) { distance = delta; nearest = index; }
-          });
-          setActiveSlide(nearest);
-        }}
         role="region"
         aria-roledescription="carousel"
         aria-label="Recent quizzes"
@@ -56,26 +41,33 @@ export default function MobileRecentQuiz() {
             : url.pathname.includes('/advance/') ? 'Advanced Mathematics'
             : ({ mathematics: 'Mathematics', reasoning: 'Reasoning', english: 'English', 'general-awareness': 'General Awareness', [JAM_SUBJECT]: 'IIT JAM Physics' }[quiz.subject]
               ?? quiz.subject.replace(/[-_]/g, ' '));
-          const Icon = quiz.subject === JAM_SUBJECT ? Atom : quiz.subject === 'mathematics' ? Sigma : quiz.subject === 'reasoning' ? Brain : quiz.subject === 'english' ? BookOpen : Globe;
+          const visual = quiz.subject === JAM_SUBJECT ? null : getMobileSubjectVisual(quiz.subject, url.pathname);
+          const FallbackIcon = quiz.subject === JAM_SUBJECT ? Atom : Globe;
 
           return (
             <article key={quiz.quizKey} className={cardStyles.card} aria-roledescription="slide" aria-label={`${index + 1} of ${recent.length}: ${quiz.title || 'Quiz'}`}>
               <HomeCardArtwork kind="recent" />
               <div className={cardStyles.header}>
-                <span className={cardStyles.icon}><Icon size={32} strokeWidth={2.2} aria-hidden="true" /></span>
+                <span className={visual ? `${cardStyles.icon} ${styles.subjectIcon} ${styles[visual.tone]}` : `${cardStyles.icon} ${cardStyles.iconFallback}`}>
+                  {visual ? (
+                    <visual.icon size={30} aria-hidden="true" />
+                  ) : (
+                    <FallbackIcon size={22} strokeWidth={2} aria-hidden="true" />
+                  )}
+                </span>
                 <div className={cardStyles.copy}>
                   <div className={cardStyles.titleRow}>
                     <h3>{quiz.title || quiz.subject || 'Quiz'}</h3>
                     <span className={cardStyles.count}>{total ? `${count}/${total}` : `${count} answered`}</span>
                   </div>
                   <p>{subject}</p>
-                  {total ? <progress className={cardStyles.progress} value={count} max={total} aria-label={`${quiz.title || 'Quiz'} progress`} /> : null}
                 </div>
               </div>
+              {total ? <progress className={cardStyles.progress} value={count} max={total} aria-label={`${quiz.title || 'Quiz'} progress`} /> : null}
               <div className={cardStyles.footer}>
                 <p className={cardStyles.detail}>{completed ? 'Practice completed' : `Continue from Q${total ? Math.min(current, total) : current}`}</p>
-                <Link href={`${url.pathname}${url.search}${url.hash}`} data-ui-button="primary" className={cardStyles.resume}>
-                  <Play size={18} fill="currentColor" aria-hidden="true" />
+                <Link href={`${url.pathname}${url.search}${url.hash}`} className={cardStyles.resume}>
+                  <Play size={12} fill="currentColor" aria-hidden="true" />
                   {completed ? 'Review' : 'Resume'}
                 </Link>
               </div>
@@ -85,33 +77,13 @@ export default function MobileRecentQuiz() {
         {recent.length === 0 ? (
           <div className={cardStyles.card}>
             <HomeCardArtwork kind="recent" />
-            <p className={cardStyles.detail}>{loading ? 'Loading recent quizzes…' : 'Your recent quizzes will appear here.'}</p>
-            {!loading ? <Link href="/mathematics" data-ui-button="primary" className={cardStyles.resume}><Play size={18} fill="currentColor" aria-hidden="true" />Start Practice</Link> : null}
+            <div className={cardStyles.emptyRow}>
+              <p className={cardStyles.detail}>{loading ? 'Loading recent quizzes…' : 'Your recent quizzes will appear here.'}</p>
+              {!loading ? <Link href="/mathematics" className={cardStyles.resume}><Play size={12} fill="currentColor" aria-hidden="true" />Start Practice</Link> : null}
+            </div>
           </div>
         ) : null}
       </div>
-      {recent.length > 1 ? (
-        <div className={cardStyles.dots} role="group" aria-label="Choose recent quiz">
-          {recent.map((quiz, index) => (
-            <button
-              key={quiz.quizKey}
-              type="button"
-              data-ui-button="state"
-              className={cardStyles.dot}
-              aria-label={`Show quiz ${index + 1}`}
-              aria-current={index === Math.min(activeSlide, recent.length - 1) ? 'true' : undefined}
-              onClick={() => {
-                const carousel = carouselRef.current;
-                const card = carousel?.children[index] as HTMLElement | undefined;
-                if (carousel && card) {
-                  carousel.scrollTo({ left: carousel.scrollLeft + card.getBoundingClientRect().left - carousel.getBoundingClientRect().left, behavior: 'instant' });
-                  setActiveSlide(index);
-                }
-              }}
-            ><span aria-hidden="true" /></button>
-          ))}
-        </div>
-      ) : null}
     </section>
   );
 }
