@@ -254,7 +254,6 @@ export function SolutionBottomSheet({
                 inset: 0;
                 z-index: 9999;
                 background: rgba(0, 0, 0, 0.65);
-                backdrop-filter: blur(8px);
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -405,9 +404,6 @@ export function SolutionBottomSheet({
               }
 
               /* Light Theme Overrides (Palette: #F6F8FA White / #E6EAEF Ice Blue / #FFFFFF Pure White) */
-              .ios-solution-backdrop[data-theme="light"] {
-                background: rgba(15, 23, 42, 0.4);
-              }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-sheet {
                 --ui-header-surface: var(--light-only-surface, #FFFFFF);
                 background: var(--light-only-surface, #FFFFFF);
@@ -469,7 +465,6 @@ export function SolutionBottomSheet({
                   width: 6px;
                 }
               }
-              .ios-solution-backdrop[data-theme="dark"] { backdrop-filter: none; }
               .ios-solution-backdrop[data-theme="dark"] .ios-solution-sheet {
                 --ui-header-surface: var(--oled-surface, #1c1c1e);
                 background: var(--oled-surface, #1c1c1e);
