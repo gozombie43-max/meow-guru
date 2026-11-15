@@ -47,7 +47,7 @@ function useIncrementalCount(total: number, resetKey: string, rootRef: RefObject
           setCount((prev) => Math.min(prev + TOPIC_PAGE_SIZE, total));
         }
       },
-      { root: rootRef.current, rootMargin: "0px 0px 480px 0px" },
+      { root: rootRef.current, rootMargin: "0px 0px 120px 0px" },
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -79,7 +79,7 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
     isChapterMode,
   } = view;
   const allTopics = mobileTopics ?? [];
-  const resetKey = allTopics.map((topic) => topic.id).join("|");
+  const resetKey = `${searchQuery}\0${mobileCategory}\0${sortBy}`;
   const { visible, hasMore, sentinelRef } = useIncrementalCount(allTopics.length, resetKey, scrollAreaRef);
 
   return (
@@ -201,7 +201,8 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
           return (
             <div className={defaultStyles.oledMetaBar}>
               <span className={defaultStyles.oledMetaCount}>
-                {mobileTopics?.length ?? 0} topics · {totalQuestions.toLocaleString()} questions
+                {mobileTopics?.length ?? 0} topics
+                {!config.totalsPending && ` · ${totalQuestions.toLocaleString()} questions`}
               </span>
               <div className={defaultStyles.oledSortWrap}>
                 <button
@@ -256,7 +257,9 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
                   icon={topic.icon}
                   accent={detail?.color ?? topic.color}
                   detail={detail}
-                  priority={index < 4}
+                  totalsPending={config.totalsPending}
+                  progressPending={config.progressPending}
+                  priority={index < 8}
                   isRecent={isRecent}
                   prefetchCounts={!isChapterMode ? { subject: config.subjectId, topic: topic.questionTopic ?? topic.slug } : undefined}
                 />

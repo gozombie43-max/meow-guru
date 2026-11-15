@@ -203,4 +203,72 @@ describe("SubjectHub", () => {
     expect(container.querySelectorAll('[data-hub-part="mobileTopicRow"]')).toHaveLength(TOPICS.length);
     expect(container.querySelectorAll('[class*="skeletonRow"]')).toHaveLength(0);
   });
+
+  it("shows count skeletons while pending instead of flashing zero, and preserves pagination when counts arrive", () => {
+    let intersect: IntersectionObserverCallback | undefined;
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(callback: IntersectionObserverCallback) {
+          intersect = callback;
+        }
+        observe = vi.fn();
+        disconnect = vi.fn();
+        unobserve = vi.fn();
+      },
+    );
+
+    const { container, rerender } = render(
+      <SubjectHub
+        config={{
+          ...mockConfig,
+          totalsPending: true,
+          progressPending: true,
+        }}
+      />
+    );
+
+    const firstRow = container.querySelector('[data-hub-part="mobileTopicRow"]') as HTMLElement;
+    expect(firstRow.textContent).not.toContain("0 Questions");
+    expect(firstRow.querySelector('[class*="countSkeleton"]')).not.toBeNull();
+
+    act(() => {
+      intersect?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+    });
+    expect(container.querySelectorAll('[data-hub-part="mobileTopicRow"]')).toHaveLength(20);
+
+    // Totals arrive while personal progress is still pending: solved skeleton replaces "0/705".
+    rerender(
+      <SubjectHub
+        config={{
+          ...mockConfig,
+          totalsPending: false,
+          progressPending: true,
+          mobileTopicDetails: {
+            percentages: { color: "#5DA6FF", questionCount: 705, userSolved: 0, progress: 0 },
+          },
+        }}
+      />
+    );
+    expect(container.querySelectorAll('[data-hub-part="mobileTopicRow"]')).toHaveLength(20);
+    const updatedRow = container.querySelector('[data-hub-part="mobileTopicRow"]') as HTMLElement;
+    expect(updatedRow.querySelector('[class*="countSolvedSkeleton"]')).not.toBeNull();
+    expect(updatedRow.textContent).toContain("/705 Solved");
+    expect(updatedRow.textContent).not.toContain("0/705");
+
+    // Progress arrives cleanly.
+    rerender(
+      <SubjectHub
+        config={{
+          ...mockConfig,
+          totalsPending: false,
+          progressPending: false,
+          mobileTopicDetails: {
+            percentages: { color: "#5DA6FF", questionCount: 705, userSolved: 42, progress: 6 },
+          },
+        }}
+      />
+    );
+    expect(container.querySelector('[data-hub-part="mobileTopicRow"]')?.textContent).toContain("42/705 Solved");
+  });
 });

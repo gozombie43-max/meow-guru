@@ -362,7 +362,37 @@
 
 @media (prefers-reduced-motion: reduce) {
   .skeletonTile,
-  .skeletonLine {
+  .skeletonLine,
+  .countSkeleton,
+  .countSolvedSkeleton {
     animation: none;
   }
+}
+
+/* Inline shimmer placeholders prevent 0 -> N count glitches before API settles. */
+.countSkeleton,
+.countSolvedSkeleton {
+  --skel-base: rgba(255, 255, 255, 0.08);
+  --skel-shine: rgba(255, 255, 255, 0.16);
+  display: inline-block;
+  align-self: center;
+  border-radius: 4px;
+  background: linear-gradient(100deg, var(--skel-base) 30%, var(--skel-shine) 50%, var(--skel-base) 70%) 0 0 / 300% 100%;
+  animation: topicRowShimmer 1.3s linear infinite;
+}
+
+.countSkeleton {
+  width: 76px;
+  height: 12px;
+}
+
+.countSolvedSkeleton {
+  width: 22px;
+  height: 12px;
+}
+
+:global(html.theme-light) .countSkeleton,
+:global(html.theme-light) .countSolvedSkeleton {
+  --skel-base: rgba(15, 23, 42, 0.08);
+  --skel-shine: rgba(15, 23, 42, 0.14);
 }

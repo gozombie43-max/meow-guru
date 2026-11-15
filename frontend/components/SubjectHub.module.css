@@ -423,6 +423,44 @@
   color: var(--h-text);
 }
 
+.tableCountSkeleton,
+.tableSolvedSkeleton {
+  display: inline-block;
+  vertical-align: middle;
+  border-radius: 4px;
+  background: linear-gradient(
+      100deg,
+      rgba(120, 128, 140, 0.14) 30%,
+      rgba(120, 128, 140, 0.24) 50%,
+      rgba(120, 128, 140, 0.14) 70%
+    )
+    0 0 / 300% 100%;
+  animation: hubCountShimmer 1.3s linear infinite;
+}
+
+.tableCountSkeleton {
+  width: 72px;
+  height: 12px;
+}
+
+.tableSolvedSkeleton {
+  width: 20px;
+  height: 12px;
+}
+
+@keyframes hubCountShimmer {
+  to {
+    background-position: -300% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tableCountSkeleton,
+  .tableSolvedSkeleton {
+    animation: none;
+  }
+}
+
 .tableActionBtn,
 .tableContinueBtn {
   height: 28px;

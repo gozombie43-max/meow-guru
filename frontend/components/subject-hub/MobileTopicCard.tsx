@@ -19,6 +19,8 @@ export interface MobileTopicCardProps {
   priority?: boolean;
   isRecent?: boolean;
   detail?: { color?: string; questionCount?: number; progress?: number; userSolved?: number };
+  totalsPending?: boolean;
+  progressPending?: boolean;
   prefetchCounts?: { subject: string; topic: string };
 }
 
@@ -30,6 +32,8 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
   priority = false,
   isRecent = false,
   detail,
+  totalsPending = false,
+  progressPending = false,
   prefetchCounts,
 }: MobileTopicCardProps) {
   const router = useRouter();
@@ -37,7 +41,7 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
   const userSolved = detail?.userSolved ?? 0;
   const percent = count > 0 ? Math.min(100, Math.round((userSolved / count) * 100)) : 0;
   // Progress ring around the thumbnail; keep a visible sliver once started.
-  const ringProgress = percent > 0 ? Math.max(4, percent) : 0;
+  const ringProgress = !progressPending && percent > 0 ? Math.max(4, percent) : 0;
 
   return (
     <Link
@@ -50,7 +54,11 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
       data-recent={isRecent ? "true" : undefined}
       className={`${styles.card} ${isRecent ? styles.cardRecent : ""}`}
       style={{ "--topic-accent": accent, "--ring-progress": ringProgress } as React.CSSProperties}
-      aria-label={`${name}, ${count} questions${isRecent ? ", continue" : ""}`}
+      aria-label={
+        totalsPending
+          ? `${name}${isRecent ? ", continue" : ""}`
+          : `${name}, ${count} questions${isRecent ? ", continue" : ""}`
+      }
     >
       <div className={styles.iconTile} aria-hidden="true">
         <TopicThumbnail src={topicImage(slug)} size={56} priority={priority} />
@@ -59,13 +67,19 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
         <span className={styles.topicTitle}>{name}</span>
         <span className={styles.topicMetaRow}>
           <span className={styles.topicCount}>
-            {count === 0 ? (
+            {totalsPending ? (
+              <span className={styles.countSkeleton} aria-hidden="true" />
+            ) : count === 0 ? (
               <span className={styles.countTotal}>0 Questions</span>
             ) : (
               <>
-                <span className={styles.countSolved}>
-                  {userSolved.toLocaleString("en-US")}
-                </span>
+                {progressPending ? (
+                  <span className={styles.countSolvedSkeleton} aria-hidden="true" />
+                ) : (
+                  <span className={styles.countSolved}>
+                    {userSolved.toLocaleString("en-US")}
+                  </span>
+                )}
                 <span className={styles.countDivider}>/</span>
                 <span className={styles.countTotal}>{count.toLocaleString("en-US")}</span>{" "}
                 <span className={styles.countLabel}>Solved</span>

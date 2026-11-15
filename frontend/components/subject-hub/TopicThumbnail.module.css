@@ -1,8 +1,18 @@
-/* Skeleton shimmer painted on the <img> itself until the image is decoded. */
-.thumb {
+/* Skeleton shimmer painted on the frame underneath so loading images never flash blank. */
+.frame {
   --thumb-skel-base: var(--meow-surface-subtle, #29292c);
   --thumb-skel-shine: var(--meow-surface, #36363a);
+  position: relative;
   display: block;
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  background: var(--thumb-skel-base);
+}
+
+.frame:not([data-loaded]) {
   background: linear-gradient(
       100deg,
       var(--thumb-skel-base) 30%,
@@ -13,14 +23,27 @@
   animation: topicThumbShimmer 1.3s linear infinite;
 }
 
-:global(html.theme-light) .thumb {
+:global(html.theme-light) .frame {
   --thumb-skel-base: #e8ecf2;
   --thumb-skel-shine: #f6f8fb;
 }
 
+.thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+}
+
 .thumb[data-loaded] {
-  background: none;
-  animation: topicThumbFadeIn 260ms ease-out both;
+  opacity: 1;
+}
+
+/* Already-decoded images paint immediately without replay fade flicker. */
+.thumb[data-cached] {
+  opacity: 1;
+  transition: none;
 }
 
 @keyframes topicThumbShimmer {
@@ -29,18 +52,11 @@
   }
 }
 
-@keyframes topicThumbFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .thumb,
-  .thumb[data-loaded] {
+  .frame:not([data-loaded]) {
     animation: none;
+  }
+  .thumb {
+    transition: none;
   }
 }

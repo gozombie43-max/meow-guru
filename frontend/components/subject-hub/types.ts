@@ -15,6 +15,13 @@ export interface HubTopic {
   expectedMarks: string;
 }
 
+export interface TopicMobileDetail {
+  color: string;
+  questionCount?: number;
+  userSolved?: number;
+  progress?: number;
+}
+
 export interface SubjectHubConfig {
   subjectId: string;
   label: string;
@@ -22,15 +29,9 @@ export interface SubjectHubConfig {
   topics: HubTopic[];
   categories: readonly { id: string; label: string; icon: LucideIcon }[];
   styles?: Record<string, string>;
-  mobileTopicDetails?: Record<
-    string,
-    {
-      color: string;
-      questionCount?: number;
-      userSolved?: number;
-      progress?: number;
-    }
-  >;
+  mobileTopicDetails?: Record<string, TopicMobileDetail>;
+  totalsPending?: boolean;
+  progressPending?: boolean;
   mobileSearchPlaceholder: string;
   getChapterGroup?: (topicSlug: string) => {
     slug: string;
