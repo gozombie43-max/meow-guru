@@ -7,10 +7,7 @@ import Link from 'next/link';
 import MobileRecentQuiz from './MobileRecentQuiz.client';
 import MobileHeroCarousel from './MobileHeroCarousel.client';
 import DesktopRecentQuizzes from './DesktopRecentQuizzes.client';
-import {
-HERO_BLUR_DATA_URL,
-mobileSubjects,
-} from './home-data';
+import { mobileSubjects } from './home-data';
 import d from './home-desktop.module.css';
 import styles from './page.module.css';
 
@@ -100,24 +97,15 @@ export function MobileHomeContent() {
           <Image src="/images/home-carousel/study-overlay.webp" alt="" fill priority sizes="(max-width: 1023px) calc(100vw - 32px), 640px" quality={75} className={styles.mobileHeroStudyBackdrop} />
           <div className={styles.mobileHeroStudyOverlay} aria-hidden="true" />
           <div className={styles.mobileHeroCopy}>
-            <h1>Small steps.<br /><span>Big progress.</span></h1>
+            <h1>Small steps. <span>Big progress.</span></h1>
             <p className={styles.mobileHeroDesc}>Learn more every day.</p>
-          </div>
-          <div className={styles.mobileHeroVisual}>
-            <Image
-              src="/images/home-carousel/graduate.webp"
-              alt="Graduate student"
-              fill
-              priority
-              placeholder="blur"
-              blurDataURL={HERO_BLUR_DATA_URL}
-              sizes="(max-width: 768px) 50vw, 240px"
-              quality={75}
-              className={styles.mobileHeroImage}
-            />
           </div>
         </section>
       </MobileHeroCarousel>
+
+      <div className={styles.mobileRecentLift}>
+        <MobileRecentQuiz />
+      </div>
 
       <section className={styles.mobileContentGrid}>
         <div className={styles.mobileLeftColumn}>
@@ -145,7 +133,6 @@ export function MobileHomeContent() {
             <span><strong>Battle mode</strong><small>Challenge yourself & win rewards</small></span>
           </Link>
         </div>
-        <MobileRecentQuiz />
       </section>
     </>
   );
