@@ -133,10 +133,10 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
   const palette = useVirtualizer({
     count: Math.ceil(questions.length / 5),
     getScrollElement: () => paletteRef.current,
-    estimateSize: () => 46,
-    overscan: 3,
+    estimateSize: () => 50,
+    overscan: 1,
     enabled: large && activeSidebarMode === "palette",
-    initialRect: { width: 296, height: 600 },
+    initialRect: { width: 296, height: 500 },
   });
 
   useEffect(() => {

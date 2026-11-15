@@ -61,6 +61,7 @@ test('theme switching updates browser colors and keeps settings focus contained'
     accessSession: 'web-guidelines-fixture',
     frontendUrl: info.project.use.baseURL!,
   });
+  await page.setViewportSize({ width: 390, height: 844 });
   await context.addInitScript(() => { if (!localStorage.getItem('ui-theme')) localStorage.setItem('ui-theme', 'dark'); });
   await page.goto('/profile');
   await expect(page.locator('html')).toHaveCSS('color-scheme', 'dark');
