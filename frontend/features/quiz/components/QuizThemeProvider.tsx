@@ -24,7 +24,15 @@ type QuizThemeProviderProps = {
   children: ReactNode;
 };
 
+function isDesktopViewport(): boolean {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+  return Boolean(window.matchMedia("(min-width: 768px)")?.matches);
+}
+
 function detectDefaultQuizTheme(preferredTheme?: QuizTheme): QuizTheme {
+  if (isDesktopViewport()) return "light";
   if (preferredTheme) return preferredTheme;
   if (typeof document !== "undefined") {
     const isDark =
@@ -51,12 +59,13 @@ function createQuizThemeStore(storageKey?: string, preferredTheme?: QuizTheme) {
       initialized = true;
       currentTheme = detectDefaultQuizTheme(preferredTheme);
     }
-    return currentTheme;
+    return isDesktopViewport() ? "light" : currentTheme;
   };
 
   const setTheme = (nextTheme: QuizTheme) => {
-    if (currentTheme === nextTheme && initialized) return;
-    currentTheme = nextTheme;
+    const resolved: QuizTheme = isDesktopViewport() ? "light" : nextTheme;
+    if (currentTheme === resolved && initialized) return;
+    currentTheme = resolved;
     initialized = true;
     listeners.forEach((listener) => listener());
   };

@@ -32,7 +32,6 @@ export type ResultViewProps = Pick<
   | "results"
   | "questions"
   | "conceptOptions"
-  | "conceptColours"
   | "weakConcepts"
   | "handleRestart"
   | "routeBase"

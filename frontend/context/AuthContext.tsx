@@ -19,7 +19,7 @@ const isAuthError = (err: unknown) => {
   return status === 401 || status === 403;
 };
 
-interface RecentQuizEntry {
+export interface RecentQuizEntry {
   quizKey: string;
   title: string;
   subject: string;

@@ -52,9 +52,6 @@ export default function TopicPracticeModes({
               </div>
             </div>
             <div className="sg-card-tab" aria-hidden="true">
-              <svg className="sg-tab-bg-svg" viewBox="0 0 88 46" preserveAspectRatio="none">
-                <path d="M28 0 C28 10, 0 13, 0 23 C0 33, 28 36, 28 46 L88 46 L88 0 Z" fill="var(--meow-surface-subtle)" />
-              </svg>
               <div className="sg-tab-action-wrap">
                 {isPending ? (
                   <span className="sg-card-qs-skeleton" role="status" aria-label="Loading question count" />

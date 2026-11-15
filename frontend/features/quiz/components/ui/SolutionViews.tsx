@@ -1,7 +1,6 @@
 import { useModalSurface } from "@/components/ui/Dialog";
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { X } from 'lucide-react';
 import RichContent from '@/components/RichContent';
 import MathRenderer from '@/components/MathRenderer';
 import { formatMathBookSolutionLines } from '@/features/quiz/model/utils';
@@ -498,108 +497,4 @@ export function SolutionBottomSheet({
   );
 }
 
-export function SolutionSidePanel({
-  isOpen,
-  solution,
-  questionNumber,
-  correctOptionIndex,
-  onClose,
-}: {
-  isOpen: boolean;
-  solution: string;
-  questionNumber: number;
-  correctOptionIndex: number;
-  onClose: () => void;
-}) {
-  const solutionLines = useMemo(
-    () => formatMathBookSolutionLines(solution),
-    [solution]
-  );
-  const solutionHasImage = /!\[[^\]]*\]\([^)]+\)/.test(solution);
-  const optionLabel =
-    correctOptionIndex >= 0 && correctOptionIndex < 26
-      ? String.fromCharCode(97 + correctOptionIndex)
-      : "a";
-
-  if (!isOpen) return null;
-
-  return (
-    <div
-      className="w-full min-h-[420px] rounded-[28px] border p-4"
-      aria-label="Question solution"
-      style={{
-        background: "var(--quiz-card-bg)",
-        borderColor: "var(--quiz-card-border)",
-        boxShadow: "var(--quiz-card-shadow)",
-        color: "var(--quiz-text)",
-        backdropFilter: "var(--quiz-card-blur)",
-        WebkitBackdropFilter: "var(--quiz-card-blur)",
-      }}
-    >
-      <div
-        className="flex items-center justify-between border-b px-2 pb-3.5"
-        style={{ borderColor: "var(--quiz-border)" }}
-      >
-        <div>
-          <p className="text-[15px] font-semibold text-[color:var(--quiz-text)]">
-            Worked Solution
-          </p>
-          <p className="text-[12px] font-medium text-[color:var(--quiz-text-muted)]">
-            Sol.{questionNumber}.({optionLabel})
-          </p>
-        </div>
-        <button data-ui-button="icon"
-          onClick={onClose}
-          className="quiz-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors"
-          aria-label="Close solution"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div
-        className="mt-4 max-h-[72vh] overflow-y-auto rounded-2xl border px-6 py-4 text-[color:var(--quiz-text)]"
-        style={{
-          background: "var(--quiz-surface-muted)",
-          borderColor: "var(--quiz-border)",
-          fontFamily: "'Cambria Math', 'STIX Two Text', 'Times New Roman', serif",
-          fontSize: 18,
-          lineHeight: 1.8,
-          textAlign: "left",
-          letterSpacing: "-0.01em",
-          paddingLeft: "24px",
-          paddingRight: "24px",
-        }}
-      >
-        {solutionLines.length > 0 ? (
-          <div className="space-y-1.5">
-            {solutionHasImage ? (
-              <RichContent text={solution} />
-            ) : (
-              solutionLines.map((line: string, index: number) => {
-                const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
-                return (
-                  <div
-                    key={`worked-line-panel-${index}`}
-                    className={isDisplayEquation ? "text-center" : ""}
-                    style={{
-                      marginTop: isDisplayEquation ? "0.15rem" : "0",
-                      marginBottom: isDisplayEquation ? "0.15rem" : "0",
-                    }}
-                  >
-                    <MathRenderer text={line} className="leading-relaxed" />
-                  </div>
-                );
-              })
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-500">
-            Solution is not available for this question yet.
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
 

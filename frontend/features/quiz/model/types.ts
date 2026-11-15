@@ -3,15 +3,6 @@
  * Each subject provides a SubjectConfig to parametrize the engine.
  */
 
-export interface ClassificationCategory {
-  readonly id: string;
-  readonly label: string;
-  readonly icon: string;
-  readonly accent: string;
-  readonly bg: string;
-  readonly border: string;
-}
-
 export interface SubjectConfig {
   /** API subject identifier, e.g. "reasoning", "mathematics" */
   subjectId: string;
@@ -19,15 +10,9 @@ export interface SubjectConfig {
   subjectLabel: string;
   /** CSS class prefix for theme scoping, e.g. "reasoning-quiz" */
   cssClassName: string;
-  /** Topic slug → concept labels mapping */
-  topicConcepts: Record<string, string[]>;
   /** Label for the "formula" quiz mode. Defaults to "Pattern Practice" */
   formulaModeLabel?: string;
   modeLabels?: Partial<Record<QuizMode, string>>;
-  /** Classification categories for concept filter UI */
-  classificationCategories: readonly ClassificationCategory[];
-  /** Classify a concept string into one of the category IDs */
-  getClassificationCategoryId: (concept: string) => string;
 }
 
 export type QuizMode =
@@ -45,8 +30,6 @@ export type QuizQuestionRecord = QuizQuestion & {
   source?: string;
   quizId?: string;
 };
-
-export type ConceptColour = { border: string; bg: string; text: string };
 
 import type { GeometryDiagram } from '@/components/geometry/diagramSchema';
 
@@ -104,6 +87,10 @@ export interface SessionResult {
 
 export type QuizTheme = "light" | "dark";
 
-export type ClassificationGroup = ClassificationCategory & {
+export interface ClassificationGroup {
+  readonly id: string;
+  readonly label: string;
+  readonly accent: string;
+  readonly bg: string;
   concepts: string[];
-};
+}

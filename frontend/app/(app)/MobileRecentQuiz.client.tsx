@@ -10,24 +10,23 @@ import HomeCardArtwork from './HomeCardArtwork';
 import styles from './page.module.css';
 import cardStyles from './recent-quiz.module.css';
 
-export default function MobileRecentQuiz({ desktop = false }: { desktop?: boolean }) {
+export default function MobileRecentQuiz() {
   const { user, loading } = useAuth();
   const carouselRef = useRef<HTMLDivElement>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const { isJam } = useExamMode();
-  const recent = user?.recentQuizzes?.filter(quiz => isJamContent(quiz.href || '') === isJam).slice(0, desktop ? 4 : 5) ?? [];
-  const headingId = desktop ? 'recent-quizzes-title' : 'mobile-recent-title';
+  const recent = user?.recentQuizzes?.filter(quiz => isJamContent(quiz.href || '') === isJam).slice(0, 5) ?? [];
 
   return (
-    <section className={`${desktop ? styles.recentQuizzesColumn : styles.recentSection} ${cardStyles.section}`} aria-labelledby={headingId}>
-      <div className={desktop ? styles.recentQuizzesHeader : styles.sectionHeader}>
-        <h2 id={headingId} className={desktop ? styles.recentQuizzesTitle : undefined}>Recent Quizzes</h2>
+    <section className={`${styles.recentSection} ${cardStyles.section}`} aria-labelledby="mobile-recent-title">
+      <div className={styles.sectionHeader}>
+        <h2 id="mobile-recent-title">Recent Quizzes</h2>
         <Link href="/dashboard" className={styles.viewAllLink}>View All</Link>
       </div>
       <div
         ref={carouselRef}
-        className={`${cardStyles.list} ${desktop ? cardStyles.desktopList : cardStyles.carousel}`}
-        onScroll={!desktop ? (event) => {
+        className={`${cardStyles.list} ${cardStyles.carousel}`}
+        onScroll={(event) => {
           const carousel = event.currentTarget;
           const cards = Array.from(carousel.children) as HTMLElement[];
           const left = carousel.getBoundingClientRect().left;
@@ -38,10 +37,10 @@ export default function MobileRecentQuiz({ desktop = false }: { desktop?: boolea
             if (delta < distance) { distance = delta; nearest = index; }
           });
           setActiveSlide(nearest);
-        } : undefined}
+        }}
         role="region"
-        aria-roledescription={!desktop ? 'carousel' : undefined}
-        aria-label={desktop ? 'Recent quiz list' : 'Recent quizzes'}
+        aria-roledescription="carousel"
+        aria-label="Recent quizzes"
         tabIndex={recent.length > 1 ? 0 : undefined}
       >
         {recent.map((quiz, index) => {
@@ -60,7 +59,7 @@ export default function MobileRecentQuiz({ desktop = false }: { desktop?: boolea
           const Icon = quiz.subject === JAM_SUBJECT ? Atom : quiz.subject === 'mathematics' ? Sigma : quiz.subject === 'reasoning' ? Brain : quiz.subject === 'english' ? BookOpen : Globe;
 
           return (
-            <article key={quiz.quizKey} className={cardStyles.card} aria-roledescription={!desktop ? 'slide' : undefined} aria-label={!desktop ? `${index + 1} of ${recent.length}: ${quiz.title || 'Quiz'}` : undefined}>
+            <article key={quiz.quizKey} className={cardStyles.card} aria-roledescription="slide" aria-label={`${index + 1} of ${recent.length}: ${quiz.title || 'Quiz'}`}>
               <HomeCardArtwork kind="recent" />
               <div className={cardStyles.header}>
                 <span className={cardStyles.icon}><Icon size={32} strokeWidth={2.2} aria-hidden="true" /></span>
@@ -91,7 +90,7 @@ export default function MobileRecentQuiz({ desktop = false }: { desktop?: boolea
           </div>
         ) : null}
       </div>
-      {!desktop && recent.length > 1 ? (
+      {recent.length > 1 ? (
         <div className={cardStyles.dots} role="group" aria-label="Choose recent quiz">
           {recent.map((quiz, index) => (
             <button

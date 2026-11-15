@@ -868,6 +868,12 @@
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
+@media (min-width: 768px) {
+  .mobileOnlySetting {
+    display: none !important;
+  }
+}
+
 :global(.dark) .settingItem,
 :global(body.theme-dark) .settingItem {
   background: rgba(255, 255, 255, 0.03);

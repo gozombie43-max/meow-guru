@@ -8,9 +8,9 @@
   color: var(--mac-text-primary);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 16px 18px;
+  justify-content: stretch;
+  align-items: stretch;
+  padding: 0;
   box-sizing: border-box;
   position: relative;
   scrollbar-width: none;
@@ -28,7 +28,7 @@
   box-shadow: none;
 }
 
-:global(html:not(.theme-dark)) .pageWrapper:not(.dark) :is(.subjectCard, .mobileSubjectCard, .resourceCard, .battleCard) {
+:global(html:not(.theme-dark)) .pageWrapper:not(.dark) :is(.mobileSubjectCard, .resourceCard, .battleCard) {
   border-radius: 22px;
 }
 
@@ -53,7 +53,8 @@
 .desktopOnly {
   display: block;
   width: 100%;
-  max-width: 1400px;
+  max-width: none;
+  height: 100dvh;
   position: relative;
   z-index: 1;
 }
@@ -100,60 +101,6 @@
     width: 100%;
     overflow: hidden;
   }
-}
-
-/* =========================================================================
-   DESKTOP PC STYLES (macOS App Window)
-   ========================================================================= */
-.macWindow {
-  width: 100%;
-  max-width: 1400px;
-  max-height: calc(100dvh - 32px);
-  height: calc(100dvh - 32px);
-  background: var(--mac-window-bg);
-  border-radius: 24px;
-  border: 1px solid var(--mac-border);
-  box-shadow: var(--mac-shadow-window);
-  display: grid;
-  grid-template-columns: 228px minmax(0, 1fr);
-  overflow: hidden;
-  position: relative;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  transition: box-shadow 0.3s ease;
-}
-
-/* Desktop Left Sidebar */
-.desktopSidebar {
-  background: var(--mac-sidebar-bg);
-  border-right: 1px solid var(--mac-border);
-  padding: 16px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  z-index: 20;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.desktopSidebar::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-.sidebarHeader {
-  display: flex;
-  align-items: center;
-  padding-left: 2px;
-  min-height: 16px;
-}
-
-.sidebarBrand {
-  display: flex;
-  align-items: center;
-  margin-top: -2px;
 }
 
 .logo {
@@ -229,642 +176,6 @@
   font-weight: 600;
 }
 
-.railIcon {
-  flex-shrink: 0;
-}
-
-/* Desktop Main Workspace */
-.desktopWorkspace {
-  min-width: 0;
-  padding: 16px 22px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow: hidden;
-  background: var(--mac-canvas-bg);
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.desktopWorkspace::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-/* Desktop Topbar */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 40px;
-}
-
-.searchContainer {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--mac-card-bg);
-  border: 1px solid var(--mac-border);
-  border-radius: 999px;
-  padding: 0 14px;
-  height: 40px;
-  width: 100%;
-  max-width: 340px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  position: relative;
-}
-
-.searchContainer:focus-within {
-  border-color: var(--mac-primary);
-  box-shadow: 0 0 0 3px var(--mac-primary-soft);
-}
-
-.searchIcon {
-  color: var(--mac-text-muted);
-  flex-shrink: 0;
-}
-
-.searchInput {
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 13px;
-  color: var(--mac-text-primary);
-  width: 100%;
-  font-family: inherit;
-}
-
-.searchInput::placeholder {
-  color: var(--mac-text-muted);
-}
-
-.searchShortcut {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 6px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--mac-text-muted);
-  background: var(--mac-card-subtle);
-  border: 1px solid var(--mac-border);
-  border-radius: 6px;
-  cursor: pointer;
-  user-select: none;
-  font-family: inherit;
-  white-space: nowrap;
-  flex-shrink: 0;
-  line-height: 1.2;
-}
-
-.dark .searchShortcut {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.searchDropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  width: 360px;
-  background: var(--mac-card-bg);
-  border: 1px solid var(--mac-border);
-  border-radius: 18px;
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.15);
-  z-index: 50;
-  overflow: hidden;
-  animation: meow-fade-in var(--meow-duration-fast) var(--meow-ease-enter);
-}
-
-.searchDropdownHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--mac-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--mac-border);
-}
-
-.searchCloseBtn {
-  background: transparent;
-  border: none;
-  color: var(--mac-text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px;
-}
-
-.searchDropdownList {
-  display: flex;
-  flex-direction: column;
-  max-height: 260px;
-  overflow-y: auto;
-  padding: 6px;
-  gap: 4px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.searchDropdownList::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-.searchDropdownItem {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  text-decoration: none;
-  color: var(--mac-text-primary);
-  transition: background 0.15s ease;
-}
-
-.searchDropdownItem:hover {
-  background: var(--mac-primary-soft);
-  color: var(--mac-primary);
-}
-
-.searchDropdownItem strong {
-  display: block;
-  font-size: 13px;
-}
-
-.searchDropdownItem small {
-  display: block;
-  font-size: 11px;
-  color: var(--mac-text-secondary);
-}
-
-
-.topActions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: auto;
-}
-
-.profileAvatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  transition: transform 0.15s ease;
-  flex-shrink: 0;
-}
-
-.profileAvatar:hover {
-  transform: scale(1.06);
-}
-
-.avatarImage {
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-}
-
-.avatarInitial {
-  line-height: 1;
-}
-
-.actionButton {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--mac-card-bg);
-  border: 1px solid var(--mac-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--mac-text-secondary);
-  cursor: pointer;
-  position: relative;
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-  flex-shrink: 0;
-}
-
-.actionButton:hover {
-  background: var(--mac-card-subtle);
-  color: var(--mac-text-primary);
-  border-color: var(--mac-border);
-}
-
-.dark .actionButton:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.notificationDot {
-  position: absolute;
-  top: 7px;
-  right: 8px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ef4444;
-}
-
-/* Desktop Main Grid */
-.mainGrid {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.85fr);
-  gap: 24px;
-}
-
-.contentColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-width: 0;
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-
-.contentColumn::-webkit-scrollbar {
-  display: none;
-}
-
-.desktopQuickLinks {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: auto;
-}
-
-@media (max-width: 1200px) {
-  .desktopQuickLinks { grid-template-columns: minmax(0, 1fr); }
-}
-
-/* Desktop Hero Card */
-.heroCard {
-  background: linear-gradient(120deg, var(--light-only-surface, #fdfdfd) 0%, var(--light-only-canvas, #f7f8fa) 60%, #eceff3 100%);
-  border: 1px solid var(--mac-border);
-  border-radius: 26px;
-  box-shadow: var(--mac-shadow-card);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  margin-top: 8px;
-  height: 205px;
-  min-height: 205px;
-  max-height: 205px;
-}
-
-.dark .heroCard {
-  background: linear-gradient(135deg, #182030 0%, #131a26 100%);
-}
-
-.heroContent {
-  position: relative;
-  z-index: 3;
-  width: 58%;
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-.heroBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--mac-primary);
-  margin-bottom: 6px;
-}
-
-.heroBadgeIcon {
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background: var(--theme-action, var(--mac-primary));
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.heroTitle {
-  margin: 0;
-  font-size: clamp(21px, 2.2vw, 26px);
-  line-height: 1.04;
-  font-weight: 800;
-  letter-spacing: -0.6px;
-  color: var(--mac-text-primary);
-}
-
-.heroUnderline {
-  width: 32px;
-  height: 2.5px;
-  background: var(--theme-action, var(--mac-primary));
-  border-radius: 2px;
-  margin-top: 5px;
-  margin-bottom: 5px;
-}
-
-.typewriterWrapper {
-  height: 32px;
-  min-height: 32px;
-  max-height: 32px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-}
-
-.heroSubtitle {
-  margin: 1px 0 8px;
-  font-size: 11.5px;
-  line-height: 1.35;
-  color: var(--mac-text-secondary);
-}
-
-.heroHighlights {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: auto;
-  padding-top: 4px;
-}
-
-.highlightItem {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--mac-text-primary);
-}
-
-.highlightIcon {
-  color: var(--mac-primary);
-  flex-shrink: 0;
-}
-
-.highlightDivider {
-  width: 1px;
-  height: 12px;
-  background: var(--mac-border);
-}
-
-.heroVisualWrapper {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 44%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  pointer-events: none;
-  overflow: hidden;
-  transform: translateZ(0);
-  contain: paint layout;
-}
-
-.heroArchFrame {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-top-left-radius: 200px;
-  border-bottom-left-radius: 200px;
-  border-left: 2px solid var(--mac-primary);
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.4);
-  transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  contain: paint;
-  isolation: isolate;
-}
-
-.dark .heroArchFrame {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.heroStudentImage {
-  object-fit: cover;
-  object-position: center 18%;
-  transform: translateY(5px) scale(1.08) translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  image-rendering: -webkit-optimize-contrast;
-}
-
-/* Desktop Explore Subjects */
-.exploreSection {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sectionHeaderRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.sectionTitle {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  color: var(--mac-text-primary);
-}
-
-.subjectGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.subjectCard {
-  background: var(--mac-card-bg);
-  border: 1px solid var(--mac-border);
-  border-radius: 26px;
-  padding: 13px 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 2px 8px rgba(15, 23, 42, 0.02);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  color: var(--mac-text-primary);
-  position: relative;
-  overflow: hidden;
-  transition: background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
-  will-change: box-shadow, border-color;
-  backface-visibility: hidden;
-}
-
-.subjectCard > :not([class*="artwork"]) {
-  position: relative;
-  z-index: 2;
-}
-
-.subjectCard:hover {
-  box-shadow: var(--mac-shadow-hover);
-  border-color: rgba(0, 113, 227, 0.35);
-  background: var(--mac-card-bg);
-  transform: translateY(-2px);
-}
-
-.dark .subjectCard:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.subjectCardInfo {
-  flex: 1;
-  min-width: 0;
-}
-
-.subjectCardTitle {
-  margin: 0;
-  font-size: 14.5px;
-  font-weight: 700;
-  letter-spacing: -0.2px;
-  color: var(--mac-text-primary);
-}
-
-.subjectCardSubtitle {
-  margin: 1px 0 0;
-  font-size: 11.5px;
-  color: var(--mac-text-secondary);
-  line-height: 1.35;
-}
-
-.subjectCardChevron {
-  color: var(--mac-text-muted);
-  flex-shrink: 0;
-  transition: transform 0.15s ease, color 0.15s ease;
-}
-
-.subjectCard:hover .subjectCardChevron {
-  transform: translateX(2px);
-  color: var(--mac-primary);
-}
-
-/* Desktop Recent Quizzes */
-.recentQuizzesColumn {
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.recentQuizzesHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 24px;
-}
-
-.recentQuizzesTitle {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  color: var(--mac-text-primary);
-}
-
-.viewAllLink {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--mac-primary);
-  text-decoration: none;
-  transition: opacity 0.15s ease;
-}
-
-.viewAllLink:hover {
-  opacity: 0.8;
-  text-decoration: underline;
-}
-
-.recentQuizList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 390px;
-  overflow-y: auto;
-  padding-right: 5px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.recentQuizList::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-.recentQuizCard {
-  background: var(--mac-card-bg);
-  border: 1px solid var(--mac-border);
-  border-radius: 26px;
-  padding: 13px 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 2px 8px rgba(15, 23, 42, 0.02);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  text-decoration: none;
-  color: var(--mac-text-primary);
-  transition: background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
-  will-change: box-shadow, border-color;
-  backface-visibility: hidden;
-}
-
-.recentQuizCard:hover {
-  box-shadow: var(--mac-shadow-hover);
-  border-color: rgba(0, 113, 227, 0.35);
-  background: var(--mac-card-bg);
-  transform: translateY(-2px);
-}
-
-.dark .recentQuizCard:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.quizCardMain {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.quizCardMeta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.quizTag {
-  display: inline-flex;
-  align-items: center;
-  padding: 2.5px 8px;
-  border-radius: 999px;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-}
-
 .english {
   background: rgba(245, 158, 11, 0.1);
   color: #b45309;
@@ -912,81 +223,6 @@
   color: var(--ios-system-blue);
   border: 1px solid rgb(var(--ios-system-blue-rgb) / 0.28);
 }
-
-.quizProgressRatio {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--mac-text-muted);
-}
-
-.quizCardTitle {
-  margin: 1px 0 0;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: -0.2px;
-  color: var(--mac-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.quizCardSubtitle {
-  margin: 0;
-  font-size: 11.5px;
-  color: var(--mac-text-secondary);
-}
-
-.quizProgressBar {
-  width: 100%;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--mac-border);
-  overflow: hidden;
-  margin-top: 2px;
-}
-
-.dark .quizProgressBar {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.quizProgressFill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--light-accent) 0%, #0077ed 100%);
-  transition: width 0.3s ease;
-}
-
-.quizCardArt {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.viewAllQuizzesButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 9px 16px;
-  border-radius: 999px;
-  background: var(--mac-card-bg);
-  border: 1px solid var(--mac-border);
-  color: var(--mac-text-secondary);
-  font-size: 12.5px;
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
-  margin-top: 2px;
-}
-
-.viewAllQuizzesButton:hover {
-  background: var(--mac-primary-soft);
-  color: var(--mac-primary);
-  border-color: var(--mac-primary);
-}
-
 
 /* =========================================================================
    MOBILE PREVIOUS DESIGN STYLES (< 1024px)
@@ -1052,100 +288,6 @@
   flex-shrink: 0;
 }
 
-.loginPillButton,
-.loginButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 34px;
-  padding: 0 16px;
-  min-width: 76px;
-  border-radius: 9999px;
-  background: transparent;
-  color: var(--light-accent);
-  font-size: 12.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-decoration: none;
-  border: 1.6px solid var(--light-accent);
-  transition: background-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), color 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-  white-space: nowrap;
-  cursor: pointer;
-  flex-shrink: 0;
-  user-select: none;
-  box-sizing: border-box;
-}
-
-.loginPillButton:hover,
-.loginButton:hover {
-  background: rgba(0, 113, 227, 0.08);
-  border-color: #0077ed;
-  color: #0077ed;
-  transform: translateY(-1px);
-}
-
-.loginPillButton:active,
-.loginButton:active {
-  background: rgba(0, 113, 227, 0.14);
-  transform: translateY(0) scale(0.97);
-}
-
-.loginPillButton:focus-visible,
-.loginButton:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.3);
-}
-
-:global(.dark) .loginPillButton,
-:global(body.theme-dark) .loginPillButton,
-:global(.dark) .loginButton,
-:global(body.theme-dark) .loginButton {
-  background: transparent;
-  border-color: var(--dark-accent);
-  color: var(--dark-accent);
-}
-
-:global(.dark) .loginPillButton:hover,
-:global(body.theme-dark) .loginPillButton:hover,
-:global(.dark) .loginButton:hover,
-:global(body.theme-dark) .loginButton:hover {
-  background: rgb(var(--ios-system-blue-rgb) / 0.12);
-  border-color: #2b95ff;
-  color: #2b95ff;
-  box-shadow: 0 0 12px rgb(var(--ios-system-blue-rgb) / 0.2);
-}
-
-.profileButton {
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.15s ease;
-}
-
-.profileButton:hover {
-  transform: scale(1.06);
-}
-
-.profileImage {
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-}
-
-.profileInitial {
-  font-weight: 800;
-  font-size: 15px;
-}
-
-.iconButton,
 .menuButton {
   border: 0;
   background: transparent;
@@ -1153,12 +295,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--purple);
-  padding: 6px;
-}
-
-.menuButton {
   color: var(--text);
+  padding: 6px;
 }
 
 .sidebarBackdrop {
@@ -1329,17 +467,6 @@
   margin-top: 10px;
 }
 
-.heroDotsTopRight {
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  background-image: radial-gradient(circle, rgba(111, 34, 231, 0.25) 2px, transparent 2px);
-  background-size: 14px 14px;
-  z-index: 1;
-  top: 10px;
-  right: 10px;
-}
-
 .mobileHeroCopy {
   position: relative;
   z-index: 3;
@@ -1351,28 +478,6 @@
   justify-content: center;
 }
 
-.mobileHeroBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 12px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 1.2px;
-  color: var(--muted);
-}
-
-.mobileHeroBadgeIcon {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--purple);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-}
-
 .mobileHeroCopy h1 {
   margin: 0;
   font-size: clamp(24px, 5.8vw, 28px);
@@ -1382,45 +487,11 @@
 }
 .mobileHeroCopy h1 span { color: var(--purple); }
 
-.heroLine {
-  width: 36px;
-  height: 3px;
-  background: var(--purple);
-  border-radius: 2px;
-  margin-top: 8px;
-  margin-bottom: 10px;
-}
-
 .mobileHeroDesc {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
   margin: 12px 0 0;
-}
-
-.mobileHeroFeatures {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.heroFeature {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  color: var(--text);
-  font-weight: 600;
-}
-
-.featureIcon {
-  color: var(--purple);
-}
-
-.featureDivider {
-  width: 1px;
-  height: 14px;
-  background: var(--line);
 }
 
 .mobileHeroVisual {
@@ -1609,12 +680,6 @@
   margin-top: 4px;
 }
 
-.recentSection {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .sectionHeader {
   display: flex;
   align-items: center;
@@ -1637,136 +702,6 @@
   font-size: 13px;
 }
 
-.quizCard {
-  min-height: 190px;
-  position: relative;
-  overflow: hidden;
-  display: block;
-  border-radius: 26px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  color: var(--text);
-  text-decoration: none;
-  padding: 18px;
-  box-shadow: var(--shadow);
-}
-
-.quizInfo {
-  position: relative;
-  z-index: 2;
-  width: 60%;
-}
-
-.quizTag {
-  display: inline-flex;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgb(var(--ios-system-blue-rgb) / 0.1);
-  color: var(--purple);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-}
-
-.quizCard h3 {
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-  margin: 8px 0 4px;
-}
-
-.quizCard p {
-  color: var(--muted);
-  font-size: 12px;
-  margin: 0 0 10px;
-}
-
-.progressTrack {
-  display: block;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--light-only-surface-muted, rgba(0, 0, 0, 0.06));
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.dark .progressTrack {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.progressFill {
-  display: block;
-  height: 100%;
-  width: 32%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
-}
-
-.continueButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 32px;
-  padding: 0 16px;
-  border-radius: 999px;
-  background: var(--purple);
-  color: #fff;
-  font-size: 12.5px;
-  font-weight: 600;
-}
-
-.quizCount {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--muted);
-}
-
-/* Study stack art pencils */
-.stackArt {
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  width: 90px;
-  height: 90px;
-  pointer-events: none;
-  transform: scale(0.6);
-  transform-origin: bottom right;
-}
-
-.pencilOne,
-.pencilTwo,
-.pencilThree {
-  position: absolute;
-  bottom: 10px;
-  width: 8px;
-  border-radius: 99px 99px 0 0;
-}
-
-.pencilOne {
-  right: 12px;
-  height: 60px;
-  background: linear-gradient(#f553b3 0 20%, var(--light-only-surface, #fff) 20% 30%, #8651ff 30%);
-}
-
-.pencilTwo {
-  right: 24px;
-  height: 70px;
-  background: linear-gradient(var(--light-only-surface, #fff) 0 16%, #ff6b16 16% 28%, #f74d83 28%);
-  transform: rotate(7deg);
-}
-
-.pencilThree {
-  right: 36px;
-  height: 50px;
-  background: linear-gradient(var(--light-only-surface, #fff) 0 16%, #15a7ff 16% 28%, #ff7a11 28%);
-  transform: rotate(-9deg);
-}
-
-
 @media (max-width: 480px) {
   .mobileHero {
     min-height: 174px;
@@ -1776,9 +711,6 @@
     padding: 20px 10px 20px 2px;
   }
   .mobileHeroCopy h1 { font-size: clamp(21px, 5.5vw, 25px); line-height: 1.18; letter-spacing: -0.6px; }
-  .mobileHeroFeatures {
-    display: none;
-  }
 }
 
 @media (max-width: 360px) {
@@ -1795,14 +727,14 @@
 :global(html.theme-dark) .pageWrapper {
   background: var(--oled-canvas);
 }
-:global(html.theme-dark) .pageWrapper :is(.heroCard, .mobileHero, .subjectCard, .mobileSubjectCard, .resourceCard, .battleCard, .quizCard, .recentQuizCard, .searchContainer, .searchDropdown) {
+:global(html.theme-dark) .pageWrapper :is(.mobileHero, .mobileSubjectCard, .resourceCard, .battleCard) {
   background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 26px;
 }
-:global(html.theme-dark) .pageWrapper :is(.subjectCard, .mobileSubjectCard, .resourceCard, .battleCard, .quizCard, .recentQuizCard):hover {
+:global(html.theme-dark) .pageWrapper :is(.mobileSubjectCard, .resourceCard, .battleCard):hover {
   background: var(--oled-hover); box-shadow: none; transform: none;
 }
-:global(html.theme-dark) .pageWrapper :is(.heroCard, .mobileHero, .resourceCard, .battleCard)::before,
-:global(html.theme-dark) .pageWrapper :is(.heroCard, .mobileHero, .resourceCard, .battleCard)::after { display: none; }
+:global(html.theme-dark) .pageWrapper :is(.mobileHero, .resourceCard, .battleCard)::before,
+:global(html.theme-dark) .pageWrapper :is(.mobileHero, .resourceCard, .battleCard)::after { display: none; }
 :global(html.theme-dark) .pageWrapper .subjectIcon { border: 0; box-shadow: none; }
 :global(html.theme-dark) .pageWrapper .subjectIcon.math { background: #1d2b3c; color: var(--ios-system-blue); }
 :global(html.theme-dark) .pageWrapper .subjectIcon.reasoning { background: #292439; color: #ab91cf; }
@@ -1811,32 +743,12 @@
 :global(html.theme-dark) .pageWrapper :is(.railActive, .sidebarThemeToggle) { border: 0; box-shadow: none; }
 :global(html.theme-dark) .pageWrapper .railActive { background: var(--oled-selected-soft); }
 
-:global(html.theme-dark) .pageWrapper :is(.mobileSubjectCard > span:last-child, .subjectCardTitle, .resourceCard strong, .battleCard strong) {
+:global(html.theme-dark) .pageWrapper :is(.mobileSubjectCard > span:last-child, .resourceCard strong, .battleCard strong) {
   color: #ffffff !important;
   opacity: 1 !important;
 }
 
-
-:global(html.theme-dark) .pageWrapper :is(.mobileHeroDesc, .heroSubtitle, .resourceCard small, .battleCard small) { color: var(--oled-secondary); }
-
-/* Signed-out profile action matches the compact header controls. */
-.loginIconButton[data-ui-button] {
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:44px!important;
-  min-width:44px!important;
-  height:44px!important;
-  padding:0!important;
-  flex-shrink:0;
-  border-radius:50%!important;
-  border:1px solid rgb(var(--ios-system-blue-rgb)/.22)!important;
-  background:rgb(var(--ios-system-blue-rgb)/.1)!important;
-  color:var(--ios-system-blue)!important;
-  text-decoration:none;
-}
-.loginIconButton[data-ui-button]:hover { background:rgb(var(--ios-system-blue-rgb)/.18)!important; }
-.loginIconButton:focus-visible { outline:2px solid var(--ios-system-blue); outline-offset:3px; }
+:global(html.theme-dark) .pageWrapper :is(.mobileHeroDesc, .resourceCard small, .battleCard small) { color: var(--oled-secondary); }
 
 /* Drawer controls share one scale, alignment, and focus treatment. */
 .pageWrapper .mobileOnly:has(> .sidebarOpen) { z-index: 300; }
@@ -2000,7 +912,6 @@
 @media (prefers-reduced-motion: reduce) { .adminContactCard .contactLinks a { transition: none; } }
 
 /* Isolate decorative artwork beneath card content and clip it to the rounded edge. */
-.subjectCard,
 .mobileSubjectCard,
 .resourceCard,
 .battleCard {

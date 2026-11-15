@@ -10,8 +10,16 @@ const listeners = new Set<() => void>();
 let currentTheme: ThemeMode = DEFAULT_THEME;
 let initialized = false;
 
+const isDesktopViewport = (): boolean => {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return false;
+  }
+  return Boolean(window.matchMedia('(min-width: 768px)')?.matches);
+};
+
 const getPreferredTheme = (): ThemeMode => {
   if (typeof window === 'undefined') return DEFAULT_THEME;
+  if (isDesktopViewport()) return 'light';
 
   const bootstrappedTheme = document.documentElement.dataset.theme;
   if (bootstrappedTheme === 'dark' || bootstrappedTheme === 'light') {
@@ -29,24 +37,28 @@ const getPreferredTheme = (): ThemeMode => {
 
 const applyThemeToDom = (theme: ThemeMode) => {
   if (typeof window === 'undefined') return;
+  const effectiveTheme: ThemeMode = isDesktopViewport() ? 'light' : theme;
   const body = document.body;
   const root = document.documentElement;
-  body.classList.toggle('theme-dark', theme === 'dark');
-  body.classList.toggle('theme-light', theme === 'light');
-  root.classList.toggle('theme-dark', theme === 'dark');
-  root.classList.toggle('theme-light', theme === 'light');
-  body.dataset.theme = theme;
-  root.dataset.theme = theme;
-  root.style.colorScheme = theme;
-  body.style.colorScheme = theme;
-  try {
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-  } catch {}
+  body.classList.toggle('theme-dark', effectiveTheme === 'dark');
+  body.classList.toggle('theme-light', effectiveTheme === 'light');
+  root.classList.toggle('theme-dark', effectiveTheme === 'dark');
+  root.classList.toggle('theme-light', effectiveTheme === 'light');
+  body.dataset.theme = effectiveTheme;
+  root.dataset.theme = effectiveTheme;
+  root.style.colorScheme = effectiveTheme;
+  body.style.colorScheme = effectiveTheme;
+  if (!isDesktopViewport()) {
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } catch {}
+  }
 };
 
 const setThemeInternal = (nextTheme: ThemeMode) => {
-  currentTheme = nextTheme;
-  applyThemeToDom(nextTheme);
+  const resolved: ThemeMode = isDesktopViewport() ? 'light' : nextTheme;
+  currentTheme = resolved;
+  applyThemeToDom(resolved);
   listeners.forEach((listener) => listener());
 };
 
@@ -55,6 +67,15 @@ const initTheme = () => {
   initialized = true;
   currentTheme = getPreferredTheme();
   applyThemeToDom(currentTheme);
+
+  if (typeof window.matchMedia === 'function') {
+    const mql = window.matchMedia('(min-width: 768px)');
+    mql?.addEventListener?.('change', (e) => {
+      if (e.matches && currentTheme !== 'light') {
+        setThemeInternal('light');
+      }
+    });
+  }
 };
 
 const subscribe = (listener: () => void) => {

@@ -11,7 +11,7 @@ import { getGeneralAwarenessChapterSolved, slugifyGeneralAwarenessTitle } from "
 import { useRecentChapter } from "@/lib/recent-study";
 import { chapterImage } from "@/lib/topic-images";
 import { useBackLayer } from "@/hooks/useAppNavigation";
-import { ArrowLeft, Check, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Search, SlidersHorizontal, X } from "lucide-react";
 import hubStyles from "@/components/SubjectHub.module.css";
 import type {
 RankedTopicGroup,
@@ -156,70 +156,94 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
           ========================================================================= */}
       {isDesktop && (
         <div className={styles.desktopContainer}>
-          <header data-ui-chrome="header" className={styles.header}>
-            <Link replace data-ui-button="secondary"
-              href={backHref}
-              className={styles.backButton}
-              aria-label={`Back to ${backLabel}`}
-            >
-              <ChevronLeft size={23} strokeWidth={2.2} />
-            </Link>
-            <h1 className={styles.headerTitle}>{group.label}</h1>
-            {group.filters.length > 0 ? filterButton : null}
-          </header>
+          <header className={styles.header}>
+            <div className={styles.headerLeft}>
+              <Link
+                replace
+                href={backHref}
+                className={styles.backButton}
+                aria-label={`Back to ${backLabel}`}
+                title={`Back to ${backLabel}`}
+              >
+                <ArrowLeft size={16} strokeWidth={1.75} />
+              </Link>
+              <span className={styles.headerDivider} aria-hidden="true" />
+              <div className={styles.headerTitleGroup}>
+                <span className={styles.headerEyebrow}>{backLabel}</span>
+                <span className={styles.headerSep} aria-hidden="true">/</span>
+                <h1 className={styles.headerTitle}>{group.label}</h1>
+                <span className={styles.headerMeta}>
+                  {topics.length} chapters
+                </span>
+              </div>
+            </div>
 
-          <main className={styles.content}>
-            <section className={styles.intro} aria-labelledby="ranked-topics-heading">
-              <p className={styles.eyebrow}>{group.eyebrow}</p>
-              <h2 id="ranked-topics-heading" className={styles.heading}>
-                {group.topics.length} chapters{group.filters.length ? ", ranked" : ""}
-              </h2>
-              <p className={styles.description}>
-                {group.description}
-              </p>
-            </section>
+            <div className={styles.headerRight}>
+              <div className={styles.searchWrap}>
+                <Search className={styles.searchIcon} size={15} strokeWidth={1.75} aria-hidden="true" />
+                <input
+                  className={styles.searchInput}
+                  type="search"
+                  data-custom-focus
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search chapters"
+                  aria-label={`Search ${group.label} chapters`}
+                />
+                {query ? (
+                  <button
+                    type="button"
+                    data-custom-focus
+                    data-ui-interaction="none"
+                    className={styles.clearButton}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setQuery("")}
+                    aria-label="Clear chapter search"
+                  >
+                    <X size={13} strokeWidth={1.75} />
+                  </button>
+                ) : null}
+              </div>
 
-            <div className={styles.searchWrap}>
-              <Search className={styles.searchIcon} size={17} aria-hidden="true" />
-              <input
-                className={styles.searchInput}
-                type="search"
-                data-custom-focus
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="none"
-                spellCheck={false}
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search chapters"
-                aria-label={`Search ${group.label} chapters`}
-              />
-              {query ? (
+              {group.filters.length > 0 ? (
                 <button
                   type="button"
-                  data-custom-focus
-                  data-ui-interaction="none"
-                  className={styles.clearButton}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setQuery("")}
-                  aria-label="Clear chapter search"
+                  className={`${styles.desktopFilterBtn} ${priority !== "All" ? styles.desktopFilterBtnActive : ""}`}
+                  aria-label={`Filter chapters, ${priority} selected`}
+                  aria-haspopup="dialog"
+                  aria-expanded={filterOpen}
+                  aria-controls="chapter-filter-dialog"
+                  onClick={(event) => {
+                    filterTriggerRef.current = event.currentTarget;
+                    setFilterOpen(true);
+                  }}
                 >
-                  <X size={15} />
+                  <SlidersHorizontal size={15} strokeWidth={1.75} aria-hidden="true" />
+                  <span>{priority === "All" ? "Filter" : priority}</span>
                 </button>
               ) : null}
             </div>
+          </header>
 
+          <main className={styles.content}>
             <section className={styles.table} aria-label={`Ranked ${group.label} chapters`}>
               <div className={styles.tableHeader} aria-hidden="true">
                 <span>Rank</span>
                 <span>Chapter</span>
                 <span>{group.filters.length ? group.metricLabel : ""}</span>
+                <span>Questions</span>
+                <span style={{ textAlign: "right" }}>Action</span>
               </div>
 
               {topics.length > 0 ? (
                 topics.map((topic) => {
                   const total = questionTotal(topic);
                   const solved = Math.min(questionSolved(topic), total);
+                  const isRecent = topic.slug === recentChapterSlug;
                   return (
                     <Link
                       key={topic.slug}
@@ -230,18 +254,15 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                       onTouchStart={() => prefetchQuestionCounts({ subject, topic: topic.title })}
                       aria-label={group.filters.length ? `Rank ${topic.rank}: ${topic.title}, ${topic.priority} ${group.metricLabel.toLowerCase()}. Open topic.` : `${topic.rank}. ${topic.title}. Open chapter.`}
                     >
-                      <span className={styles.rank}>{topic.rank}</span>
+                      <span className={styles.rank}>#{topic.rank}</span>
                       <span className={styles.chapterCell}>
-                        <span className={styles.chapterPhoto} aria-hidden="true"><TopicThumbnail src={chapterImage(topic.slug, group.slug)} size={48} /></span>
-                        <span className={styles.chapter}>
-                          {topic.title}
-                          <span className={styles.chapterQuestionCount}>
-                            <span className={styles.attemptedCount}>{solved}</span>
-                            <span className={styles.attemptedSlash}>/</span>
-                            <span className={styles.totalCount}>{total}</span>{" "}
-                            <span className={styles.attemptedLabel}>attempted</span>
-                          </span>
+                        <span className={styles.chapterPhoto} aria-hidden="true">
+                          <TopicThumbnail src={chapterImage(topic.slug, group.slug)} size={40} />
                         </span>
+                        <span className={styles.chapter}>{topic.title}</span>
+                        {isRecent && (
+                          <span className={styles.desktopRecentTag}>Recent</span>
+                        )}
                       </span>
                       <span className={styles.weightage} hidden={!group.filters.length}>
                         <span
@@ -249,6 +270,20 @@ export default function RankedTopicGroupPage({ group, subject = "general-awarene
                           aria-hidden="true"
                         />
                         {topic.priority}
+                      </span>
+                      <span className={styles.desktopProgressCell}>
+                        <span className={styles.chapterQuestionCount}>
+                          <span className={styles.attemptedCount}>{solved}</span>
+                          <span className={styles.attemptedSlash}>/</span>
+                          <span className={styles.totalCount}>{total}</span>{" "}
+                          <span className={styles.attemptedLabel}>attempted</span>
+                        </span>
+                      </span>
+                      <span className={styles.rowActionWrap}>
+                        <span className={isRecent ? styles.rowContinueBtn : styles.rowOpenBtn}>
+                          <span>{isRecent ? "Continue" : "Open"}</span>
+                          <ChevronRight size={14} strokeWidth={1.75} aria-hidden="true" />
+                        </span>
                       </span>
                     </Link>
                   );

@@ -3,26 +3,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import SubjectHub from "./SubjectHub";
 import { recordRecentTopic } from "@/lib/recent-study";
 import { Calculator } from "lucide-react";
-import {
-  CATEGORIES,
-  PRACTICE_MODES,
-  PRIORITY_CONFIG,
-  TOPICS,
-} from "@/app/(app)/mathematics/topic-data";
+import { CATEGORIES, TOPICS } from "@/app/(app)/mathematics/topic-data";
 
 const routerMock = vi.hoisted(() => ({
   push: vi.fn(),
   replace: vi.fn(),
   back: vi.fn(),
 }));
-const countsQuery = vi.hoisted(() => vi.fn());
 let desktop = false;
 let updateViewport: (() => void) | undefined;
 beforeEach(() => {
   desktop = false;
   localStorage.clear();
-  countsQuery.mockClear();
-  vi.stubGlobal('matchMedia', vi.fn(() => ({
+  vi.stubGlobal("matchMedia", vi.fn(() => ({
     get matches() { return desktop; },
     addEventListener: (_event: string, listener: () => void) => { updateViewport = listener; },
     removeEventListener: vi.fn(),
@@ -56,53 +49,29 @@ vi.mock("next/link", () => ({
   },
 }));
 
-vi.mock("@/hooks/useQuestionCounts", () => ({
-  useQuestionCounts: (params: unknown) => { countsQuery(params); return {
-    counts: {
-      concept: 10,
-      formula: 5,
-      mixed: 8,
-      "ai-challenge": 3,
-      easy: 4,
-      hard: 6,
-      "study-mode": 2,
-    },
-    isLoading: false,
-    isError: null,
-    mutate: vi.fn(),
-  }; },
-}));
-
 const mockConfig = {
   subjectId: "mathematics",
   label: "Mathematics",
   icon: Calculator,
   topics: TOPICS,
   categories: CATEGORIES,
-  priorityConfig: PRIORITY_CONFIG,
-  practiceModes: PRACTICE_MODES,
-  notesLabel: "Formula & Tricks Bank",
-  searchPlaceholder: "Search math topics, formulas, rules... (⌘K)",
   mobileSearchPlaceholder: "Search math topics…",
 };
 
 describe("SubjectHub", () => {
-  it('mounts only the active viewport and enables counts only for desktop', async () => {
+  it("mounts only the active viewport", async () => {
     const { container } = render(<SubjectHub config={mockConfig} />);
     expect(container.querySelector('[class*="desktopContainer"]')).toBeNull();
-    expect(countsQuery).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false }));
     act(() => { desktop = true; updateViewport?.(); });
     await waitFor(() => expect(container.querySelector('[class*="desktopContainer"]')).not.toBeNull());
     expect(container.querySelector('[data-hub-part="mobileTopbar"]')).toBeNull();
-    expect(countsQuery).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: true }));
     act(() => { desktop = false; updateViewport?.(); });
     expect(container.querySelector('[class*="desktopContainer"]')).toBeNull();
     expect(container.querySelector('[data-hub-part="mobileTopbar"]')).not.toBeNull();
-    expect(countsQuery).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false }));
   });
-  it("keeps all topics available with OLED filters, including the English Low group", () => {
+  it("keeps all topics available with mobile filters, including the English Low group", () => {
     const topics = TOPICS.map((topic, index) => ({ ...topic, priority: index === 0 ? "low" : "high" }));
-    const { container } = render(<SubjectHub config={{ ...mockConfig, topics, mobileAppearance: "oled", categories: [...CATEGORIES, { id: "low", label: "Low", icon: Calculator }] }} />);
+    const { container } = render(<SubjectHub config={{ ...mockConfig, topics, categories: [...CATEGORIES, { id: "low", label: "Low", icon: Calculator }] }} />);
     const filters = within(container.querySelector('[data-hub-part="mobileTabsScroll"]') as HTMLElement);
     expect(container.querySelectorAll('[data-hub-part="mobileTopicRow"]')).toHaveLength(topics.length);
     fireEvent.click(filters.getByRole("button", { name: "Low" }));
@@ -113,7 +82,7 @@ describe("SubjectHub", () => {
     expect(within(rows[0] as HTMLElement).getByText("0 Questions")).toBeInTheDocument();
   });
   it("preserves chapter-group navigation when mobile priority filters are enabled", () => {
-    const { container } = render(<SubjectHub config={{ ...mockConfig, mobileAppearance: "oled", getChapterGroup: () => null, chapterBasePrefix: "/general-awareness" }} />);
+    const { container } = render(<SubjectHub config={{ ...mockConfig, getChapterGroup: () => null, chapterBasePrefix: "/general-awareness" }} />);
     const row = container.querySelector('[data-hub-part="mobileTopicRow"]');
     expect(row).toHaveAttribute("href", "/general-awareness/percentages");
     const filters = within(container.querySelector('[data-hub-part="mobileTabsScroll"]') as HTMLElement);
@@ -154,7 +123,6 @@ describe("SubjectHub", () => {
       <SubjectHub
         config={{
           ...mockConfig,
-          mobileAppearance: "oled",
           mobileTopicDetails,
         }}
       />
@@ -179,8 +147,8 @@ describe("SubjectHub", () => {
     // Every topic has an image and a navigation affordance.
     const rows = container.querySelectorAll('[data-hub-part="mobileTopicRow"]');
     rows.forEach((row) => {
-      expect(row.querySelector('svg.lucide-chevron-right')).not.toBeNull();
-      expect(row.querySelector('img[data-topic-thumbnail]')).not.toBeNull();
+      expect(row.querySelector("svg.lucide-chevron-right")).not.toBeNull();
+      expect(row.querySelector("img[data-topic-thumbnail]")).not.toBeNull();
     });
   });
 
@@ -188,10 +156,7 @@ describe("SubjectHub", () => {
     recordRecentTopic("mathematics", "simple-interest");
     const { container } = render(
       <SubjectHub
-        config={{
-          ...mockConfig,
-          mobileAppearance: "oled",
-        }}
+        config={mockConfig}
       />
     );
 
@@ -204,4 +169,3 @@ describe("SubjectHub", () => {
     expect(within(firstRow).queryByText("Recently")).not.toBeInTheDocument();
   });
 });
-

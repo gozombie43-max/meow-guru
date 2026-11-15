@@ -2,16 +2,13 @@ import {
 AlignLeft,
 ArrowLeftRight,
 BookMarked,
-BookOpenCheck,
 CheckSquare,
 CircleDot,
 Clock,
 Edit3,
-FileQuestion,
 FileSpreadsheet,
 FileText,
 Filter,
-Flame,
 Layout,
 Link2,
 MessageCircle,
@@ -325,131 +322,9 @@ export const TOPICS: Topic[] = [
   },
 ];
 
-export const PRIORITY_CONFIG: Record<
-  Priority,
-  { label: string; badgeBg: string; badgeColor: string }
-> = {
-  "very-high": {
-    label: "Core",
-    badgeBg: "rgba(0, 113, 227, 0.1)",
-    badgeColor: "var(--mac-blue)",
-  },
-  high: {
-    label: "High",
-    badgeBg: "var(--mac-surface-hover)",
-    badgeColor: "var(--mac-text-primary)",
-  },
-  medium: {
-    label: "Medium",
-    badgeBg: "var(--mac-surface-hover)",
-    badgeColor: "var(--mac-text-secondary)",
-  },
-  low: {
-    label: "Low",
-    badgeBg: "var(--mac-surface-hover)",
-    badgeColor: "var(--mac-text-secondary)",
-  },
-  least: {
-    label: "Least",
-    badgeBg: "var(--mac-surface-hover)",
-    badgeColor: "var(--mac-text-tertiary)",
-  },
-};
-
 export const CATEGORIES = [
   { id: "very-high", label: "Core", icon: Zap },
   { id: "high", label: "High", icon: TrendingUp },
   { id: "medium", label: "Medium", icon: CircleDot },
   { id: "low", label: "Low", icon: Filter },
 ] as const;
-
-export type CategoryId = typeof CATEGORIES[number]["id"];
-
-export const PRACTICE_MODES = [
-  {
-    key: "concept",
-    title: "PYQ",
-    sub: "Previous year Qs",
-    mode: "concept",
-    icon: FileQuestion,
-    color: "#0d9488",
-    gradient: "linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%)",
-    gradientDark: "linear-gradient(135deg, rgba(13, 148, 136, 0.2) 0%, rgba(13, 148, 136, 0.08) 100%)",
-    border: "rgba(13, 148, 136, 0.22)",
-    borderDark: "rgba(13, 148, 136, 0.35)",
-    shadow: "0 2px 8px rgba(13, 148, 136, 0.08)",
-  },
-  {
-    key: "formula",
-    title: "CareerWill",
-    sub: "Words & grammar rules",
-    mode: "formula",
-    icon: BookOpenCheck,
-    color: "#2563eb",
-    gradient: "linear-gradient(135deg, #edf4fe 0%, #dbeafe 100%)",
-    gradientDark: "linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.08) 100%)",
-    border: "rgba(37, 99, 235, 0.22)",
-    borderDark: "rgba(37, 99, 235, 0.35)",
-    shadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
-  },
-  {
-    key: "mixed",
-    title: "PW",
-    sub: "Comprehensive mixture",
-    mode: "mixed",
-    icon: Shuffle,
-    color: "#4f46e5",
-    gradient: "linear-gradient(135deg, #f1f3fd 0%, #e0e7ff 100%)",
-    gradientDark: "linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.08) 100%)",
-    border: "rgba(79, 70, 229, 0.22)",
-    borderDark: "rgba(79, 70, 229, 0.35)",
-    shadow: "0 2px 8px rgba(79, 70, 229, 0.08)",
-  },
-  {
-    key: "ai-challenge",
-    title: "Selection Way",
-    sub: "Speed test",
-    mode: "ai-challenge",
-    icon: Zap,
-    color: "#7c3aed",
-    gradient: "linear-gradient(135deg, #f7f2fe 0%, #ede9fe 100%)",
-    gradientDark: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0.08) 100%)",
-    border: "rgba(124, 58, 237, 0.22)",
-    borderDark: "rgba(124, 58, 237, 0.35)",
-    shadow: "0 2px 8px rgba(124, 58, 237, 0.08)",
-  },
-  {
-    key: "easy",
-    title: "Topic Mix",
-    sub: "Foundation easy",
-    mode: "easy",
-    icon: Navigation,
-    color: "#0284c7",
-    gradient: "linear-gradient(135deg, #edf9ff 0%, #e0f2fe 100%)",
-    gradientDark: "linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(2, 132, 199, 0.08) 100%)",
-    border: "rgba(2, 132, 199, 0.22)",
-    borderDark: "rgba(2, 132, 199, 0.35)",
-    shadow: "0 2px 8px rgba(2, 132, 199, 0.08)",
-  },
-  {
-    key: "hard",
-    title: "Tier 2",
-    sub: "Advanced level",
-    mode: "hard",
-    icon: Flame,
-    color: "#e11d48",
-    gradient: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
-    gradientDark: "linear-gradient(135deg, rgba(225, 29, 72, 0.2) 0%, rgba(225, 29, 72, 0.08) 100%)",
-    border: "rgba(225, 29, 72, 0.22)",
-    borderDark: "rgba(225, 29, 72, 0.35)",
-    shadow: "0 2px 8px rgba(225, 29, 72, 0.08)",
-  },
-] as const;
-
-export const STUDY_MODE_TOPICS = new Set([
-  "synonyms-antonyms",
-  "one-word-substitution",
-  "idioms-phrases",
-  "spelling-misspelled-words",
-  "homonyms-homophones",
-]);

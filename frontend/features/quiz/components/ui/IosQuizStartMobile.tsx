@@ -25,7 +25,6 @@ export function IosQuizStartMobile({
   onToggleLetter,
   onSelectAllLetters,
   letterCounts,
-  availableLetters: _availableLetters,
   onExamChange,
   onSearchChange,
   onToggleGroup,

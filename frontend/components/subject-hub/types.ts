@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+
 export interface HubTopic {
   id: number;
   name: string;
@@ -13,38 +14,23 @@ export interface HubTopic {
   description: string;
   expectedMarks: string;
 }
-export interface HubPracticeMode {
-  key: string;
-  title: string;
-  sub: string;
-  mode: string;
-  icon: LucideIcon;
-  color: string;
-  gradient: string;
-  gradientDark: string;
-  border: string;
-  borderDark: string;
-  shadow: string;
-}
+
 export interface SubjectHubConfig {
   subjectId: string;
   label: string;
   icon: LucideIcon;
   topics: HubTopic[];
   categories: readonly { id: string; label: string; icon: LucideIcon }[];
-  priorityConfig: Record<
-    string,
-    { label: string; badgeBg: string; badgeColor: string }
-  >;
-  practiceModes: readonly HubPracticeMode[];
-  studyModeTopics?: Set<string>;
   styles?: Record<string, string>;
-  mobileAppearance?: "oled";
-  mobileTopicDetails?: Record<string, { color: string; questionCount?: number }>;
-  initialCategory?: string;
-  notesHref?: string;
-  notesLabel: string;
-  searchPlaceholder: string;
+  mobileTopicDetails?: Record<
+    string,
+    {
+      color: string;
+      questionCount?: number;
+      userSolved?: number;
+      progress?: number;
+    }
+  >;
   mobileSearchPlaceholder: string;
   getChapterGroup?: (topicSlug: string) => {
     slug: string;

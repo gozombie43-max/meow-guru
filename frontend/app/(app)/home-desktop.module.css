@@ -1,0 +1,740 @@
+/* =========================================================================
+   Desktop home — Study Guru
+   Direction: steady, exam-focused, encouraging. World: exam papers and
+   ruled notebooks. Signature: question numbers set as tabular "Q17 / 100".
+   One graphite ramp per theme, one blue accent, 4px grid throughout.
+   ========================================================================= */
+
+.window {
+  /* Light ramp */
+  --h-canvas: #f4f4f5;
+  --h-window: #ffffff;
+  --h-sidebar: #fafafa;
+  --h-surface: #ffffff;
+  --h-surface-2: #f4f4f5;
+  --h-surface-3: #ebebed;
+  --h-line: rgb(9 9 11 / 8%);
+  --h-line-strong: rgb(9 9 11 / 12%);
+  --h-text: #18181b;
+  --h-text-2: #52525b;
+  --h-text-3: #6b6b74;
+  --h-accent: #0866d6;
+  --h-accent-ink: #0759bb;
+  --h-accent-soft: rgb(8 102 214 / 8%);
+  --h-primary-bg: #18181b;
+  --h-primary-text: #ffffff;
+  --h-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Hand the same palette to shared children (bell, exam switch). */
+  --mac-card-bg: var(--h-surface);
+  --mac-card-subtle: var(--h-surface-2);
+  --mac-border: var(--h-line-strong);
+  --mac-text-primary: var(--h-text);
+  --mac-text-secondary: var(--h-text-2);
+  --mac-text-muted: var(--h-text-3);
+  --mac-primary: var(--h-accent);
+
+  width: 100%;
+  height: 100dvh;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: var(--h-window);
+  box-shadow: none;
+  color: var(--h-text);
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.window *,
+.window *::before,
+.window *::after {
+  box-sizing: border-box;
+}
+
+.window :focus-visible {
+  outline: 2px solid var(--h-accent);
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------------------------------
+   Sidebar
+   ------------------------------------------------------------------------- */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 20px 12px 16px;
+  border-right: 1px solid var(--h-line);
+  background: var(--h-sidebar);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.sidebar::-webkit-scrollbar { display: none; }
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  color: var(--h-text);
+  text-decoration: none;
+}
+
+.brandMark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--h-accent-soft);
+  flex-shrink: 0;
+}
+
+.brandMark svg g { fill: var(--h-accent); }
+
+.brandName {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.brandName span { color: var(--h-text-3); font-weight: 500; }
+
+.examSlot {
+  margin-top: 20px;
+}
+
+/* Quiet the shared exam switch to sidebar density without changing behaviour. */
+.examSlot :global(button[data-ui-exam-switch]) {
+  min-height: 44px !important;
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--h-line) !important;
+  background: var(--h-surface) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  gap: 10px !important;
+}
+
+.examSlot :global(button[data-ui-exam-switch] > span:first-child) {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--h-surface-2);
+  color: var(--h-text-2);
+}
+
+.examSlot :global(button[data-ui-exam-switch] > span:first-child svg) {
+  width: 16px;
+  height: 16px;
+}
+
+.navLabel {
+  margin: 24px 0 8px;
+  padding: 0 10px;
+  color: var(--h-text-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: var(--h-text-2);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 150ms var(--h-ease), color 150ms var(--h-ease);
+}
+
+.navLink svg { flex-shrink: 0; width: 18px; height: 18px; }
+
+.navLink:hover {
+  background: var(--h-surface-2);
+  color: var(--h-text);
+}
+
+.navActive,
+.navActive:hover {
+  background: var(--h-surface);
+  color: var(--h-text);
+  box-shadow: inset 0 0 0 1px var(--h-line-strong);
+}
+
+.navActive svg { color: var(--h-accent); }
+
+/* Help card */
+.help {
+  margin-top: auto;
+  padding: 16px;
+  border: 1px solid var(--h-line);
+  border-radius: 12px;
+  background: var(--h-surface);
+}
+
+.helpPerson {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.helpAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.helpPerson h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.helpPerson p {
+  margin: 0;
+  color: var(--h-text-3);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.helpCopy {
+  margin: 12px 0 0;
+  color: var(--h-text-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.helpPrimary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  margin-top: 12px;
+  border: 1px solid var(--h-line-strong);
+  border-radius: 8px;
+  background: var(--h-surface);
+  color: var(--h-text);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 150ms var(--h-ease);
+}
+
+.helpPrimary:hover { background: var(--h-surface-2); }
+
+.helpLinks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.helpLinks a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--h-text-2);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 150ms var(--h-ease), color 150ms var(--h-ease);
+}
+
+.helpLinks a:hover {
+  background: var(--h-surface-2);
+  color: var(--h-text);
+}
+
+/* -------------------------------------------------------------------------
+   Workspace + top actions
+   ------------------------------------------------------------------------- */
+.workspace {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--h-canvas);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 32px 0;
+  flex-shrink: 0;
+}
+
+.iconBtn,
+.actions :global(a[href="/notifications"]) {
+  display: grid !important;
+  place-items: center;
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0;
+  border: 1px solid var(--h-line-strong) !important;
+  border-radius: 8px !important;
+  background: var(--h-surface) !important;
+  color: var(--h-text-2) !important;
+  text-decoration: none;
+  transform: none !important;
+  transition: background-color 150ms var(--h-ease), border-color 150ms var(--h-ease), color 150ms var(--h-ease) !important;
+}
+
+.iconBtn:hover,
+.actions :global(a[href="/notifications"]:hover) {
+  background: var(--h-surface-2) !important;
+  color: var(--h-text) !important;
+}
+
+.actions :global(a[href="/notifications"] svg) { transform: none !important; }
+
+/* -------------------------------------------------------------------------
+   Main grid
+   ------------------------------------------------------------------------- */
+.main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  padding: 16px 32px 24px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  animation: mainIn 240ms var(--h-ease);
+}
+
+.jamSlot {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--h-accent-ink);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.textLink:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Hero */
+.hero {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--h-line);
+  border-radius: 16px;
+  background: var(--h-surface);
+}
+
+.heroCopy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 28px 32px;
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--h-text-3);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.heroTitle {
+  margin: 8px 0 0;
+  max-width: 25ch;
+  font-size: clamp(24px, 2vw, 28px);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.022em;
+}
+
+.heroText {
+  margin: 8px 0 0;
+  max-width: 60ch;
+  color: var(--h-text-2);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.btnPrimary,
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 150ms var(--h-ease), border-color 150ms var(--h-ease), opacity 150ms var(--h-ease);
+}
+
+.btnPrimary {
+  border: 1px solid var(--h-primary-bg);
+  background: var(--h-primary-bg);
+  color: var(--h-primary-text);
+}
+
+.btnPrimary:hover { opacity: 0.88; }
+
+.btnSecondary {
+  border: 1px solid var(--h-line-strong);
+  background: var(--h-surface);
+  color: var(--h-text);
+}
+
+.btnSecondary:hover { background: var(--h-surface-2); }
+
+/* Subjects */
+.subjectGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.subject {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 140px;
+  padding: 20px;
+  border: 1px solid var(--h-line);
+  border-radius: 12px;
+  background: var(--h-surface);
+  color: var(--h-text);
+  text-decoration: none;
+  transition: border-color 150ms var(--h-ease), background-color 150ms var(--h-ease);
+}
+
+.subject:hover { border-color: var(--h-line-strong); background: var(--h-surface); }
+.subject:hover .subjectArrow { color: var(--h-text); transform: translateX(2px); }
+
+.subjectTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tile {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--h-surface-2);
+  color: var(--h-text);
+  flex-shrink: 0;
+}
+
+.subjectArrow {
+  color: var(--h-text-3);
+  transition: color 150ms var(--h-ease), transform 150ms var(--h-ease);
+}
+
+.subject h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.subject p {
+  margin: 4px 0 0;
+  color: var(--h-text-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* More ways to study */
+.moreGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--h-line);
+  border-radius: 12px;
+  background: var(--h-surface);
+  color: var(--h-text);
+  text-decoration: none;
+  transition: border-color 150ms var(--h-ease);
+}
+
+.row:hover { border-color: var(--h-line-strong); }
+.row:hover .subjectArrow { color: var(--h-text); transform: translateX(2px); }
+
+.rowCopy { flex: 1; min-width: 0; }
+.rowCopy strong { display: block; font-size: 14px; font-weight: 600; line-height: 1.4; }
+.rowCopy small { display: block; color: var(--h-text-2); font-size: 13px; line-height: 1.5; }
+
+/* -------------------------------------------------------------------------
+   Recent quizzes
+   ------------------------------------------------------------------------- */
+.aside {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.resume {
+  padding: 20px;
+  border: 1px solid var(--h-line);
+  border-radius: 16px;
+  background: var(--h-surface);
+}
+
+.resumeLabel {
+  margin: 0;
+  color: var(--h-text-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.resumeHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.resumeHead h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.resumeHead p {
+  margin: 2px 0 0;
+  color: var(--h-text-2);
+  font-size: 13px;
+}
+
+/* Signature: question counter like the corner of an exam paper. */
+.qcount {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 20px;
+  color: var(--h-text-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.qcount strong {
+  color: var(--h-text);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.qcount strong span {
+  color: var(--h-text-3);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.bar {
+  display: block;
+  width: 100%;
+  height: 6px;
+  margin-top: 8px;
+  border-radius: 3px;
+  background: var(--h-surface-3);
+  overflow: hidden;
+}
+
+.bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--h-accent);
+}
+
+.resumeFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.resumeFooter p {
+  margin: 0;
+  color: var(--h-text-2);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+  border: 1px solid var(--h-line);
+  border-radius: 12px;
+  background: var(--h-surface);
+  overflow: hidden;
+}
+
+.listItem {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: var(--h-text);
+  text-decoration: none;
+  transition: background-color 150ms var(--h-ease);
+}
+
+.listItem + .listItem { border-top: 1px solid var(--h-line); }
+.listItem:hover { background: var(--h-surface-2); }
+
+.listItem strong {
+  display: block;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listItem small {
+  display: block;
+  color: var(--h-text-3);
+  font-size: 12px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.listBar {
+  display: block;
+  height: 3px;
+  margin-top: 6px;
+  border-radius: 2px;
+  background: var(--h-surface-3);
+  overflow: hidden;
+}
+
+.listBar > span { display: block; height: 100%; background: var(--h-text-3); }
+
+.listAction {
+  color: var(--h-text-2);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.listItem:hover .listAction { color: var(--h-accent-ink); }
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 24px 20px;
+  border: 1px dashed var(--h-line-strong);
+  border-radius: 16px;
+  background: var(--h-surface);
+}
+
+.empty strong { font-size: 15px; font-weight: 600; }
+.empty p { margin: 0 0 16px; color: var(--h-text-2); font-size: 13px; }
+
+.skeleton {
+  height: 220px;
+  border: 1px solid var(--h-line);
+  border-radius: 16px;
+  background: var(--h-surface);
+}
+
+@keyframes mainIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 1280px) {
+  .actions { padding: 16px 24px 0; }
+  .main { grid-template-columns: minmax(0, 1fr) 320px; padding: 16px 24px 24px; }
+  .subjectGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .subject { min-height: 0; }
+  .heroCopy { padding: 28px; }
+}
+
+@media (max-width: 1120px) {
+  .main { grid-template-columns: minmax(0, 1fr); }
+}

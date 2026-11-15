@@ -12,7 +12,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
   // This hook starts false on both the server and the hydration pass.
   // Phones retain their server-rendered mobile view without mounting desktop UI.
   const isDesktop = useMediaQuery('(min-width: 768px)');
-  const view = useSubjectHubView({ config, enableDesktop: isDesktop });
+  const view = useSubjectHubView({ config });
   const { styles } = view;
 
   return (
