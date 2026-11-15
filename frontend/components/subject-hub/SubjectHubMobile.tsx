@@ -2,13 +2,63 @@
 
 import defaultStyles from "@/components/SubjectHub.module.css";
 import { ArrowLeft, ArrowUpDown, Check, ChevronDown, SlidersHorizontal } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import { MobileTopicCard } from "./MobileTopicCard";
 import { MobileSearchBar } from "./MobileSearchBar";
 import type { SubjectHubView } from "./useSubjectHubView";
+import skeletonStyles from "./mobile-topic-card.module.css";
+
+// Rows rendered per page; more pages stream in as the user nears the end.
+const TOPIC_PAGE_SIZE = 10;
+const SKELETON_ROWS = 3;
+const noopSubscribe = () => () => {};
+const getObserverSupported = () => typeof IntersectionObserver !== "undefined";
+const getServerObserverSupported = () => true;
+
+function useIncrementalCount(total: number, resetKey: string, rootRef: RefObject<HTMLElement | null>) {
+  // Server and first client hydration pass both render page 1 (no mismatch);
+  // environments without IntersectionObserver (e.g. jsdom) show all rows.
+  const hasObserver = useSyncExternalStore(
+    noopSubscribe,
+    getObserverSupported,
+    getServerObserverSupported,
+  );
+  const [count, setCount] = useState(TOPIC_PAGE_SIZE);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // New search/filter/sort result → start again from the first page.
+  const lastResetKey = useRef(resetKey);
+  useEffect(() => {
+    if (lastResetKey.current === resetKey) return;
+    lastResetKey.current = resetKey;
+    setCount(TOPIC_PAGE_SIZE);
+    rootRef.current?.scrollTo?.({ top: 0 });
+  }, [resetKey, rootRef]);
+
+  const hasMore = hasObserver && count < total;
+
+  useEffect(() => {
+    if (!hasMore || typeof IntersectionObserver === "undefined") return;
+    const node = sentinelRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setCount((prev) => Math.min(prev + TOPIC_PAGE_SIZE, total));
+        }
+      },
+      { root: rootRef.current, rootMargin: "0px 0px 480px 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, total, count, rootRef]);
+
+  return { visible: hasObserver ? Math.min(count, total) : total, hasMore, sentinelRef };
+}
 
 export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const {
     config,
     CATEGORIES,
@@ -28,6 +78,9 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
     mobileTopics,
     isChapterMode,
   } = view;
+  const allTopics = mobileTopics ?? [];
+  const resetKey = allTopics.map((topic) => topic.id).join("|");
+  const { visible, hasMore, sentinelRef } = useIncrementalCount(allTopics.length, resetKey, scrollAreaRef);
 
   return (
     <div className={`${defaultStyles.mobileContainer} ${defaultStyles.oledMobile}`}>
@@ -189,9 +242,9 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
         })()}
 
         {/* Topic Cards */}
-        <div className={defaultStyles.oledTopicScrollArea}>
+        <div ref={scrollAreaRef} className={defaultStyles.oledTopicScrollArea}>
           <div className={defaultStyles.oledTopicGrid}>
-            {(mobileTopics ?? []).map((topic, index) => {
+            {allTopics.slice(0, visible).map((topic, index) => {
               const detail = config.mobileTopicDetails?.[topic.slug];
               const isRecent = topic.slug === recentTopicSlug;
               return (
@@ -203,13 +256,24 @@ export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
                   icon={topic.icon}
                   accent={detail?.color ?? topic.color}
                   detail={detail}
-                  priority={index === 0}
+                  priority={index < 4}
                   isRecent={isRecent}
                   prefetchCounts={!isChapterMode ? { subject: config.subjectId, topic: topic.questionTopic ?? topic.slug } : undefined}
                 />
               );
             })}
+            {hasMore &&
+              Array.from({ length: Math.min(SKELETON_ROWS, allTopics.length - visible) }, (_, i) => (
+                <div key={`topic-skeleton-${i}`} className={skeletonStyles.skeletonRow} aria-hidden="true">
+                  <span className={skeletonStyles.skeletonTile} />
+                  <span className={skeletonStyles.skeletonCopy}>
+                    <span className={skeletonStyles.skeletonLine} />
+                    <span className={`${skeletonStyles.skeletonLine} ${skeletonStyles.skeletonLineShort}`} />
+                  </span>
+                </div>
+              ))}
           </div>
+          {hasMore && <div ref={sentinelRef} className={skeletonStyles.sentinel} aria-hidden="true" />}
           {mobileTopics?.length === 0 && (
             <p role="status" className={defaultStyles.mobileTopicCount}>
               No topics found. Try another search or filter.

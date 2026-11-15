@@ -168,4 +168,39 @@ describe("SubjectHub", () => {
     expect(within(firstRow).getByText("Continue")).toBeInTheDocument();
     expect(within(firstRow).queryByText("Recently")).not.toBeInTheDocument();
   });
+
+  it("paginates mobile topic rows with skeletons when IntersectionObserver is available", () => {
+    let intersect: IntersectionObserverCallback | undefined;
+    const observe = vi.fn();
+    const disconnect = vi.fn();
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(callback: IntersectionObserverCallback) {
+          intersect = callback;
+        }
+        observe = observe;
+        disconnect = disconnect;
+      },
+    );
+
+    const { container } = render(<SubjectHub config={mockConfig} />);
+
+    expect(TOPICS.length).toBeGreaterThan(20);
+    expect(container.querySelectorAll('[data-hub-part="mobileTopicRow"]')).toHaveLength(10);
+    expect(container.querySelectorAll('[class*="skeletonRow"]')).toHaveLength(3);
+    expect(observe).toHaveBeenCalled();
+
+    act(() => {
+      intersect?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+    });
+    expect(container.querySelectorAll('[data-hub-part="mobileTopicRow"]')).toHaveLength(20);
+    expect(container.querySelectorAll('[class*="skeletonRow"]')).toHaveLength(3);
+
+    act(() => {
+      intersect?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+    });
+    expect(container.querySelectorAll('[data-hub-part="mobileTopicRow"]')).toHaveLength(TOPICS.length);
+    expect(container.querySelectorAll('[class*="skeletonRow"]')).toHaveLength(0);
+  });
 });

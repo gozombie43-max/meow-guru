@@ -1,0 +1,46 @@
+/* Skeleton shimmer painted on the <img> itself until the image is decoded. */
+.thumb {
+  --thumb-skel-base: var(--meow-surface-subtle, #29292c);
+  --thumb-skel-shine: var(--meow-surface, #36363a);
+  display: block;
+  background: linear-gradient(
+      100deg,
+      var(--thumb-skel-base) 30%,
+      var(--thumb-skel-shine) 50%,
+      var(--thumb-skel-base) 70%
+    )
+    0 0 / 300% 100%;
+  animation: topicThumbShimmer 1.3s linear infinite;
+}
+
+:global(html.theme-light) .thumb {
+  --thumb-skel-base: #e8ecf2;
+  --thumb-skel-shine: #f6f8fb;
+}
+
+.thumb[data-loaded] {
+  background: none;
+  animation: topicThumbFadeIn 260ms ease-out both;
+}
+
+@keyframes topicThumbShimmer {
+  to {
+    background-position: -300% 0;
+  }
+}
+
+@keyframes topicThumbFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb,
+  .thumb[data-loaded] {
+    animation: none;
+  }
+}
