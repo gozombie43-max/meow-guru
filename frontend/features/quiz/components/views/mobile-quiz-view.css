@@ -1581,24 +1581,26 @@
 .ios-series-quiz[data-theme="dark"] {
   --quiz-background: var(--oled-canvas, #000000);
   --quiz-surface: var(--oled-surface, #1c1c1e);
-  --quiz-answer-surface: #171719;
-  --quiz-surface-hover: #202124;
-  --quiz-surface-selected: #141E2B;
+  --quiz-answer-surface: #1C1D21;
+  --quiz-surface-hover: #23252A;
+  --quiz-surface-selected: #162231;
   --quiz-text-primary: var(--oled-text, #e5eaf0);
   --quiz-question-text: #C8CCD3;
-  --quiz-option-text: #BFC4CC;
-  --quiz-option-selected-text: #D0D5DD;
+  --quiz-option-text: #C1C6CE;
+  --quiz-option-selected-text: #D2D7DF;
   --quiz-highlight: #88A2C4;
-  --quiz-letter: #232428;
-  --quiz-letter-text: #8A909B;
-  --quiz-selected-border: rgba(110, 150, 198, 0.44);
-  --quiz-selected-letter-bg: #2B4F78;
-  --quiz-selected-letter-text: #D6DCE4;
+  --quiz-letter: #272930;
+  --quiz-letter-text: #9BA1AD;
+  --quiz-card-border: rgba(255, 255, 255, 0.08);
+  --quiz-card-border-hover: rgba(255, 255, 255, 0.13);
+  --quiz-selected-border: rgba(114, 156, 206, 0.56);
+  --quiz-selected-letter-bg: #2E5684;
+  --quiz-selected-letter-text: #DCE2EA;
   --quiz-text-secondary: var(--oled-secondary, #a2a9b4);
   --quiz-accent: var(--oled-selected, var(--ios-system-blue));
-  --quiz-success: #5AA87C;
-  --quiz-error: #CD7379;
-  --quiz-dock-surface: #161719;
+  --quiz-success: #5EB082;
+  --quiz-error: #D1787E;
+  --quiz-dock-surface: #1A1B1F;
   --quiz-dock-text: #9CA3AE;
   --quiz-dock-action-bg: rgba(92, 140, 198, 0.18);
   --quiz-dock-action-text: #8FB2DA;
@@ -1824,11 +1826,21 @@
   .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-footer-btn { font-size: 11px !important; gap: 3px; }
 }
 
-/* Keep dark cards borderless, including submitted answers and the palette. */
+/* Frame dark answer cards with a subtle perimeter outline so full width stays clear on black OLED screens. */
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-options { gap: 10px; margin-top: 10px; }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option { border-radius: 16px !important; }
 .ios-series-quiz[data-theme="dark"] .ios-series-option {
-  border: 0 !important; box-shadow: none !important;
+  border: 0 !important;
+  box-shadow: inset 0 0 0 1px var(--quiz-card-border);
+}
+.ios-series-quiz[data-theme="dark"] .ios-series-option:not(:disabled):hover {
+  box-shadow: inset 0 0 0 1px var(--quiz-card-border-hover);
+}
+.ios-series-quiz[data-theme="dark"] .ios-series-option:is(.is-correct, .is-wrong) {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--quiz-result-color) 38%, transparent);
+}
+.ios-series-quiz[data-theme="dark"] .ios-series-dock {
+  box-shadow: inset 0 0 0 1px var(--quiz-card-border);
 }
 .ios-series-quiz[data-theme="dark"] :is(.ios-series-palette-panel, .ios-series-exam-popover, .ios-series-metadata-dialog) {
   border: 0; box-shadow: none; background: var(--oled-surface, #1c1c1e);
