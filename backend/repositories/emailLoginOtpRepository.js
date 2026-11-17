@@ -36,9 +36,11 @@ export async function issueEmailLoginChallenge({ email, challengeId, codeHash, e
 }
 
 export async function consumeEmailLoginChallenge({ email, challengeId, codeHash, now = new Date() }) {
+  const safeEmail = String(email || '');
+  const safeChallengeId = String(challengeId || '');
   const correct = { $eq: ['$codeHash', codeHash] };
   const row = await challenges().findOneAndUpdate({
-    _id: email, challengeId, expiresAt: { $gt: now },
+    _id: { $eq: safeEmail }, challengeId: { $eq: safeChallengeId }, expiresAt: { $gt: now },
     attemptsRemaining: { $gt: 0 }, consumedAt: { $exists: false },
   }, [{ $set: {
     attemptsRemaining: { $subtract: ['$attemptsRemaining', 1] },
