@@ -7,7 +7,7 @@ vi.mock('resend', () => ({ Resend: class {
 
 beforeEach(() => {
   vi.resetModules(); state.send.mockReset(); state.keys.length = 0;
-  vi.stubEnv('RESEND_API_KEY', 're_unit_test_only'); vi.stubEnv('EMAIL_FROM', '');
+  vi.stubEnv('RESEND_API_KEY', 're_unit_test_only'); vi.stubEnv('EMAIL_FROM', 'Meow <noreply@meowguru.me>');
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -16,7 +16,7 @@ it('sends through the configured client and returns provider data', async () => 
   const { sendEmail } = await import('../emailService.js');
   await expect(sendEmail({ to: 'delivered@resend.dev', subject: 'Test', html: '<b>Test</b>' })).resolves.toEqual({ id: 'test-id' });
   expect(state.keys).toEqual(['re_unit_test_only']);
-  expect(state.send).toHaveBeenCalledWith({ from: 'Meow <onboarding@resend.dev>', to: 'delivered@resend.dev', subject: 'Test', html: '<b>Test</b>' });
+  expect(state.send).toHaveBeenCalledWith({ from: 'Meow <noreply@meowguru.me>', to: 'delivered@resend.dev', subject: 'Test', html: '<b>Test</b>' });
 });
 
 it('preserves the configured sender and plain-text alternative', async () => {
@@ -42,5 +42,11 @@ it('propagates transport failures', async () => {
 it('fails before sending when the backend key is missing', async () => {
   vi.stubEnv('RESEND_API_KEY', '');
   await expect(import('../emailService.js')).rejects.toThrow('RESEND_API_KEY is not configured');
+  expect(state.send).not.toHaveBeenCalled();
+});
+
+it('fails before sending when EMAIL_FROM is missing', async () => {
+  vi.stubEnv('EMAIL_FROM', '');
+  await expect(import('../emailService.js')).rejects.toThrow('EMAIL_FROM is not configured');
   expect(state.send).not.toHaveBeenCalled();
 });

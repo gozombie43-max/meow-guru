@@ -1,14 +1,24 @@
 import { expect, it } from 'vitest';
-import { escapeHtml, passwordResetEmailTemplate, verificationEmailTemplate, loginOtpEmailTemplate } from '../templates.js';
+import {
+  escapeHtml,
+  passwordResetEmailTemplate,
+  verificationEmailTemplate,
+  loginOtpEmailTemplate,
+  welcomeEmailTemplate,
+} from '../templates.js';
 
 it('renders the OTP as escaped text with expiry and no action link', () => {
-  const email = loginOtpEmailTemplate({ code: '012345' });
+  const email = loginOtpEmailTemplate({ name: '<Bishal>', code: '012345' });
   expect(email.subject).toBe('Your Meow sign-in code');
   expect(email.text).toContain('code: 012345');
+  expect(email.html).toContain('Hi &lt;Bishal&gt;,');
+  expect(email.html).toContain('YOUR VERIFICATION CODE');
   expect(email.html).toContain('012345');
   expect(email.html).toContain('expires in 5 minutes');
+  expect(email.html).toContain('© 2026 Meow · SSC &amp; RRB Preparation');
   expect(email.html).not.toContain('href=');
   expect(loginOtpEmailTemplate({ code: '<script>' }).html).toContain('&lt;script&gt;');
+  expect(loginOtpEmailTemplate({ code: '012345' }).html).toContain('Hi there,');
 });
 
 it('escapes HTML text and attribute delimiters', () => {
@@ -40,4 +50,14 @@ it('escapes the reset link and includes expiry and unsolicited-request guidance'
   expect(email.html).toContain('This password reset link expires in 15 minutes.');
   expect(email.html).toContain('you can safely ignore this email');
   expect(email.text).toBe(`Reset your Meow password: ${resetUrl}`);
+});
+
+it('renders the welcome email with escaped name and optional CTA link', () => {
+  const email = welcomeEmailTemplate({ name: '<b>Bishal</b>', appUrl: 'https://meowguru.me/dashboard' });
+  expect(email.subject).toBe('Welcome to Meow');
+  expect(email.html).toContain('Hi &lt;b&gt;Bishal&lt;/b&gt;,');
+  expect(email.html).toContain('href="https://meowguru.me/dashboard"');
+  expect(email.html).toContain('© 2026 Meow · SSC &amp; RRB Preparation');
+  expect(email.text).toContain('https://meowguru.me/dashboard');
+  expect(welcomeEmailTemplate().html).not.toContain('href=');
 });

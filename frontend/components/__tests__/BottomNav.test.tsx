@@ -127,10 +127,15 @@ describe('BottomNav Component', () => {
     expect(document.body).toHaveClass('has-bottom-nav');
   });
 
-  it('uses the current profile photo and updates when the account changes', () => {
-    auth.user = { name: 'Alex', avatar: '/images/alex.webp' };
+  it('uses the person profile icon for guests, then switches to the account avatar when signed in', () => {
     const { rerender } = render(<BottomNav />);
     const you = screen.getByRole('link', { name: 'You' });
+    expect(you).toHaveTextContent('You');
+    expect(you.textContent).not.toContain('U');
+    expect(you.querySelector('svg')).not.toBeNull();
+
+    auth.user = { name: 'Alex', avatar: '/images/alex.webp' };
+    rerender(<BottomNav />);
     expect(you.querySelector('[style*="background-image"]')).toHaveStyle({ backgroundImage: 'url("/images/alex.webp")' });
     auth.user = { name: 'Blair' };
     mockPathname = '/profile';

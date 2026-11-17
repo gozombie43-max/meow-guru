@@ -26,6 +26,7 @@ export const requestEmailOtpSchema = z.object({
 });
 
 export const verifyEmailOtpSchema = z.object({
+  name: z.string().trim().min(2, 'Name must be at least 2 characters').max(80).optional(),
   email: requestEmailOtpSchema.shape.email,
   challengeId: z.string().regex(/^[a-f0-9]{64}$/, 'Invalid sign-in request'),
   code: z.string().trim().regex(/^\d{6}$/, 'Enter the 6-digit code'),

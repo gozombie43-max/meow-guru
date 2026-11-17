@@ -1,4 +1,4 @@
-import { verificationEmailTemplate } from './templates.js';
+import { verificationEmailTemplate } from './templates/verificationEmail.js';
 
 export async function sendVerificationEmail(user, token, frontendUrl) {
   const verifyUrl = new URL('/verify-email', frontendUrl);

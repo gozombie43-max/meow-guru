@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { Bell, Bookmark, BookOpen, ChevronRight, LayoutDashboard, LogOut, Pencil, Settings, Shield, Swords, Target } from 'lucide-react';
 import GoogleAvatarRing from '@/components/GoogleAvatarRing';
+import WolfIcon from '@/components/WolfIcon';
+import AuthFlow from '@/components/auth/AuthFlow';
 import { useAuth } from '@/context/AuthContext';
 import { useNotificationCenter } from '@/context/NotificationCenterContext';
 import { DashboardTemplate, Spinner } from '@/design-system';
@@ -17,15 +18,11 @@ const UserSettingsModal = dynamic(() => import('@/components/UserSettingsModal')
 
 export default function ProfileClient() {
   const { user, loading, logout } = useAuth();
-  const router = useRouter();
   const { unreadCount } = useNotificationCenter();
   const [panel, setPanel] = useState<'edit' | 'settings' | null>(null);
+  const [guestAuthMode, setGuestAuthMode] = useState<'login' | 'signup' | null>(null);
   const [message, setMessage] = useState('');
   const [signingOut, setSigningOut] = useState(false);
-
-  useEffect(() => {
-    if (!loading && !user) router.replace('/login');
-  }, [loading, user, router]);
 
   const closePanel = () => setPanel(null);
   const handleLogout = async () => {
@@ -56,14 +53,17 @@ export default function ProfileClient() {
       />
     );
   }
-  if (!user) return null;
 
-  const attempted = Object.values(user.progress || {}).reduce((sum, item) => sum + (item.attempted || 0), 0);
-  const correct = Object.values(user.progress || {}).reduce((sum, item) => sum + (item.correct || 0), 0);
+  const attempted = user
+    ? Object.values(user.progress || {}).reduce((sum, item) => sum + (item.attempted || 0), 0)
+    : 0;
+  const correct = user
+    ? Object.values(user.progress || {}).reduce((sum, item) => sum + (item.correct || 0), 0)
+    : 0;
   const accuracy = attempted ? `${Math.round(correct / attempted * 100)}%` : '—';
-  const isAdmin = user.role === 'admin' || user.role === 'superadmin';
+  const isAdmin = Boolean(user && (user.role === 'admin' || user.role === 'superadmin'));
 
-  const heroNode = (
+  const heroNode = user ? (
     <div className={styles.profileCard} aria-label="Your account">
       <Image
         src="/images/home-carousel/study-focus.webp"
@@ -104,6 +104,58 @@ export default function ProfileClient() {
         </dl>
       </div>
     </div>
+  ) : (
+    <div className={styles.profileCard} aria-label={guestAuthMode ? 'Account authentication' : 'Create your account'}>
+      <Image
+        src="/images/home-carousel/study-focus.webp"
+        alt=""
+        fill
+        sizes="(max-width: 640px) calc(100vw - 40px), 600px"
+        loading="eager"
+        className={styles.studyImage}
+      />
+      <div className={styles.cardContent}>
+        {guestAuthMode ? (
+          <AuthFlow
+            key={guestAuthMode}
+            mode={guestAuthMode}
+            embedded
+            onCancel={() => setGuestAuthMode(null)}
+            onSuccess={() => setGuestAuthMode(null)}
+          />
+        ) : (
+          <>
+            <div className={styles.guestHeader}>
+              <span className={styles.guestIcon} aria-hidden="true">
+                <WolfIcon size={34} fillColor="currentColor" />
+              </span>
+              <div className={styles.guestDetails}>
+                <h2>Create your account</h2>
+                <p>Save progress, accuracy, and battles.</p>
+              </div>
+            </div>
+            <div className={styles.guestActions}>
+              <button
+                type="button"
+                data-ui-button="primary"
+                className={styles.guestPill}
+                onClick={() => setGuestAuthMode('signup')}
+              >
+                Create account
+              </button>
+              <button
+                type="button"
+                data-ui-button="secondary"
+                className={styles.guestSecondaryPill}
+                onClick={() => setGuestAuthMode('login')}
+              >
+                Sign in
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 
   return (
@@ -126,7 +178,11 @@ export default function ProfileClient() {
           <Link href="/notifications" className={styles.row}>
             <span className={styles.icon}><Bell /></span>
             <span>Notifications</span>
-            {unreadCount > 0 && <span className={styles.badge} aria-label={`${unreadCount} unread notifications`}>{unreadCount > 99 ? '99+' : unreadCount}</span>}
+            {user && unreadCount > 0 && (
+              <span className={styles.badge} aria-label={`${unreadCount} unread notifications`}>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
             <ChevronRight />
           </Link>
           {isAdmin && (
@@ -151,22 +207,26 @@ export default function ProfileClient() {
           </Link>
         </nav>
 
-        <div className={styles.group}>
-          <button
-            type="button"
-            data-ui-button="state"
-            className={`${styles.row} ${styles.logout}`}
-            disabled={signingOut}
-            onClick={() => void handleLogout()}
-          >
-            <span className={styles.icon}><LogOut /></span>
-            <span>{signingOut ? 'Logging out…' : 'Log out'}</span>
-          </button>
-        </div>
+        {user && (
+          <div className={styles.group}>
+            <button
+              type="button"
+              data-ui-button="state"
+              className={`${styles.row} ${styles.logout}`}
+              disabled={signingOut}
+              onClick={() => void handleLogout()}
+            >
+              <span className={styles.icon}><LogOut /></span>
+              <span>{signingOut ? 'Logging out…' : 'Log out'}</span>
+            </button>
+          </div>
+        )}
         {message && <p role="status" className={styles.message}>{message}</p>}
       </div>
 
-      {panel === 'edit' && <EditProfileModal isOpen onClose={closePanel} onSuccess={() => setMessage('Profile updated successfully.')} />}
+      {user && panel === 'edit' && (
+        <EditProfileModal isOpen onClose={closePanel} onSuccess={() => setMessage('Profile updated successfully.')} />
+      )}
       {panel === 'settings' && <UserSettingsModal isOpen onClose={closePanel} />}
     </DashboardTemplate>
   );

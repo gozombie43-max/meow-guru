@@ -3,12 +3,12 @@ import { revokeUserSessions } from '../../auth/sessions.js';
 import { findUserByEmail, insertRegisteredUser } from '../../repositories/authRegistrationRepository.js';
 import { confirmOtpUserEmail } from '../../repositories/emailLoginOtpRepository.js';
 
-export async function resolveEmailOtpAccount(email) {
+export async function resolveEmailOtpAccount(email, name) {
   let user = await findUserByEmail(email);
   if (!user) {
     const now = new Date();
     const account = {
-      id: `user-${randomUUID()}`, name: email.split('@')[0].slice(0, 80), email,
+      id: `user-${randomUUID()}`, name: (typeof name === 'string' && name.trim().length >= 2 ? name.trim() : email.split('@')[0]).slice(0, 80), email,
       role: 'student', authProvider: 'local', emailVerified: true, emailVerifiedAt: now,
       progress: {}, bookmarks: [], bookmarkEntries: [], recentQuizzes: [], createdAt: now.toISOString(),
     };

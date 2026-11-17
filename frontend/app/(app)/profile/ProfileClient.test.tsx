@@ -79,16 +79,32 @@ describe('Profile page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Log out' }));
     await waitFor(() => expect(logout).toHaveBeenCalledOnce());
   });
-  it('waits for authentication then redirects guests directly to login', () => {
+  it('waits for authentication then shows the profile page with inline login/signup flow without redirecting', async () => {
     mockAuth({ user: null, loading: true });
     const { rerender } = render(<ProfileClient />);
     expect(screen.getByRole('status')).toHaveTextContent('Loading your profile');
-    expect(router.replace).not.toHaveBeenCalled();
     mockAuth({ user: null });
     rerender(<ProfileClient />);
-    expect(router.replace).toHaveBeenCalledWith('/login');
-    expect(screen.queryByRole('link', { name: 'Log in' })).not.toBeInTheDocument();
-    expect(screen.queryByText('Your study journey starts here')).not.toBeInTheDocument();
-    expect(screen.queryByLabelText('Study statistics')).not.toBeInTheDocument();
-  });
-});
+    expect(router.replace).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Preferences & reminders' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Notifications' })).toHaveAttribute('href', '/notifications');
+    expect(screen.getByRole('link', { name: 'My dashboard' })).toHaveAttribute('href', '/dashboard');
+    expect(screen.getByRole('link', { name: /Battle profile/ })).toHaveAttribute('href', '/battle/profile');
+    expect(screen.queryByLabelText('Study statistics across all exams')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Log out' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Admin Panel' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    expect(router.replace).not.toHaveBeenCalled();
+    expect(await screen.findByLabelText('Full name')).toBeInTheDocument();
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Send code' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }));
+    expect(screen.queryByLabelText('Full name')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Log in with password' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByRole('button', { name: 'Create account' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument();
+  });});

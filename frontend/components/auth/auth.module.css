@@ -5,6 +5,7 @@
 
 .authCard,
 .authContainer,
+.embeddedAuth,
 .modalOverlay {
   /* Light Theme (Default) */
   --ios-bg: var(--meow-bg, #F4F6F9);
@@ -66,6 +67,9 @@
 :global(body.theme-dark) .authContainer,
 :global(.theme-dark) .authContainer,
 .authContainer:global(.theme-dark),
+:global(html.theme-dark) .embeddedAuth,
+:global(body.theme-dark) .embeddedAuth,
+:global(.theme-dark) .embeddedAuth,
 :global(html.theme-dark) .modalOverlay,
 :global(body.theme-dark) .modalOverlay,
 :global(.theme-dark) .modalOverlay,
@@ -254,6 +258,57 @@
   gap: 14px;
   box-sizing: border-box;
   width: 100%;
+}
+
+.embeddedAuth {
+  color: var(--ios-text);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.embeddedHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.embeddedHeaderText {
+  min-width: 0;
+}
+
+.embeddedHeaderText .brandTitle {
+  font-size: 18px;
+}
+
+.embeddedHeaderText .brandSubtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+.embeddedBackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--meow-radius-full, 999px);
+  background: var(--meow-surface-subtle, var(--ios-segmented-bg));
+  color: var(--ios-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+}
+
+.embeddedBackBtn:hover {
+  opacity: 0.85;
 }
 
 /* Header & Brand Icon */

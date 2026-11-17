@@ -1,6 +1,6 @@
-import { loginOtpEmailTemplate } from './templates.js';
+import { loginOtpEmailTemplate } from './templates/loginOtpEmail.js';
 
-export async function sendLoginOtpEmail(email, code) {
+export async function sendLoginOtpEmail(email, code, name) {
   const { sendEmail } = await import('./emailService.js');
-  return sendEmail({ to: email, ...loginOtpEmailTemplate({ code }) });
+  return sendEmail({ to: email, ...loginOtpEmailTemplate({ name, code }) });
 }

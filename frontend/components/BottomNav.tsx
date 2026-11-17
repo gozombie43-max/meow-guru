@@ -62,11 +62,13 @@ export default function BottomNav() {
       ref={navRef}
       pathname={pathname}
       profileIcon={
-        <GoogleAvatarRing
-          size={28}
-          initial={user?.name?.trim().charAt(0).toUpperCase() || 'U'}
-          avatarUrl={user?.avatar || undefined}
-        />
+        user ? (
+          <GoogleAvatarRing
+            size={28}
+            initial={user.name?.trim().charAt(0).toUpperCase() || 'U'}
+            avatarUrl={user.avatar || undefined}
+          />
+        ) : undefined
       }
     />
   );
