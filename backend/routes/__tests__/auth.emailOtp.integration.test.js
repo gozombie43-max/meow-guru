@@ -85,6 +85,29 @@ it('stores only a keyed hash and creates a verified account only after a success
   expect((await post('verify', payload)).status).toBe(401);
 });
 
+it('refuses sign-up for an already registered email without sending a code', async () => {
+  await insertUser();
+  const response = await post('request', { email: ' Learner@Example.test ', intent: 'signup' });
+  expect(response.status).toBe(409);
+  expect(await response.json()).toMatchObject({ code: 'EMAIL_ALREADY_REGISTERED' });
+  expect(mocks.send).not.toHaveBeenCalled();
+  expect(await db.collection('emailLoginChallenges').countDocuments({})).toBe(0);
+});
+
+it('refuses sign-up verification if the email was registered after the code was sent', async () => {
+  const payload = await requestCode();
+  await insertUser({ passwordHash: 'existing-password-hash' });
+  const response = await post('verify', { ...payload, intent: 'signup', name: 'Intruder', password: 'secret123' });
+  expect(response.status).toBe(409);
+  expect(await db.collection('authSessions').countDocuments({})).toBe(0);
+  expect((await db.collection('users').findOne({ id: 'existing' })).passwordHash).toBe('existing-password-hash');
+});
+
+it('allows sign-up for a new email', async () => {
+  const response = await post('request', { email: 'new@example.test', intent: 'signup' });
+  expect(response.status).toBe(200);
+});
+
 it('signs an existing admin in without replacing their password or role', async () => {
   await insertUser({ role: 'admin', passwordHash: 'existing-password-hash' });
   const payload = await requestCode();

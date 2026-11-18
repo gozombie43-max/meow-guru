@@ -13,15 +13,21 @@ interface EmailOtpLoginProps {
   email: string;
   onEmailChange: (email: string) => void;
   onSuccess: (token: string, email: string) => Promise<void>;
+  /** Sign-up only: shown when the email already has an account. */
+  onSwitchToLogin?: () => void;
 }
 
-export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, onSuccess }: EmailOtpLoginProps) {
+const isAlreadyRegistered = (failure: unknown) =>
+  (failure as { response?: { data?: { code?: string } } })?.response?.data?.code === 'EMAIL_ALREADY_REGISTERED';
+
+export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, onSuccess, onSwitchToLogin }: EmailOtpLoginProps) {
   const signup = mode === 'signup';
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [challengeId, setChallengeId] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [pending, setPending] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const request = useRef<AbortController | null>(null);
@@ -44,11 +50,12 @@ export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, on
     if (signup && new TextEncoder().encode(password).byteLength > 72) { setError('Password is too long.'); return; }
     setPending(true);
     setError('');
+    setAlreadyRegistered(false);
     try {
       // Keep shared Zod validation out of the initial sign-in bundle.
       const { requestEmailOtpSchema } = await import('@meow/contracts/auth');
       if (controller.signal.aborted) return;
-      const parsed = requestEmailOtpSchema.safeParse({ email });
+      const parsed = requestEmailOtpSchema.safeParse({ email, intent: mode });
       if (!parsed.success) { setError('Enter a valid email address.'); return; }
       const { data } = await api.post('/auth/email-otp/request', parsed.data, { signal: controller.signal });
       if (controller.signal.aborted) return;
@@ -58,6 +65,7 @@ export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, on
       setCooldown(data.retryAfter || 60);
     } catch (failure) {
       if (controller.signal.aborted) return;
+      if (isAlreadyRegistered(failure)) setAlreadyRegistered(true);
       const retryAfter = (failure as { response?: { data?: { retryAfter?: number } } })?.response?.data?.retryAfter;
       if (retryAfter) setCooldown(retryAfter);
       setError(signInErrorMessage(failure));
@@ -75,12 +83,14 @@ export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, on
     try {
       const { verifyEmailOtpSchema } = await import('@meow/contracts/auth');
       if (controller.signal.aborted) return;
-      const parsed = verifyEmailOtpSchema.safeParse({ email, challengeId, code, ...(signup ? { name, password } : {}) });
+      const parsed = verifyEmailOtpSchema.safeParse({ email, challengeId, code, intent: mode, ...(signup ? { name, password } : {}) });
       if (!parsed.success) { setError('Enter the 6-digit code from your email.'); return; }
       const { data } = await api.post('/auth/email-otp/verify', parsed.data, { signal: controller.signal });
       if (!controller.signal.aborted) await onSuccess(data.token, parsed.data.email);
     } catch (failure) {
-      if (!controller.signal.aborted) setError(signInErrorMessage(failure));
+      if (controller.signal.aborted) return;
+      if (isAlreadyRegistered(failure)) { setAlreadyRegistered(true); setChallengeId(''); setCode(''); }
+      setError(signInErrorMessage(failure));
     } finally { if (!controller.signal.aborted) setPending(false); }
   };
 
@@ -107,15 +117,22 @@ export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, on
             onChange={event => { setName(event.target.value); setError(''); }} />}
           <AuthInput id="otp-email" label="Email" type="email" autoComplete="email"
             placeholder="you@example.com" icon={<Mail size={17} />} value={email} disabled={pending}
-            onChange={event => { onEmailChange(event.target.value); setError(''); }} />
+            onChange={event => { onEmailChange(event.target.value); setError(''); setAlreadyRegistered(false); }} />
           {signup && <AuthInput id="otp-password" label="Password" type="password" isPassword autoComplete="new-password"
             placeholder="At least 6 characters" icon={<Lock size={17} />} value={password} disabled={pending}
             onChange={event => { setPassword(event.target.value); setError(''); }} />}
           <p className={styles.otpHelp}>We’ll email you a 6-digit code.</p>
         </>
       )}
-      {error && <p className={styles.fieldErrorText} role="alert">{error}</p>}
-      <button type="submit" className={styles.primaryBtn} data-ui-button="state" disabled={pending || (!challengeId && cooldown > 0)}>
+      {error && (
+        <p className={styles.fieldErrorText} role="alert">
+          {error}
+          {alreadyRegistered && onSwitchToLogin && (
+            <>{' '}<button type="button" className={styles.modeSwitchLink} onClick={onSwitchToLogin}>Sign in</button></>
+          )}
+        </p>
+      )}
+      <button type="submit" className={styles.primaryBtn} data-ui-button="state" disabled={pending || alreadyRegistered || (!challengeId && cooldown > 0)}>
         {pending ? <><Spinner size="sm" tone="on-accent" /> {challengeId ? (signup ? 'Creating account…' : 'Signing in…') : 'Sending code…'}</>
           : <><span>{challengeId ? (signup ? 'Verify & create account' : 'Verify & sign in') : cooldown ? `Send code in ${cooldown}s` : 'Send code'}</span><ArrowRight size={16} /></>}
       </button>

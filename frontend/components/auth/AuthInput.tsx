@@ -30,10 +30,10 @@ export default function AuthInput({
 
   return (
     <div className={styles.fieldGroup}>
-      <label htmlFor={id} className={styles.fieldLabel}>
-        {label}
-      </label>
       <div className={styles.inputWrapper}>
+        <label htmlFor={id} className={styles.fieldLabel}>
+          {label}
+        </label>
         {icon && <span className={styles.inputLeadingIcon} aria-hidden="true">{icon}</span>}
         <input
           id={id}

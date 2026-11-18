@@ -4,12 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import LoginPage from './login/page';
 import RegisterPage from './register/page';
 
-const mocks = vi.hoisted(() => ({ post: vi.fn(), login: vi.fn(), replace: vi.fn() }));
+const mocks = vi.hoisted(() => ({ post: vi.fn(), login: vi.fn(), replace: vi.fn(), push: vi.fn() }));
 
 vi.mock('@/shared/api/client', () => ({ default: { post: mocks.post } }));
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ login: mocks.login }), useAuthActions: () => ({ login: mocks.login }) }));
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: mocks.replace }),
+  useRouter: () => ({ replace: mocks.replace, push: mocks.push }),
   useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
@@ -38,13 +38,13 @@ describe('authentication forms', () => {
     expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
     await user.type(screen.getByLabelText('Email'), 'Learner@Example.com');
     await user.click(screen.getByRole('button', { name: 'Send code' }));
-    await waitFor(() => expect(mocks.post).toHaveBeenCalledWith('/auth/email-otp/request', { email: 'learner@example.com' }, opts));
+    await waitFor(() => expect(mocks.post).toHaveBeenCalledWith('/auth/email-otp/request', { email: 'learner@example.com', intent: 'login' }, opts));
     const input = await screen.findByLabelText('6-digit code');
     expect(input).toHaveAttribute('autocomplete', 'one-time-code');
     await user.type(input, '012345');
     await user.click(screen.getByRole('button', { name: 'Verify & sign in' }));
     await waitFor(() => expect(mocks.post).toHaveBeenLastCalledWith('/auth/email-otp/verify', {
-      email: 'learner@example.com', challengeId, code: '012345',
+      email: 'learner@example.com', challengeId, code: '012345', intent: 'login',
     }, opts));
     await waitFor(() => expect(mocks.login).toHaveBeenCalledWith('test-token'));
     expect(mocks.replace).toHaveBeenCalledWith('/');
@@ -72,11 +72,29 @@ describe('authentication forms', () => {
     await user.type(await screen.findByLabelText('6-digit code'), '654321');
     await user.click(screen.getByRole('button', { name: 'Verify & create account' }));
     await waitFor(() => expect(mocks.post).toHaveBeenLastCalledWith('/auth/email-otp/verify', {
-      email: 'ada@example.com', challengeId, code: '654321', name: 'Ada Lovelace', password: 'secret123',
+      email: 'ada@example.com', challengeId, code: '654321', name: 'Ada Lovelace', password: 'secret123', intent: 'signup',
     }, opts));
     await waitFor(() => expect(mocks.login).toHaveBeenCalledWith('test-token'));
     expect(mocks.replace).toHaveBeenCalledWith('/');
     expect(mocks.replace).not.toHaveBeenCalledWith('/check-email');
+  });
+
+  it('warns and blocks sign-up when the email already has an account', async () => {
+    mocks.post.mockRejectedValueOnce({ response: { status: 409, data: {
+      error: 'An account with this email already exists. Please sign in instead.', code: 'EMAIL_ALREADY_REGISTERED',
+    } } });
+    const user = userEvent.setup();
+    render(<RegisterPage />);
+    await user.type(screen.getByLabelText('Full name'), 'Ada Lovelace');
+    await user.type(screen.getByLabelText('Email'), 'ada@example.com');
+    await user.type(screen.getByLabelText('Password'), 'secret123');
+    await user.click(screen.getByRole('button', { name: 'Send code' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('An account with this email already exists');
+    expect(mocks.post).toHaveBeenCalledWith('/auth/email-otp/request', { email: 'ada@example.com', intent: 'signup' }, opts);
+    expect(screen.queryByLabelText('6-digit code')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Send code' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
+    expect(mocks.push).toHaveBeenCalledWith('/login');
   });
 
   it('shows an expired-code error and lets the user change the email', async () => {

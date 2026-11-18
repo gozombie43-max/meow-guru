@@ -7,10 +7,23 @@ export const loginSchema: z.ZodObject<{
     email: z.ZodString;
     password: z.ZodString;
 }, z.core.$strip>;
+/** `signup` refuses addresses that already have an account; `login` (default) accepts any address. */
+export const emailOtpIntentSchema: z.ZodDefault<z.ZodEnum<{
+    login: "login";
+    signup: "signup";
+}>>;
 export const requestEmailOtpSchema: z.ZodObject<{
     email: z.ZodString;
+    intent: z.ZodDefault<z.ZodEnum<{
+        login: "login";
+        signup: "signup";
+    }>>;
 }, z.core.$strip>;
 export const verifyEmailOtpSchema: z.ZodObject<{
+    intent: z.ZodDefault<z.ZodEnum<{
+        login: "login";
+        signup: "signup";
+    }>>;
     name: z.ZodOptional<z.ZodString>;
     password: z.ZodOptional<z.ZodString>;
     email: z.ZodString;

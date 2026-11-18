@@ -23,11 +23,16 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required').max(128, 'Password is too long'),
 });
 
+/** `signup` refuses addresses that already have an account; `login` (default) accepts any address. */
+export const emailOtpIntentSchema = z.enum(['login', 'signup']).default('login');
+
 export const requestEmailOtpSchema = z.object({
   email: z.string().trim().email('Invalid email address').max(254).toLowerCase(),
+  intent: emailOtpIntentSchema,
 });
 
 export const verifyEmailOtpSchema = z.object({
+  intent: emailOtpIntentSchema,
   name: z.string().trim().min(2, 'Name must be at least 2 characters').max(80).optional(),
   /** Sign-up only: password set on the new account once the email code is verified. */
   password: newPasswordSchema.optional(),

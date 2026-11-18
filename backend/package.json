@@ -57,7 +57,7 @@
   },
   "scripts": {
     "start": "node --import ./instrumentation.js index.js",
-    "dev": "node --watch scripts/dev.js",
+    "dev": "node --watch-path=agents --watch-path=ai --watch-path=auth --watch-path=battle --watch-path=config --watch-path=controllers --watch-path=infrastructure --watch-path=middleware --watch-path=observability --watch-path=repositories --watch-path=routes --watch-path=schemas --watch-path=services --watch-path=app.js --watch-path=index.js --watch-path=instrumentation.js --watch-path=scripts/dev.js --watch-path=../contracts scripts/dev.js",
     "test": "vitest run --maxWorkers=1",
     "test:unit": "vitest run --exclude='**/*.integration.test.js'",
     "test:integration": "vitest run integration",

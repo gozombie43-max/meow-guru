@@ -155,7 +155,8 @@ export default function AuthFlow({ mode, embedded = false, modeSwitch = 'tabs', 
           </button>
         </form>
       ) : (
-        <EmailOtpLogin mode={activeMode} email={email} onEmailChange={setEmail} onSuccess={completeSignIn} />
+        <EmailOtpLogin mode={activeMode} email={email} onEmailChange={setEmail} onSuccess={completeSignIn}
+          onSwitchToLogin={() => (embedded ? switchEmbeddedMode('login') : router.push('/login'))} />
       )}
 
       {!signup && (
