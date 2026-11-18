@@ -33,7 +33,7 @@ export function useQuizFilters({
 }) {
   const { user, loading: authLoading } = useAuth();
   const [resumeEntry, setResumeEntry] = useState(() => resumeRequested
-    ? user?.recentQuizzes?.find(entry => entry.quizKey === `${subjectConfig.subjectId}:${slug}` && entry.status !== 'completed') : undefined);
+    ? user?.recentQuizzes?.find(entry => entry.quizKey === `${subjectConfig.subjectId}:${slug}`) : undefined);
   const [resumeWindow, setResumeWindow] = useState<{ index?: number; anchor?: string; filters?: { exam?: string; concept?: string; letter?: string } }>(() => ({ index: resumeEntry?.currentIndex, anchor: resumeEntry?.questionAnchor }));
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [selectedClassificationConcepts, setSelectedClassificationConcepts] =
@@ -52,7 +52,7 @@ export function useQuizFilters({
     }
     return new Set();
   });
-  const restoredEntry = resumeRequested ? user?.recentQuizzes?.find(entry => entry.quizKey === `${subjectConfig.subjectId}:${slug}` && entry.status !== 'completed') : undefined;
+  const restoredEntry = resumeRequested ? user?.recentQuizzes?.find(entry => entry.quizKey === `${subjectConfig.subjectId}:${slug}`) : undefined;
   if (!resumeEntry && restoredEntry) {
     // Auth restoration preserves this component. Initialize before enabling its first session query.
     setResumeEntry(restoredEntry);

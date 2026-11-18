@@ -32,7 +32,7 @@
   border-radius: 22px;
 }
 
-:global(html:not(.theme-dark)) .pageWrapper:not(.dark) :is(.resourceCard small, .battleCard small) {
+:global(html:not(.theme-dark)) .pageWrapper:not(.dark) :is(.mobileSubjectCard small, .resourceCard small, .battleCard small) {
   color: var(--muted);
 }
 
@@ -98,35 +98,19 @@
   color: var(--mac-text-primary);
 }
 
-.logoMark {
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+.meowBrandImg {
+  display: block;
+  width: 76px;
+  height: 38px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgb(0 0 0 / 45%));
+  transition: filter 200ms ease;
 }
 
-.logoMark svg g {
-  fill: var(--mac-primary);
-  transition: fill 200ms ease;
-}
-
-.logoText {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.025em;
-  color: var(--mac-text-primary);
-  white-space: nowrap;
-}
-
-.logoText span {
-  font-weight: 500;
-  color: var(--mac-primary);
+:global(html.theme-light) .meowBrandImg,
+:global(body.theme-light) .meowBrandImg,
+:global(html:not(.theme-dark)) .heroWorkspace > .mobileTopbar.topbarOverlay[data-scrolled] .meowBrandImg {
+  filter: brightness(0) saturate(100%) invert(8%) sepia(18%) saturate(1350%) hue-rotate(185deg) brightness(96%) contrast(96%) drop-shadow(0 1px 6px rgb(255 255 255 / 65%));
 }
 
 .railNav {
@@ -302,10 +286,9 @@
   -webkit-backdrop-filter: none;
   transition: background-color 200ms ease, border-color 200ms ease;
 }
-.heroWorkspace > .topbarOverlay:not([data-scrolled]) .logoMark svg g { fill: #5b9bff; }
-.heroWorkspace > .topbarOverlay:not([data-scrolled]) .logoText { color: #ffffff; text-shadow: 0 1px 10px rgb(0 0 0 / 35%); }
-.heroWorkspace > .topbarOverlay:not([data-scrolled]) .logoText span { color: #9ec5ff; }
 .heroWorkspace > .topbarOverlay:not([data-scrolled]) .menuButton { color: #ffffff; filter: drop-shadow(0 1px 6px rgb(0 0 0 / 35%)); }
+:global(html.theme-light) .heroWorkspace > .topbarOverlay:not([data-scrolled]) .menuButton,
+:global(body.theme-light) .heroWorkspace > .topbarOverlay:not([data-scrolled]) .menuButton { color: #0f172a; filter: drop-shadow(0 1px 4px rgb(255 255 255 / 60%)); }
 .heroWorkspace > .mobileTopbar.topbarOverlay[data-scrolled] {
   background: var(--light-only-surface, rgba(255, 255, 255, 0.88)) !important;
   border-bottom-color: var(--line) !important;
@@ -317,8 +300,9 @@
   border-bottom-color: transparent !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  .logoMark svg g,
-  .heroWorkspace > .mobileTopbar.topbarOverlay { transition: none; }
+  .meowBrandImg,
+  .heroWorkspace > .mobileTopbar.topbarOverlay,
+  .mobileHeroStudyBackdrop { transition: none; }
 }
 
 .sidebarBackdrop {
@@ -461,82 +445,79 @@
   transform: translateX(20px);
 }
 
-/* Mobile Hero Banner: first carousel slide, full-bleed photo with copy at the
-   bottom-left, matching the other study slides. Size comes from the carousel. */
+/* Mobile Hero Banner: full-bleed theme-matched photo with integrated Recent Quizzes card. */
 .mobileHeroStudyBackdrop {
   object-fit: cover;
-  object-position: center;
-  transform: scaleX(-1);
+  object-position: 72% center;
   pointer-events: none;
+  transition: opacity 180ms ease;
+}
+.mobileHeroBackdropLight {
+  display: block;
+}
+.mobileHeroBackdropDark {
+  display: none;
+}
+.dark .mobileHeroBackdropLight,
+:global(html.theme-dark) .mobileHeroBackdropLight,
+:global(body.theme-dark) .mobileHeroBackdropLight,
+:global([data-theme="dark"]) .mobileHeroBackdropLight {
+  display: none !important;
+}
+.dark .mobileHeroBackdropDark,
+:global(html.theme-dark) .mobileHeroBackdropDark,
+:global(body.theme-dark) .mobileHeroBackdropDark,
+:global([data-theme="dark"]) .mobileHeroBackdropDark {
+  display: block !important;
 }
 .mobileHeroStudyOverlay {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background:
-    linear-gradient(90deg, rgb(6 10 18 / 64%) 0%, rgb(6 10 18 / 28%) 55%, rgb(6 10 18 / 8%) 100%),
-    linear-gradient(180deg, rgb(6 10 18 / 58%) 0%, rgb(6 10 18 / 0%) 30%, rgb(6 10 18 / 48%) 65%, rgb(6 10 18 / 76%) 100%);
+  background: linear-gradient(180deg, rgb(255 255 255 / 26%) 0%, rgb(255 255 255 / 0%) 38%, rgb(226 236 248 / 22%) 68%, rgb(244 246 249 / 78%) 100%);
+}
+.dark .mobileHeroStudyOverlay,
+:global(html.theme-dark) .mobileHeroStudyOverlay,
+:global(body.theme-dark) .mobileHeroStudyOverlay {
+  background: linear-gradient(180deg, rgb(4 7 14 / 52%) 0%, rgb(4 7 14 / 10%) 36%, rgb(4 7 14 / 28%) 66%, rgb(0 0 0 / 76%) 100%);
 }
 .mobileHero {
   position: relative;
   overflow: hidden;
   display: flex;
   align-items: flex-end;
-  background: #101d2c;
+  min-height: var(--hero-height, calc(284px + var(--safe-top, 0px)));
+  background: #dbe7f6;
+}
+.dark .mobileHero,
+:global(html.theme-dark) .mobileHero,
+:global(body.theme-dark) .mobileHero {
+  background: #080d18;
 }
 
-.mobileHeroCopy {
+.mobileHeroRecentSlot {
   position: relative;
   z-index: 3;
   width: 100%;
-  max-width: 34ch;
-  padding: var(--hero-top, 68px) 20px 102px;
-  text-shadow: 0 2px 14px rgb(0 0 0 / 45%);
+  min-width: 0;
+  padding: var(--hero-top, 68px) 14px 34px;
 }
 
-.mobileHeroCopy h1 {
-  margin: 0;
-  color: #ffffff;
-  font-size: clamp(21px, 5.4vw, 24px);
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-  font-weight: 600;
-}
-.mobileHeroCopy h1 span {
-  color: inherit;
-  font-weight: 600;
-}
-
-.mobileHeroDesc {
-  color: rgb(241 245 249 / 82%);
-  font-size: 13.5px;
-  font-weight: 400;
-  line-height: 1.45;
-  letter-spacing: -0.005em;
-  margin: 5px 0 0;
-}
-
-/* Recent Quizzes sheet rises seamlessly over the bottom of the hero. */
-.mobileRecentLift {
+/* Content sheet rises seamlessly over the bottom edge of the hero. */
+.mobileContentGrid {
   position: relative;
   z-index: 2;
-  margin: -40px -16px 0;
-  padding: 18px 16px 0;
-  border-radius: 24px 24px 0 0;
-  background: var(--bg, #f4f6f9);
-}
-.mobileRecentLift .sectionHeader { margin-bottom: 12px; }
-:global(html.theme-dark) .mobileRecentLift {
-  background: var(--oled-canvas, #000);
-}
-
-/* Mobile Content Grid */
-.mobileContentGrid {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  margin-top: 20px;
+  margin: -20px -16px 0;
+  padding: 20px 16px 0;
+  border-radius: 24px 24px 0 0;
+  background: var(--bg, #f4f6f9);
+}
+:global(html.theme-dark) .mobileContentGrid {
+  background: var(--oled-canvas, #000);
 }
 
 .mobileLeftColumn {
@@ -552,22 +533,18 @@
 }
 
 .mobileSubjectCard {
-  min-height: 74px;
+  min-height: 76px;
   border-radius: 26px;
   background: var(--surface);
   box-shadow: var(--shadow);
   border: 1px solid var(--line);
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 40px minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
+  gap: 8px;
+  padding: 12px 10px;
   color: var(--text);
   text-decoration: none;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.35;
-  letter-spacing: -0.15px;
   position: relative;
   overflow: hidden;
 }
@@ -577,12 +554,11 @@
   z-index: 2;
 }
 
-.mobileSubjectCard > span:last-child {
+.subjectCopy {
   position: relative;
   z-index: 2;
-  color: var(--text);
-  font-weight: 600;
-  opacity: 1;
+  display: block;
+  min-width: 0;
 }
 
 .subjectIcon {
@@ -668,22 +644,30 @@
   justify-content: center;
 }
 
-.resourceCard strong,
-.battleCard strong {
+:is(.resourceCard, .battleCard) > span:last-child {
+  min-width: 0;
+}
+
+:is(.mobileSubjectCard, .resourceCard, .battleCard) strong {
   display: block;
-  font-size: 16px;
+  color: var(--text);
+  font-size: 17px;
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.3;
   letter-spacing: -0.2px;
 }
 
-.resourceCard small,
-.battleCard small {
+:is(.mobileSubjectCard, .resourceCard, .battleCard) small {
   display: block;
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
-  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: -0.1px;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sectionHeader {
@@ -693,7 +677,7 @@
 }
 
 .sectionHeader h2 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 650;
   line-height: 1.3;
   letter-spacing: -0.35px;
@@ -709,16 +693,16 @@
 }
 
 @media (max-width: 360px) {
-  .mobileHeroCopy h1 { font-size: 20px; }
-}
-
-@media (max-width: 360px) {
+  .sectionHeader h2 {
+    font-size: 18px;
+  }
   .mobileSubjectCard {
     grid-template-columns: 32px minmax(0, 1fr);
     gap: 6px;
     padding-inline: 10px;
-    font-size: 14px;
   }
+  :is(.mobileSubjectCard, .resourceCard, .battleCard) strong { font-size: 15px; }
+  :is(.mobileSubjectCard, .resourceCard, .battleCard) small { font-size: 11.5px; }
   .mobileSubjectCard .subjectIcon { width: 32px; height: 36px; }
 }
 
@@ -742,12 +726,12 @@
 :global(html.theme-dark) .pageWrapper :is(.railActive, .sidebarThemeToggle) { border: 0; box-shadow: none; }
 :global(html.theme-dark) .pageWrapper .railActive { background: var(--oled-selected-soft); }
 
-:global(html.theme-dark) .pageWrapper :is(.mobileSubjectCard > span:last-child, .resourceCard strong, .battleCard strong) {
+:global(html.theme-dark) .pageWrapper :is(.mobileSubjectCard strong, .resourceCard strong, .battleCard strong) {
   color: #ffffff !important;
   opacity: 1 !important;
 }
 
-:global(html.theme-dark) .pageWrapper :is(.resourceCard small, .battleCard small) { color: var(--oled-secondary); }
+:global(html.theme-dark) .pageWrapper :is(.mobileSubjectCard small, .resourceCard small, .battleCard small) { color: var(--oled-secondary); }
 
 /* Drawer controls share one scale, alignment, and focus treatment. */
 .pageWrapper .mobileOnly:has(> .sidebarOpen) { z-index: 300; }

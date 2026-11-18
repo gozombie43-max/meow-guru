@@ -1023,3 +1023,8 @@
 .page :is(.historyCardTitle, .historyCardBody, .detailValue, .userEmail) { overflow-wrap: anywhere; }
 .drawer { padding-top: 0; }
 @media(max-width:767px) { .filterSelect { flex-basis: calc(50% - 8px); } }
+
+@keyframes meow-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

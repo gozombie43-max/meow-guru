@@ -31,6 +31,9 @@ describe('authentication forms', () => {
     mocks.post.mockResolvedValueOnce({ data: { challengeId, retryAfter: 60 } });
     const user = userEvent.setup();
     render(<LoginPage />);
+    expect(screen.queryByRole('navigation', { name: 'Authentication mode' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Create Account' })).not.toBeInTheDocument();
+    expect(screen.getAllByAltText('Meow').length).toBeGreaterThan(0);
     expect(screen.queryByText(/google/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
     await user.type(screen.getByLabelText('Email'), 'Learner@Example.com');
@@ -51,6 +54,9 @@ describe('authentication forms', () => {
     mocks.post.mockResolvedValueOnce({ data: { challengeId, retryAfter: 60 } });
     const user = userEvent.setup();
     render(<RegisterPage />);
+    expect(screen.queryByRole('navigation', { name: 'Authentication mode' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Sign In' })).not.toBeInTheDocument();
+    expect(screen.getAllByAltText('Meow').length).toBeGreaterThan(0);
     expect(screen.queryByText(/google/i)).not.toBeInTheDocument();
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Send code' }));

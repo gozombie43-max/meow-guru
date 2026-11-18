@@ -17,12 +17,11 @@ import ConfigurationTemplate from '@/design-system/layouts/ConfigurationTemplate
 interface TestInstructionsProps {
   examSlug: string;
   testId: string;
-  resumeAttemptId?: string;
   isRetake?: boolean;
   initialLanguage?: string;
 }
 
-export default function TestInstructions({ examSlug, testId, resumeAttemptId, isRetake: propIsRetake, initialLanguage }: TestInstructionsProps) {
+export default function TestInstructions({ examSlug, testId, isRetake: propIsRetake, initialLanguage }: TestInstructionsProps) {
   const router = useAppNavigation();
   const { token, user } = useAuth();
   const starting = useRef(false);
@@ -47,7 +46,6 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId, is
 
   const isClientRetake = typeof window !== 'undefined' && ['1', 'true'].includes(new URLSearchParams(window.location.search).get('retake') || '');
   const isRetake = Boolean(propIsRetake || isClientRetake);
-  const isResume = Boolean(resumeAttemptId) && !isRetake;
   const effectiveLanguage = slot?.paperMetadata && language === 'hi' ? 'en' : language;
 
   useEffect(() => {
@@ -108,34 +106,30 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId, is
     setStartError(null);
     const epoch = startResponseEpoch();
     try {
-      if (isResume && resumeAttemptId) {
-        router.replace(`/mock-test/${examSlug}/${testId}/attempt?resume=${resumeAttemptId}&lang=${effectiveLanguage}`);
+      let startKey: string;
+      if (isRetake) {
+        retakeKey.current ??= crypto.randomUUID();
+        startKey = retakeKey.current;
       } else {
-        let startKey: string;
-        if (isRetake) {
-          retakeKey.current ??= crypto.randomUUID();
-          startKey = retakeKey.current;
-        } else {
-          startKey = getMockStartKey(user?.id, examSlug, testId);
-        }
-        const res = isRetake
-          ? await startTest(examSlug, testId, token, startKey, true)
-          : await startTest(examSlug, testId, token, startKey);
-        if (!mounted.current) return;
-        if (res.status === 'completed' && !isRetake) {
-          router.replace(`/mock-test/${examSlug}/${testId}/result/${res.attemptId}`);
-          return;
-        }
-        if (isRetake && user?.id) {
-          try {
-            sessionStorage.setItem(mockStartStorageKey(user.id, examSlug, testId), startKey);
-          } catch { /* Navigation uses the returned attempt directly. */ }
-          retakeKey.current = null;
-        }
-        const seededResponse = { ...res, ...(effectiveLanguage === 'bn' || effectiveLanguage === 'en' ? { language: effectiveLanguage } : {}) };
-        seedStartResponse(`mock:${examSlug}:${testId}`, user?.id, res.attemptId, seededResponse, epoch);
-        router.replace(`/mock-test/${examSlug}/${testId}/attempt?resume=${res.attemptId}&lang=${effectiveLanguage}`);
+        startKey = getMockStartKey(user?.id, examSlug, testId);
       }
+      const res = isRetake
+        ? await startTest(examSlug, testId, token, startKey, true)
+        : await startTest(examSlug, testId, token, startKey);
+      if (!mounted.current) return;
+      if (res.status === 'completed' && !isRetake) {
+        router.replace(`/mock-test/${examSlug}/${testId}/result/${res.attemptId}`);
+        return;
+      }
+      if (isRetake && user?.id) {
+        try {
+          sessionStorage.setItem(mockStartStorageKey(user.id, examSlug, testId), startKey);
+        } catch { /* Navigation uses the returned attempt directly. */ }
+        retakeKey.current = null;
+      }
+      const seededResponse = { ...res, ...(effectiveLanguage === 'bn' || effectiveLanguage === 'en' ? { language: effectiveLanguage } : {}) };
+      seedStartResponse(`mock:${examSlug}:${testId}`, user?.id, res.attemptId, seededResponse, epoch);
+      router.replace(`/mock-test/${examSlug}/${testId}/attempt?resume=${res.attemptId}&lang=${effectiveLanguage}`);
     } catch (error) {
       console.error(error);
       starting.current = false;
@@ -208,7 +202,7 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId, is
           disabled={loading || (slot.assessmentMode === 'confidential' && isRetake)}
           aria-describedby={startError ? 'mock-start-error' : undefined}
         >
-          {loading ? 'Preparing…' : startError && !startError.signIn ? 'Retry Start Mock Test' : isResume ? 'Resume Mock Test' : 'Start Mock Test'}
+          {loading ? 'Preparing…' : startError && !startError.signIn ? 'Retry Start Mock Test' : 'Start Mock Test'}
         </button>
       }
     >
@@ -239,7 +233,6 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId, is
             <li>Each section locks when its timer ends.</li>
           )}
           <li>Answers save automatically. Flag questions to review.</li>
-          <li>Refresh to resume saved progress. Timed sections continue while you are away.</li>
         </ul>
       </div>
 

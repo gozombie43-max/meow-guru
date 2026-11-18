@@ -30,6 +30,9 @@ function describe(quiz: RecentQuizEntry) {
   const question = total ? Math.min(current, total) : current;
   const completed = quiz.status === 'completed';
   const url = new URL(quiz.href, 'https://local.invalid');
+  if (url.pathname !== '/' && !url.pathname.endsWith('/quiz')) {
+    url.pathname = `${url.pathname.replace(/\/+$/, '')}/quiz`;
+  }
   if (quiz.mode) url.searchParams.set('mode', quiz.mode);
   url.searchParams.set('resume', '1');
   const subject = url.pathname.includes('/arithmetic/') ? 'Arithmetic'
@@ -53,7 +56,7 @@ export default function DesktopRecentQuizzes() {
   const { isJam } = useExamMode();
   const recent = (user?.recentQuizzes ?? [])
     .filter(quiz => isJamContent(quiz.href || '') === isJam)
-    .slice(0, 5)
+    .slice(0, 3)
     .map(describe);
   const [latest, ...rest] = recent;
 

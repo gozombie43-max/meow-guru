@@ -36,7 +36,7 @@ const themeBootstrapScript = `
         ? 'light'
         : savedTheme === 'light' || savedTheme === 'dark'
           ? savedTheme
-          : 'dark';
+          : 'light';
 
       const applyTheme = (element, nextTheme) => {
         element.classList.remove(...themeClasses);
@@ -78,7 +78,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={GeistSans.variable} suppressHydrationWarning>
       <head>
         <script
           id="theme-bootstrap"

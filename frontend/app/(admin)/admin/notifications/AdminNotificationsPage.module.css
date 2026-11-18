@@ -1034,3 +1034,8 @@
 .page :is(.card, .statCard, .tableCard, .historyCard, .analyticsSection, .resultCard) { border-radius: 14px; box-shadow: none; }
 .page :is(.grid, .statsGrid, .toolbar, .card, .historyCard, .noticeText) { min-width: 0; }
 .page :is(.historyCardTitle, .historyCardBody, .detailValue, .userEmail) { overflow-wrap: anywhere; }
+
+@keyframes meow-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

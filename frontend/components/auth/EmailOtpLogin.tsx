@@ -115,7 +115,7 @@ export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, on
         </>
       )}
       {error && <p className={styles.fieldErrorText} role="alert">{error}</p>}
-      <button type="submit" className={styles.primaryBtn} data-ui-button="primary" disabled={pending || (!challengeId && cooldown > 0)}>
+      <button type="submit" className={styles.primaryBtn} data-ui-button="state" disabled={pending || (!challengeId && cooldown > 0)}>
         {pending ? <><Spinner size="sm" tone="on-accent" /> {challengeId ? (signup ? 'Creating account…' : 'Signing in…') : 'Sending code…'}</>
           : <><span>{challengeId ? (signup ? 'Verify & create account' : 'Verify & sign in') : cooldown ? `Send code in ${cooldown}s` : 'Send code'}</span><ArrowRight size={16} /></>}
       </button>

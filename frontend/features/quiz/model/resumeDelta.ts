@@ -1,6 +1,7 @@
 import type { QuizAnswerCommand, RecentQuizPayload } from '@/lib/userApi';
 import type { SessionResult } from './types';
 import { saveRecentQuiz, submitQuizAnswer } from '@/lib/userApi';
+import { notifyRecentQuizUpdated } from '@/lib/recent-study';
 import { createCoalescedSave } from '@/lib/coalesced-save';
 import { AUTH_TOKEN_CHANGED_EVENT, getAccessToken } from '@/lib/axios';
 import { authSessionIdentity } from '@/lib/auth-session-identity';
@@ -127,13 +128,17 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
   }), (a, b) => a.generation === b.generation && snapshotsEqual(a.snapshot, b.snapshot));
   return {
     key: sessionKey,
-    save(snapshot: RecentQuizPayload) { return saver.save({ snapshot, generation }); },
+    save(snapshot: RecentQuizPayload) {
+      notifyRecentQuizUpdated?.(snapshot);
+      return saver.save({ snapshot, generation });
+    },
     retryPending() {
       if (!pending.length) return Promise.resolve();
       return serialize(drainAnswers);
     },
     answer(base: Omit<QuizAnswerCommand, 'resume'>, snapshot: RecentQuizPayload,
       callbacks: { onResolved?: (data?: QuizAnswerResponse) => void; onRejected?: () => void } = {}): Promise<QuizAnswerResponse | undefined> {
+      notifyRecentQuizUpdated?.(snapshot);
       generation++;
       let latestResponse: QuizAnswerResponse | undefined;
       pending.push({

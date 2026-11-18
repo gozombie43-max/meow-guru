@@ -86,7 +86,7 @@
    -------------------------------------------------------------------------- */
 :root {
   /* Typography Families */
-  --meow-font-sans: var(--font-geist-sans), "Noto Sans Bengali", system-ui, -apple-system, sans-serif;
+  --meow-font-sans: var(--font-geist-sans, system-ui), "Noto Sans Bengali", system-ui, -apple-system, sans-serif;
   --meow-font-display: var(--meow-font-sans);
   --meow-font-bengali: "Noto Sans Bengali", "Hind Siliguri", system-ui, -apple-system, sans-serif;
   --meow-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;

@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 
 import { normalizeExamLabel } from "@/lib/quiz-index";
 import { QuizThemeProvider } from "@/features/quiz/components/QuizThemeProvider";
+import { Spinner } from "@/design-system/components/Spinner";
 
 interface QuizEngineProps {
   subjectConfig: SubjectConfig;
@@ -48,10 +49,11 @@ import { mobileQuizViewModel, desktopQuizViewModel } from "../model/viewModels";
 const viewLoading = () => (
   <div
     role="status"
-    className="min-h-dvh flex items-center justify-center"
+    className="min-h-dvh flex flex-col items-center justify-center gap-3"
     style={{ background: "var(--background, var(--oled-canvas, #000000))", color: "var(--text-secondary, var(--oled-secondary, #a2a9b4))" }}
   >
-    Loading quiz…
+    <Spinner size="lg" tone="accent" />
+    <p className="text-sm font-medium">Loading quiz…</p>
   </div>
 );
 const QuizStartView = dynamic(() => import('./views/QuizStartView').then(module => module.QuizStartView), { loading: viewLoading });
@@ -82,9 +84,9 @@ function QuizEngineContent(props: QuizEngineProps) {
           role="status"
         >
           {themeStyles}
-          <div className="flex flex-col items-center text-center p-6" style={{ color: shellSecondary }}>
-            <h1 className="text-2xl font-bold mb-2" style={{ color: shellText }}>Resuming your session...</h1>
-            <p className="max-w-sm">Please wait while we load your previous answers and configure the engine.</p>
+          <div className="flex flex-col items-center gap-3 text-center p-6" style={{ color: shellSecondary }}>
+            <Spinner size="lg" tone="accent" />
+            <p className="text-sm font-medium" style={{ color: shellText }}>Continuing your quiz…</p>
           </div>
         </div>
       );
@@ -104,10 +106,20 @@ function QuizEngineContent(props: QuizEngineProps) {
         style={{ background: shellBackground, color: shellText }}
       >
         {themeStyles}
-        <div style={{ color: shellSecondary }} role="status" aria-busy={isQuestionLoading}>
-          {isQuestionLoading
-            ? "Loading quiz…"
-            : controller.submitError || "No questions available for this selection."}
+        <div
+          className="flex flex-col items-center gap-3 text-center p-6"
+          style={{ color: shellSecondary }}
+          role="status"
+          aria-busy={isQuestionLoading}
+        >
+          {isQuestionLoading ? (
+            <>
+              <Spinner size="lg" tone="accent" />
+              <p className="text-sm font-medium" style={{ color: shellText }}>Loading quiz…</p>
+            </>
+          ) : (
+            controller.submitError || "No questions available for this selection."
+          )}
         </div>
       </div>
     );

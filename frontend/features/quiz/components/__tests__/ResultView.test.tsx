@@ -77,8 +77,13 @@ describe("ResultView", () => {
     expect(
       screen.getByRole("heading", { name: /Session Complete/i }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Here is how you performed in this PYQ session\./i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Accuracy 75%" })).toBeInTheDocument();
+    expect(screen.getByText("Correct")).toBeInTheDocument();
+    expect(screen.getByText("Wrong")).toBeInTheDocument();
     expect(screen.getByText("Analogy")).toBeInTheDocument();
-    expect(screen.getByText("Excellent Mastery")).toBeInTheDocument();
 
     // Concept breakdown populates from actual results even when conceptOptions is empty
     expect(screen.getByText("Concept Breakdown")).toBeInTheDocument();

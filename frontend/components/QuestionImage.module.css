@@ -270,3 +270,8 @@
   :global([data-paper-images]) .container { --max-img-height: min(220px, 30dvh); }
   :global([data-paper-images]) .optionContainer { --max-img-height: 95px; }
 }
+
+@keyframes meow-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

@@ -100,30 +100,42 @@ test('theme switching updates browser colors and keeps settings focus contained'
   await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#f4f5f7');
 });
 
-test('mobile carousel has three navigation controls and respects reduced motion', async ({ page, context, request }, info) => {
-  test.skip(info.project.name !== 'mobile', 'The slideshow belongs to mobile Home');
+test('mobile hero integrates Recent Quizzes without quotes or carousel dots across light and dark viewports', async ({ page, context, request }, info) => {
+  test.skip(info.project.name !== 'mobile', 'The integrated study header belongs to mobile Home');
   const { token } = await loginFixtureUser(request, 'browser-mobile@example.test');
   await routeBackendApi(context, {
     token,
     accessSession: 'web-motion-fixture',
     frontendUrl: info.project.use.baseURL!,
   });
+  await context.addInitScript(() => localStorage.setItem('ui-theme', 'light'));
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  const carousel = page.getByRole('region', { name: 'Daily study inspiration' });
-  await expect(carousel.getByRole('button')).toHaveCount(3);
-  await expect(carousel.getByRole('button', { name: /slideshow/ })).toHaveCount(0);
-  await expect(carousel).toHaveAttribute('data-playing', 'true');
-  for (const button of await carousel.getByRole('button').all()) {
-    const bounds = await button.boundingBox();
-    expect(bounds!.width).toBeGreaterThanOrEqual(44);
-    expect(bounds!.height).toBeGreaterThanOrEqual(44);
-  }
-  await page.screenshot({ path: info.outputPath('home-carousel.png'), fullPage: true });
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await carousel.getByRole('button', { name: /^Show card 2:/ }).click();
-  await page.evaluate(() => (document.activeElement as HTMLElement)?.blur());
-  await expect(carousel).toHaveAttribute('data-playing', 'false');
-  await expect(carousel.getByRole('heading', { name: 'Stay Consistent' })).toBeInViewport();
-  await page.waitForTimeout(5500);
-  await expect(carousel.getByRole('button', { name: /^Show card 2:/ })).toHaveAttribute('aria-current', 'true');
+  const hero = page.locator('section[aria-label="Study header"]');
+  await expect(hero).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Daily study inspiration' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: /Small steps|Stay Consistent|Keep Moving Forward/i })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Show card/i })).toHaveCount(0);
+
+  const recentHeading = hero.locator('#mobile-recent-title');
+  await expect(recentHeading).toHaveText('Recent Quizzes');
+  const heroBox = (await hero.boundingBox())!;
+  const recentBox = (await recentHeading.boundingBox())!;
+  expect(recentBox.y).toBeGreaterThanOrEqual(heroBox.y);
+  expect(recentBox.y + recentBox.height).toBeLessThanOrEqual(heroBox.y + heroBox.height);
+  await expect(hero.getByRole('link', { name: /^(?:Resume|Review|Start Practice)/ })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: info.outputPath('home-hero-recent.png'), fullPage: true });
+
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.evaluate(() => {
+    localStorage.setItem('ui-theme', 'dark');
+    for (const el of [document.documentElement, document.body]) {
+      el.classList.remove('theme-light');
+      el.classList.add('dark', 'theme-dark');
+      el.setAttribute('data-theme', 'dark');
+    }
+  });
+  await expect(recentHeading).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

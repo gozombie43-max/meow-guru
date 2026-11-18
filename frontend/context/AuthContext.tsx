@@ -13,6 +13,8 @@ import { disconnectSocket } from '@/lib/socket-lifecycle';
 import { discardPreparedSession, restorePreparedSession } from '@/lib/session-bootstrap';
 import { consumeEarlyProfile } from '@/lib/early-session';
 import { API_BASE } from '@/lib/api-base';
+import { RECENT_QUIZ_UPDATED_EVENT } from '@/lib/recent-study';
+import type { RecentQuizPayload } from '@/lib/userApi';
 
 const isAuthError = (err: unknown) => {
   const status = (err as { response?: { status?: number } })?.response?.status;
@@ -217,6 +219,62 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     window.addEventListener(AUTH_TOKEN_CHANGED_EVENT, syncToken as EventListener);
     return () => {
       window.removeEventListener(AUTH_TOKEN_CHANGED_EVENT, syncToken as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const syncRecentQuiz = (event: Event) => {
+      const payload = (event as CustomEvent<RecentQuizPayload>).detail;
+      if (!payload || typeof payload.quizKey !== 'string' || !payload.quizKey) return;
+      setUser((prev) => {
+        if (!prev) return prev;
+        const rows = Array.isArray(prev.recentQuizzes) ? prev.recentQuizzes : [];
+        const existing = rows.find((row) => row.quizKey === payload.quizKey);
+        let merged: RecentQuizEntry;
+        if (!payload.delta || !existing) {
+          merged = {
+            ...existing,
+            ...payload,
+            updatedAt: new Date().toISOString(),
+          };
+        } else {
+          const selectedAnswers = { ...(existing.selectedAnswers ?? {}), ...(payload.selectedAnswers ?? {}) };
+          for (const index of payload.removedAnswers ?? []) delete selectedAnswers[index];
+          const submitted = new Set(existing.submittedQuestions ?? []);
+          for (const index of payload.submittedQuestions ?? []) submitted.add(index);
+          const existingResults = Array.isArray(existing.results)
+            ? (existing.results as Array<{ questionIndex?: number }>)
+            : [];
+          const nextResults = Array.isArray(payload.results)
+            ? (payload.results as Array<{ questionIndex?: number }>)
+            : [];
+          const byIndex = new Map<number, unknown>();
+          for (const row of existingResults) {
+            if (typeof row?.questionIndex === 'number') byIndex.set(row.questionIndex, row);
+          }
+          for (const row of nextResults) {
+            if (typeof row?.questionIndex === 'number') byIndex.set(row.questionIndex, row);
+          }
+          const { delta: _delta, removedAnswers: _removed, ...metadata } = payload;
+          merged = {
+            ...existing,
+            ...metadata,
+            selectedAnswers,
+            submittedQuestions: Array.from(submitted),
+            results: Array.from(byIndex.values()),
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        const nextRecent = [merged, ...rows.filter((row) => row.quizKey !== payload.quizKey)].slice(0, 12);
+        return { ...prev, recentQuizzes: nextRecent };
+      });
+    };
+
+    window.addEventListener(RECENT_QUIZ_UPDATED_EVENT, syncRecentQuiz as EventListener);
+    return () => {
+      window.removeEventListener(RECENT_QUIZ_UPDATED_EVENT, syncRecentQuiz as EventListener);
     };
   }, []);
 

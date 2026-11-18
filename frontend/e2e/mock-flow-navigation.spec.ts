@@ -115,7 +115,8 @@ for (const kind of ['mock', 'pyq'] as const) {
     await page.getByRole('button', { name: 'Leave mock test' }).click();
     await page.getByRole('button', { name: 'Exit quiz', exact: true }).click();
     await expect(page).toHaveURL(catalogUrl);
-    await card.getByRole('button', { name: 'Resume Mock', exact: true }).click();
+    await card.getByRole('button', { name: 'Start Mock', exact: true }).click();
+    await page.getByRole('button', { name: 'Start Mock Test', exact: true }).click();
     await expect(page.getByRole('radio').first()).toBeVisible();
     if (mobile) await page.getByRole('button', { name: /^Q / }).click();
     await page.getByRole('button', { name: 'Submit Test', exact: true }).first().click();

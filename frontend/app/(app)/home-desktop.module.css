@@ -86,26 +86,13 @@
   text-decoration: none;
 }
 
-.brandMark {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--h-accent-soft);
-  flex-shrink: 0;
+.brandLogoImg {
+  display: block;
+  width: 72px;
+  height: 36px;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(7%) sepia(6%) saturate(750%) hue-rotate(202deg) brightness(95%) contrast(96%);
 }
-
-.brandMark svg g { fill: var(--h-accent); }
-
-.brandName {
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1;
-}
-
-.brandName span { color: var(--h-text-3); font-weight: 500; }
 
 .examSlot {
   margin-top: 20px;

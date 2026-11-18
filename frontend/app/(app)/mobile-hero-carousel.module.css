@@ -1,50 +1,17 @@
 /* Full-bleed hero: the photo runs edge to edge and sits behind the transparent
-   mobile header. The bottom fades into the page so the Recent Quizzes panel
-   can overlap it. */
+   mobile header. The lower page sheet overlaps the bottom edge. */
 .carousel {
   --hero-fade: var(--bg, #f5f7fa);
   --hero-top: calc(68px + var(--safe-top, 0px));
-  --hero-height: calc(296px + var(--safe-top, 0px));
+  --hero-height: calc(284px + var(--safe-top, 0px));
   position: relative;
   min-width: 0;
   margin: 0 -16px;
 }
 :global(html.theme-dark) .carousel { --hero-fade: var(--oled-canvas, #000); }
 
-.track {
-  position: relative;
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
+@media (max-width: 360px) {
+  .carousel {
+    --hero-height: calc(268px + var(--safe-top, 0px));
+  }
 }
-.track::-webkit-scrollbar { display: none; }
-.slide { position: relative; flex: 0 0 100%; min-width: 0; min-height: var(--hero-height); scroll-snap-align: start; scroll-snap-stop: always; }
-.carousel .slide > section { height: 100%; min-height: var(--hero-height); margin-top: 0; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
-
-.studyCard { position: relative; display: flex; align-items: flex-end; height: 100%; min-height: var(--hero-height); padding: var(--hero-top) 20px 102px; overflow: hidden; background: #101d2c; }
-.studyImage { object-fit: cover; object-position: center; }
-.studyCard::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgb(6 10 18 / 64%) 0%, rgb(6 10 18 / 28%) 55%, rgb(6 10 18 / 8%) 100%),
-    linear-gradient(180deg, rgb(6 10 18 / 58%) 0%, rgb(6 10 18 / 0%) 30%, rgb(6 10 18 / 48%) 65%, rgb(6 10 18 / 76%) 100%);
-  pointer-events: none;
-}
-.studyCopy { position: relative; z-index: 1; max-width: 34ch; text-shadow: 0 2px 14px rgb(0 0 0 / 45%); }
-.studyCopy h2 { margin: 0; color: #ffffff; font-size: clamp(21px, 5.4vw, 24px); font-weight: 600; line-height: 1.2; letter-spacing: -0.025em; }
-.studyCopy p { margin: 5px 0 0; color: rgb(241 245 249 / 82%); font-size: 13.5px; font-weight: 400; line-height: 1.45; letter-spacing: -0.005em; }
-
-.controls { position: absolute; bottom: 50px; left: 50%; z-index: 4; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: 0; height: 44px; }
-.carousel .dot[data-ui-button] { display: inline-flex; align-items: center; justify-content: center; width: 44px; min-width: 44px !important; height: 44px; padding: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; color: #fff; cursor: pointer; }
-.dot span { width: 6px; height: 6px; border-radius: 10px; background: rgb(255 255 255 / 55%); transition: width 180ms ease, background-color 180ms ease; }
-.dot[aria-current='true'] span { width: 18px; background: var(--ios-system-blue, #007aff); }
-
-.carousel .dot[data-ui-button]:focus-visible { border-radius: 10px !important; }
-@media (max-width: 360px) { .carousel { --hero-height: calc(272px + var(--safe-top, 0px)); } .studyCopy h2 { font-size: 20px; } }
-@media (prefers-reduced-motion: reduce) { .dot span { transition: none; } }

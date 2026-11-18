@@ -24,7 +24,7 @@ interface AuthFlowProps {
   mode: 'login' | 'signup';
   embedded?: boolean;
   /** Embedded only: 'tabs' shows a segmented switch, 'link' shows a single text link under the form. */
-  modeSwitch?: 'tabs' | 'link';
+  modeSwitch?: 'tabs' | 'link' | 'none';
   onCancel?: () => void;
   onSuccess?: () => void;
 }
@@ -33,7 +33,7 @@ interface AuthFlowProps {
  * One-page sign in / create account. Both use an emailed 6-digit code entered in place.
  * Existing password accounts can still sign in through the secondary "Log in with password" link.
  */
-export default function AuthFlow({ mode, embedded = false, modeSwitch = 'tabs', onCancel, onSuccess }: AuthFlowProps) {
+export default function AuthFlow({ mode, embedded = false, modeSwitch = 'none', onCancel, onSuccess }: AuthFlowProps) {
   const { login } = useAuth();
   const router = useRouter();
   const [currentMode, setCurrentMode] = useState<'login' | 'signup'>(mode);
@@ -99,7 +99,7 @@ export default function AuthFlow({ mode, embedded = false, modeSwitch = 'tabs', 
           <div className={styles.optionsRow}>
             <button type="button" className={styles.forgotBtn} onClick={() => setForgotOpen(true)}>Forgot password?</button>
           </div>
-          <button data-ui-button="primary" type="submit" disabled={isSubmitting} aria-busy={isSubmitting}
+          <button data-ui-button="state" type="submit" disabled={isSubmitting} aria-busy={isSubmitting}
             className={styles.primaryBtn} aria-label="Sign in">
             <span>Sign In</span>
             {isSubmitting ? <span className={styles.spinner} aria-hidden="true" /> : <ArrowRight size={16} aria-hidden="true" />}
@@ -190,6 +190,7 @@ export default function AuthFlow({ mode, embedded = false, modeSwitch = 'tabs', 
           subtitle={subtitle}
           activeTab={signup ? 'register' : 'login'}
           error={error}
+          showNavigationTabs={false}
         >
           {formContent}
         </AuthCard>

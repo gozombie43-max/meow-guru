@@ -66,14 +66,15 @@ it('preselects initialLanguage on retake and allows rechanging language before s
   expect(navigation.replace).toHaveBeenCalledWith('/mock-test/ssc-cgl/paper/attempt?resume=retake-attempt-bn&lang=en');
 });
 
-it('does not resume a previous attempt when retaking even if resumeAttemptId is passed', async () => {
-  vi.mocked(startTest).mockResolvedValue({ attemptId: 'fresh-retake-attempt', paper: { sections: [{ questions: [] }] } });
-  render(<TestInstructions examSlug="ssc-cgl" testId="paper" isRetake resumeAttemptId="stale-attempt-99" />);
+it('always renders Start Mock Test without a Resume Mock Test state and starts a new attempt', async () => {
+  vi.mocked(startTest).mockResolvedValue({ attemptId: 'fresh-attempt', paper: { sections: [{ questions: [] }] } });
+  render(<TestInstructions examSlug="ssc-cgl" testId="paper" />);
   const start = await screen.findByRole('button', { name: 'Start Mock Test' });
   expect(start).toHaveTextContent('Start Mock Test');
+  expect(screen.queryByRole('button', { name: 'Resume Mock Test' })).not.toBeInTheDocument();
   await act(async () => fireEvent.click(start));
-  expect(startTest).toHaveBeenCalledWith('ssc-cgl', 'paper', 'token', expect.any(String), true);
-  expect(navigation.replace).toHaveBeenCalledWith('/mock-test/ssc-cgl/paper/attempt?resume=fresh-retake-attempt&lang=en');
+  expect(startTest).toHaveBeenCalledWith('ssc-cgl', 'paper', 'token', expect.any(String));
+  expect(navigation.replace).toHaveBeenCalledWith('/mock-test/ssc-cgl/paper/attempt?resume=fresh-attempt&lang=en');
 });
 
 it('disables retake start and warns if assessment is confidential', async () => {

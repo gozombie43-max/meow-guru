@@ -153,74 +153,6 @@
   margin: 0;
 }
 
-.continueCard {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-  border: 1px solid var(--border);
-}
-
-.continueIconWrap {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: var(--primary-bg);
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.continueInfo {
-  flex: 1;
-}
-
-.continueInfo h3 {
-  font-size: 14px;
-  font-weight: 700;
-  margin: 0 0 4px 0;
-  color: var(--text-dark);
-}
-
-.continueInfo p {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin: 0 0 8px 0;
-}
-
-.progressBar {
-  height: 6px;
-  background: var(--border);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  background: var(--theme-action, var(--primary));
-  border-radius: 3px;
-}
-
-.resumeBtn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--theme-action, var(--primary));
-  color: #fff;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding-left: 3px; /* visual center for play icon */
-  flex-shrink: 0;
-}
-
 .categoryScroll {
   width: 100%;
   display: flex;
@@ -844,27 +776,6 @@
   background: var(--primary-bg);
 }
 
-.statusPaused {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #fffbeb;
-  color: #d97706;
-  border: 1px solid #fde68a;
-  min-height: 34px;
-  padding: 0 10px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  width: 128px;
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
-}
-.statusPaused:active {
-  transform: scale(0.98);
-}
-
 .statusNotStarted {
   display: flex;
   align-items: center;
@@ -1205,7 +1116,7 @@
   }
 
   :global(body.theme-dark) .examCard {
-    background: rgba(44, 44, 46, 0.8);
+    background: #151515;
     border: 1px solid rgba(255, 255, 255, 0.07);
   }
 
@@ -1394,7 +1305,8 @@
 :global(html.theme-dark) .page {
   background: var(--oled-canvas); color: var(--oled-text);
 }
-:global(html.theme-dark) .page :is(.continueCard, .examCard, .statBox, .cardSection, .testLineCard, .detailHeader) { background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 14px; }
+:global(html.theme-dark) .page :is(.examCard, .statBox, .cardSection, .testLineCard, .detailHeader),
+:global(body.theme-dark) .page :is(.examCard, .statBox, .cardSection, .testLineCard, .detailHeader) { background: #151515; border: 0; box-shadow: none; border-radius: 14px; }
 :global(html.theme-dark) .page :is(.tabBtn) { background: var(--oled-surface); border: 0; border-radius: 999px !important; box-shadow: none; }
 :global(html.theme-dark) .page :is(.activeTabBtn) { background: var(--oled-selected) !important; color: #edf4fc !important; border: 0; border-radius: 999px !important; box-shadow: none; }
 :global(html.theme-dark) .page :is(.activeTabBtn)::after { display: none; }

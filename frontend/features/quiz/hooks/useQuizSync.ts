@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { notifyRecentQuizUpdated } from "@/lib/recent-study";
 import type { createResumeSaver } from '../model/resumeDelta';
 import type { SessionResult, Difficulty, QuizQuestion } from "@/features/quiz/model/types";
 
@@ -61,23 +62,25 @@ export function useQuizSync({
     if (resumeRequested && !resumeAppliedRef.current) return;
 
     const submittedList = Array.from(submittedQuestions);
+    const snapshotPayload = {
+      quizKey,
+      title,
+      subject: subjectId,
+      slug,
+      href: quizHref,
+      mode,
+      currentIndex,
+      questionAnchor: questions[currentIndex]?.sessionAnchor,
+      sessionFilters,
+      totalQuestions: questions.length,
+      selectedAnswers,
+      submittedQuestions: submittedList,
+      results,
+      status: "in-progress" as const,
+    };
+    notifyRecentQuizUpdated?.(snapshotPayload);
     const save = () => {
-      saver.save({
-        quizKey,
-        title,
-        subject: subjectId,
-        slug,
-        href: quizHref,
-        mode,
-        currentIndex,
-        questionAnchor: questions[currentIndex]?.sessionAnchor,
-        sessionFilters,
-        totalQuestions: questions.length,
-        selectedAnswers,
-        submittedQuestions: submittedList,
-        results,
-        status: "in-progress",
-      }).catch(() => {});
+      saver.save(snapshotPayload).catch(() => {});
     };
     const saveTimeout = window.setTimeout(save, 600);
     serverFlush.current = save;

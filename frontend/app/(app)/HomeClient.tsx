@@ -25,11 +25,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
+import GuestWelcomeScreen from './GuestWelcomeScreen';
 import d from './home-desktop.module.css';
 import styles from './page.module.css';
-
-const BRAND_PATH =
-  'M56,41.7c0,0 -2.11,-0.54 -4,-0.7c0,0 1.22,1.92 1.5,4.5c0,0 -2.26,-0.55 -4.42,-0.5c0,0 1.62,1.91 1.92,4c0,0 -1.915,1.62 -6.315,4.12c0,0 -0.073,-2.17 -1.185,-6.12h-2c0,0 -0.068,4.899 -1.5,10.3c-3,3.7 -8,3.7 -8,3.7c0,0 -5,0 -8,-3.7c-1.432,-5.401 -1.5,-10.3 -1.5,-10.3h-2c-1.111,3.95 -1.185,6.12 -1.185,6.12c-4.4,-2.5 -6.315,-4.12 -6.315,-4.12c0.3,-2.09 1.92,-4 1.92,-4c-2.16,-0.05 -4.42,0.5 -4.42,0.5c0.28,-2.58 1.5,-4.5 1.5,-4.5c-1.89,0.16 -4,0.7 -4,0.7c0.36,-2.4 2,-4.7 2,-4.7c-2.41,0.27 -4,1 -4,1c3,-14 15,-21 15,-21c-4.02,-4.35 -7.4,-7 -7.4,-7c0,0 -1.17,4.47 -0.6,10.4l-4,4.1c-1,-9.5 1.8,-20.5 1.8,-20.5l1.5,-0.5l12.7,10.5c0,0 2.46,-0.48 7,-0.48c4.54,0 7,0.48 7,0.48l12.7,-10.5l1.5,0.5c0,0 2.8,11 1.8,20.5l-4,-4.1c0.57,-5.93 -0.6,-10.4 -0.6,-10.4c0,0 -3.38,2.65 -7.4,7c0,0 12,7 15,21c0,0 -1.59,-0.73 -4,-1c0,0 1.64,2.3 2,4.7zM26.799,38c-0.143,-2.57 -1.082,-3.92 -1.614,-4.38c-1.741,-0.59 -3.813,-0.58 -5.185,-0.43c2.15,4.75 6.297,4.81 6.348,4.81zM37.652,38c0.051,0 4.198,-0.06 6.348,-4.81c-1.372,-0.15 -3.444,-0.16 -5.185,0.43c-0.532,0.46 -1.471,1.81 -1.614,4.38zM32,52c-2,0 -4,1 -4,1c1,4 4,4 4,4c0,0 3,0 4,-4c0,0 -2,-1 -4,-1z';
 
 const railItems = [
   { label: 'Home', href: '/', icon: HomeIcon, desktopIcon: HomeIcon },
@@ -112,19 +110,16 @@ function AdminContactCard() {
 
 function SkillLearnLogo() {
   return (
-    <Link href="/" className={styles.logo} aria-label="Study Guru home">
-      <span className={styles.logoMark} aria-hidden="true">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="28" height="28" fillRule="nonzero">
-          <g fill="#2563eb" fillRule="nonzero" stroke="none" strokeWidth="1" strokeLinecap="butt" strokeLinejoin="miter" strokeMiterlimit="10" strokeDasharray="" strokeDashoffset="0" style={{ mixBlendMode: 'normal' }}>
-            <g transform="scale(4,4)">
-              <path d="M56,41.7c0,0 -2.11,-0.54 -4,-0.7c0,0 1.22,1.92 1.5,4.5c0,0 -2.26,-0.55 -4.42,-0.5c0,0 1.62,1.91 1.92,4c0,0 -1.915,1.62 -6.315,4.12c0,0 -0.073,-2.17 -1.185,-6.12h-2c0,0 -0.068,4.899 -1.5,10.3c-3,3.7 -8,3.7 -8,3.7c0,0 -5,0 -8,-3.7c-1.432,-5.401 -1.5,-10.3 -1.5,-10.3h-2c-1.111,3.95 -1.185,6.12 -1.185,6.12c-4.4,-2.5 -6.315,-4.12 -6.315,-4.12c0.3,-2.09 1.92,-4 1.92,-4c-2.16,-0.05 -4.42,0.5 -4.42,0.5c0.28,-2.58 1.5,-4.5 1.5,-4.5c-1.89,0.16 -4,0.7 -4,0.7c0.36,-2.4 2,-4.7 2,-4.7c-2.41,0.27 -4,1 -4,1c3,-14 15,-21 15,-21c-4.02,-4.35 -7.4,-7 -7.4,-7c0,0 -1.17,4.47 -0.6,10.4l-4,4.1c-1,-9.5 1.8,-20.5 1.8,-20.5l1.5,-0.5l12.7,10.5c0,0 2.46,-0.48 7,-0.48c4.54,0 7,0.48 7,0.48l12.7,-10.5l1.5,0.5c0,0 2.8,11 1.8,20.5l-4,-4.1c0.57,-5.93 -0.6,-10.4 -0.6,-10.4c0,0 -3.38,2.65 -7.4,7c0,0 12,7 15,21c0,0 -1.59,-0.73 -4,-1c0,0 1.64,2.3 2,4.7zM26.799,38c-0.143,-2.57 -1.082,-3.92 -1.614,-4.38c-1.741,-0.59 -3.813,-0.58 -5.185,-0.43c2.15,4.75 6.297,4.81 6.348,4.81zM37.652,38c0.051,0 4.198,-0.06 6.348,-4.81c-1.372,-0.15 -3.444,-0.16 -5.185,0.43c-0.532,0.46 -1.471,1.81 -1.614,4.38zM32,52c-2,0 -4,1 -4,1c1,4 4,4 4,4c0,0 3,0 4,-4c0,0 -2,-1 -4,-1z"></path>
-            </g>
-          </g>
-        </svg>
-      </span>
-      <span className={styles.logoText}>
-        Study <span>Guru</span>
-      </span>
+    <Link href="/" className={styles.logo} aria-label="Meow home">
+      <Image
+        src="/images/meow-logo.webp"
+        alt="Meow"
+        width={76}
+        height={38}
+        priority
+        unoptimized
+        className={styles.meowBrandImg}
+      />
     </Link>
   );
 }
@@ -138,11 +133,12 @@ export default function HomeClient({
 }) {
   const { isJam } = useExamMode();
   const pathname = usePathname() || '/';
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { theme, toggleThemeMode } = useThemeMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [heroScrolled, setHeroScrolled] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
+  const showGuestWelcome = !loading && !user;
   useModalSurface(sidebarRef, sidebarOpen, () => setSidebarOpen(false), { initialFocus: '[aria-label="Close sidebar"]' });
   const isDark = theme === 'dark';
 
@@ -156,13 +152,14 @@ export default function HomeClient({
   }, []);
 
   useEffect(() => {
+    if (showGuestWelcome) return;
     document.body.classList.add('home-redesign');
     document.documentElement.classList.add('home-redesign');
     return () => {
       document.body.classList.remove('home-redesign');
       document.documentElement.classList.remove('home-redesign');
     };
-  }, []);
+  }, [showGuestWelcome]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -189,18 +186,25 @@ export default function HomeClient({
     </div>
   );
 
+  if (showGuestWelcome) {
+    return <GuestWelcomeScreen />;
+  }
+
   return (
     <div className={`${styles.pageWrapper} ${isDark ? styles.dark : ''}`}>
       <div className={styles.desktopOnly}>
         <div className={d.window}>
           <aside className={d.sidebar}>
-            <Link href="/" className={d.brand} aria-label="Study Guru home">
-              <span className={d.brandMark} aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="22" height="22">
-                  <g><path d={BRAND_PATH} /></g>
-                </svg>
-              </span>
-              <span className={d.brandName}>Study <span>Guru</span></span>
+            <Link href="/" className={d.brand} aria-label="Meow home">
+              <Image
+                src="/images/meow-logo.webp"
+                alt="Meow"
+                width={72}
+                height={36}
+                priority
+                unoptimized
+                className={d.brandLogoImg}
+              />
             </Link>
 
             <div className={d.examSlot}>
