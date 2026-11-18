@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { ArrowRight, Mail, ShieldCheck, User } from 'lucide-react';
+import { ArrowRight, Lock, Mail, ShieldCheck, User } from 'lucide-react';
 import api from '@/shared/api/client';
 import { Spinner } from '@/design-system';
 import AuthInput from './AuthInput';
@@ -18,6 +18,7 @@ interface EmailOtpLoginProps {
 export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, onSuccess }: EmailOtpLoginProps) {
   const signup = mode === 'signup';
   const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
   const [challengeId, setChallengeId] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -39,6 +40,8 @@ export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, on
     request.current?.abort();
     request.current = controller;
     if (signup && name.trim().length < 2) { setError('Enter your name (at least 2 characters).'); return; }
+    if (signup && password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    if (signup && new TextEncoder().encode(password).byteLength > 72) { setError('Password is too long.'); return; }
     setPending(true);
     setError('');
     try {
@@ -72,7 +75,7 @@ export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, on
     try {
       const { verifyEmailOtpSchema } = await import('@meow/contracts/auth');
       if (controller.signal.aborted) return;
-      const parsed = verifyEmailOtpSchema.safeParse({ email, challengeId, code, ...(signup ? { name } : {}) });
+      const parsed = verifyEmailOtpSchema.safeParse({ email, challengeId, code, ...(signup ? { name, password } : {}) });
       if (!parsed.success) { setError('Enter the 6-digit code from your email.'); return; }
       const { data } = await api.post('/auth/email-otp/verify', parsed.data, { signal: controller.signal });
       if (!controller.signal.aborted) await onSuccess(data.token, parsed.data.email);
@@ -96,7 +99,7 @@ export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, on
             className={styles.otpInput} icon={<ShieldCheck size={17} />}
             value={code} disabled={pending} aria-describedby="otp-help"
             onChange={event => { setCode(event.target.value.replace(/\D/g, '').slice(0, 6)); setError(''); }} />
-          <p id="otp-help" className={styles.otpHelp}>The code expires in 5 minutes. Check your spam folder too.</p>
+          <p id="otp-help" className={styles.otpHelp}>Expires in 5 minutes. Check spam too.</p>
         </>
       ) : (
         <>
@@ -105,7 +108,10 @@ export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, on
           <AuthInput id="otp-email" label="Email" type="email" autoComplete="email"
             placeholder="you@example.com" icon={<Mail size={17} />} value={email} disabled={pending}
             onChange={event => { onEmailChange(event.target.value); setError(''); }} />
-          <p className={styles.otpHelp}>{signup ? 'We’ll email you a 6-digit code to confirm your address.' : 'We’ll email you a 6-digit code. No password needed.'}</p>
+          {signup && <AuthInput id="otp-password" label="Password" type="password" isPassword autoComplete="new-password"
+            placeholder="At least 6 characters" icon={<Lock size={17} />} value={password} disabled={pending}
+            onChange={event => { setPassword(event.target.value); setError(''); }} />}
+          <p className={styles.otpHelp}>We’ll email you a 6-digit code.</p>
         </>
       )}
       {error && <p className={styles.fieldErrorText} role="alert">{error}</p>}
