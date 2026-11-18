@@ -18,9 +18,8 @@ Check `http://localhost:10000/live` for liveness and `http://localhost:10000/hea
 
 ## Resend email smoke test
 
-Set `RESEND_API_KEY` in `backend/.env` (or the backend application's Azure
-environment settings). `EMAIL_FROM` is optional and defaults to
-`Meow <onboarding@resend.dev>`. Keep the key in the backend environment.
+Set `RESEND_API_KEY` and `EMAIL_FROM` (for example `Meow <noreply@meowguru.me>`) in `backend/.env`
+(or the backend application's Azure environment settings). Keep the key in the backend environment.
 
 From this directory, run:
 

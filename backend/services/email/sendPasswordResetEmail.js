@@ -1,4 +1,4 @@
-import { passwordResetEmailTemplate } from './templates.js';
+import { passwordResetEmailTemplate } from './templates/passwordResetEmail.js';
 
 export async function sendPasswordResetEmail(user, token, frontendUrl) {
   const resetUrl = new URL('/reset-password', frontendUrl);

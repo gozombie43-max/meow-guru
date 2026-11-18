@@ -87,3 +87,85 @@
   .stats dd { font-size: 17px; }
   .stats dt { font-size: 10px; }
 }
+
+.guestHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.guestIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  color: var(--meow-text);
+}
+
+.guestDetails {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.guestDetails h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--meow-text);
+}
+
+.guestDetails p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--meow-secondary);
+}
+
+.guestActions {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.guestPill,
+.guestSecondaryPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--meow-radius-full, 999px);
+  font-family: inherit;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.guestPill {
+  background: var(--meow-action-fill, var(--meow-accent));
+  color: #ffffff;
+  font-weight: 650;
+  transition: background-color 0.15s ease;
+}
+
+.guestPill:hover {
+  background: var(--meow-action-fill-hover, var(--meow-accent-hover));
+}
+
+.guestSecondaryPill {
+  background: var(--meow-surface-subtle);
+  color: var(--meow-text);
+  font-weight: 600;
+  transition: opacity 0.15s ease;
+}
+
+.guestSecondaryPill:hover {
+  opacity: 0.85;
+}

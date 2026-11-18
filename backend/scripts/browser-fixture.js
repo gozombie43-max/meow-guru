@@ -12,6 +12,7 @@ process.env.REFRESH_TOKEN_SECRET = 'local-browser-refresh-secret-not-for-deploym
 process.env.DEPLOYMENT_ENVIRONMENT = 'test';
 process.env.REDIS_URL = '';
 process.env.RESEND_API_KEY = 're_local_fixture_only';
+process.env.EMAIL_FROM = 'Meow <noreply@meowguru.me>';
 process.env.RESEND_BASE_URL = 'http://127.0.0.1:3112';
 process.env.FRONTEND_URL = 'http://127.0.0.1:3110';
 process.env.BACKEND_PUBLIC_URL = '';

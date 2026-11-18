@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { ArrowRight, Mail, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Mail, ShieldCheck, User } from 'lucide-react';
 import api from '@/shared/api/client';
 import { Spinner } from '@/design-system';
 import AuthInput from './AuthInput';
@@ -9,12 +9,15 @@ import { signInErrorMessage } from './signInError';
 import styles from './auth.module.css';
 
 interface EmailOtpLoginProps {
+  mode?: 'login' | 'signup';
   email: string;
   onEmailChange: (email: string) => void;
   onSuccess: (token: string, email: string) => Promise<void>;
 }
 
-export default function EmailOtpLogin({ email, onEmailChange, onSuccess }: EmailOtpLoginProps) {
+export default function EmailOtpLogin({ mode = 'login', email, onEmailChange, onSuccess }: EmailOtpLoginProps) {
+  const signup = mode === 'signup';
+  const [name, setName] = useState('');
   const [challengeId, setChallengeId] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -35,6 +38,7 @@ export default function EmailOtpLogin({ email, onEmailChange, onSuccess }: Email
     const controller = new AbortController();
     request.current?.abort();
     request.current = controller;
+    if (signup && name.trim().length < 2) { setError('Enter your name (at least 2 characters).'); return; }
     setPending(true);
     setError('');
     try {
@@ -68,7 +72,7 @@ export default function EmailOtpLogin({ email, onEmailChange, onSuccess }: Email
     try {
       const { verifyEmailOtpSchema } = await import('@meow/contracts/auth');
       if (controller.signal.aborted) return;
-      const parsed = verifyEmailOtpSchema.safeParse({ email, challengeId, code });
+      const parsed = verifyEmailOtpSchema.safeParse({ email, challengeId, code, ...(signup ? { name } : {}) });
       if (!parsed.success) { setError('Enter the 6-digit code from your email.'); return; }
       const { data } = await api.post('/auth/email-otp/verify', parsed.data, { signal: controller.signal });
       if (!controller.signal.aborted) await onSuccess(data.token, parsed.data.email);
@@ -96,16 +100,18 @@ export default function EmailOtpLogin({ email, onEmailChange, onSuccess }: Email
         </>
       ) : (
         <>
+          {signup && <AuthInput id="otp-name" label="Full name" autoComplete="name" placeholder="Your name" icon={<User size={17} />} value={name} disabled={pending}
+            onChange={event => { setName(event.target.value); setError(''); }} />}
           <AuthInput id="otp-email" label="Email" type="email" autoComplete="email"
             placeholder="you@example.com" icon={<Mail size={17} />} value={email} disabled={pending}
             onChange={event => { onEmailChange(event.target.value); setError(''); }} />
-          <p className={styles.otpHelp}>We’ll email you a code. New here? Confirm it to create your account.</p>
+          <p className={styles.otpHelp}>{signup ? 'We’ll email you a 6-digit code to confirm your address.' : 'We’ll email you a 6-digit code. No password needed.'}</p>
         </>
       )}
       {error && <p className={styles.fieldErrorText} role="alert">{error}</p>}
       <button type="submit" className={styles.primaryBtn} data-ui-button="primary" disabled={pending || (!challengeId && cooldown > 0)}>
-        {pending ? <><Spinner size="sm" tone="on-accent" /> {challengeId ? 'Signing in…' : 'Sending code…'}</>
-          : <><span>{challengeId ? 'Verify & sign in' : cooldown ? `Send code in ${cooldown}s` : 'Send code'}</span><ArrowRight size={16} /></>}
+        {pending ? <><Spinner size="sm" tone="on-accent" /> {challengeId ? (signup ? 'Creating account…' : 'Signing in…') : 'Sending code…'}</>
+          : <><span>{challengeId ? (signup ? 'Verify & create account' : 'Verify & sign in') : cooldown ? `Send code in ${cooldown}s` : 'Send code'}</span><ArrowRight size={16} /></>}
       </button>
       {challengeId && <button type="button" className={styles.otpResend} disabled={pending || cooldown > 0}
         onClick={() => void sendCode()}>{cooldown ? `Resend in ${cooldown}s` : 'Resend code'}</button>}
