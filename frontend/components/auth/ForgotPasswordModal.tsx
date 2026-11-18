@@ -97,10 +97,10 @@ function ForgotPasswordContent({ onClose }: Pick<ForgotPasswordModalProps, 'onCl
               Enter your registered email address to receive password recovery instructions.
             </p>
             <div className={styles.fieldGroup} style={{ marginBottom: 12 }}>
-              <label htmlFor="recovery-email" className={styles.fieldLabel}>
-                Email address
-              </label>
               <div className={styles.inputWrapper}>
+                <label htmlFor="recovery-email" className={styles.fieldLabel}>
+                  Email address
+                </label>
                 <span className={styles.inputLeadingIcon}>
                   <Mail size={17} />
                 </span>

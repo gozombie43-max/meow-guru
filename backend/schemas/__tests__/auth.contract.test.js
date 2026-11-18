@@ -3,9 +3,9 @@ import { verifyEmailSchema, resendVerificationSchema, forgotPasswordSchema, rese
 import { requestEmailOtpSchema, verifyEmailOtpSchema } from '@meow/contracts/auth';
 
 it('normalizes OTP email, strips client privileges, and keeps codes as six-digit strings', () => {
-  expect(requestEmailOtpSchema.parse({ email: ' Learner@Example.test ', role: 'admin' })).toEqual({ email: 'learner@example.test' });
+  expect(requestEmailOtpSchema.parse({ email: ' Learner@Example.test ', role: 'admin' })).toEqual({ email: 'learner@example.test', intent: 'login' });
   expect(verifyEmailOtpSchema.parse({ email: 'Learner@Example.test', challengeId: 'a'.repeat(64), code: ' 012345 ', role: 'admin' }))
-    .toEqual({ email: 'learner@example.test', challengeId: 'a'.repeat(64), code: '012345' });
+    .toEqual({ email: 'learner@example.test', challengeId: 'a'.repeat(64), code: '012345', intent: 'login' });
 });
 
 it.each([123456, '', '12345', '1234567', 'abcdef', { $gt: '' }])('rejects malformed OTP code %j', code => {

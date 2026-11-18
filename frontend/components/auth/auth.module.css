@@ -15,9 +15,9 @@
   --ios-secondary: var(--meow-secondary, #4B5565);
   --ios-blue: var(--meow-accent, #2563EB);
   --ios-blue-hover: var(--meow-accent-hover, #1D4ED8);
-  --ios-input-bg: #ffffff;
-  --ios-input-focus-bg: #ffffff;
-  --ios-input-border: #d5dde7;
+  --ios-input-bg: var(--ios-field-surface, var(--ios-bg));
+  --ios-input-focus-bg: var(--ios-field-surface, var(--ios-bg));
+  --ios-input-border: #334155;
   --ios-input-focus-border: var(--meow-accent, #2563EB);
   --ios-input-focus-ring: var(--meow-accent-alpha, rgba(37, 99, 235, 0.14));
   --ios-segmented-bg: var(--meow-surface-subtle, #EBF0F5);
@@ -57,9 +57,9 @@
   --ios-secondary: var(--meow-secondary, #929CAF);
   --ios-blue: var(--meow-accent, #3B82F6);
   --ios-blue-hover: var(--meow-accent-hover, #60A5FA);
-  --ios-input-bg: #121722;
-  --ios-input-focus-bg: #161d2b;
-  --ios-input-border: rgba(148, 163, 184, 0.22);
+  --ios-input-bg: var(--ios-field-surface, var(--ios-bg));
+  --ios-input-focus-bg: var(--ios-field-surface, var(--ios-bg));
+  --ios-input-border: rgba(203, 213, 225, 0.42);
   --ios-input-focus-border: var(--meow-accent, #3B82F6);
   --ios-input-focus-ring: var(--meow-accent-alpha, rgba(59, 130, 246, 0.2));
   --ios-segmented-bg: var(--meow-bg, #000000);
@@ -84,6 +84,7 @@
    ========================================================================= */
 
 .authCard {
+  --ios-field-surface: var(--ios-bg);
   background: transparent;
   border: 1.5px solid var(--ios-card-border);
   border-radius: 26px;
@@ -101,6 +102,7 @@
 }
 
 .embeddedAuth {
+  --ios-field-surface: var(--ios-card-bg);
   color: var(--ios-text);
   display: flex;
   flex-direction: column;
@@ -358,20 +360,32 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .fieldGroup {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
+  padding-top: 6px;
 }
 
 .fieldLabel {
+  position: absolute;
+  top: 0;
+  left: 11px;
+  transform: translateY(-50%);
+  z-index: 2;
+  padding: 0 5px;
+  background: var(--ios-field-surface, var(--ios-bg));
   font-size: 13.5px;
   font-weight: 600;
+  line-height: 1;
   color: var(--ios-text);
   letter-spacing: -0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: color 0.18s ease;
 }
 
 .inputWrapper {
@@ -394,13 +408,21 @@
   min-height: 52px;
   padding: 0 16px 0 44px;
   font-size: 16px;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid var(--ios-input-border);
   background: var(--ios-input-bg);
   color: var(--ios-text);
   font-family: inherit;
   transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
+}
+
+.inputField:-webkit-autofill,
+.inputField:-webkit-autofill:hover,
+.inputField:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--ios-field-surface, var(--ios-bg)) inset;
+  -webkit-text-fill-color: var(--ios-text);
+  caret-color: var(--ios-text);
 }
 
 .inputField::placeholder {
@@ -415,7 +437,8 @@
   box-shadow: 0 0 0 3px var(--ios-input-focus-ring);
 }
 
-.inputWrapper:focus-within .inputLeadingIcon {
+.inputWrapper:focus-within .inputLeadingIcon,
+.inputWrapper:focus-within .fieldLabel {
   color: var(--ios-blue);
 }
 
@@ -585,6 +608,7 @@
    ========================================================================= */
 
 .modalOverlay {
+  --ios-field-surface: var(--ios-modal-bg);
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);

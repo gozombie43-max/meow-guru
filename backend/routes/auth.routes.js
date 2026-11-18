@@ -355,10 +355,18 @@ router.post('/reset-password', validateBody(resetPasswordSchema), async (req, re
 
 router.use('/email-otp', (_req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
 
+const emailAlreadyRegistered = res => res.status(409).json({
+  error: 'An account with this email already exists. Please sign in instead.',
+  code: 'EMAIL_ALREADY_REGISTERED',
+});
+
 router.post('/email-otp/request', requireTrustedOrigin, emailOtpRequestLimiter, validateBody(requestEmailOtpSchema), async (req, res) => {
-  const { email } = req.body;
+  const { email, intent } = req.body;
   let challengeId;
   try {
+    // Sign-up must not silently log into an existing account. Checked before a
+    // challenge is issued so the per-email code quota is not consumed.
+    if (intent === 'signup' && await findUserByEmail(email)) return emailAlreadyRegistered(res);
     const challenge = createEmailLoginOtp(email);
     challengeId = challenge.challengeId;
     const result = await issueEmailLoginChallenge({ email, ...challenge });
@@ -381,7 +389,9 @@ router.post('/email-otp/request', requireTrustedOrigin, emailOtpRequestLimiter, 
 
 router.post('/email-otp/verify', requireTrustedOrigin, emailOtpVerifyLimiter, validateBody(verifyEmailOtpSchema), async (req, res) => {
   try {
-    const { email, challengeId, code, name, password } = req.body;
+    const { email, challengeId, code, name, password, intent } = req.body;
+    // Re-check at verify time: the address may have been registered since the code was sent.
+    if (intent === 'signup' && await findUserByEmail(email)) return emailAlreadyRegistered(res);
     const claimed = await consumeEmailLoginChallenge({ email, challengeId, codeHash: hashEmailLoginCode(email, challengeId, code) });
     const passwordHash = claimed && password ? await bcrypt.hash(password, 12) : undefined;
     const user = claimed ? await resolveEmailOtpAccount(email, name, passwordHash) : null;
