@@ -1,10 +1,9 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { AlertCircle } from 'lucide-react';
-import { ConfigurationTemplate } from '@/design-system';
+import { ConfigurationTemplate } from '@/design-system/layouts/ConfigurationTemplate';
 import styles from './auth.module.css';
 
 interface AuthCardProps {
@@ -40,13 +39,13 @@ function AuthCard({
       <section className={styles.authCard} data-auth-container="outlined" data-page-content>
         <header className={styles.cardHeader}>
           <Link href="/" prefetch={false} className={styles.brandLogoLink} aria-label="Return to home">
-            <Image
+            <img
               src="/images/meow-logo.webp"
               alt="Meow"
               width={156}
               height={78}
-              priority
-              unoptimized
+              decoding="async"
+              fetchPriority="high"
               className={styles.meowBrandLogo}
             />
           </Link>

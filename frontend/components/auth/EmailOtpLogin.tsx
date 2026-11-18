@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowRight, Lock, Mail, ShieldCheck, User } from 'lucide-react';
 import api from '@/shared/api/client';
-import { Spinner } from '@/design-system';
+import { Spinner } from '@/design-system/components/Spinner';
 import AuthInput from './AuthInput';
 import { signInErrorMessage } from './signInError';
 import styles from './auth.module.css';
