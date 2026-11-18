@@ -57,7 +57,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
 
   const isPublic = isPublicPath(pathname);
   const signedIn = Boolean(user);
-  const blocked = !isPublic && !signedIn;
+  const blocked = !loading && !isPublic && !signedIn;
 
   // Intercept in-app link clicks for guests before Next.js navigates.
   useEffect(() => {
@@ -89,13 +89,6 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   }, [pendingHref, router]);
 
   if (blocked) {
-    if (loading) {
-      return (
-        <div className={styles.loading} role="status" aria-label="Checking your session">
-          <span className={styles.spinner} aria-hidden="true" />
-        </div>
-      );
-    }
     return (
       <>
         <div className={styles.lockedPage} aria-hidden="true" />

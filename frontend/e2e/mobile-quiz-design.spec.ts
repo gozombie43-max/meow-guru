@@ -41,6 +41,10 @@ test("mobile quiz engine renders with reduced question boldness (400) and reduce
         conceptGroups: [],
         groupingStatus: "empty",
       };
+    } else if (url.pathname.endsWith("/auth/refresh")) {
+      data = { token: "fixture-token" };
+    } else if (url.pathname.endsWith("/users/me")) {
+      data = { id: "fixture-user", name: "Fixture User", email: "fixture@example.test", progress: {}, bookmarks: [] };
     }
 
     await route.fulfill({
