@@ -4,11 +4,12 @@ import { EMAIL_OTP_COOLDOWN_MS, EMAIL_OTP_WINDOW_MS, EMAIL_OTP_MAX_REQUESTS, EMA
 const challenges = () => getMongoDB().collection('emailLoginChallenges');
 
 export async function issueEmailLoginChallenge({ email, challengeId, codeHash, expiresAt, now = new Date() }) {
+  const safeEmail = String(email || '');
   const windowCutoff = new Date(now.getTime() - EMAIL_OTP_WINDOW_MS);
   const newWindow = { $lte: [{ $ifNull: ['$windowStartedAt', new Date(0)] }, windowCutoff] };
   try {
     await challenges().findOneAndUpdate({
-      _id: email,
+      _id: { $eq: safeEmail },
       $and: [
         { $or: [{ lastSentAt: { $exists: false } }, { lastSentAt: { $lte: new Date(now.getTime() - EMAIL_OTP_COOLDOWN_MS) } }] },
         { $or: [{ windowStartedAt: { $exists: false } }, { windowStartedAt: { $lte: windowCutoff } }, { requestCount: { $lt: EMAIL_OTP_MAX_REQUESTS } }] },
@@ -25,7 +26,7 @@ export async function issueEmailLoginChallenge({ email, challengeId, codeHash, e
   } catch (error) {
     // An existing _id that fails the cooldown/quota filter must not be overwritten.
     if (error.code === 11000) {
-      const current = await challenges().findOne({ _id: email }, { projection: { lastSentAt: 1, requestCount: 1, windowStartedAt: 1 } });
+      const current = await challenges().findOne({ _id: { $eq: safeEmail } }, { projection: { lastSentAt: 1, requestCount: 1, windowStartedAt: 1 } });
       const availableAt = current?.requestCount >= EMAIL_OTP_MAX_REQUESTS
         ? current.windowStartedAt.getTime() + EMAIL_OTP_WINDOW_MS
         : (current?.lastSentAt?.getTime() ?? now.getTime()) + EMAIL_OTP_COOLDOWN_MS;
@@ -52,7 +53,9 @@ export async function consumeEmailLoginChallenge({ email, challengeId, codeHash,
 }
 
 export function invalidateEmailLoginChallenge(email, challengeId) {
-  return challenges().updateOne({ _id: email, challengeId }, { $unset: { codeHash: '' }, $set: { consumedAt: new Date() } });
+  const safeEmail = String(email || '');
+  const safeChallengeId = String(challengeId || '');
+  return challenges().updateOne({ _id: { $eq: safeEmail }, challengeId: { $eq: safeChallengeId } }, { $unset: { codeHash: '' }, $set: { consumedAt: new Date() } });
 }
 
 export function confirmOtpUserEmail(userId, email) {
