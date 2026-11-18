@@ -114,8 +114,8 @@ function SkillLearnLogo() {
       <Image
         src="/images/meow-logo.webp"
         alt="Meow"
-        width={76}
-        height={38}
+        width={62}
+        height={31}
         priority
         unoptimized
         className={styles.meowBrandImg}

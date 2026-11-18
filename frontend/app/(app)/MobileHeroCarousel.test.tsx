@@ -95,7 +95,7 @@ describe('mobile hero banner', () => {
     expect(staticContent).toContain(lightWebp);
     expect(staticContent).toContain(darkWebp);
     expect(staticContent).not.toContain('study-overlay.webp');
-    expect(staticContent).toContain('<small>15000+ Questions</small>');
+    expect(staticContent).toContain('<small>15k+ Qs</small>');
     expect(pageCss).toContain(':is(.mobileSubjectCard, .resourceCard, .battleCard) strong');
     expect(pageCss).toContain(':is(.mobileSubjectCard, .resourceCard, .battleCard) small');
     expect(existsSync(path.resolve(__dirname, '../../public/images/home-carousel/study-hero-light.webp'))).toBe(true);

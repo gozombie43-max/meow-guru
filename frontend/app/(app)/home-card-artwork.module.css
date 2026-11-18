@@ -36,7 +36,7 @@
   width: auto;
   max-width: 65%;
   transform: translateY(-50%);
-  opacity: .38;
+  opacity: .32;
   mask-image: linear-gradient(90deg, transparent 0%, transparent 12%, #000 65%);
 }
 
@@ -55,7 +55,7 @@
 
 /* Dark — subtle left-edge feathering matching the dark theme, without overpowering card content */
 :global(html.theme-dark) .artwork svg {
-  opacity: .65;
+  opacity: .44;
 }
 
 :global(html.theme-dark) .artwork::after {
