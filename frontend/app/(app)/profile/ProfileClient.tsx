@@ -60,7 +60,7 @@ export default function ProfileClient() {
   const correct = user
     ? Object.values(user.progress || {}).reduce((sum, item) => sum + (item.correct || 0), 0)
     : 0;
-  const accuracy = attempted ? `${Math.round(correct / attempted * 100)}%` : '—';
+  const accuracy = attempted > 0 ? `${Math.round(correct / attempted * 100)}%` : '—';
   const isAdmin = Boolean(user && (user.role === 'admin' || user.role === 'superadmin'));
 
   const heroNode = user ? (

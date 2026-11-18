@@ -323,7 +323,7 @@ const scan = (input, options) => {
     base = str;
   }
 
-  if (base && base !== '' && base !== '/' && base !== str) {
+  if (base && base !== '/' && base !== str) {
     if (isPathSeparator(base.charCodeAt(base.length - 1))) {
       base = base.slice(0, -1);
     }

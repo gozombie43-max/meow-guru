@@ -271,7 +271,7 @@ picomatch.compileRe = (state, options, returnOutput = false, returnState = false
   const append = opts.contains ? '' : '$';
 
   let source = `${prepend}(?:${state.output})${append}`;
-  if (state && state.negated === true) {
+  if (state.negated === true) {
     source = `^(?!${source}).*$`;
   }
 

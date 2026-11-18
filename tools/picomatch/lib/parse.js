@@ -289,7 +289,7 @@ const repeatedExtglobRecursion = pattern => {
 const ABSORBING_BRANCH_REGEX = /^(?:[^\\/()[\]{}|!@+*?"']|\?|\[[^\]\\/!^]+\]|\*(?!\*))+$/;
 
 const isAbsorbingBranch = body => {
-  return ABSORBING_BRANCH_REGEX.test(body) && body.replace(/\[[^\]]*\]/g, '').includes('*');
+  return ABSORBING_BRANCH_REGEX.test(body) && body.replace(/\[[^[\]]*\]/g, '').includes('*');
 };
 
 // Wildcard tokens in an extglob body, not counting a `*` that opens a nested `*(...)`.
@@ -545,7 +545,7 @@ const parse = (input, options) => {
     }
 
     if (tok.value || tok.output) append(tok);
-    if (prev && prev.type === 'text' && tok.type === 'text') {
+    if (prev.type === 'text' && tok.type === 'text') {
       prev.output = (prev.output || prev.value) + tok.value;
       prev.value += tok.value;
       return;
@@ -867,7 +867,7 @@ const parse = (input, options) => {
     }
 
     if (value === ']') {
-      if (opts.nobracket === true || (prev && prev.type === 'bracket' && prev.value.length === 1)) {
+      if (opts.nobracket === true || (prev.type === 'bracket' && prev.value.length === 1)) {
         push({ type: 'text', value, output: `\\${value}` });
         continue;
       }
@@ -1059,13 +1059,13 @@ const parse = (input, options) => {
      */
 
     if (value === '?') {
-      const isGroup = prev && prev.value === '(';
+      const isGroup = prev.value === '(';
       if (!isGroup && opts.noextglob !== true && peek() === '(' && peek(2) !== '?') {
         extglobOpen('qmark', value);
         continue;
       }
 
-      if (prev && prev.type === 'paren') {
+      if (prev.type === 'paren') {
         const next = peek();
         let output = value;
 
@@ -1114,12 +1114,12 @@ const parse = (input, options) => {
         continue;
       }
 
-      if ((prev && prev.value === '(') || opts.regex === false) {
+      if (prev.value === '(' || opts.regex === false) {
         push({ type: 'plus', value, output: PLUS_LITERAL });
         continue;
       }
 
-      if ((prev && (prev.type === 'bracket' || prev.type === 'paren' || prev.type === 'brace')) || state.parens > 0) {
+      if (prev.type === 'bracket' || prev.type === 'paren' || prev.type === 'brace' || state.parens > 0) {
         push({ type: 'plus', value });
         continue;
       }
@@ -1165,7 +1165,7 @@ const parse = (input, options) => {
      * Stars
      */
 
-    if (prev && (prev.type === 'globstar' || prev.star === true)) {
+    if (prev.type === 'globstar' || prev.star === true) {
       prev.type = 'star';
       prev.star = true;
       prev.value += value;
@@ -1303,7 +1303,7 @@ const parse = (input, options) => {
       continue;
     }
 
-    if (prev && (prev.type === 'bracket' || prev.type === 'paren') && opts.regex === true) {
+    if ((prev.type === 'bracket' || prev.type === 'paren') && opts.regex === true) {
       token.output = value;
       push(token);
       continue;
