@@ -10,7 +10,7 @@ import AuthFlow from '@/components/auth/AuthFlow';
 import styles from './AuthGate.module.css';
 
 /** Routes a signed-out visitor may open. Everything else requires an account. */
-const PUBLIC_PATHS = new Set(['/', '/access-code']);
+const PUBLIC_PATHS = new Set(['/', '/access-code', '/login', '/register']);
 
 export function isPublicPath(pathname: string | null | undefined): boolean {
   if (!pathname) return false;

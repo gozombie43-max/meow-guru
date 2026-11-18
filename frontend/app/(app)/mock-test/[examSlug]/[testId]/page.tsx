@@ -6,11 +6,10 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ examSlug: string; testId: string }>;
-  searchParams: Promise<{ resume?: string | string[]; retake?: string | string[]; lang?: string | string[] }>;
+  searchParams: Promise<{ retake?: string | string[]; lang?: string | string[] }>;
 }) {
   const { examSlug: rawExamSlug, testId } = await params;
-  const { resume, retake, lang } = await searchParams;
-  const resumeAttemptId = Array.isArray(resume) ? resume[0] : resume;
+  const { retake, lang } = await searchParams;
   const retakeParam = Array.isArray(retake) ? retake[0] : retake;
   const isRetake = retakeParam === '1' || retakeParam === 'true';
   const langParam = Array.isArray(lang) ? lang[0] : lang;
@@ -18,7 +17,6 @@ export default async function Page({
     <TestInstructions
       examSlug={resolveExamSlug(rawExamSlug)}
       testId={testId}
-      resumeAttemptId={resumeAttemptId}
       isRetake={isRetake}
       initialLanguage={langParam}
     />

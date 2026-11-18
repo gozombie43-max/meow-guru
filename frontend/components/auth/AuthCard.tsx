@@ -3,8 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { AlertCircle } from 'lucide-react';
-import WolfIcon from '@/components/WolfIcon';
-import { ConfigurationTemplate } from '@/design-system';
+import { ConfigurationTemplate } from '@/design-system/layouts/ConfigurationTemplate';
 import styles from './auth.module.css';
 
 interface AuthCardProps {
@@ -28,7 +27,7 @@ function AuthCard({
   footerText,
   footerLinkText,
   footerLinkHref,
-  showNavigationTabs = true,
+  showNavigationTabs = false,
 }: AuthCardProps) {
   return (
     <ConfigurationTemplate
@@ -37,29 +36,22 @@ function AuthCard({
       showNavRail={false}
       showBottomNav={false}
     >
-      <section className={styles.authCard} data-page-content>
-        {/* Mobile Header */}
-        <div className={styles.mobileCardHeader}>
-          <Link href="/" prefetch={false} className={styles.brandSquircle} aria-label="Return to home">
-            <WolfIcon size={34} fillColor="#ffffff" />
+      <section className={styles.authCard} data-auth-container="outlined" data-page-content>
+        <header className={styles.cardHeader}>
+          <Link href="/" prefetch={false} className={styles.brandLogoLink} aria-label="Return to home">
+            <img
+              src="/images/meow-logo.webp"
+              alt="Meow"
+              width={156}
+              height={78}
+              decoding="async"
+              fetchPriority="high"
+              className={styles.meowBrandLogo}
+            />
           </Link>
           <h1 className={styles.brandTitle}>{title}</h1>
           <p className={styles.brandSubtitle}>{subtitle}</p>
-        </div>
-
-        {/* Desktop Header */}
-        <div className={styles.desktopCardHeader}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-            <Link href="/" prefetch={false} className={styles.brandSquircle} aria-label="Return to home">
-              <WolfIcon size={30} fillColor="#ffffff" />
-            </Link>
-            <div>
-              <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', color: 'var(--meow-accent)', textTransform: 'uppercase' }}>Meow Prep</span>
-            </div>
-          </div>
-          <h1 className={styles.brandTitle}>{title}</h1>
-          <p className={styles.brandSubtitle}>{subtitle}</p>
-        </div>
+        </header>
 
         {/* Segmented Switcher */}
         {showNavigationTabs && (

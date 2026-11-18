@@ -58,7 +58,7 @@ for (const kind of ['mock', 'pyq'] as const) {
     await page.getByRole('button', { name: 'Exit quiz', exact: true }).click();
     await expect(page).toHaveURL(catalogUrl);
     await page.clock.fastForward(65000);
-    await card.getByRole('button', { name: 'Resume Mock', exact: true }).click();
+    await page.goto(attemptUrl.toString());
     await expect(page.getByRole('status').filter({ hasText: 'Loading test…' })).toBeVisible();
     await page.clock.fastForward(1000);
     expect(submissions).toBe(0);
@@ -115,7 +115,8 @@ for (const kind of ['mock', 'pyq'] as const) {
     await page.getByRole('button', { name: 'Leave mock test' }).click();
     await page.getByRole('button', { name: 'Exit quiz', exact: true }).click();
     await expect(page).toHaveURL(catalogUrl);
-    await card.getByRole('button', { name: 'Resume Mock', exact: true }).click();
+    await card.getByRole('button', { name: 'Start Mock', exact: true }).click();
+    await page.getByRole('button', { name: 'Start Mock Test', exact: true }).click();
     await expect(page.getByRole('radio').first()).toBeVisible();
     if (mobile) await page.getByRole('button', { name: /^Q / }).click();
     await page.getByRole('button', { name: 'Submit Test', exact: true }).first().click();

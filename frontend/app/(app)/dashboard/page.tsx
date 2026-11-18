@@ -123,7 +123,7 @@ function DashboardContent() {
       </div>
       <div className={styles.activity}>
         {recent.length ? (
-          recent.slice(0, 5).map((entry) => (
+          recent.slice(0, 3).map((entry) => (
             <Link key={entry.quizKey} href={practiceHref(entry)} className={styles.activityRow}>
               <div>
                 <strong>{entry.title || entry.subject || 'Practice session'}</strong>

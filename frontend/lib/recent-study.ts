@@ -1,6 +1,14 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import type { RecentQuizPayload } from "./userApi";
+
+export const RECENT_QUIZ_UPDATED_EVENT = "meow:recent-quiz-updated";
+
+export function notifyRecentQuizUpdated(payload: RecentQuizPayload) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent<RecentQuizPayload>(RECENT_QUIZ_UPDATED_EVENT, { detail: payload }));
+}
 
 const STORAGE_KEY = "recent-study:v1";
 

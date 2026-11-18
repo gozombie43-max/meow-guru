@@ -287,7 +287,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
   useQuizLeaveGuard(loadedScope === scope && Boolean(paper) && (paper?.schemaDriven === true || deadline > 0) && !isSubmitting,
     `/mock-test/${examSlug}`,
-    "Leave this mock test? Saved progress is retained, but the exam timer will continue.");
+    "Leave this mock test? Your current attempt will not be saved for resume.");
 
   const handleFinalSubmit = useCallback(async () => {
     if (!attemptReadyRef.current || loadedScope !== scope || isSubmitting || !attemptId || !token || sectionTransitionRef.current) return;

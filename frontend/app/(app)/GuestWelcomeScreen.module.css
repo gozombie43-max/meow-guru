@@ -1,0 +1,242 @@
+.welcomePage {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: max(12px, calc(env(safe-area-inset-top, 0px) + 8px))
+    max(20px, env(safe-area-inset-right, 0px))
+    max(24px, calc(env(safe-area-inset-bottom, 0px) + 18px))
+    max(20px, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+  background: radial-gradient(circle at 50% 38%, #e4efff 0%, #f3f7fc 55%, #f8fafc 100%);
+  color: #0f172a;
+  color-scheme: light;
+  font-family: var(--meow-font-sans, var(--font-geist-sans, system-ui), -apple-system, sans-serif);
+}
+
+.content {
+  width: 100%;
+  max-width: 420px;
+  margin: auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.brandTitle {
+  margin: -8px 0 2px;
+  line-height: 1;
+}
+
+.brandLogoImg {
+  display: block;
+  width: 180px;
+  height: 90px;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(8%) sepia(18%) saturate(1350%) hue-rotate(185deg) brightness(96%) contrast(96%) drop-shadow(0 2px 10px rgb(37 99 235 / 12%));
+}
+
+.tagline {
+  margin: 6px 0 0;
+  color: #0f172a;
+  font-size: clamp(16px, 4.4vw, 18px);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+}
+
+.exams {
+  margin: 0;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.illustrationWrap {
+  width: min(100%, 340px);
+  margin: 14px auto 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.heroIllustration {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.features {
+  width: 100%;
+  max-width: 340px;
+  margin: 4px auto 22px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+}
+
+.featureItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #334155;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.featureIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.actions {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.primaryCta,
+.secondaryCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0 20px;
+  border-radius: 999px;
+  text-decoration: none;
+  box-sizing: border-box;
+  transition: transform 150ms ease, background-color 150ms ease, opacity 150ms ease;
+}
+
+.primaryCta {
+  min-height: 54px;
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  font-size: 16.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow: 0 8px 22px rgb(37 99 235 / 24%), inset 0 1px 0 rgb(255 255 255 / 28%);
+}
+
+.primaryCta:hover {
+  background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%);
+}
+
+.secondaryCta {
+  min-height: 52px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 5%);
+}
+
+.secondaryCta:hover {
+  background: #f1f5f9;
+}
+
+.primaryCta:active,
+.secondaryCta:active {
+  transform: scale(0.985);
+}
+
+.primaryCta:focus-visible,
+.secondaryCta:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.quote {
+  margin: 20px 0 14px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.dotActive {
+  width: 22px;
+  height: 5px;
+  border-radius: 999px;
+  background: #2563eb;
+}
+
+.dotMuted {
+  width: 8px;
+  height: 5px;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+@media (max-width: 360px) {
+  .welcomePage {
+    padding-inline: 16px;
+  }
+
+  .brandLogoImg {
+    width: 156px;
+    height: 78px;
+  }
+
+  .illustrationWrap {
+    width: min(100%, 280px);
+    margin: 10px auto 8px;
+  }
+
+  .features {
+    margin-bottom: 18px;
+  }
+
+  .primaryCta {
+    min-height: 50px;
+    font-size: 15.5px;
+  }
+
+  .secondaryCta {
+    min-height: 48px;
+    font-size: 14.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryCta,
+  .secondaryCta {
+    transition: none;
+  }
+}

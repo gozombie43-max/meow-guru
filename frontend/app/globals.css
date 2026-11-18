@@ -1150,11 +1150,13 @@ body.has-bottom-nav .dashboard-shell {
 /* Route-level fullscreen bottom-nav overrides consolidated into globals.css */
 body.ai-chat-route.has-bottom-nav,
 body.formula-notes-route.has-bottom-nav,
-body.home-redesign.has-bottom-nav {
+body.home-redesign.has-bottom-nav,
+body.guest-welcome-route.has-bottom-nav {
   padding-bottom: 0 !important;
 }
 
-body.formula-notes-route [data-meow-component="bottom-nav"] {
+body.formula-notes-route [data-meow-component="bottom-nav"],
+body.guest-welcome-route [data-meow-component="bottom-nav"] {
   display: none !important;
 }
 

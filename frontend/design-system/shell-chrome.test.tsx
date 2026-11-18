@@ -257,6 +257,13 @@ describe('P0-D Global Shell Chrome', () => {
 
       const examLandingCss = readFrontend('app/(app)/mock-test/_shared/ExamLandingPage.module.css');
       expect(examLandingCss).toMatch(/\.mobileBackBtn\s*\{[\s\S]*width:\s*44px;[\s\S]*height:\s*44px;/);
+      expect(examLandingCss).toMatch(/\.page \.testLineCard[\s\S]*background:\s*#151515;/);
+      expect(examLandingCss).toContain('.actionStart .actionFace');
+
+      const examLandingTsx = readFrontend('app/(app)/mock-test/_shared/ExamLandingPage.tsx');
+      expect(examLandingTsx).toContain('locked ? styles.actionOutline : styles.actionStart');
+      expect(examLandingTsx).not.toContain('Resume Mock');
+      expect(examLandingTsx).not.toContain('In progress');
     });
   });
 });

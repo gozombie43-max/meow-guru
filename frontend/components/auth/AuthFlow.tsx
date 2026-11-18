@@ -2,8 +2,7 @@
 import type { z } from 'zod';
 import type { loginSchema } from '@meow/contracts/auth';
 
-import { useState, useEffect } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, ArrowLeft, ArrowRight, Lock, Mail } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -18,13 +17,11 @@ import styles from '@/components/auth/auth.module.css';
 
 const ForgotPasswordModal = dynamic(() => import('@/components/auth/ForgotPasswordModal'), { ssr: false });
 
-type FormData = { email: string; password: string };
-
 interface AuthFlowProps {
   mode: 'login' | 'signup';
   embedded?: boolean;
   /** Embedded only: 'tabs' shows a segmented switch, 'link' shows a single text link under the form. */
-  modeSwitch?: 'tabs' | 'link';
+  modeSwitch?: 'tabs' | 'link' | 'none';
   onCancel?: () => void;
   onSuccess?: () => void;
 }
@@ -40,23 +37,27 @@ export default function AuthFlow({ mode, embedded = false, modeSwitch = 'tabs', 
   const [error, setError] = useState('');
   const [usePassword, setUsePassword] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
 
   const activeMode = embedded ? currentMode : mode;
   const signup = activeMode === 'signup';
   const title = signup ? 'Create account' : 'Welcome back';
   const subtitle = signup ? '1-day free trial' : 'Sign in to continue';
 
-  const { register, handleSubmit, setValue, control, formState: { errors, isSubmitting } } = useForm<FormData>({
-    defaultValues: { email: '', password: '' },
-  });
-  const email = useWatch({ control, name: 'email' });
-
   useEffect(() => {
+    let active = true;
     try {
       const saved = localStorage.getItem('meow_remember_email');
-      if (saved) setValue('email', saved);
+      if (saved) queueMicrotask(() => { if (active) setEmail(saved); });
     } catch { /* ignore */ }
-  }, [setValue]);
+    return () => { active = false; };
+  }, []);
 
   const completeSignIn = async (token: string, signedInEmail: string) => {
     try { localStorage.setItem('meow_remember_email', signedInEmail); } catch { /* ignore */ }
@@ -70,13 +71,34 @@ export default function AuthFlow({ mode, embedded = false, modeSwitch = 'tabs', 
     }
   };
 
-  const onPasswordSubmit = async (data: FormData) => {
+  const onPasswordSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isSubmitting) return;
     setError('');
+    const nextEmailError = !email.trim()
+      ? 'Email is required'
+      : !emailPattern.test(email)
+      ? 'Please enter a valid email address'
+      : '';
+    const nextPasswordError = !password ? 'Password is required' : '';
+    setEmailError(nextEmailError);
+    setPasswordError(nextPasswordError);
+    if (nextEmailError) {
+      emailInputRef.current?.focus();
+      return;
+    }
+    if (nextPasswordError) {
+      passwordInputRef.current?.focus();
+      return;
+    }
+    setIsSubmitting(true);
     try {
-      const res = await api.post('/auth/login', { email: data.email, password: data.password } satisfies z.input<typeof loginSchema>);
-      await completeSignIn(res.data.token, data.email);
+      const res = await api.post('/auth/login', { email, password } satisfies z.input<typeof loginSchema>);
+      await completeSignIn(res.data.token, email);
     } catch (err: unknown) {
       setError(signInErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -84,29 +106,56 @@ export default function AuthFlow({ mode, embedded = false, modeSwitch = 'tabs', 
     setCurrentMode(nextMode);
     setUsePassword(false);
     setError('');
+    setEmailError('');
+    setPasswordError('');
   };
 
   const formContent = (
     <>
       {usePassword && !signup ? (
-        <form onSubmit={handleSubmit(onPasswordSubmit)} className={styles.form} noValidate>
-          <AuthInput id="login-email" label="Email" type="email" autoComplete="email" placeholder="name@example.com"
-            icon={<Mail size={17} />} error={errors.email?.message}
-            {...register('email', { required: 'Email is required', pattern: { value: emailPattern, message: 'Please enter a valid email address' } })} />
-          <AuthInput id="login-password" label="Password" type="password" isPassword autoComplete="current-password"
-            placeholder="Your password" icon={<Lock size={17} />} error={errors.password?.message}
-            {...register('password', { required: 'Password is required' })} />
+        <form onSubmit={onPasswordSubmit} className={styles.form} noValidate>
+          <AuthInput
+            ref={emailInputRef}
+            id="login-email"
+            label="Email"
+            type="email"
+            autoComplete="email"
+            placeholder="name@example.com"
+            icon={<Mail size={17} />}
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              if (emailError) setEmailError('');
+            }}
+            error={emailError || undefined}
+          />
+          <AuthInput
+            ref={passwordInputRef}
+            id="login-password"
+            label="Password"
+            type="password"
+            isPassword
+            autoComplete="current-password"
+            placeholder="Your password"
+            icon={<Lock size={17} />}
+            value={password}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              if (passwordError) setPasswordError('');
+            }}
+            error={passwordError || undefined}
+          />
           <div className={styles.optionsRow}>
             <button type="button" className={styles.forgotBtn} onClick={() => setForgotOpen(true)}>Forgot password?</button>
           </div>
-          <button data-ui-button="primary" type="submit" disabled={isSubmitting} aria-busy={isSubmitting}
+          <button data-ui-button="state" type="submit" disabled={isSubmitting} aria-busy={isSubmitting}
             className={styles.primaryBtn} aria-label="Sign in">
             <span>Sign In</span>
             {isSubmitting ? <span className={styles.spinner} aria-hidden="true" /> : <ArrowRight size={16} aria-hidden="true" />}
           </button>
         </form>
       ) : (
-        <EmailOtpLogin mode={activeMode} email={email} onEmailChange={value => setValue('email', value)} onSuccess={completeSignIn} />
+        <EmailOtpLogin mode={activeMode} email={email} onEmailChange={setEmail} onSuccess={completeSignIn} />
       )}
 
       {!signup && (
@@ -190,6 +239,7 @@ export default function AuthFlow({ mode, embedded = false, modeSwitch = 'tabs', 
           subtitle={subtitle}
           activeTab={signup ? 'register' : 'login'}
           error={error}
+          showNavigationTabs={false}
         >
           {formContent}
         </AuthCard>

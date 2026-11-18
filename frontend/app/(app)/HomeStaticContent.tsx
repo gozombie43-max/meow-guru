@@ -93,19 +93,33 @@ export function MobileHomeContent() {
   return (
     <>
       <MobileHeroCarousel>
-        <section className={styles.mobileHero}>
-          <Image src="/images/home-carousel/study-overlay.webp" alt="" fill priority sizes="(max-width: 1023px) calc(100vw - 32px), 640px" quality={75} className={styles.mobileHeroStudyBackdrop} />
+        <section className={styles.mobileHero} aria-label="Study header">
+          <Image
+            src="/images/home-carousel/study-hero-light.webp"
+            alt=""
+            fill
+            priority
+            unoptimized
+            sizes="(max-width: 1023px) 100vw, 640px"
+            quality={75}
+            className={`${styles.mobileHeroStudyBackdrop} ${styles.mobileHeroBackdropLight}`}
+          />
+          <Image
+            src="/images/home-carousel/study-hero-dark-v2.webp"
+            alt=""
+            fill
+            priority
+            unoptimized
+            sizes="(max-width: 1023px) 100vw, 640px"
+            quality={75}
+            className={`${styles.mobileHeroStudyBackdrop} ${styles.mobileHeroBackdropDark}`}
+          />
           <div className={styles.mobileHeroStudyOverlay} aria-hidden="true" />
-          <div className={styles.mobileHeroCopy}>
-            <h1>Small steps. <span>Big progress.</span></h1>
-            <p className={styles.mobileHeroDesc}>Learn more every day.</p>
+          <div className={styles.mobileHeroRecentSlot}>
+            <MobileRecentQuiz />
           </div>
         </section>
       </MobileHeroCarousel>
-
-      <div className={styles.mobileRecentLift}>
-        <MobileRecentQuiz />
-      </div>
 
       <section className={styles.mobileContentGrid}>
         <div className={styles.mobileLeftColumn}>
@@ -117,7 +131,10 @@ export function MobileHomeContent() {
                 <span className={`${styles.subjectIcon} ${styles[subject.tone]}`}>
                   <subject.icon size={30} />
                 </span>
-                <span>{subject.title === 'GK' ? 'GK' : subject.title.charAt(0) + subject.title.slice(1).toLowerCase()}</span>
+                <span className={styles.subjectCopy}>
+                  <strong>{subject.title === 'GK' ? 'GK' : subject.title.charAt(0) + subject.title.slice(1).toLowerCase()}</strong>
+                  <small>15000+ Questions</small>
+                </span>
               </Link>
             ))}
           </div>

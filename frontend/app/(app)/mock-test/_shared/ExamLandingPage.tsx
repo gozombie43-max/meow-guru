@@ -32,6 +32,7 @@ getTierLabel,
 getTotalQuestions,
 type MockTestSlot,
 } from './exam-config';
+import { mockStartStorageKey } from './startKey';
 import styles from './ExamLandingPage.module.css';
 import ExamLandingLoader from './ExamLandingLoader';
 import { useExamCatalog } from './useExamCatalog';
@@ -138,14 +139,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
   const getSlotState = (slot: MockTestSlot) => {
     const slotAttempts = history.filter((h) => h.testId === slot.id);
     const completed = slotAttempts.find((h) => h.status === 'completed');
-    const inProgress = slotAttempts.find((h) => h.status === 'in_progress');
 
-    if (inProgress) {
-      return {
-        status: 'in_progress' as const,
-        attemptId: inProgress.id,
-      };
-    }
     if (completed) {
       return {
         status: 'completed' as const,
@@ -162,16 +156,17 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
   };
 
   const handleStart = (slotId: string) => {
+    if (user?.id) {
+      try {
+        sessionStorage.removeItem(mockStartStorageKey(user.id, examSlug, slotId));
+      } catch { /* Ignore unavailable storage. */ }
+    }
     router.push(`/mock-test/${examSlug}/${slotId}`);
   };
 
   const handleRetake = (slotId: string, prevLanguage?: string) => {
     const langParam = prevLanguage ? `&lang=${encodeURIComponent(prevLanguage)}` : '';
     router.push(`/mock-test/${examSlug}/${slotId}?retake=true${langParam}`);
-  };
-
-  const handleResume = (slotId: string, attemptId: string) => {
-    router.push(`/mock-test/${examSlug}/${slotId}/attempt?resume=${attemptId}`);
   };
 
   const handleViewResult = (slotId: string, attemptId: string) => {
@@ -190,12 +185,11 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
     const config = getExamConfig(slot.configKey);
     const date = paperDate(slot);
     const completed = state.status === 'completed';
-    const inProgress = state.status === 'in_progress';
     const locked = state.status === 'locked';
-    const StatusIcon = completed ? CheckCircle : inProgress ? Play : locked ? Lock : Clock3;
-    const ActionIcon = completed ? Eye : inProgress ? RotateCcw : locked ? Lock : Play;
-    const actionLabel = completed ? 'View Result' : inProgress ? 'Resume Mock' : locked ? 'Unlock Pro' : 'Start Mock';
-    const actionText = completed ? 'Result' : inProgress ? 'Resume' : locked ? 'Unlock' : 'Start';
+    const StatusIcon = completed ? CheckCircle : locked ? Lock : Clock3;
+    const ActionIcon = completed ? Eye : locked ? Lock : Play;
+    const actionLabel = completed ? 'View Result' : locked ? 'Unlock Pro' : 'Start Mock';
+    const actionText = completed ? 'Result' : locked ? 'Unlock' : 'Start';
     const metadata = slot.paperMetadata;
     const totalQ = metadata?.sections.reduce((sum, section) => sum + section.questionCount, 0) ?? getTotalQuestions(slot.configKey);
     const maxMarks = metadata?.sections.reduce((sum, section) => sum + section.questionCount * section.marking.correct, 0) ?? getMaxMarks(slot.configKey);
@@ -222,9 +216,9 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
           {actionsLoading ? <span className={styles.progressLoading} role="status">Loading progress…</span> : (
             <>
               <div className={styles.paperStatus}>
-              <span className={`${styles.statusBadge} ${completed ? styles.badgeCompleted : inProgress ? styles.badgeProgress : locked ? styles.badgeLocked : styles.badgeNew}`}>
+              <span className={`${styles.statusBadge} ${completed ? styles.badgeCompleted : locked ? styles.badgeLocked : styles.badgeNew}`}>
                 <StatusIcon size={15} aria-hidden="true" />
-                {completed ? 'Completed' : inProgress ? 'In progress' : locked ? 'Pro' : 'Not attempted'}
+                {completed ? 'Completed' : locked ? 'Pro' : 'Not attempted'}
               </span>
               </div>
               <div className={styles.testLineAction}>
@@ -233,8 +227,8 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                     <span className={styles.actionFace}><RotateCcw size={14} aria-hidden="true" /><span>Retake</span></span>
                   </button>
                 )}
-                <button data-ui-button={locked ? 'secondary' : 'primary'} aria-label={actionLabel} className={`${styles.paperAction} ${locked ? styles.actionOutline : styles.actionFilled}`}
-                  onClick={() => completed ? handleViewResult(slot.id, state.attemptId!) : inProgress ? handleResume(slot.id, state.attemptId!) : locked ? handleUnlock() : handleStart(slot.id)}>
+                <button data-ui-button={locked ? 'secondary' : 'primary'} aria-label={actionLabel} className={`${styles.paperAction} ${locked ? styles.actionOutline : styles.actionStart}`}
+                  onClick={() => completed ? handleViewResult(slot.id, state.attemptId!) : locked ? handleUnlock() : handleStart(slot.id)}>
                   <span className={styles.actionFace}><ActionIcon size={14} aria-hidden="true" /><span>{actionText}</span></span>
                 </button>
               </div>

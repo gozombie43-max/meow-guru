@@ -154,6 +154,7 @@ describe('Meow Design System Primitives (PR P0-B)', () => {
       expect(status).toHaveTextContent('Loading questions');
       expect(status).toHaveAttribute('aria-live', 'polite');
       expect(SPINNER_CSS).toContain('meow-spin');
+      expect(SPINNER_CSS).toMatch(/@keyframes\s+meow-spin\b/);
     });
   });
 

@@ -2,7 +2,7 @@ export const profileProjection = { _id: 0, ...Object.fromEntries([
   'id', 'name', 'email', 'avatar', 'phone', 'role', 'progress', 'bookmarks', 'bookmarkEntries',
   'studyTime', 'timezone', 'dailyGoalMinutes', 'notificationPreferences', 'dailyPracticeReminder',
   'createdAt', 'updatedAt', ...['quizKey', 'title', 'subject', 'slug', 'href', 'mode', 'currentIndex',
-    'totalQuestions', 'status', 'updatedAt', 'questionAnchor', 'sessionFilters'].map(field => `recentQuizzes.${field}`),
+    'totalQuestions', 'submittedQuestions', 'status', 'updatedAt', 'questionAnchor', 'sessionFilters'].map(field => `recentQuizzes.${field}`),
 ].map(field => [field, 1])) };
 
 export function chatSummary({ id, title, updatedAt, messages, messageCount, revision }) {

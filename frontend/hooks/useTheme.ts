@@ -5,7 +5,7 @@ import { useCallback, useMemo, useSyncExternalStore } from 'react';
 export type ThemeMode = 'light' | 'dark';
 
 const THEME_STORAGE_KEY = 'ui-theme';
-const DEFAULT_THEME: ThemeMode = 'dark';
+const DEFAULT_THEME: ThemeMode = 'light';
 const listeners = new Set<() => void>();
 let currentTheme: ThemeMode = DEFAULT_THEME;
 let initialized = false;

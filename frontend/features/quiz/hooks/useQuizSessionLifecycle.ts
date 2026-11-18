@@ -1,6 +1,6 @@
 "use client";
 import type { useQuizFilters } from "@/features/quiz/hooks/useQuizFilters";
-import { useQuizResume } from "@/features/quiz/hooks/useQuizResume";
+import { isResumeData, useQuizResume } from "@/features/quiz/hooks/useQuizResume";
 import { useQuizSync } from "@/features/quiz/hooks/useQuizSync";
 import { useQuizTimer } from "@/features/quiz/hooks/useQuizTimer";
 import type { SessionResult, SubjectConfig } from "@/features/quiz/model/types";
@@ -71,7 +71,7 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
       user?.recentQuizzes?.find((entry) => entry.quizKey === quizKey) ?? null
     );
   }, [quizKey, resumeRequested, user?.recentQuizzes]);
-  const { data: resumeDetail } = useSWR(resumeSummary && !resumeSummary.selectedAnswers
+  const { data: resumeDetail, isLoading: isLoadingDetail } = useSWR(resumeSummary && !resumeSummary.selectedAnswers
     ? `/users/me/recent-quizzes/${encodeURIComponent(quizKey)}` : null,
     async (url: string) => {
       if (token) {
@@ -83,8 +83,10 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
       }
       return (await api.get(url)).data.quiz as NonNullable<typeof resumeSummary>;
     },
-    { revalidateOnFocus: false });
-  const resumeEntry = resumeSummary?.selectedAnswers ? resumeSummary : resumeDetail;
+    { revalidateOnFocus: false, revalidateOnMount: true });
+  const resumeEntry = resumeSummary?.selectedAnswers
+    ? resumeSummary
+    : (resumeDetail ?? (!isLoadingDetail ? resumeSummary : undefined));
   const resumeAppliedRef = useRef(false);
 
   // Background prefetch of next 2 questions (content, answer keys/solutions, window pages, and images) + LRU warming.
@@ -138,19 +140,19 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   const initialization = state.restored;
   const anchorIndex = resumeEntry?.questionAnchor ? questions.findIndex(question => question.sessionAnchor === resumeEntry.questionAnchor) : -1;
   const savedIndex = anchorIndex >= 0 ? anchorIndex : resumeEntry?.currentIndex ?? 0;
-  const readyResume = resumeRequested && resumeEntry && resumeEntry.status !== "completed"
+  const readyResume = resumeRequested && Boolean(resumeEntry)
     && questions.length > 0 && (savedIndex < questions.length || !hasMore) && !questions[savedIndex]?.sessionPlaceholder;
   const targetIndex = jumpIdRaw && Number.isFinite(jumpId)
     ? questions.findIndex(question => question.id === jumpId) : -1;
   useEffect(() => {
     if (initialization || !(readyResume || (!resumeRequested && targetIndex >= 0))) return;
     const index = readyResume ? Math.max(0, Math.min(savedIndex, questions.length - 1)) : targetIndex;
-    const savedSubmitted = readyResume ? resumeEntry.submittedQuestions ?? [] : [];
-    const savedResults = readyResume && Array.isArray(resumeEntry.results) ? resumeEntry.results as SessionResult[] : [];
+    const savedSubmitted = readyResume ? resumeEntry?.submittedQuestions ?? [] : [];
+    const savedResults = readyResume && Array.isArray(resumeEntry?.results) ? resumeEntry.results as SessionResult[] : [];
     cache.hydrateFromResults(savedResults, questions);
     // One atomic transition synchronizes asynchronously loaded server session data.
     dispatch({ type: 'RESTORE', snapshot: { currentIndex: index,
-      selectedAnswers: readyResume ? resumeEntry.selectedAnswers ?? {} : {},
+      selectedAnswers: readyResume ? resumeEntry?.selectedAnswers ?? {} : {},
       submittedQuestions: savedSubmitted,
       results: savedResults,
     } });
@@ -159,10 +161,47 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     if (!savedSubmitted.includes(index)) startTimer();
   }, [initialization, readyResume, resumeRequested, targetIndex, savedIndex, questions, resumeEntry, startTimer, stopTimer, cache]);
   useEffect(() => {
-    if (initialization || !hasMore || questions.length === 0) return;
-    if ((resumeRequested && resumeEntry?.status !== "completed" && savedIndex >= questions.length)
+    if (!resumeRequested || initialization || authLoading || filters.isLoading || isLoadingDetail) return;
+    if (resumeSummary || questions.length === 0) return;
+    try {
+      const raw: unknown = JSON.parse(window.localStorage.getItem(storageKey) ?? 'null');
+      if (isResumeData(raw)) {
+        const localIndex = Math.max(0, Math.min(raw.currentIndex ?? 0, questions.length - 1));
+        const localResults = Array.isArray(raw.results) ? raw.results : [];
+        cache.hydrateFromResults(localResults, questions);
+        dispatch({
+          type: 'RESTORE',
+          snapshot: {
+            currentIndex: localIndex,
+            selectedAnswers: raw.selectedAnswers ?? {},
+            submittedQuestions: raw.submittedQuestions ?? [],
+            results: localResults,
+          },
+        });
+        resumeAppliedRef.current = true;
+        stopTimer();
+        if (!(raw.submittedQuestions ?? []).includes(localIndex)) startTimer();
+        return;
+      }
+    } catch { /* Invalid or inaccessible storage starts from question 1. */ }
+    dispatch({
+      type: 'RESTORE',
+      snapshot: { currentIndex: 0, selectedAnswers: {}, submittedQuestions: [], results: [] },
+    });
+    resumeAppliedRef.current = true;
+    stopTimer();
+    startTimer();
+  }, [resumeRequested, initialization, authLoading, filters.isLoading, isLoadingDetail, resumeSummary, questions, storageKey, cache, stopTimer, startTimer]);
+  useEffect(() => {
+    if (initialization || questions.length === 0) return;
+    if (resumeRequested && resumeEntry && questions[savedIndex]?.sessionPlaceholder && ensureQuestion) {
+      void ensureQuestion(savedIndex);
+      return;
+    }
+    if (!hasMore) return;
+    if ((resumeRequested && Boolean(resumeEntry) && savedIndex >= questions.length)
       || (!resumeRequested && jumpIdRaw && Number.isFinite(jumpId) && targetIndex < 0)) void fetchMore();
-  }, [initialization, hasMore, questions.length, resumeRequested, resumeEntry?.status, savedIndex, jumpIdRaw, jumpId, targetIndex, fetchMore]);
+  }, [initialization, hasMore, questions, resumeRequested, resumeEntry, savedIndex, ensureQuestion, jumpIdRaw, jumpId, targetIndex, fetchMore]);
 
   const sessionFilters = useMemo(() => ({ exam: examFilter || undefined,
     concept: serializeConceptSelection(Array.from(selectedClassificationConcepts)) || undefined,

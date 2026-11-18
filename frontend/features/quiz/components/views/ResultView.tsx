@@ -3,9 +3,9 @@
 import styles from "./ResultView.module.css";
 import {
   AlertTriangle,
+  Check,
   CheckCheck,
   ChevronLeft,
-  CircleCheck,
   Clock,
   Flame,
   Layers,
@@ -13,12 +13,65 @@ import {
   ListChecks,
   RotateCcw,
   SlidersHorizontal,
-  Sparkles,
-  Target,
-  XCircle,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
+
+function CelebrationBadgeIcon() {
+  return (
+    <div className={styles.celebrationBadgeWrap} aria-hidden="true">
+      <svg viewBox="0 0 210 104" width="210" height="104" fill="none">
+        <defs>
+          <linearGradient id="rv-rosette-grad" x1="78" y1="16" x2="132" y2="76" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#60a5fa" />
+            <stop offset="50%" stopColor="#6366f1" />
+            <stop offset="100%" stopColor="#9333ea" />
+          </linearGradient>
+          <linearGradient id="rv-ribbon-left" x1="88" y1="68" x2="78" y2="96" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#14b8a6" />
+            <stop offset="100%" stopColor="#34d399" />
+          </linearGradient>
+          <linearGradient id="rv-ribbon-right" x1="122" y1="68" x2="132" y2="96" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#3b82f6" />
+            <stop offset="100%" stopColor="#2dd4bf" />
+          </linearGradient>
+        </defs>
+
+        <path d="M90 66l-13 28 11-5 7 8 7-26z" fill="url(#rv-ribbon-left)" />
+        <path d="M120 66l13 28-11-5-7 8-7-26z" fill="url(#rv-ribbon-right)" />
+
+        <path
+          d="M105 15c3.2 0 5.4 2.8 8.3 3.7 3 1 6.4-.4 9 1.5 2.6 1.8 2.8 5.4 4.7 8 1.9 2.5 5.4 3.4 6.4 6.4 1 3-.9 6.1-.9 9.3 0 3.2 1.9 6.3.9 9.3-1 3-4.5 3.9-6.4 6.4-1.9 2.6-2.1 6.2-4.7 8-2.6 1.9-6 .5-9 1.5-2.9.9-5.1 3.7-8.3 3.7s-5.4-2.8-8.3-3.7c-3-1-6.4.4-9-1.5-2.6-1.8-2.8-5.4-4.7-8-1.9-2.5-5.4-3.4-6.4-6.4-1-3 .9-6.1.9-9.3 0-3.2-1.9-6.3-.9-9.3 1-3 4.5-3.9 6.4-6.4 1.9-2.6 2.1-6.2 4.7-8 2.6-1.9 6-.5 9-1.5 2.9-.9 5.1-3.7 8.3-3.7z"
+          fill="url(#rv-rosette-grad)"
+        />
+        <circle cx="105" cy="45" r="21" stroke="rgba(255,255,255,0.22)" strokeWidth="1.5" />
+        <path
+          d="M95.5 45.5l6.5 6.8 13-13.6"
+          stroke="#ffffff"
+          strokeWidth="4.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        <rect x="44" y="13" width="12" height="5" rx="2.5" transform="rotate(-38 44 13)" fill="#3b82f6" />
+        <rect x="20" y="34" width="14" height="5.5" rx="2.75" transform="rotate(-44 20 34)" fill="#9333ea" />
+        <rect x="44" y="56" width="12" height="5" rx="2.5" transform="rotate(42 44 56)" fill="#fb923c" />
+        <circle cx="31" cy="76" r="2.2" fill="#818cf8" />
+        <path d="M56 26l1.5 3.5L61 31l-3.5 1.5L56 36l-1.5-3.5L51 31l3.5-1.5z" fill="#818cf8" />
+        <path d="M21 56l1.6 3.8L26.5 61.5l-3.9 1.6L21 67l-1.6-3.9-3.9-1.6 3.9-1.7z" fill="#fbbf24" />
+
+        <rect x="148" y="16" width="11" height="4.8" rx="2.4" transform="rotate(-42 148 16)" fill="#9333ea" />
+        <rect x="160" y="34" width="14" height="5.2" rx="2.6" transform="rotate(-42 160 34)" fill="#f43f5e" />
+        <rect x="188" y="42" width="11" height="4.5" rx="2.25" transform="rotate(-38 188 42)" fill="#38bdf8" />
+        <rect x="176" y="70" width="12" height="4.8" rx="2.4" transform="rotate(-40 176 70)" fill="#f43f5e" />
+        <path d="M174 14l1.7 4 4 1.7-4 1.7-1.7 4-1.7-4-4-1.7 4-1.7z" fill="#fbbf24" />
+        <path d="M155 54l1.4 3.4 3.4 1.4-3.4 1.4-1.4 3.4-1.4-3.4-3.4-1.4 3.4-1.4z" fill="#38bdf8" />
+        <path d="M171 50l1.3 3 3 1.3-3 1.3-1.3 3-1.3-3-3-1.3 3-1.3z" fill="#f472b6" />
+      </svg>
+    </div>
+  );
+}
 
 export type ResultViewProps = Pick<
   QuizController,
@@ -74,7 +127,6 @@ export function ResultView({
     availableCount ?? 0,
     attempted,
   );
-  const unattempted = Math.max(0, totalQuestions - attempted);
   const completionPct =
     totalQuestions > 0 ? Math.round((attempted / totalQuestions) * 100) : 0;
   const totalTimeSeconds = results.reduce(
@@ -83,29 +135,11 @@ export function ResultView({
   );
 
   // Circular gauge geometry
-  const radius = 38;
+  const radius = 48;
   const circumference = 2 * Math.PI * radius;
   const clampedAccuracy = Math.max(0, Math.min(100, stats.accuracy));
   const strokeDashoffset =
     circumference - (clampedAccuracy / 100) * circumference;
-
-  const gaugeStrokeColor =
-    attempted === 0
-      ? "var(--rv-accent)"
-      : stats.accuracy >= 70
-        ? "var(--rv-correct-solid)"
-        : stats.accuracy >= 40
-          ? "var(--rv-amber-solid)"
-          : "var(--rv-wrong-solid)";
-
-  const performanceTier =
-    attempted === 0
-      ? { label: "Session Ended", className: styles.tierGood }
-      : stats.accuracy >= 75
-        ? { label: "Excellent Mastery", className: styles.tierExcellent }
-        : stats.accuracy >= 45
-          ? { label: "Solid Progress", className: styles.tierGood }
-          : { label: "Needs Practice", className: styles.tierPractice };
 
   // Build Concept Breakdown from actual session results so it never renders empty
   const conceptStatsMap = new Map<
@@ -147,11 +181,6 @@ export function ResultView({
     (a, b) => a.questionIndex - b.questionIndex,
   );
 
-  const correctBarWidth =
-    totalQuestions > 0 ? (stats.correct / totalQuestions) * 100 : 0;
-  const wrongBarWidth =
-    totalQuestions > 0 ? (stats.wrong / totalQuestions) * 100 : 0;
-
   return (
     <div
       className={`${subjectConfig.cssClassName} ${styles.resultRoot}`}
@@ -188,30 +217,17 @@ export function ResultView({
         <div className={styles.mainInner}>
           {/* 1. Hero Performance Summary Card */}
         <section className={styles.heroCard} aria-label="Session overview">
-          <div className={styles.heroTop}>
-            <div className={styles.heroCopy}>
-              <div className={styles.badgeRow}>
-                <span className={styles.modeBadge}>
-                  <Sparkles size={12} aria-hidden="true" />
-                  <span>{modeLabel} Mode</span>
-                </span>
-                <span
-                  className={`${styles.tierBadge} ${performanceTier.className}`}
-                >
-                  {performanceTier.label}
-                </span>
-              </div>
+          <header className={styles.heroHeader}>
+            <CelebrationBadgeIcon />
+            <h1 className={styles.heroTitle}>
+              Session <span className={styles.heroTitleAccent}>Complete</span>
+            </h1>
+            <p className={styles.heroDescription}>
+              Here is how you performed in this {modeLabel} session.
+            </p>
+          </header>
 
-              <h1 className={styles.heroTitle}>
-                Session{" "}
-                <span className={styles.heroTitleAccent}>Complete</span>
-              </h1>
-              <p className={styles.heroDescription}>
-                Here is how you performed in this {modeLabel} session.
-              </p>
-            </div>
-
-            {/* Precision Accuracy Ring */}
+          <div className={styles.heroSummaryCard}>
             <div
               className={styles.gaugeWrap}
               role="img"
@@ -219,21 +235,35 @@ export function ResultView({
             >
               <svg
                 className={styles.gaugeSvg}
-                viewBox="0 0 92 92"
+                viewBox="0 0 120 120"
                 aria-hidden="true"
               >
+                <defs>
+                  <linearGradient
+                    id="rv-accuracy-gradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop offset="0%" stopColor="#0a84ff" />
+                    <stop offset="52%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#a855f7" />
+                  </linearGradient>
+                </defs>
                 <circle
                   className={styles.gaugeTrack}
-                  cx="46"
-                  cy="46"
+                  cx="60"
+                  cy="60"
                   r={radius}
                 />
                 <circle
                   className={styles.gaugeFill}
-                  cx="46"
-                  cy="46"
+                  cx="60"
+                  cy="60"
                   r={radius}
-                  stroke={gaugeStrokeColor}
+                  stroke="url(#rv-accuracy-gradient)"
+                  strokeLinecap={clampedAccuracy > 0 ? "round" : "butt"}
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                 />
@@ -243,117 +273,45 @@ export function ResultView({
                 <span className={styles.gaugeLabel}>Accuracy</span>
               </div>
             </div>
-          </div>
 
-          {/* Segmented Session Progress Bar */}
-          <div className={styles.distributionBlock}>
-            <div className={styles.segmentedBar} aria-hidden="true">
-              {stats.correct > 0 && (
-                <div
-                  className={styles.segmentCorrect}
-                  style={{ width: `${Math.max(3, correctBarWidth)}%` }}
-                />
-              )}
-              {stats.wrong > 0 && (
-                <div
-                  className={styles.segmentWrong}
-                  style={{ width: `${Math.max(3, wrongBarWidth)}%` }}
-                />
-              )}
-              <div className={styles.segmentSkipped} style={{ flex: 1 }} />
-            </div>
+            <div className={styles.heroDivider} aria-hidden="true" />
 
-            <div className={styles.distributionLegend}>
-              <div className={styles.legendItems}>
-                <span className={styles.legendItem}>
-                  <span
-                    className={styles.legendDot}
-                    style={{ background: "var(--rv-correct-solid)" }}
-                  />
-                  {stats.correct} Correct
+            <div className={styles.heroStatsCol}>
+              <div className={`${styles.statPillCard} ${styles.statPillCorrect}`}>
+                <span
+                  className={`${styles.statPillIcon} ${styles.statPillIconCorrect}`}
+                  aria-hidden="true"
+                >
+                  <Check size={18} strokeWidth={2.75} />
                 </span>
-                <span className={styles.legendItem}>
-                  <span
-                    className={styles.legendDot}
-                    style={{ background: "var(--rv-wrong-solid)" }}
-                  />
-                  {stats.wrong} Wrong
-                </span>
-                {unattempted > 0 && (
-                  <span className={styles.legendItem}>
-                    <span
-                      className={styles.legendDot}
-                      style={{ background: "var(--rv-text-muted)" }}
-                    />
-                    {unattempted} Remaining
+                <div className={styles.statPillCopy}>
+                  <span className={styles.statPillValueCorrect}>
+                    {stats.correct}
                   </span>
-                )}
+                  <span className={styles.statPillLabel}>Correct</span>
+                </div>
               </div>
-              <span className={styles.legendCompletion}>
-                {attempted} / {totalQuestions} Done ({completionPct}%)
-              </span>
+
+              <div className={`${styles.statPillCard} ${styles.statPillWrong}`}>
+                <span
+                  className={`${styles.statPillIcon} ${styles.statPillIconWrong}`}
+                  aria-hidden="true"
+                >
+                  <X size={18} strokeWidth={2.75} />
+                </span>
+                <div className={styles.statPillCopy}>
+                  <span className={styles.statPillValueWrong}>
+                    {stats.wrong}
+                  </span>
+                  <span className={styles.statPillLabel}>Wrong</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* 2. Redesigned 6-Card Metrics Grid */}
+        {/* 2. Secondary Metrics Row */}
         <section className={styles.metricsGrid} aria-label="Performance metrics">
-          {/* Correct */}
-          <div className={styles.metricCard}>
-            <div className={styles.metricHeader}>
-              <span className={styles.metricLabel}>Correct</span>
-              <span className={`${styles.metricIconBox} ${styles.iconCorrect}`}>
-                <CircleCheck size={16} aria-hidden="true" />
-              </span>
-            </div>
-            <div className={styles.metricBody}>
-              <div className={`${styles.metricValue} ${styles.valueCorrect}`}>
-                {stats.correct}
-              </div>
-              <span className={styles.metricSub}>
-                {attempted > 0
-                  ? `${stats.correct} of ${attempted} answered`
-                  : "No answers yet"}
-              </span>
-            </div>
-          </div>
-
-          {/* Wrong */}
-          <div className={styles.metricCard}>
-            <div className={styles.metricHeader}>
-              <span className={styles.metricLabel}>Wrong</span>
-              <span className={`${styles.metricIconBox} ${styles.iconWrong}`}>
-                <XCircle size={16} aria-hidden="true" />
-              </span>
-            </div>
-            <div className={styles.metricBody}>
-              <div className={`${styles.metricValue} ${styles.valueWrong}`}>
-                {stats.wrong}
-              </div>
-              <span className={styles.metricSub}>
-                {stats.wrong === 0 && attempted > 0
-                  ? "Zero mistakes"
-                  : `${stats.wrong} incorrect`}
-              </span>
-            </div>
-          </div>
-
-          {/* Accuracy */}
-          <div className={styles.metricCard}>
-            <div className={styles.metricHeader}>
-              <span className={styles.metricLabel}>Accuracy</span>
-              <span className={`${styles.metricIconBox} ${styles.iconAccent}`}>
-                <Target size={16} aria-hidden="true" />
-              </span>
-            </div>
-            <div className={styles.metricBody}>
-              <div className={`${styles.metricValue} ${styles.valueAccent}`}>
-                {stats.accuracy}%
-              </div>
-              <span className={styles.metricSub}>Overall precision</span>
-            </div>
-          </div>
-
           {/* Avg Time */}
           <div className={styles.metricCard}>
             <div className={styles.metricHeader}>
