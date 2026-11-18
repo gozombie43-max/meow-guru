@@ -29,7 +29,7 @@
     "@hookform/resolvers": "^5.9.1",
     "@meow/contracts": "1.0.0",
     "@monaco-editor/react": "^4.7.0",
-    "@sentry/nextjs": "^11.7.0",
+    "@sentry/nextjs": "^11.14.0",
     "@tanstack/react-virtual": "^3.14.17",
     "@types/react-katex": "^3.0.4",
     "@vercel/speed-insights": "^2.1.0",

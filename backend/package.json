@@ -115,6 +115,8 @@
   },
   "overrides": {
     "follow-redirects": "1.16.2",
+    "glob": "^14.0.6",
+    "rimraf": "^6.1.4",
     "gaxios": {
       "uuid": "^11.1.1"
     },
