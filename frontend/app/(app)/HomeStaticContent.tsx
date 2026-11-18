@@ -129,11 +129,11 @@ export function MobileHomeContent() {
               <Link key={subject.title} href={subject.href} className={styles.mobileSubjectCard}>
                 <HomeCardArtwork kind={subject.tone} />
                 <span className={`${styles.subjectIcon} ${styles[subject.tone]}`}>
-                  <subject.icon size={30} />
+                  <subject.icon size={26} />
                 </span>
                 <span className={styles.subjectCopy}>
                   <strong>{subject.title === 'GK' ? 'GK' : subject.title.charAt(0) + subject.title.slice(1).toLowerCase()}</strong>
-                  <small>15000+ Questions</small>
+                  <small>15k+ Qs</small>
                 </span>
               </Link>
             ))}
@@ -141,12 +141,12 @@ export function MobileHomeContent() {
           <div className={styles.sectionHeader}><h2>Study and compete</h2></div>
           <Link href="/resource" className={styles.resourceCard}>
             <HomeCardArtwork kind="books" />
-            <span className={styles.resourceIcon}><BooksIcon size={48} /></span>
+            <span className={styles.resourceIcon}><BooksIcon size={28} /></span>
             <span><strong>All books & notes</strong><small>Books, chapter notes, extras & DPP</small></span>
           </Link>
           <Link href="/battle" className={styles.battleCard}>
             <HomeCardArtwork kind="battle" />
-            <span className={styles.battleIcon}><BattleIcon size={48} /></span>
+            <span className={styles.battleIcon}><BattleIcon size={28} /></span>
             <span><strong>Battle mode</strong><small>Challenge yourself & win rewards</small></span>
           </Link>
         </div>
