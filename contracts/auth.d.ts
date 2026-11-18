@@ -12,6 +12,7 @@ export const requestEmailOtpSchema: z.ZodObject<{
 }, z.core.$strip>;
 export const verifyEmailOtpSchema: z.ZodObject<{
     name: z.ZodOptional<z.ZodString>;
+    password: z.ZodOptional<z.ZodString>;
     email: z.ZodString;
     challengeId: z.ZodString;
     code: z.ZodString;

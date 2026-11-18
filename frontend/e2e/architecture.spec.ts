@@ -9,7 +9,9 @@ test('large mobile question palettes stay bounded and reach the last question in
   await context.route('**/backend-api/**', route => {
     const path = new URL(route.request().url()).pathname;
     const body = path.endsWith('/session') ? { questions, hasMore: false, nextCursor: null, totalCount: 500 }
-      : path.endsWith('/meta') ? { total: 500, exams: ['SSC CGL'], concepts: ['Addition'], letters: {}, conceptGroups: [], groupingStatus: 'empty' } : {};
+      : path.endsWith('/meta') ? { total: 500, exams: ['SSC CGL'], concepts: ['Addition'], letters: {}, conceptGroups: [], groupingStatus: 'empty' }
+      : path.endsWith('/auth/refresh') ? { token: 'fixture-token' }
+      : path.endsWith('/users/me') ? { id: 'fixture-user', name: 'Fixture User', email: 'fixture@example.test', progress: {}, bookmarks: [] } : {};
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
   });
   await page.goto('/mathematics/algebra/quiz');
@@ -40,7 +42,9 @@ test('large desktop question palettes keep their last row reachable', async ({ p
   await context.route('**/backend-api/**', route => {
     const path = new URL(route.request().url()).pathname;
     const body = path.endsWith('/session') ? { questions, hasMore: false, nextCursor: null, totalCount: 500 }
-      : path.endsWith('/meta') ? { total: 500, exams: ['SSC CGL'], concepts: ['Addition'], letters: {}, conceptGroups: [], groupingStatus: 'empty' } : {};
+      : path.endsWith('/meta') ? { total: 500, exams: ['SSC CGL'], concepts: ['Addition'], letters: {}, conceptGroups: [], groupingStatus: 'empty' }
+      : path.endsWith('/auth/refresh') ? { token: 'fixture-token' }
+      : path.endsWith('/users/me') ? { id: 'fixture-user', name: 'Fixture User', email: 'fixture@example.test', progress: {}, bookmarks: [] } : {};
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
   });
   await page.goto('/mathematics/algebra/quiz');

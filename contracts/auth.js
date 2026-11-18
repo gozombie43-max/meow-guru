@@ -3,17 +3,19 @@ import { z } from 'zod';
 const SAFE_AVATAR_REGEX =
   /^(?:https:\/\/[^\s"'<>\\)]+|\/(?!\/)[^\s"'<>\\)]*|data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+)$/i;
 
+const newPasswordSchema = z
+  .string()
+  .min(6, 'Password must be at least 6 characters')
+  .max(100)
+  .refine(
+    (password) => new TextEncoder().encode(password).byteLength <= 72,
+    'Password must not exceed 72 UTF-8 bytes'
+  );
+
 export const registerSchema = z.object({
   name: z.string().trim().min(2, 'Name must be at least 2 characters').max(80),
   email: z.string().trim().email('Invalid email address').toLowerCase(),
-  password: z
-    .string()
-    .min(6, 'Password must be at least 6 characters')
-    .max(100)
-    .refine(
-      (password) => new TextEncoder().encode(password).byteLength <= 72,
-      'Password must not exceed 72 UTF-8 bytes'
-    ),
+  password: newPasswordSchema,
 });
 
 export const loginSchema = z.object({
@@ -27,6 +29,8 @@ export const requestEmailOtpSchema = z.object({
 
 export const verifyEmailOtpSchema = z.object({
   name: z.string().trim().min(2, 'Name must be at least 2 characters').max(80).optional(),
+  /** Sign-up only: password set on the new account once the email code is verified. */
+  password: newPasswordSchema.optional(),
   email: requestEmailOtpSchema.shape.email,
   challengeId: z.string().regex(/^[a-f0-9]{64}$/, 'Invalid sign-in request'),
   code: z.string().trim().regex(/^\d{6}$/, 'Enter the 6-digit code'),

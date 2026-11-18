@@ -381,9 +381,10 @@ router.post('/email-otp/request', requireTrustedOrigin, emailOtpRequestLimiter, 
 
 router.post('/email-otp/verify', requireTrustedOrigin, emailOtpVerifyLimiter, validateBody(verifyEmailOtpSchema), async (req, res) => {
   try {
-    const { email, challengeId, code, name } = req.body;
+    const { email, challengeId, code, name, password } = req.body;
     const claimed = await consumeEmailLoginChallenge({ email, challengeId, codeHash: hashEmailLoginCode(email, challengeId, code) });
-    const user = claimed ? await resolveEmailOtpAccount(email, name) : null;
+    const passwordHash = claimed && password ? await bcrypt.hash(password, 12) : undefined;
+    const user = claimed ? await resolveEmailOtpAccount(email, name, passwordHash) : null;
     if (!user) return res.status(401).json({ error: 'Code is invalid or expired. Request a new code.', code: 'INVALID_OR_EXPIRED_OTP' });
     const { token, refreshToken } = await createSession(user);
     applyRefreshToken(res, refreshToken);

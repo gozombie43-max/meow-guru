@@ -47,22 +47,26 @@ describe('authentication forms', () => {
     expect(mocks.replace).toHaveBeenCalledWith('/');
   });
 
-  it('creates an account with name, email and an in-page code without /check-email', async () => {
+  it('creates an account with name, email, password and an in-page code without /check-email', async () => {
     mocks.post.mockResolvedValueOnce({ data: { challengeId, retryAfter: 60 } });
     const user = userEvent.setup();
     render(<RegisterPage />);
     expect(screen.queryByText(/google/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Password')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Send code' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Enter your name');
     expect(mocks.post).not.toHaveBeenCalled();
     await user.type(screen.getByLabelText('Full name'), 'Ada Lovelace');
     await user.type(screen.getByLabelText('Email'), 'ada@example.com');
     await user.click(screen.getByRole('button', { name: 'Send code' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Password must be at least 6 characters.');
+    expect(mocks.post).not.toHaveBeenCalled();
+    await user.type(screen.getByLabelText('Password'), 'secret123');
+    await user.click(screen.getByRole('button', { name: 'Send code' }));
     await user.type(await screen.findByLabelText('6-digit code'), '654321');
     await user.click(screen.getByRole('button', { name: 'Verify & create account' }));
     await waitFor(() => expect(mocks.post).toHaveBeenLastCalledWith('/auth/email-otp/verify', {
-      email: 'ada@example.com', challengeId, code: '654321', name: 'Ada Lovelace',
+      email: 'ada@example.com', challengeId, code: '654321', name: 'Ada Lovelace', password: 'secret123',
     }, opts));
     await waitFor(() => expect(mocks.login).toHaveBeenCalledWith('test-token'));
     expect(mocks.replace).toHaveBeenCalledWith('/');

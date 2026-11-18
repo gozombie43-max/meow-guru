@@ -23,6 +23,8 @@ type FormData = { email: string; password: string };
 interface AuthFlowProps {
   mode: 'login' | 'signup';
   embedded?: boolean;
+  /** Embedded only: 'tabs' shows a segmented switch, 'link' shows a single text link under the form. */
+  modeSwitch?: 'tabs' | 'link';
   onCancel?: () => void;
   onSuccess?: () => void;
 }
@@ -31,7 +33,7 @@ interface AuthFlowProps {
  * One-page sign in / create account. Both use an emailed 6-digit code entered in place.
  * Existing password accounts can still sign in through the secondary "Log in with password" link.
  */
-export default function AuthFlow({ mode, embedded = false, onCancel, onSuccess }: AuthFlowProps) {
+export default function AuthFlow({ mode, embedded = false, modeSwitch = 'tabs', onCancel, onSuccess }: AuthFlowProps) {
   const { login } = useAuth();
   const router = useRouter();
   const [currentMode, setCurrentMode] = useState<'login' | 'signup'>(mode);
@@ -41,8 +43,8 @@ export default function AuthFlow({ mode, embedded = false, onCancel, onSuccess }
 
   const activeMode = embedded ? currentMode : mode;
   const signup = activeMode === 'signup';
-  const title = signup ? 'Create your account' : 'Welcome back';
-  const subtitle = signup ? 'Start your preparation streak' : 'Sign in to your Meow account';
+  const title = signup ? 'Create account' : 'Welcome back';
+  const subtitle = signup ? '1-day free trial' : 'Sign in to continue';
 
   const { register, handleSubmit, setValue, control, formState: { errors, isSubmitting } } = useForm<FormData>({
     defaultValues: { email: '', password: '' },
@@ -139,24 +141,26 @@ export default function AuthFlow({ mode, embedded = false, onCancel, onSuccess }
             )}
           </div>
 
-          <div className={styles.loginMethods} role="group" aria-label="Authentication mode">
-            <button
-              type="button"
-              aria-pressed={activeMode === 'login'}
-              className={`${styles.segmentedTab} ${activeMode === 'login' ? styles.segmentedTabActive : ''}`}
-              onClick={() => switchEmbeddedMode('login')}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              aria-pressed={activeMode === 'signup'}
-              className={`${styles.segmentedTab} ${activeMode === 'signup' ? styles.segmentedTabActive : ''}`}
-              onClick={() => switchEmbeddedMode('signup')}
-            >
-              Create Account
-            </button>
-          </div>
+          {modeSwitch === 'tabs' && (
+            <div className={styles.loginMethods} role="group" aria-label="Authentication mode">
+              <button
+                type="button"
+                aria-pressed={activeMode === 'login'}
+                className={`${styles.segmentedTab} ${activeMode === 'login' ? styles.segmentedTabActive : ''}`}
+                onClick={() => switchEmbeddedMode('login')}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                aria-pressed={activeMode === 'signup'}
+                className={`${styles.segmentedTab} ${activeMode === 'signup' ? styles.segmentedTabActive : ''}`}
+                onClick={() => switchEmbeddedMode('signup')}
+              >
+                Create Account
+              </button>
+            </div>
+          )}
 
           {error && (
             <div className={styles.alertBanner} role="alert">
@@ -166,6 +170,19 @@ export default function AuthFlow({ mode, embedded = false, onCancel, onSuccess }
           )}
 
           {formContent}
+
+          {modeSwitch === 'link' && (
+            <p className={styles.modeSwitchText}>
+              {signup ? 'Already have an account?' : 'New to Meow?'}{' '}
+              <button
+                type="button"
+                className={styles.modeSwitchLink}
+                onClick={() => switchEmbeddedMode(signup ? 'login' : 'signup')}
+              >
+                {signup ? 'Sign in' : 'Create an account'}
+              </button>
+            </p>
+          )}
         </div>
       ) : (
         <AuthCard

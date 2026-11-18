@@ -1107,3 +1107,26 @@
   :global(html.theme-dark) .mobileCardHeader { --ui-header-surface: var(--dark-surface); }
   :global(html.theme-dark) .authShell { border-color: transparent; box-shadow: none; }
 }
+
+/* Single-link mode switch (used by the auth-required modal) */
+.modeSwitchText {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--ios-secondary);
+}
+
+.modeSwitchLink {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ios-blue);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modeSwitchLink:hover {
+  color: var(--ios-blue-hover);
+  text-decoration: underline;
+}
