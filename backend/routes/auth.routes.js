@@ -378,11 +378,12 @@ router.post('/email-otp/request', requireTrustedOrigin, emailOtpRequestLimiter, 
     await sendLoginOtpEmail(email, challenge.code);
     // Identical responses for existing and new addresses; no account is created here.
     return res.json({ message: 'Check your email for a 6-digit sign-in code.', challengeId, retryAfter: 60, expiresIn: 300 });
-  } catch {
+  } catch (error) {
     if (challengeId) {
       try { await invalidateEmailLoginChallenge(email, challengeId); } catch { /* Keep secrets out of logs. */ }
     }
-    runtimeLog.error('Email sign-in code delivery failed');
+    // Provider error text (e.g. Resend sandbox/unverified-domain rejections) never contains the code.
+    runtimeLog.error('Email sign-in code delivery failed', { reason: String(error?.message || error).slice(0, 300) });
     return res.status(503).json({ error: 'Unable to send a code. Please try again later.' });
   }
 });

@@ -127,9 +127,12 @@ function SkillLearnLogo() {
 export default function HomeClient({
   desktopContent,
   mobileContent,
+  mayHaveSession = true,
 }: {
   desktopContent: ReactNode;
   mobileContent: ReactNode;
+  /** False when the request carried no refresh cookie, i.e. the visitor is certainly a guest. */
+  mayHaveSession?: boolean;
 }) {
   const { isJam } = useExamMode();
   const pathname = usePathname() || '/';
@@ -138,7 +141,8 @@ export default function HomeClient({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [heroScrolled, setHeroScrolled] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
-  const showGuestWelcome = !loading && !user;
+  // Guests must never see the signed-in home while the session check is pending.
+  const showGuestWelcome = !user && (!loading || !mayHaveSession);
   useModalSurface(sidebarRef, sidebarOpen, () => setSidebarOpen(false), { initialFocus: '[aria-label="Close sidebar"]' });
   const isDark = theme === 'dark';
 
