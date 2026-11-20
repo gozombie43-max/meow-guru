@@ -350,3 +350,39 @@ export const uploadLimiter =
         'Upload rate limit reached, please try again later.',
     },
   });
+
+function isAuthenticatedRequest(req) {
+  if (req.user?.id || req.user?._id) return true;
+  const authHeader = req.headers?.authorization;
+  if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+    try {
+      const decoded = verifyToken(authHeader.slice(7).trim());
+      if (decoded?.id || decoded?._id) return true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+// Dedicated question delivery limiter: isolates bursty question/session reads
+// (600/15m unauthenticated, 2400/15m authenticated) using the isolated rate-limit Redis socket.
+export const questionReadLimiter = rateLimit({
+  ...(!isLocalEnvironment() ? { store: new RedisRateLimitStore('question-read', { outagePolicy: 'availability' }) } : {}),
+  windowMs: 15 * 60 * 1000,
+  limit: (req) => {
+    if (isLocalEnvironment()) return 100000;
+    return isAuthenticatedRequest(req) ? 2400 : 600;
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: userKeyGenerator,
+  skip: (req) => {
+    if (process.env.ENABLE_QUESTION_RATE_LIMIT_IN_TEST === 'true') return false;
+    if (process.env.NODE_ENV === 'test') return true;
+    return isDevOrLocal(req);
+  },
+  message: {
+    error: 'Question delivery rate limit reached, please try again shortly.',
+  },
+});

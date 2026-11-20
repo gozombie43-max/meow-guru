@@ -15,6 +15,7 @@ import {
 } from "@/lib/quiz-index";
 import { useCallback, useMemo, useState } from "react";
 import type { QuizMode } from "@/features/quiz/model/types";
+import { DEFAULT_QUIZ_BATCH_SIZE } from "@/features/quiz/model/constants";
 import { parseConceptSelection, serializeConceptSelection } from '../model/conceptSelection';
 export function useQuizFilters({
   subjectConfig,
@@ -62,7 +63,7 @@ export function useQuizFilters({
     setSelectedLetters(new Set((restoredEntry.sessionFilters?.letter ?? initialLetterParam ?? '').split(',').filter(Boolean)));
   }
 
-  const { meta } = useQuestionsMeta({
+  const { meta, isLoading: isMetaLoading } = useQuestionsMeta({
     subject: subjectConfig.subjectId,
     topic: questionTopic ?? slug,
     mode,
@@ -80,20 +81,31 @@ export function useQuizFilters({
     && serializeConceptSelection(Array.from(selectedClassificationConcepts)) === (savedFilters?.concept || '')
     && Array.from(selectedLetters).join(',') === (savedFilters?.letter || initialLetterParam || '');
 
+  // Avoid firing a fallback raw examFilter query and then refetching once meta.exams arrives.
+  const waitingForResumeExamMeta = Boolean(
+    resumeRequested
+      && examFilter
+      && examFilter !== "all"
+      && isMetaLoading
+      && !(meta?.exams?.length),
+  );
+
   const {
     questions: apiQuestions,
     ensureQuestion,
     hasMore,
     isFetchingMore,
     fetchMore,
+    retryFetchMore,
+    isError: isSessionError,
     totalCount: apiTotalCount,
     isLoading,
   } = useQuizSession({
     subject: subjectConfig.subjectId,
     topic: questionTopic ?? slug,
     mode,
-    limit: 100,
-    enabled: (!resumeRequested || !authLoading) && (!restoredEntry || Boolean(resumeEntry)),
+    limit: DEFAULT_QUIZ_BATCH_SIZE,
+    enabled: (!resumeRequested || !authLoading) && (!restoredEntry || Boolean(resumeEntry)) && !waitingForResumeExamMeta,
     resumeIndex: matchesResumeFilters ? resumeWindow.index : undefined,
     anchor: matchesResumeFilters ? resumeWindow.anchor : undefined,
     // Unfiltered totals already arrive in metadata. Filter combinations need an exact count.
@@ -192,6 +204,8 @@ export function useQuizFilters({
     hasMore,
     isFetchingMore,
     fetchMore,
+    retryFetchMore,
+    isSessionError,
     conceptOptions,
     examOptions,
     classificationGroups,

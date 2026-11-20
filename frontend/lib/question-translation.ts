@@ -22,7 +22,8 @@ export function planQuestionTranslation(
   };
   const texts: string[] = [];
   const slots = source.map((text, index) => {
-    if (index > 0 && literalAnswers) return null;
+    // Keep answer options literal in language/letter puzzles, while still translating the question (index 0) and non-empty solution (last index).
+    if (index > 0 && literalAnswers && (index < source.length - 1 || !text.trim())) return null;
     // Quotes are question data in language/letter puzzles. Always retain math,
     // inline code, uppercase identifiers and numeric expressions exactly.
     const pattern = literalAnswers

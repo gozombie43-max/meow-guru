@@ -2,12 +2,14 @@ import { z } from 'zod';
 
 export const bookmarkPatchSchema = z.object({
   questionId: z.union([z.string(), z.number()]).transform(String),
+  questionUid: z.string().regex(/^q_[a-f0-9]{32}$/).optional(),
   action: z.enum(['add', 'remove']),
   meta: z
     .object({
       quizKey: z.string().optional(),
       title: z.string().optional(),
       subject: z.string().optional(),
+      topic: z.string().optional(),
       slug: z.string().optional(),
       href: z.string().optional(),
       mode: z.string().optional(),

@@ -1,7 +1,6 @@
 import { aggregateQuestionModeCounts, findPersistedQuestionMetadata, saveTopicCountSnapshot } from '../../repositories/questionMetadataRepository.js';
 import { createTieredCache } from '../../infrastructure/tieredCache.js';
 import { getQuestionRevision, isNormalizedQuestionKeysEnabled } from "./questionCache.js";
-import { fetchQuestionCounts } from "./questionMetadataService.js";
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
 import { caseInsensitiveExact, mongoString, questionModeFromAggregateKey } from "./questionQueryBuilder.js";
 import { normalizeSearchKey } from "./questionNormalizer.js";
@@ -17,53 +16,186 @@ const CHAPTER_SUBJECTS = new Set(["general-awareness"]);
 const slugify = value => String(value || "").trim().toLowerCase()
   .replace(/&/g, " ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
-async function addChapterTotals(subject, groupTopics, totals) {
-  const normalized = isNormalizedQuestionKeysEnabled();
-  const match = normalized ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) };
+const escapeRegex = value => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+function buildTopicKeyLookup(topics) {
+  const map = new Map();
+  for (const topic of topics) {
+    const key = normalizeSearchKey(topic);
+    map.set(key, topic);
+    if (key === "synonymsantonyms") {
+      map.set("antosynopyq", topic);
+    }
+  }
+  return map;
+}
+
+// Single-aggregation per-subject topic counter (replaces 20-30 per-topic queries).
+async function aggregateSubjectTopicTotals(normalizedSubject, topics, normalized) {
+  const totals = Object.fromEntries(topics.map(topic => [topic, 0]));
+  const topicKeyToSlug = buildTopicKeyLookup(topics);
+  const isChapterSubject = CHAPTER_SUBJECTS.has(normalizedSubject);
+  const groupSet = new Set(topics);
+
+  if (normalized) {
+    const matchTopicKeys = [...topicKeyToSlug.keys()];
+    const subjectKey = normalizeSearchKey(normalizedSubject);
+    let match;
+    if (normalizedSubject === "iit-jam-physics") {
+      match = { subjectKey, modeKey: { $in: MODES } };
+    } else if (isChapterSubject) {
+      match = {
+        $or: [{ subjectKey }, { topicKey: { $in: matchTopicKeys } }],
+        modeKey: { $in: MODES },
+      };
+    } else {
+      match = { topicKey: { $in: matchTopicKeys }, modeKey: { $in: MODES } };
+    }
+
+    const pipeline = isChapterSubject
+      ? [
+          { $match: match },
+          {
+            $group: {
+              _id: {
+                topicKey: "$topicKey",
+                modeKey: "$modeKey",
+                topicGroup: { $toLower: mongoString("$topicGroup") },
+                chapterSlug: mongoString("$chapterSlug"),
+                rawTopic: mongoString("$topic"),
+              },
+              count: { $sum: 1 },
+            },
+          },
+        ]
+      : [
+          { $match: match },
+          {
+            $group: {
+              _id: { topicKey: "$topicKey", modeKey: "$modeKey" },
+              count: { $sum: 1 },
+            },
+          },
+        ];
+
+    const rows = await aggregateQuestionModeCounts(pipeline);
+    for (const row of rows) {
+      const key = row?._id || {};
+      if (!COUNTED_MODES.has(key.modeKey)) continue;
+      const count = Number(row.count) || 0;
+      const slug = topicKeyToSlug.get(key.topicKey);
+      if (slug) {
+        totals[slug] = (totals[slug] || 0) + count;
+        continue;
+      }
+      if (isChapterSubject) {
+        const chapter = slugify(key.chapterSlug) || slugify(key.rawTopic);
+        if (chapter && !groupSet.has(chapter) && chapter !== "__proto__") {
+          totals[chapter] = (totals[chapter] || 0) + count;
+        }
+        if (groupSet.has(key.topicGroup)) {
+          totals[key.topicGroup] = (totals[key.topicGroup] || 0) + count;
+        }
+      }
+    }
+    return totals;
+  }
+
+  let match;
+  if (normalizedSubject === "iit-jam-physics") {
+    match = { subject: caseInsensitiveExact(normalizedSubject) };
+  } else {
+    const aliases = [...new Set(topics.flatMap(topic => (
+      ["synonymsantonyms", "antosynopyq"].includes(normalizeSearchKey(topic))
+        ? [topic, "antosynopyq", "synonyms-antonyms"]
+        : [topic]
+    )))];
+    const pattern = new RegExp(`^\\s*(?:${aliases.map(escapeRegex).join("|")})\\s*$`, "i");
+    const clauses = [
+      { topic: pattern },
+      { chapter: pattern },
+      { subject: pattern },
+      { quizTopic: pattern },
+      { quizName: pattern },
+      { source: pattern },
+    ];
+    if (isChapterSubject) {
+      clauses.push({ subject: caseInsensitiveExact(normalizedSubject) });
+    }
+    match = { $or: clauses };
+  }
+
   const rows = await aggregateQuestionModeCounts([
     { $match: match },
-    { $project: {
-      chapterSlug: mongoString("$chapterSlug"),
-      topicGroup: { $toLower: mongoString("$topicGroup") },
-      rawTopic: mongoString("$topic"),
-      modeKey: mongoString("$modeKey"),
-      quizName: { $toLower: mongoString("$quizName") },
-      quizId: { $toLower: mongoString("$quizId") },
-      source: { $toLower: mongoString("$source") },
-      questionType: { $toLower: mongoString("$questionType") },
-      topic: { $toLower: mongoString("$topic") },
-      hasLetter: { $ne: [mongoString("$letter"), ""] },
-      hasWord: { $ne: [mongoString("$word"), ""] },
-      hasMeanings: { $isArray: "$meanings" },
-    } },
-    { $group: {
-      _id: {
-        chapterSlug: "$chapterSlug", topicGroup: "$topicGroup", rawTopic: "$rawTopic", modeKey: "$modeKey",
-        quizName: "$quizName", quizId: "$quizId", source: "$source", questionType: "$questionType",
-        topic: "$topic", hasLetter: "$hasLetter", hasWord: "$hasWord", hasMeanings: "$hasMeanings",
+    {
+      $project: {
+        rawTopic: mongoString("$topic"),
+        chapter: mongoString("$chapter"),
+        chapterSlug: mongoString("$chapterSlug"),
+        topicGroup: { $toLower: mongoString("$topicGroup") },
+        subject: mongoString("$subject"),
+        quizTopic: mongoString("$quizTopic"),
+        quizName: { $toLower: mongoString("$quizName") },
+        quizId: { $toLower: mongoString("$quizId") },
+        source: { $toLower: mongoString("$source") },
+        questionType: { $toLower: mongoString("$questionType") },
+        topic: { $toLower: mongoString("$topic") },
+        hasLetter: { $ne: [mongoString("$letter"), ""] },
+        hasWord: { $ne: [mongoString("$word"), ""] },
+        hasMeanings: { $isArray: "$meanings" },
       },
-      count: { $sum: 1 },
-    } },
+    },
+    {
+      $group: {
+        _id: {
+          rawTopic: "$rawTopic",
+          chapter: "$chapter",
+          chapterSlug: "$chapterSlug",
+          topicGroup: "$topicGroup",
+          subject: "$subject",
+          quizTopic: "$quizTopic",
+          quizName: "$quizName",
+          quizId: "$quizId",
+          source: "$source",
+          questionType: "$questionType",
+          topic: "$topic",
+          hasLetter: "$hasLetter",
+          hasWord: "$hasWord",
+          hasMeanings: "$hasMeanings",
+        },
+        count: { $sum: 1 },
+      },
+    },
   ]);
-  const groups = new Set(groupTopics);
-  const groupKeys = new Set(groupTopics.map(normalizeSearchKey));
-  const chapterTotals = new Map();
-  const groupTotals = new Map();
+
   for (const row of rows) {
     const key = row?._id || {};
-    const mode = normalized ? key.modeKey : questionModeFromAggregateKey(key);
+    const mode = questionModeFromAggregateKey(key);
     if (!COUNTED_MODES.has(mode)) continue;
     const count = Number(row.count) || 0;
-    // Questions tagged directly with a group name are already counted above.
-    if (groupKeys.has(normalizeSearchKey(key.rawTopic))) continue;
-    const chapter = slugify(key.chapterSlug) || slugify(key.rawTopic);
-    if (chapter && !groups.has(chapter) && chapter !== "__proto__") {
-      chapterTotals.set(chapter, (chapterTotals.get(chapter) || 0) + count);
+    const directSlug = topicKeyToSlug.get(normalizeSearchKey(key.rawTopic));
+    if (directSlug) {
+      totals[directSlug] = (totals[directSlug] || 0) + count;
+      continue;
     }
-    if (groups.has(key.topicGroup)) groupTotals.set(key.topicGroup, (groupTotals.get(key.topicGroup) || 0) + count);
+    if (isChapterSubject && (normalizeSearchKey(key.subject) === "generalawareness" || groupSet.has(key.topicGroup))) {
+      const chapter = slugify(key.chapterSlug) || slugify(key.rawTopic);
+      if (chapter && !groupSet.has(chapter) && chapter !== "__proto__") {
+        totals[chapter] = (totals[chapter] || 0) + count;
+      }
+      if (groupSet.has(key.topicGroup)) {
+        totals[key.topicGroup] = (totals[key.topicGroup] || 0) + count;
+      }
+      continue;
+    }
+    const fallbackSlug = [key.chapter, key.quizTopic, key.quizName, key.source, key.subject]
+      .map(value => topicKeyToSlug.get(normalizeSearchKey(value)))
+      .find(Boolean);
+    if (fallbackSlug) {
+      totals[fallbackSlug] = (totals[fallbackSlug] || 0) + count;
+    }
   }
-  for (const [chapter, count] of chapterTotals) totals[chapter] = count;
-  for (const [group, count] of groupTotals) totals[group] = (totals[group] || 0) + count;
+  return totals;
 }
 const MAX_SNAPSHOT_AGE_MS = 60 * 60 * 1000;
 const MAX_PUBLIC_AGE_MS = 24 * 60 * 60 * 1000;
@@ -90,8 +222,6 @@ const publicSnapshots = createTieredCache({
   freshMs: 300000, staleMs: MAX_PUBLIC_AGE_MS,
   validUntil: data => new Date(data?.generatedAt || data?.updatedAt).getTime() + MAX_PUBLIC_AGE_MS,
 });
-
-const escapeRegex = value => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 async function subjectAppearsEmpty(subject, topics) {
   if ((await aggregateQuestionModeCounts([{ $limit: 1 }])).length === 0) return true;
@@ -161,9 +291,13 @@ function refreshPublicSnapshot(subject, { periodic = false } = {}) {
 
 // Rebuild and persist topic count snapshots for specific uploaded subjects.
 export async function refreshTopicCountSnapshots(subjects = PUBLIC_CATALOG_SUBJECTS) {
+  const canonicalByKey = new Map(Object.keys(SUBJECT_TOPICS).map(slug => [slug.replace(/[^a-z0-9]/g, ''), slug]));
+  const seen = new Set();
   for (const raw of subjects) {
-    const subject = String(raw || '').trim().toLowerCase();
-    if (!subject || subject === 'mathematics' || !Object.hasOwn(SUBJECT_TOPICS, subject)) continue;
+    const key = String(raw || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const subject = canonicalByKey.get(key);
+    if (!subject || subject === 'mathematics' || seen.has(subject)) continue;
+    seen.add(subject);
     try { await fetchTopicCountSnapshot(subject); }
     catch (error) { runtimeLog.error(`Topic count refresh failed for ${subject}:`, error.message); }
   }
@@ -244,18 +378,11 @@ export async function fetchTopicCountSnapshot(subject = "mathematics", { cacheSh
         publicSnapshots.prime(`public-catalog:v1:${id}`, cached.data);
         return cached.data;
       }
-      const totals = {};
-      if (await subjectAppearsEmpty(normalizedSubject, topics)) {
-        for (const topic of topics) totals[topic] = 0;
-      } else {
-        for (let offset = 0; offset < topics.length; offset += 4) {
-          await Promise.all(topics.slice(offset, offset + 4).map(async topic => {
-            const counts = await fetchQuestionCounts({ subject: normalizedSubject, topic }, { cacheShared: false });
-            totals[topic] = MODES.reduce((sum, mode) => sum + (counts[mode] ?? 0), 0);
-          }));
-        }
-        if (CHAPTER_SUBJECTS.has(normalizedSubject)) await addChapterTotals(normalizedSubject, topics, totals);
-      }
+      const totals = await aggregateSubjectTopicTotals(
+        normalizedSubject,
+        topics,
+        isNormalizedQuestionKeysEnabled(),
+      );
       if (await getQuestionRevision() !== revision) return null;
       const generatedAt = new Date(Date.now()).toISOString();
       const result = { subject: normalizedSubject, revision, totals, generatedAt, updatedAt: generatedAt };

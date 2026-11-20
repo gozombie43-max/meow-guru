@@ -26,7 +26,7 @@ type QuestionStatus,
 type AttemptProgress,
 } from './api';
 import { readStartResponse, clearStartResponse } from '@/lib/start-response-cache';
-import { getMockStartKey, mockStartStorageKey } from './startKey';
+import { clearMockStartKey, getMockStartKey } from './startKey';
 import type { MockAttempt } from './api';
 import styles from './MockTestEngine.module.css';
 import MockTestLoading from './MockTestLoading';
@@ -77,10 +77,12 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const [questionStatuses, setQuestionStatuses] = useState<Record<string, QuestionStatus>>({});
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [showPalette, setShowPalette] = useState(false);
   useBackLayer(showPalette, () => setShowPalette(false));
-  useBackLayer(showSubmitModal, () => setShowSubmitModal(false));
+  useBackLayer(showSubmitModal && !isSubmitting, () => setShowSubmitModal(false));
 
   const [deadline, setDeadline] = useState(0);
 
@@ -116,14 +118,14 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
           setCurrentQuestion(result.currentQuestion ?? 0);
           setShowSubmitModal(false);
         }
+      } else if (typeof result.timeLeft === 'number' && Number.isFinite(result.timeLeft)) {
+        setDeadline(Date.now() + Math.max(0, result.timeLeft) * 1000);
       }
-      if (paperRef.current?.schemaDriven) {
-        try {
-          const key = `mock-attempt:${expectedScope}:${attemptIdRef.current}`;
-          const draft = JSON.parse(localStorage.getItem(key) || 'null');
-          if (draft) localStorage.setItem(key, JSON.stringify({ ...draft, revision: saveRevisionRef.current }));
-        } catch { /* Server persistence remains available when browser storage is disabled. */ }
-      }
+      try {
+        const key = `mock-attempt:${expectedScope}:${attemptIdRef.current}`;
+        const draft = JSON.parse(localStorage.getItem(key) || 'null');
+        if (draft) localStorage.setItem(key, JSON.stringify({ ...draft, revision: saveRevisionRef.current }));
+      } catch { /* Server persistence remains available when browser storage is disabled. */ }
       setSaveError('');
     } catch (error) {
       if (resourceRef.current !== expectedScope) throw error;
@@ -159,7 +161,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         data = created ? await Promise.resolve(created.data) : await getAttempt(resumeAttemptId, currentToken, signal);
       } else {
         const startKey = getMockStartKey(userId, examSlug, testId);
-        data = await startTest(examSlug, testId, currentToken, startKey);
+        data = await startTest(examSlug, testId, currentToken, startKey, false, signal);
         if (signal?.aborted) return;
         attemptIdRef.current = data.attemptId;
         setAttemptId(data.attemptId);
@@ -167,7 +169,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       if (signal?.aborted) return;
       if (resumeAttemptId) { attemptIdRef.current = resumeAttemptId; setAttemptId(resumeAttemptId); }
       if (data.status === 'completed') {
-        sessionStorage.removeItem(mockStartStorageKey(userId, examSlug, testId));
+        clearMockStartKey(userId, examSlug, testId);
         router.complete(`/mock-test/${examSlug}/${testId}/result/${data.id || data.attemptId}`);
         return;
       }
@@ -184,34 +186,59 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       sectionTransitionRef.current = false;
       setSectionSaving(false);
       setSectionError(null);
-      let loadedAnswers = data.answers ?? {};
-      let loadedStatuses = data.questionStatuses ?? {};
+      const serverAnswers = data.answers ?? {};
+      const serverStatuses = data.questionStatuses ?? {};
+      let loadedAnswers = serverAnswers;
+      let loadedStatuses = serverStatuses;
       let loadedLanguage = data.language ?? requestedLanguage;
       let loadedQuestion = data.currentQuestion ?? 0;
-      if (nextPaper.schemaDriven) {
-        try {
-          const draft = JSON.parse(localStorage.getItem(`mock-attempt:${scope}:${data.attemptId || data.id || resumeAttemptId}`) || 'null');
-          if (draft && draft.revision === (data.revision ?? 0)) {
-            const openIds = new Set(nextPaper.sections.filter(section => !data.lockedSections?.includes(section.key!)).flatMap(section => section.questions.map(question => question.id)));
-            const recover = (saved: Record<string, unknown>, local: Record<string, unknown>) => ({ ...Object.fromEntries(Object.entries(saved).filter(([id]) => !openIds.has(id))), ...Object.fromEntries(Object.entries(local || {}).filter(([id]) => openIds.has(id))) });
+      let loadedSection = data.currentSection ?? 0;
+      try {
+        const draft = JSON.parse(localStorage.getItem(`mock-attempt:${scope}:${data.attemptId || data.id || resumeAttemptId}`) || 'null');
+        if (draft && draft.revision === (data.revision ?? 0)) {
+          const openIds = new Set(
+            nextPaper.sections
+              .filter(section => !section.key || !data.lockedSections?.includes(section.key))
+              .flatMap(section => section.questions.map(question => question.id)),
+          );
+          const recover = (saved: Record<string, unknown>, local: Record<string, unknown>) => ({
+            ...Object.fromEntries(Object.entries(saved).filter(([id]) => !openIds.has(id))),
+            ...Object.fromEntries(Object.entries(local || {}).filter(([id]) => openIds.has(id))),
+          });
+          if (draft.answers && Object.keys(draft.answers).length > 0) {
             loadedAnswers = recover(loadedAnswers, draft.answers) as typeof loadedAnswers;
-            loadedStatuses = recover(loadedStatuses, draft.questionStatuses) as typeof loadedStatuses;
-            loadedLanguage = draft.language === 'bn' ? 'bn' : 'en';
-            if (draft.currentSection === data.currentSection) loadedQuestion = Math.max(0, Math.min(nextPaper.sections[data.currentSection ?? 0].questions.length - 1, Number(draft.currentQuestion) || 0));
           }
-        } catch { /* Ignore unavailable storage and malformed drafts. */ }
-      }
-      getSaver().seed({ answers: data.answers ?? (nextPaper.schemaDriven ? {} : loadedAnswers), questionStatuses: data.questionStatuses ?? (nextPaper.schemaDriven ? {} : loadedStatuses),
-        currentSection: data.currentSection ?? 0, currentQuestion: data.currentQuestion ?? 0, ...(nextPaper.schemaDriven ? { language: data.language ?? loadedLanguage } : {}) });
+          if (draft.questionStatuses && Object.keys(draft.questionStatuses).length > 0) {
+            loadedStatuses = recover(loadedStatuses, draft.questionStatuses) as typeof loadedStatuses;
+          }
+          if (nextPaper.schemaDriven && (draft.language === 'bn' || draft.language === 'en')) {
+            loadedLanguage = draft.language;
+          }
+          if (!nextPaper.schemaDriven && Number.isInteger(draft.currentSection) && draft.currentSection >= 0 && draft.currentSection < nextPaper.sections.length) {
+            loadedSection = draft.currentSection;
+          }
+          if (draft.currentSection === loadedSection && nextPaper.sections[loadedSection]?.questions.length) {
+            loadedQuestion = Math.max(0, Math.min(nextPaper.sections[loadedSection].questions.length - 1, Number(draft.currentQuestion) || 0));
+          }
+        }
+      } catch { /* Ignore unavailable storage and malformed drafts. */ }
+      getSaver().seed({
+        answers: serverAnswers,
+        questionStatuses: serverStatuses,
+        currentSection: data.currentSection ?? 0,
+        currentQuestion: data.currentQuestion ?? 0,
+        ...(nextPaper.schemaDriven ? { language: data.language ?? loadedLanguage } : {}),
+      });
       setAnswers(loadedAnswers);
       setQuestionStatuses(loadedStatuses);
-      setCurrentSection(data.currentSection ?? 0);
+      setCurrentSection(loadedSection);
       setCurrentQuestion(loadedQuestion);
       setLanguage(loadedLanguage);
       saveRevisionRef.current = data.revision ?? 0;
       conflictRef.current = false;
       setHasConflict(false);
       autoSubmitAttemptedRef.current = false;
+      submittingRef.current = false;
       setIsSubmitting(false);
       setSubmitError(null);
       attemptReadyRef.current = true;
@@ -254,8 +281,14 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   }, [attemptId, ready]);
 
   useEffect(() => {
-    if (!paper?.schemaDriven || !ready || loadedScope !== scope || !attemptId || isSubmitting) return;
-    const progress = { answers, questionStatuses, currentSection, currentQuestion, language };
+    if (!paper || !ready || loadedScope !== scope || !attemptId || isSubmitting) return;
+    const progress = {
+      answers,
+      questionStatuses,
+      currentSection,
+      currentQuestion,
+      ...(paper.schemaDriven ? { language } : {}),
+    };
     try {
       localStorage.setItem(`mock-attempt:${scope}:${attemptId}`, JSON.stringify({ ...progress, paperId: testId, revision: saveRevisionRef.current }));
     } catch { /* Continue with server autosave if storage is unavailable. */ }
@@ -274,23 +307,60 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     if (id) setQuestionStatuses(previous => previous[id] ? previous : { ...previous, [id]: 'not_answered' });
   }, [paper, currentSection, currentQuestion, loadedScope, scope]);
 
-  // visibilitychange
+  const flushKeepaliveProgress = useEffectEvent(() => {
+    if (!attemptReadyRef.current || !attemptIdRef.current || !tokenRef.current || submittingRef.current || loadedScope !== scope || sectionTransitionRef.current || conflictRef.current) return;
+    const baseRevision = saveRevisionRef.current;
+    void autosaveAttempt(
+      attemptIdRef.current,
+      {
+        answers,
+        questionStatuses,
+        currentSection,
+        currentQuestion,
+        ...(paper?.schemaDriven ? { language } : {}),
+        baseRevision,
+        revision: baseRevision + 1,
+      },
+      tokenRef.current,
+      { keepalive: true },
+    ).catch(() => {});
+  });
+
+  // visibilitychange, pagehide, and reconnect recovery
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        saveLatestProgress();
+        flushKeepaliveProgress();
       }
     };
+    const handlePageHide = () => {
+      flushKeepaliveProgress();
+    };
+    const handleOnline = () => {
+      saveLatestProgress();
+    };
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('online', handleOnline);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('online', handleOnline);
+    };
   }, []);
+
+  // Scroll question panel back to top whenever navigating to a new question/section.
+  useEffect(() => {
+    if (rightPanelRef.current) rightPanelRef.current.scrollTop = 0;
+  }, [currentSection, currentQuestion]);
 
   useQuizLeaveGuard(loadedScope === scope && Boolean(paper) && (paper?.schemaDriven === true || deadline > 0) && !isSubmitting,
     `/mock-test/${examSlug}`,
     "Leave this mock test? Your current attempt will not be saved for resume.");
 
   const handleFinalSubmit = useCallback(async () => {
-    if (!attemptReadyRef.current || loadedScope !== scope || isSubmitting || !attemptId || !token || sectionTransitionRef.current) return;
+    if (!attemptReadyRef.current || loadedScope !== scope || submittingRef.current || isSubmitting || !attemptId || !token || sectionTransitionRef.current) return;
+    submittingRef.current = true;
     setIsSubmitting(true);
     setSubmitError(null);
     try {
@@ -302,13 +372,14 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         if (!(error instanceof Error && 'submissionAllowed' in error && error.submissionAllowed)) throw error;
       }
       await submitAttempt(attemptId, token);
-      sessionStorage.removeItem(mockStartStorageKey(userId, examSlug, testId));
+      clearMockStartKey(userId, examSlug, testId);
       try { localStorage.removeItem(`mock-attempt:${scope}:${attemptId}`); } catch { /* Storage may be unavailable. */ }
       if (loadController.current?.signal.aborted || resourceRef.current !== scope) return;
       router.complete(`/mock-test/${examSlug}/${testId}/result/${attemptId}`);
     } catch (error) {
       console.error(error);
       setSubmitError('Submission failed. Your saved progress is retained. Please retry.');
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   }, [
@@ -479,6 +550,12 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         <div data-ui-chrome="header" className={styles.topBar}>
           <BackButton href={`/mock-test/${examSlug}`} label="Leave mock test" />
           <div className={styles.examName}>{examSlug.toUpperCase()}</div>
+          {paper.schemaDriven && (
+            <div role="group" aria-label="Test language" style={{ display: 'inline-flex', gap: 4 }}>
+              <button type="button" data-ui-button="state" aria-pressed={language === 'en'} onClick={() => setLanguage('en')} style={{ padding: '4px 10px', fontSize: 12, fontWeight: language === 'en' ? 700 : 500 }}>EN</button>
+              <button type="button" data-ui-button="state" aria-pressed={language === 'bn'} onClick={() => setLanguage('bn')} style={{ padding: '4px 10px', fontSize: 12, fontWeight: language === 'bn' ? 700 : 500 }}>বাংলা</button>
+            </div>
+          )}
           <div className={styles.timer}>{deadline > 0 ? <MockCountdown deadline={deadline} onExpire={handleExpire} /> : 'Untimed'}</div>
           <button data-ui-button="primary" className={styles.submitBtn} onClick={() => setShowSubmitModal(true)}>Submit Test</button>
         </div>
@@ -486,7 +563,18 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         <div data-ui-chrome="header" className={styles.mobileHeader}>
           <BackButton href={`/mock-test/${examSlug}`} label="Leave mock test" />
           <div className={styles.examName} style={{fontSize: '1rem'}}>{examSlug.toUpperCase()}</div>
-          <div style={{display: 'flex', gap: '1rem', alignItems: 'center'}}>
+          <div style={{display: 'flex', gap: '0.5rem', alignItems: 'center'}}>
+            {paper.schemaDriven && (
+              <button
+                type="button"
+                data-ui-button="state"
+                aria-label="Switch language"
+                className={styles.mobilePill}
+                onClick={() => setLanguage(prev => (prev === 'bn' ? 'en' : 'bn'))}
+              >
+                {language === 'bn' ? 'বাংলা' : 'EN'}
+              </button>
+            )}
             <div className={styles.timer} style={{fontSize: '1rem'}}>{deadline > 0 ? <MockCountdown deadline={deadline} onExpire={handleExpire} /> : 'Untimed'}</div>
             <button data-ui-button="state" className={styles.mobilePill} onClick={() => setShowPalette(true)}>Q {currentQGlobalIndex}/{totalQuestions}</button>
           </div>
@@ -552,7 +640,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         )}
 
         {/* Right / Main Panel */}
-        <div className={`${styles.rightPanel} ${!isDesktop ? styles.mobileMain : ''}`}>
+        <div ref={rightPanelRef} className={`${styles.rightPanel} ${!isDesktop ? styles.mobileMain : ''}`}>
 
 
           <div className={styles.questionContent}>
@@ -628,7 +716,10 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       {/* Mobile Bottom Actions */}
       {!isDesktop && (
         <div data-ui-chrome="footer" className={styles.mobileBottomBar}>
-          <button data-ui-button="secondary" className={styles.btnOutline} onClick={goToPreviousQuestion} disabled={currentQuestion === 0 && currentSection === 0}>Previous</button>
+          <button data-ui-button="secondary" className={styles.btnOutline} onClick={goToPreviousQuestion} disabled={currentQuestion === 0}>Previous</button>
+          {answers[currentQ.id] !== undefined && answers[currentQ.id] !== '' && (
+            <button data-ui-button="secondary" className={styles.btnOutline} onClick={() => clearResponse(currentQ.id)}>Clear</button>
+          )}
           <button data-ui-button="secondary" className={styles.btnOutline} onClick={handleMarkForReview}>Mark</button>
           <button data-ui-button="primary" className={styles.btnPrimary} onClick={handleSaveAndNext}>Save & Next</button>
         </div>
@@ -706,8 +797,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
             <p><span>Marked for Review:</span> <strong>{counts.marked}</strong></p>
             <p><span>Not Answered:</span> <strong>{counts.notAnswered}</strong></p>
             <p><span>Not Visited:</span> <strong>{counts.notVisited}</strong></p>
+            {submitError && <p role="alert" style={{ color: 'var(--light-danger, #dc2626)', fontWeight: 600 }}>{submitError}</p>}
             <div className={styles.modalActions}>
-              <button data-ui-button="secondary" className={styles.btnOutline} onClick={() => setShowSubmitModal(false)}>Cancel</button>
+              <button data-ui-button="secondary" className={styles.btnOutline} onClick={() => setShowSubmitModal(false)} disabled={isSubmitting}>Cancel</button>
               <button data-ui-button="primary" className={styles.btnPrimary} onClick={handleFinalSubmit} disabled={isSubmitting}>
                 {isSubmitting ? 'Submitting...' : 'Submit Test'}
               </button>

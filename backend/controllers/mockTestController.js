@@ -2,12 +2,14 @@ import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import { fetchSlotPage } from '../services/mock/mockSlotService.js';
 import { readMockCatalogSummary } from '../repositories/mockCatalogMetadataRepository.js';
 import { v4 as uuidv4 } from 'uuid';
-import { activePaper } from '../services/mockTestPresentation.js';
+import { activePaper, reviewPaper } from '../services/mockTestPresentation.js';
+import { cachedExamConfig, cachedPublicStats } from '../services/questions/questionCache.js';
 import { validateAssessment } from '../services/assessmentPolicy.js';
 import { mockAnswerIndex } from '../services/mockAnswer.js';
 import { invalidateTrainingDashboard } from '../services/training/dashboardCache.js';
 import {
   getOwnedAttempt,
+  getOwnedAttemptForAutosave,
   getAttemptByStartKey,
   getConfidentialAttempt,
   insertAttempt,
@@ -17,6 +19,7 @@ import {
   getTestHistory,
   getExamHistory
 } from '../repositories/mockTestRepository.js';
+import { getExamConfig } from '../config/exam-config.js';
 import {
   buildPaper,
   gradeAttempt,
@@ -62,24 +65,64 @@ const sanitizeSectionTimers = (raw) => {
   );
 };
 
+const VALID_EXAM_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const VALID_QUESTION_STATUSES = new Set(['not_visited', 'not_answered', 'answered', 'marked', 'answered_marked']);
+
+function sanitizeAnswerValue(value, questionType) {
+  if (value === null || value === undefined || value === '') return undefined;
+  const type = String(questionType || 'MCQ').toUpperCase();
+  if (type === 'MSQ') {
+    if (!Array.isArray(value)) return null;
+    const cleaned = value
+      .filter(v => typeof v === 'string' || typeof v === 'number')
+      .map(v => String(v).trim())
+      .filter(Boolean)
+      .slice(0, 8);
+    return cleaned.length > 0 ? cleaned : undefined;
+  }
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    return trimmed.length <= 200 ? trimmed : null;
+  }
+  return null;
+}
+
 function presentAttempt(doc) {
-  const timing = sectionTiming(doc);
+  const isCompleted = doc.status === 'completed';
+  // Do not run live sectionTiming against Date.now() for already-completed attempts.
+  const timing = isCompleted ? null : sectionTiming(doc);
   const clean = { ...cleanAttempt(doc), ...(timing || {}), ...(timing && timing.timerSection !== doc.currentSection ? { currentQuestion: 0 } : {}) };
-  const timeLeft = Math.max(0, Math.floor((new Date(doc.deadlineAt).getTime() - Date.now()) / 1000));
-  if (doc.status === 'completed' && doc.assessmentMode !== 'confidential') {
+  const timeLeft = doc.deadlineAt
+    ? Math.max(0, Math.floor((new Date(doc.deadlineAt).getTime() - Date.now()) / 1000))
+    : undefined;
+  if (isCompleted && doc.assessmentMode !== 'confidential') {
     const answerKey = { ...clean.answerKey };
     for (const question of (doc.paper?.sections || []).flatMap(section => section.questions || [])) {
-      const index = mockAnswerIndex(answerKey[question.id], question.options);
-      if (index !== null) answerKey[question.id] = String(question.options[index]?.id ?? index);
+      const rawKey = answerKey[question.id];
+      if (Array.isArray(rawKey)) {
+        const mapped = rawKey
+          .map(item => mockAnswerIndex(item, question.options))
+          .filter(idx => idx !== null)
+          .map(idx => String(question.options[idx]?.id ?? idx));
+        if (mapped.length > 0) answerKey[question.id] = mapped;
+      } else {
+        const index = mockAnswerIndex(rawKey, question.options);
+        if (index !== null) answerKey[question.id] = String(question.options[index]?.id ?? index);
+      }
     }
-    return { ...clean, answerKey, attemptId: doc.id, timeLeft };
+    return { ...clean, paper: reviewPaper(clean.paper), answerKey, attemptId: doc.id, timeLeft: 0 };
   }
   const { answerKey: _key, ...safe } = clean;
-  return { ...safe, attemptId: doc.id, paper: activePaper(safe.paper), timeLeft: doc.deadlineAt ? timeLeft : undefined };
+  return { ...safe, attemptId: doc.id, paper: activePaper(safe.paper), timeLeft };
 }
 
 export const fetchCatalogSummary = async (_req, res) => {
-  try { res.json({ exams: await readMockCatalogSummary() }); }
+  try {
+    const exams = await cachedPublicStats('mock-catalog-summary', () => readMockCatalogSummary());
+    res.json({ exams });
+  }
   catch (error) {
     const status = error.statusCode || 500;
     if (status >= 500) runtimeLog.error('Fetch catalog summary error:', error);
@@ -90,9 +133,16 @@ export const fetchCatalogSummary = async (_req, res) => {
 export const fetchExamSlots = async (req, res) => {
   try {
     const { examSlug } = req.params;
+    if (!VALID_EXAM_SLUG.test(String(examSlug || ''))) {
+      return res.status(400).json({ error: 'Invalid exam slug' });
+    }
     if (req.query.catalog === '1') {
+      const rawLimit = req.query.limit;
+      if (rawLimit === '') {
+        return res.status(400).json({ error: 'Invalid catalog pagination' });
+      }
       const offset = Number(req.query.offset || 0);
-      const limit = Number(req.query.limit ?? 20);
+      const limit = Number(rawLimit ?? 20);
       const kind = req.query.kind || 'mock';
       const tier = req.query.tier || '';
       const year = req.query.year || '';
@@ -102,9 +152,16 @@ export const fetchExamSlots = async (req, res) => {
       if (!Number.isSafeInteger(offset) || offset < 0 || !Number.isInteger(limit) || limit < 0 || limit > 50 || !['mock', 'pyq'].includes(kind) || typeof tier !== 'string' || tier.length > 100) {
         return res.status(400).json({ error: 'Invalid catalog pagination' });
       }
-      return res.json(await fetchSlotPage(examSlug, { offset, limit, kind, tier, year }));
+      const page = await cachedExamConfig(
+        { scope: 'mock-slot-page', exam: examSlug, offset, limit, kind, tier, year },
+        () => fetchSlotPage(examSlug, { offset, limit, kind, tier, year }),
+      );
+      return res.json(page);
     }
-    const slots = await fetchSlotsForExam(examSlug);
+    const slots = await cachedExamConfig(
+      { scope: 'mock-slots', exam: examSlug },
+      () => fetchSlotsForExam(examSlug),
+    );
     res.json({ slots });
   } catch (err) {
     runtimeLog.error('Fetch slots error:', err);
@@ -117,7 +174,10 @@ export const fetchSingleSlot = async (req, res) => {
   try {
     const { slotId } = req.params;
     const examSlug = req.query.examSlug;
-    const slot = await fetchSlotById(examSlug, slotId);
+    const slot = await cachedExamConfig(
+      { scope: 'mock-slot-summary', ...(examSlug ? { exam: examSlug } : {}), slotId: String(slotId) },
+      () => fetchSlotById(examSlug, slotId, { summaryOnly: true }),
+    );
     if (!slot) return res.status(404).json({ error: 'Slot not found' });
     res.json({ slot: summarizeSlot(slot) });
   } catch (err) {
@@ -241,8 +301,12 @@ export const startMockTest = async (req, res) => {
     if (slot.assessmentMode === 'confidential' && !clientPaper.schemaDriven) clientPaper.compositeTimer = true;
     clientPaper.sections = clientPaper.sections.filter(section => section.questions.length > 0);
     const startedAt = new Date();
-    const durationSeconds = Math.max(60, Math.round((Number(clientPaper.totalDurationMin) || 60) * 60));
-    const deadlineAt = clientPaper.schemaDriven ? null : new Date(startedAt.getTime() + durationSeconds * 1000);
+    const sectionMinutes = clientPaper.sections.reduce((sum, s) => sum + (Number(s.timeLimitMin) > 0 ? Number(s.timeLimitMin) : 0), 0);
+    const configuredDurationMin = Number(clientPaper.totalDurationMin) || sectionMinutes || Number(getExamConfig(slot.configKey)?.totalDurationMin) || 60;
+    const durationSeconds = Math.max(60, Math.round(configuredDurationMin * 60));
+    // Every attempt (including schemaDriven composite & sectional papers) has a server-enforced deadlineAt.
+    const deadlineAt = new Date(startedAt.getTime() + durationSeconds * 1000);
+    const initialLanguage = ['en', 'bn', 'hi'].includes(req.body?.language) ? req.body.language : undefined;
     const doc = {
       id: uuidv4(),
       userId: String(req.user.id),
@@ -251,6 +315,7 @@ export const startMockTest = async (req, res) => {
       configKey: slot.configKey,
       assessmentMode: slot.assessmentMode || 'practice',
       ...(startKey ? { startKey } : {}),
+      ...(initialLanguage ? { language: initialLanguage } : {}),
       status: 'in_progress',
       paper: clientPaper,
       answerKey,
@@ -289,13 +354,14 @@ export const startMockTest = async (req, res) => {
 export const autosaveAttempt = async (req, res) => {
   try {
     const { attemptId } = req.params;
-    const doc = await getOwnedAttempt(attemptId, req.user.id);
+    const doc = await getOwnedAttemptForAutosave(attemptId, req.user.id);
     if (!doc) return res.status(404).json({ error: 'Attempt not found' });
     if (doc.status !== 'in_progress') return res.status(409).json({ error: 'Attempt is not in progress', code: 'ATTEMPT_NOT_IN_PROGRESS' });
 
+    const nowMs = Date.now();
     const deadlineMs = Date.parse(doc.deadlineAt);
     const graceMs = doc.assessmentMode === 'confidential' ? 0 : 30_000;
-    if (Number.isFinite(deadlineMs) && Date.now() > deadlineMs + graceMs) {
+    if (Number.isFinite(deadlineMs) && nowMs > deadlineMs + graceMs) {
       return res.status(409).json({ error: 'Attempt time has expired', expired: true });
     }
 
@@ -303,23 +369,56 @@ export const autosaveAttempt = async (req, res) => {
     if (!Number.isSafeInteger(revision) || revision < 1) {
       return res.status(400).json({ error: 'A positive autosave revision is required' });
     }
-    const questionIds = new Set((doc.paper?.sections || []).flatMap(section => section.questions || []).map(question => String(question.id)));
+    if (doc.sectionsExhausted) {
+      return res.status(409).json({ error: 'Attempt time has expired', expired: true });
+    }
+
+    const questionMeta = new Map();
+    for (const section of doc.paper?.sections || []) {
+      for (const question of section.questions || []) {
+        questionMeta.set(String(question.id), question);
+      }
+    }
+    const hasAnswersPayload = req.body.answers !== undefined;
+    const hasStatusesPayload = req.body.questionStatuses !== undefined;
+    const hasSectionTimersPayload = req.body.sectionTimers !== undefined;
+    if (hasAnswersPayload && (typeof req.body.answers !== 'object' || req.body.answers === null || Array.isArray(req.body.answers))) {
+      return res.status(400).json({ error: 'Invalid answers payload' });
+    }
+    if (hasStatusesPayload && (typeof req.body.questionStatuses !== 'object' || req.body.questionStatuses === null || Array.isArray(req.body.questionStatuses))) {
+      return res.status(400).json({ error: 'Invalid questionStatuses payload' });
+    }
+
     const sanitizeMap = (value) => Object.fromEntries(
       Object.entries(value && typeof value === 'object' && !Array.isArray(value) ? value : {})
-        .filter(([key]) => questionIds.has(String(key)))
+        .filter(([key]) => questionMeta.has(String(key)))
     );
     const sectionCount = doc.paper?.sections?.length || 1;
-    const timing = sectionTiming(doc, Date.now(), req.body.advanceSection === true && Number(req.body.currentSection) === (doc.timerSection ?? 0));
+    const timing = sectionTiming(doc, nowMs, req.body.advanceSection === true && Number(req.body.currentSection) === (doc.timerSection ?? 0));
     const currentSection = timing?.timerSection ?? Math.max(0, Math.min(sectionCount - 1, Math.floor(Number(req.body.currentSection)) || 0));
     const questionCount = doc.paper?.sections?.[currentSection]?.questions?.length || 1;
     const currentQuestion = timing && currentSection !== Number(req.body.currentSection) ? 0 : Math.max(0, Math.min(questionCount - 1, Math.floor(Number(req.body.currentQuestion)) || 0));
 
-    let answers = sanitizeMap(req.body.answers);
-    let statuses = sanitizeMap(req.body.questionStatuses);
+    let answers = hasAnswersPayload ? {} : (doc.answers || {});
+    if (hasAnswersPayload) {
+      for (const [key, rawVal] of Object.entries(sanitizeMap(req.body.answers))) {
+        const q = questionMeta.get(String(key));
+        const sanitized = sanitizeAnswerValue(rawVal, q?.questionType);
+        if (sanitized === null) {
+          return res.status(400).json({ error: 'Invalid answer value' });
+        }
+        if (sanitized !== undefined) answers[key] = sanitized;
+      }
+    }
+
+    let statuses = hasStatusesPayload
+      ? Object.fromEntries(Object.entries(sanitizeMap(req.body.questionStatuses)).filter(([, status]) => VALID_QUESTION_STATUSES.has(status)))
+      : (doc.questionStatuses || {});
+
     if (doc.paper?.schemaDriven) {
-      if (Object.values(answers).some(answer => !['A', 'B', 'C', 'D'].includes(answer))) return res.status(400).json({ error: 'Answers must be A, B, C or D' });
-      const validStatuses = new Set(['not_visited', 'not_answered', 'answered', 'marked', 'answered_marked']);
-      statuses = Object.fromEntries(Object.entries(statuses).filter(([, status]) => validStatuses.has(status)));
+      if (hasAnswersPayload && Object.values(answers).some(answer => !['A', 'B', 'C', 'D'].includes(answer))) {
+        return res.status(400).json({ error: 'Answers must be A, B, C or D' });
+      }
       if (timing) {
         // Merge only the section the client was working in. Older locked sections
         // cannot be overwritten, even by a stale or deliberately modified client.
@@ -330,46 +429,70 @@ export const autosaveAttempt = async (req, res) => {
         const priorDeadline = priorRemaining == null ? Infinity : new Date(doc.sectionStartedAt).getTime() + priorRemaining * 1000;
         // Allow one final expiry flush within the clock tick / network margin.
         // A late client cannot reopen an expired section after returning to the tab.
-        const closingFlush = req.body.advanceSection === true && requestedSection === priorIndex && Date.now() <= priorDeadline + 2000;
+        const closingFlush = req.body.advanceSection === true && requestedSection === priorIndex && nowMs <= priorDeadline + 2000;
         const writable = requestedSection === timing.timerSection && !timing.sectionsExhausted ? timing.timerSection
           : closingFlush ? priorIndex : -1;
         const ids = new Set(doc.sectionsExhausted ? [] : doc.paper.sections[writable]?.questions.map(question => question.id));
-        const merge = (saved, incoming) => ({ ...Object.fromEntries(Object.entries(saved || {}).filter(([id]) => !ids.has(id))),
-          ...Object.fromEntries(Object.entries(incoming).filter(([id]) => ids.has(id))) });
-        answers = merge(doc.answers, answers);
-        statuses = merge(doc.questionStatuses, statuses);
+        const merge = (saved, incoming) => ({
+          ...Object.fromEntries(Object.entries(saved || {}).filter(([id]) => !ids.has(id))),
+          ...Object.fromEntries(Object.entries(incoming).filter(([id]) => ids.has(id))),
+        });
+        if (hasAnswersPayload) answers = merge(doc.answers, answers);
+        if (hasStatusesPayload) statuses = merge(doc.questionStatuses, statuses);
       }
     }
 
+    const expectedRevision = req.body.baseRevision !== undefined
+      ? Number(req.body.baseRevision)
+      : (doc.revision ?? { $exists: false });
     const filter = {
       _id: doc._id,
       status: 'in_progress',
-      ...(Number.isFinite(deadlineMs) ? { deadlineAt: { $gte: new Date(Date.now() - graceMs) } } : {}),
-      ...(req.body.baseRevision !== undefined ? { revision: Number(req.body.baseRevision) } : {}),
+      ...(Number.isFinite(deadlineMs) ? { deadlineAt: { $gte: new Date(nowMs - graceMs) } } : {}),
+      revision: expectedRevision,
       $or: [{ revision: { $lt: revision } }, { revision: { $exists: false } }],
     };
-    
-    const update = {
-      $set: {
-        answers,
-        questionStatuses: statuses,
-        ...(timing || {}),
-        ...(req.body.language === 'en' || req.body.language === 'bn' ? { language: req.body.language } : {}),
-        ...(doc.paper?.sections?.[currentSection]?.questions?.[currentQuestion] ? { currentQuestionId: doc.paper.sections[currentSection].questions[currentQuestion].id } : {}),
-        sectionTimers: sanitizeSectionTimers(req.body.sectionTimers),
-        currentSection,
-        currentQuestion,
-        revision,
-        updatedAt: new Date(),
-      },
-    };
-    const result = await updateAttemptProgress(filter, update);
 
-    if (!result.modifiedCount && req.body.baseRevision !== undefined) {
-      const latest = await getOwnedAttempt(attemptId, req.user.id);
-      return res.status(409).json({ error: 'Progress changed in another tab. Reload this attempt before continuing.', code: 'REVISION_CONFLICT', revision: latest?.revision });
+    const nextFields = {
+      ...(hasAnswersPayload ? { answers } : {}),
+      ...(hasStatusesPayload ? { questionStatuses: statuses } : {}),
+      ...(timing || {}),
+      ...(req.body.language === 'en' || req.body.language === 'bn' || req.body.language === 'hi' ? { language: req.body.language } : {}),
+      ...(doc.paper?.sections?.[currentSection]?.questions?.[currentQuestion] ? { currentQuestionId: doc.paper.sections[currentSection].questions[currentQuestion].id } : {}),
+      ...(hasSectionTimersPayload ? { sectionTimers: sanitizeSectionTimers(req.body.sectionTimers) } : {}),
+      currentSection,
+      currentQuestion,
+      revision,
+      updatedAt: new Date(),
+    };
+    // Tighten deadlineAt when a sectional paper advances early so hard expiry tracks actual remaining time.
+    if (timing?.sectionRemainingTimes) {
+      const remainingTotalSec = Object.values(timing.sectionRemainingTimes).reduce((sum, val) => sum + (Number.isFinite(val) ? Math.max(0, val) : 0), 0);
+      nextFields.deadlineAt = new Date(nowMs + Math.ceil(remainingTotalSec * 1000));
     }
-    return res.json({ ok: true, revision: Math.max(Number(doc.revision) || 0, result.modifiedCount ? revision : 0), ...(timing || {}), currentQuestion });
+
+    const result = await updateAttemptProgress(filter, { $set: nextFields });
+
+    if (!result.modifiedCount) {
+      const latest = await getOwnedAttemptForAutosave(attemptId, req.user.id);
+      if (!latest || latest.status !== 'in_progress') {
+        return res.status(409).json({ error: 'Attempt is not in progress', code: 'ATTEMPT_NOT_IN_PROGRESS' });
+      }
+      const latestDeadlineMs = Date.parse(latest.deadlineAt);
+      if ((Number.isFinite(latestDeadlineMs) && Date.now() > latestDeadlineMs + graceMs) || latest.sectionsExhausted) {
+        return res.status(409).json({ error: 'Attempt time has expired', expired: true });
+      }
+      if (req.body.baseRevision !== undefined) {
+        return res.status(409).json({ error: 'Progress changed in another tab. Reload this attempt before continuing.', code: 'REVISION_CONFLICT', revision: latest.revision });
+      }
+      // Monotonic non-baseRevision call superseded by an equal/higher revision: report current revision without silent loss.
+      return res.json({ ok: true, revision: Math.max(Number(latest.revision) || 0, 0), ...(timing || {}), currentQuestion });
+    }
+    const effectiveDeadlineMs = nextFields.deadlineAt ? nextFields.deadlineAt.getTime() : deadlineMs;
+    const timeLeft = Number.isFinite(effectiveDeadlineMs)
+      ? Math.max(0, Math.floor((effectiveDeadlineMs - Date.now()) / 1000))
+      : undefined;
+    return res.json({ ok: true, revision, ...(timing || {}), ...(timeLeft !== undefined ? { timeLeft } : {}), serverNow: Date.now(), currentQuestion });
   } catch (err) {
     runtimeLog.error('Autosave error:', err);
     return res.status(500).json({ error: 'Failed to autosave' });
@@ -391,7 +514,7 @@ export const submitAttemptHandler = async (req, res) => {
     const filter = { _id: claimed._id, status: claimed.status, revision: claimed.revision ?? { $exists: false } };
     const update = { $set: { status: 'completed', submittedAt, result: finalResult }, $unset: { submitClaimedAt: '' } };
     const saved = await submitAttemptUpdate(filter, update);
-    
+
     if (!saved.modifiedCount) {
       const existing = await getOwnedAttempt(req.params.attemptId, req.user.id);
       if (existing?.status === 'completed') return res.json({ result: existing.result, attemptId: existing.id, idempotent: true });

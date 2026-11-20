@@ -68,6 +68,21 @@ function SectionResults({ sections, onReview }: { sections: MockResultSection[];
   </section>;
 }
 
+function focusTopicHref(area: string) {
+  const slug = String(area || '').trim().toLowerCase();
+  if (slug.startsWith('/')) return slug;
+  if (['percentages', 'profit-and-loss', 'simple-interest', 'compound-interest', 'ratio-and-proportion', 'time-and-work', 'time-and-distance', 'algebra', 'geometry', 'trigonometry', 'mensuration', 'number-system', 'average', 'mixture-and-alligation', 'lcm-and-hcf', 'data-interpretation'].includes(slug)) {
+    return `/mathematics/arithmetic/${slug}`;
+  }
+  if (['analogy', 'coding-decoding', 'number-series', 'syllogism', 'blood-relations', 'seating-arrangement', 'puzzles', 'direction-sense', 'venn-diagrams'].includes(slug)) {
+    return `/reasoning/${slug}`;
+  }
+  if (['history', 'polity', 'geography', 'economy', 'physics', 'chemistry', 'biology', 'static-gk'].includes(slug)) {
+    return `/general-awareness/${slug}`;
+  }
+  return `/english/${slug}`;
+}
+
 function FocusTopics({ areas }: { areas: string[] }) {
   const [selected, setSelected] = useState(areas[0]);
   return <div className={styles.focusTopics}>
@@ -75,7 +90,7 @@ function FocusTopics({ areas }: { areas: string[] }) {
     <select id="result-focus-topic" value={selected} onChange={event => setSelected(event.target.value)}>
       {areas.map(area => <option key={area} value={area}>{area.replace(/-/g, ' ')}</option>)}
     </select>
-    <a href={`/english/${selected}`}>Practice<ArrowRight size={14} aria-hidden="true" /></a>
+    <a href={focusTopicHref(selected)}>Practice<ArrowRight size={14} aria-hidden="true" /></a>
   </div>;
 }
 

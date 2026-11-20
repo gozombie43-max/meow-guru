@@ -65,7 +65,7 @@ export function sanitizeTranslations(translations) {
 
 // Session-only contract. Strips answer keys, solutions, and ingestion metadata.
 export const quizQuestionProjection = Object.fromEntries([
-  '_id', 'id', 'questionUid', 'topic', 'subject', 'chapter', 'concept', 'difficulty', 'exam', 'year', 'formula',
+  '_id', 'id', 'questionUid', 'topic', 'subject', 'chapter', 'concept', 'difficulty', 'exam', 'year', 'examDate', 'shift', 'formula',
   'question', 'options',
   'quizName', 'questionType', 'questionImage', 'questionImageWidth', 'questionImageHeight',
   'optionRegions', 'diagram', 'needs_diagram',

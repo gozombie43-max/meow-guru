@@ -2,6 +2,7 @@ import { examPaperSchema, paperPresentation } from '@meow/contracts/exam-paper';
 import { getMockSlotsCollection } from '../../config/mongodb.js';
 import { invalidPaper } from '../assessmentPolicy.js';
 import { mutateMockCatalog } from '../../repositories/mockCatalogMetadataRepository.js';
+import { hasZipImages } from './mockSlotService.js';
 
 export async function uploadSchemaPaper({ slotData, paper, examMode }) {
   const result = examPaperSchema.safeParse(paper);
@@ -26,6 +27,7 @@ export async function uploadSchemaPaper({ slotData, paper, examMode }) {
     isFree: Boolean(slotData.isFree), order: Number(slotData.order) || 1,
     assessmentMode: slotData.assessmentMode === 'confidential' ? 'confidential' : 'practice',
     sourcePaper, paperMetadata, hasFixedPaper: true,
+    hasZipImages: hasZipImages({ sourcePaper }),
     questionCount: sections.reduce((sum, section) => sum + section.questionCount, 0),
     examDate: sourcePaper.examDate ?? null, shift: sourcePaper.shift ?? null,
     year: sourcePaper.examDate ? Number(sourcePaper.examDate.slice(0, 4)) : null,

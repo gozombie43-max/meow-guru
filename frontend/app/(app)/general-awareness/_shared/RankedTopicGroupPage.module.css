@@ -392,13 +392,19 @@
 }
 
 :global(html.theme-light) .page .mobileLayout,
-:global(html.theme-light) .page .mobileLayout [data-hub-part="mobileBody"] {
+:global(body.theme-light) .page .mobileLayout,
+:global(html.theme-light) .page .mobileLayout [data-hub-part="mobileBody"],
+:global(body.theme-light) .page .mobileLayout [data-hub-part="mobileBody"] {
   background: var(--light-canvas, #f4f5f7) !important;
 }
 
-:global(html.theme-light) .page .mobileLayout [data-hub-part="mobileTopbar"] {
-  background: color-mix(in srgb, var(--light-surface, #ffffff) 90%, transparent) !important;
+:global(html.theme-light) .page .mobileLayout [data-hub-part="mobileTopbar"],
+:global(body.theme-light) .page .mobileLayout [data-hub-part="mobileTopbar"],
+:global(html.theme-light) .page .mobileLayout [data-hub-part="mobileTopbar"][data-ui-chrome="header"],
+:global(body.theme-light) .page .mobileLayout [data-hub-part="mobileTopbar"][data-ui-chrome="header"] {
+  background: var(--light-canvas, #f4f5f7) !important;
   border-bottom: none !important;
+  box-shadow: none !important;
 }
 
 :global(html.theme-light) .chapterRow {

@@ -354,10 +354,15 @@ const getQuestionsSession = async (req, res) => {
 
 // ── POST /api/questions/prefetch-reveal ───────────────
 const prefetchQuestionsReveal = async (req, res) => {
+  if (process.env.ALLOW_QUESTION_PREFETCH_REVEAL !== 'true') {
+    return res.status(403).json({
+      error: 'Answer prefetch is disabled. Submit an answer to view the solution.',
+    });
+  }
   try {
     const items = Array.isArray(req.body?.items) ? req.body.items : [];
     const result = await questionService.fetchQuestionsRevealWindow(items);
-    res.set('Cache-Control', 'private, max-age=60');
+    res.set('Cache-Control', 'private, no-store');
     res.json(result);
   } catch (err) {
     return sendQuestionError(res, err, 'Failed to prefetch question reveals');

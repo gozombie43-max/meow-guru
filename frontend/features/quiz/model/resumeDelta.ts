@@ -61,8 +61,19 @@ function snapshotsEqual(a: RecentQuizPayload, b: RecentQuizPayload) {
     && (a.submittedQuestions ?? []).every((index, i) => index === b.submittedQuestions?.[i]);
 }
 
+const ANSWER_RETRY_BACKOFF_MS = [2_000, 5_000, 15_000] as const;
+
 export function createResumeSaver(identity: string | null, sessionKey: string) {
   let saved: RecentQuizPayload | undefined, generation = 0, tail = Promise.resolve();
+  let retryTimer: ReturnType<typeof setTimeout> | null = null;
+  let retryAttempt = 0;
+  let disposed = false;
+  const clearRetryTimer = () => {
+    if (retryTimer !== null) {
+      clearTimeout(retryTimer);
+      retryTimer = null;
+    }
+  };
   const pending: Array<{
     base: Omit<QuizAnswerCommand, 'resume'>;
     snapshot: RecentQuizPayload;
@@ -74,6 +85,18 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
     const next = tail.catch(() => {}).then(work);
     tail = next;
     return next;
+  };
+  const scheduleBackoffRetry = () => {
+    if (disposed || retryTimer !== null || !pending.length || session.controller.signal.aborted) return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+    if (retryAttempt >= ANSWER_RETRY_BACKOFF_MS.length) return;
+    const delay = ANSWER_RETRY_BACKOFF_MS[retryAttempt++];
+    retryTimer = setTimeout(() => {
+      retryTimer = null;
+      if (disposed || !pending.length || session.controller.signal.aborted) return;
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+      void serialize(drainAnswers).catch(() => {});
+    }, delay);
   };
   const drainAnswers = async () => {
     while (pending.length) {
@@ -87,7 +110,18 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
       } catch (error) {
         // A definitive rejection can never succeed; drop it so later answers still sync.
         const status = (error as { response?: { status?: number } })?.response?.status ?? 0;
-        if ([400, 404, 409, 422].includes(status)) { pending.shift(); entry.onRejected?.(); continue; }
+        if ([400, 404, 409, 422].includes(status)) {
+          pending.shift();
+          retryAttempt = 0;
+          clearRetryTimer();
+          entry.onRejected?.();
+          continue;
+        }
+        const errObj = error && typeof error === 'object' ? (error as { name?: unknown; code?: unknown; kind?: unknown }) : null;
+        const isAbort = Boolean(
+          errObj && (errObj.name === 'AbortError' || errObj.name === 'CanceledError' || errObj.code === 'ERR_CANCELED' || errObj.kind === 'aborted'),
+        );
+        if (!isAbort) scheduleBackoffRetry();
         throw error;
       }
       const revealed = res?.data as QuizAnswerResponse | undefined;
@@ -103,6 +137,8 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
           }
         : entry.snapshot;
       pending.shift();
+      retryAttempt = 0;
+      clearRetryTimer();
       entry.onResolved?.(revealed);
     }
   };
@@ -110,11 +146,15 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
     identity,
     controller: new AbortController(),
     retryPending: () => {
+      if (disposed) return;
+      retryAttempt = 0;
+      clearRetryTimer();
       if (pending.length && !session.controller.signal.aborted) {
         void serialize(drainAnswers).catch(() => {});
       }
     },
   };
+  session.controller.signal.addEventListener('abort', clearRetryTimer, { once: true });
   for (const ref of sessions) if (!ref.deref()) sessions.delete(ref);
   sessions.add(new WeakRef(session));
   const saver = createCoalescedSave<{ snapshot: RecentQuizPayload; generation: number }>(next => serialize(async () => {
@@ -133,13 +173,21 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
       return saver.save({ snapshot, generation });
     },
     retryPending() {
+      retryAttempt = 0;
+      clearRetryTimer();
       if (!pending.length) return Promise.resolve();
       return serialize(drainAnswers);
+    },
+    dispose() {
+      disposed = true;
+      clearRetryTimer();
     },
     answer(base: Omit<QuizAnswerCommand, 'resume'>, snapshot: RecentQuizPayload,
       callbacks: { onResolved?: (data?: QuizAnswerResponse) => void; onRejected?: () => void } = {}): Promise<QuizAnswerResponse | undefined> {
       notifyRecentQuizUpdated?.(snapshot);
       generation++;
+      retryAttempt = 0;
+      clearRetryTimer();
       let latestResponse: QuizAnswerResponse | undefined;
       pending.push({
         base,

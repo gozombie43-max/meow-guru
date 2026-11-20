@@ -13,7 +13,7 @@ import {
 import { getBattleRealtimeServer } from '../battle/battleRealtime.js';
 import { createSingleFlight } from '../infrastructure/singleFlight.js';
 import { AUTH_VALIDATION_COMMENT } from '../infrastructure/mongoOperationMetrics.js';
-import { authRequests, authBurstLatency } from '../infrastructure/metrics.js';
+import { authRequests, authBurstLatency, observeCacheOperation } from '../infrastructure/metrics.js';
 import { invalidateSocketAuthorization } from './socketInvalidation.js';
 const disconnectSession = sid => getBattleRealtimeServer()?.in(`session:${sid}`).disconnectSockets(true);
 
@@ -48,12 +48,38 @@ export async function createSession(user) {
 }
 
 const SESSION_CACHE_TTL_MS = 15_000;
+const REVOCATION_MARKER_TTL_SECONDS = 25;
+const NON_PRIVILEGED_ROLES = new Set(['student', 'user']);
+const isNonPrivilegedRole = role => typeof role === 'string' && NON_PRIVILEGED_ROLES.has(role.trim().toLowerCase());
+
 const sessionCache = new LRUCache({ max: 5000, ttl: SESSION_CACHE_TTL_MS });
-const sharedSessionKey = (sid, userId) => `auth-session:${createHash('sha256').update(`${sid}:${userId}`).digest('hex')}`;
+// Local monotonic revocation tombstones fence in-flight Mongo reads from writing
+// stale pre-revocation entries back into L1/Redis, even within the same millisecond.
+let localRevocationEpoch = 0;
+const sessionTombstones = new LRUCache({ max: 10000, ttl: SESSION_CACHE_TTL_MS + 10_000 });
+
+// Both reads and revocations address the exact same v2 key so evictSessionCache /
+// evictUserSessionCache reliably delete live Redis entries on logout or role change.
+const sharedSessionKey = (sid, userId) => `auth-session:v2:${createHash('sha256').update(`${sid}:${userId}`).digest('hex')}`;
+const revokedSidKey = (sid, userId) => `auth-revoked:v2:sid:${createHash('sha256').update(`${sid}:${userId}`).digest('hex')}`;
+const revokedUserKey = userId => `auth-revoked:v2:user:${createHash('sha256').update(String(userId)).digest('hex')}`;
+
+function recordLocalTombstone({ sid, userId }) {
+  const epoch = ++localRevocationEpoch;
+  if (sid && userId) sessionTombstones.set(`sid:${sid}:${String(userId)}`, epoch);
+  else if (userId) sessionTombstones.set(`user:${String(userId)}`, epoch);
+  return epoch;
+}
+
+function localTombstoneEpoch(sid, userId) {
+  const sidEpoch = sessionTombstones.get(`sid:${sid}:${String(userId)}`) ?? 0;
+  const userEpoch = sessionTombstones.get(`user:${String(userId)}`) ?? 0;
+  return Math.max(sidEpoch, userEpoch);
+}
+
 const authorizationGeneration = (session, user) => createHash('sha256').update(
   JSON.stringify([session.revision ?? 0, user.authRevision ?? 0, payload(user)]),
 ).digest('hex');
-const revisionedSessionKey = (sid, userId, generation) => `auth-session:v2:${createHash('sha256').update(JSON.stringify([sid, String(userId), generation])).digest('hex')}`;
 async function authorizationState(decoded) {
   const [session, user] = await Promise.all([
     sessions().findOne(
@@ -67,8 +93,14 @@ async function authorizationState(decoded) {
 }
 
 let invalidationSubscriber;
+let invalidationConnecting = null;
 let invalidationRetry;
 let stoppingInvalidationSubscriber = false;
+let subscriberHealthy = false;
+
+export function isSessionInvalidationSubscriberHealthy() {
+  return subscriberHealthy;
+}
 
 function scheduleInvalidationRetry() {
   if (stoppingInvalidationSubscriber || invalidationRetry || !process.env.REDIS_URL) return;
@@ -89,71 +121,186 @@ function evictLocalUser(userId) {
 async function publishSessionEviction(message) {
   try {
     const redis = await getRedisClient();
-    if (redis) await redis.publish(redisKey('auth-evictions'), JSON.stringify(message));
-  } catch { reportRedisFailure(); }
+    if (!redis) {
+      if (process.env.REDIS_URL) {
+        subscriberHealthy = false;
+        reportRedisFailure();
+      }
+      return false;
+    }
+    await redis.publish(redisKey('auth-evictions'), JSON.stringify(message));
+    return true;
+  } catch {
+    subscriberHealthy = false;
+    reportRedisFailure();
+    return false;
+  }
+}
+
+async function writeRevocationMarker(key) {
+  if (!process.env.REDIS_URL) return true;
+  try {
+    const stored = await redisSetJson(
+      key,
+      { token: randomUUID(), revokedAt: Date.now() },
+      REVOCATION_MARKER_TTL_SECONDS,
+    );
+    if (stored === false) {
+      subscriberHealthy = false;
+      reportRedisFailure();
+      return false;
+    }
+    return true;
+  } catch {
+    subscriberHealthy = false;
+    reportRedisFailure();
+    return false;
+  }
+}
+
+async function readRevocationTokens(sid, userId) {
+  if (!process.env.REDIS_URL) return { sidToken: null, userToken: null };
+  const [sidMarker, userMarker] = await Promise.all([
+    redisGetJson(revokedSidKey(sid, userId)),
+    redisGetJson(revokedUserKey(userId)),
+  ]);
+  return {
+    sidToken: typeof sidMarker?.token === 'string' ? sidMarker.token : null,
+    userToken: typeof userMarker?.token === 'string' ? userMarker.token : null,
+  };
 }
 
 export async function startSessionInvalidationSubscriber() {
   if (!process.env.REDIS_URL || invalidationSubscriber || stoppingInvalidationSubscriber) return;
-  let client;
-  try {
-    client = createClient({
-      url: process.env.REDIS_URL,
-      socket: { connectTimeout: 1000, reconnectStrategy: retries => Math.min(1000 * 2 ** retries, 5000) },
-    });
-    client.on('error', () => { sessionCache.clear(); invalidateSocketAuthorization({ all: true, revalidate: true }); reportRedisFailure(); });
-    client.on('ready', () => { sessionCache.clear(); invalidateSocketAuthorization({ all: true, revalidate: true }); });
-    client.on('end', () => {
-      sessionCache.clear();
-      invalidateSocketAuthorization({ all: true, revalidate: true });
-      if (invalidationSubscriber === client) invalidationSubscriber = null;
-      scheduleInvalidationRetry();
-    });
-    let timer;
-    try {
-      await Promise.race([
-        client.connect(),
-        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Redis subscriber connection timed out')), 3000); }),
-      ]);
-    } finally { clearTimeout(timer); }
-    await client.subscribe(redisKey('auth-evictions'), raw => {
+  if (invalidationConnecting) return invalidationConnecting;
+  invalidationConnecting = (async () => {
+    let client;
+    let subscribed = false;
+    let needsResubscribe = false;
+    const handleEvictionMessage = raw => {
       try {
         const event = JSON.parse(raw);
         if (event.userId || event.sid) invalidateSocketAuthorization(event);
-        if (event.userId && event.sid) sessionCache.delete(`${event.sid}:${event.userId}`);
-        else if (event.userId) evictLocalUser(event.userId);
+        if (event.userId && event.sid) {
+          recordLocalTombstone({ sid: event.sid, userId: event.userId });
+          sessionCache.delete(`${event.sid}:${event.userId}`);
+        } else if (event.userId) {
+          recordLocalTombstone({ userId: event.userId });
+          evictLocalUser(event.userId);
+        }
       } catch { /* Ignore malformed messages. */ }
-    });
-    invalidationSubscriber = client;
-  } catch {
-    reportRedisFailure();
-    client?.destroy();
-    scheduleInvalidationRetry();
+    };
+    try {
+      client = createClient({
+        url: process.env.REDIS_URL,
+        socket: { connectTimeout: 1000, reconnectStrategy: retries => Math.min(1000 * 2 ** retries, 5000) },
+      });
+      client.on('error', () => {
+        subscriberHealthy = false;
+        needsResubscribe = true;
+        sessionCache.clear();
+        invalidateSocketAuthorization({ all: true, revalidate: true });
+        reportRedisFailure();
+      });
+      client.on('reconnecting', () => {
+        subscriberHealthy = false;
+        needsResubscribe = true;
+        sessionCache.clear();
+        invalidateSocketAuthorization({ all: true, revalidate: true });
+      });
+      client.on('ready', () => {
+        sessionCache.clear();
+        invalidateSocketAuthorization({ all: true, revalidate: true });
+        if (!subscribed || stoppingInvalidationSubscriber) {
+          subscriberHealthy = false;
+          return;
+        }
+        if (needsResubscribe) {
+          subscriberHealthy = false;
+          void client.subscribe(redisKey('auth-evictions'), handleEvictionMessage)
+            .then(() => {
+              if (invalidationSubscriber === client && !stoppingInvalidationSubscriber) {
+                needsResubscribe = false;
+                subscriberHealthy = true;
+              }
+            })
+            .catch(() => {
+              subscriberHealthy = false;
+              reportRedisFailure();
+            });
+          return;
+        }
+        subscriberHealthy = true;
+      });
+      client.on('end', () => {
+        subscriberHealthy = false;
+        needsResubscribe = true;
+        sessionCache.clear();
+        invalidateSocketAuthorization({ all: true, revalidate: true });
+        if (invalidationSubscriber === client) invalidationSubscriber = null;
+        scheduleInvalidationRetry();
+      });
+      let timer;
+      try {
+        await Promise.race([
+          client.connect(),
+          new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Redis subscriber connection timed out')), 3000); }),
+        ]);
+      } finally { clearTimeout(timer); }
+      if (stoppingInvalidationSubscriber) {
+        client.destroy();
+        return;
+      }
+      await client.subscribe(redisKey('auth-evictions'), handleEvictionMessage);
+      if (stoppingInvalidationSubscriber) {
+        client.destroy();
+        return;
+      }
+      subscribed = true;
+      needsResubscribe = false;
+      subscriberHealthy = true;
+      invalidationSubscriber = client;
+    } catch {
+      subscriberHealthy = false;
+      reportRedisFailure();
+      client?.destroy();
+      scheduleInvalidationRetry();
+    }
+  })();
+  try {
+    await invalidationConnecting;
+  } finally {
+    invalidationConnecting = null;
   }
 }
 
 export async function closeSessionInvalidationSubscriber() {
   stoppingInvalidationSubscriber = true;
+  subscriberHealthy = false;
   clearTimeout(invalidationRetry);
   invalidationRetry = null;
   const client = invalidationSubscriber;
   invalidationSubscriber = null;
   if (client) client.destroy();
+  if (invalidationConnecting) await invalidationConnecting;
 }
 
 const authorizationReads = createSingleFlight();
-export async function assertSession(decoded) {
+export async function assertSession(decoded, { forceFresh = false } = {}) {
   if (!decoded?.sid || !decoded?.id) throw unauthorized();
   authRequests.inc();
-  const currentPayload = await authorizationReads(JSON.stringify([decoded.sid, String(decoded.id)]), () => readAuthorization(decoded));
+  const currentPayload = await authorizationReads(
+    JSON.stringify([decoded.sid, String(decoded.id), Boolean(forceFresh)]),
+    () => readAuthorization(decoded, { forceFresh }),
+  );
   return { ...decoded, ...currentPayload };
 }
 
-async function readAuthorization(decoded) {
+async function readAuthorization(decoded, options = {}) {
   const started = performance.now();
   let cache = 'none', outcome = 'error';
   try {
-    const result = await readAuthorizationPayload(decoded, value => { cache = value; });
+    const result = await readAuthorizationPayload(decoded, value => { cache = value; }, options);
     outcome = 'success';
     return result;
   } finally {
@@ -161,51 +308,149 @@ async function readAuthorization(decoded) {
   }
 }
 
-async function readAuthorizationPayload(decoded, recordCache) {
-  const cacheKey = `${decoded.sid}:${decoded.id}`;
+export function isFreshTrustedEntry(entry, nowMs = Date.now()) {
+  return Boolean(
+    entry &&
+    entry.payload &&
+    typeof entry.validUntil === 'number' &&
+    Number.isFinite(entry.validUntil) &&
+    entry.validUntil > nowMs &&
+    typeof entry.sessionExpiresAt === 'number' &&
+    Number.isFinite(entry.sessionExpiresAt) &&
+    entry.sessionExpiresAt > nowMs,
+  );
+}
+
+async function readAuthorizationPayload(decoded, recordCache, { forceFresh = false } = {}) {
+  const userId = String(decoded.id);
+  const cacheKey = `${decoded.sid}:${userId}`;
+  const key = sharedSessionKey(decoded.sid, userId);
+
+  // Fast path is strictly restricted to non-privileged roles when the auth-evictions
+  // Pub/Sub subscriber is healthy. Privileged roles (admin/superadmin/moderator/editor)
+  // always verify live state against MongoDB to enforce zero-window RBAC revocation.
+  if (!forceFresh && subscriberHealthy && isNonPrivilegedRole(decoded.role)) {
+    const nowMs = Date.now();
+    const cached = sessionCache.get(cacheKey);
+    if (
+      isFreshTrustedEntry(cached, nowMs) &&
+      isNonPrivilegedRole(cached.payload?.role) &&
+      !(localTombstoneEpoch(decoded.sid, userId) > (cached.localEpoch ?? -1))
+    ) {
+      observeCacheOperation({ cache: 'auth-session', layer: 'l1', outcome: 'hit' });
+      recordCache('local');
+      return cached.payload;
+    }
+    const fastStartEpoch = localRevocationEpoch;
+    const [shared, tokens] = await Promise.all([
+      redisGetJson(key),
+      readRevocationTokens(decoded.sid, userId),
+    ]);
+    const checkNow = Date.now();
+    const tokenClean = (shared?.sidRevokeToken ?? null) === tokens.sidToken
+      && (shared?.userRevokeToken ?? null) === tokens.userToken;
+    if (
+      isFreshTrustedEntry(shared, checkNow) &&
+      isNonPrivilegedRole(shared.payload?.role) &&
+      tokenClean &&
+      !(localTombstoneEpoch(decoded.sid, userId) > fastStartEpoch)
+    ) {
+      const remaining = Math.min(shared.validUntil, shared.sessionExpiresAt) - checkNow;
+      if (remaining > 0) {
+        sessionCache.set(cacheKey, { ...shared, localEpoch: fastStartEpoch }, { ttl: remaining });
+        observeCacheOperation({ cache: 'auth-session', layer: 'redis', outcome: 'hit' });
+        recordCache('shared');
+        return shared.payload;
+      }
+    }
+    observeCacheOperation({ cache: 'auth-session', layer: 'redis', outcome: 'miss' });
+  }
+
   for (let attempt = 0; attempt < 3; attempt++) {
-    // Redis is never the authority for revocation or current account privileges.
+    const startEpoch = localRevocationEpoch;
+    const tokensBefore = await readRevocationTokens(decoded.sid, userId);
+    // Fallback / cold miss / privileged role / unhealthy subscriber: verify directly against MongoDB.
     const current = await authorizationState(decoded);
     const valid = entry => entry?.generation === current.generation && entry.validUntil > Date.now();
-    const cached = sessionCache.get(cacheKey);
-    if (valid(cached)) { recordCache('local'); return cached.payload; }
-    const key = revisionedSessionKey(decoded.sid, decoded.id, current.generation);
-    const shared = await redisGetJson(key);
+    if (!forceFresh) {
+      const cached = sessionCache.get(cacheKey);
+      if (valid(cached) && !(localTombstoneEpoch(decoded.sid, userId) > (cached.localEpoch ?? -1))) {
+        observeCacheOperation({ cache: 'auth-session', layer: 'l1', outcome: 'hit' });
+        recordCache('local');
+        return cached.payload;
+      }
+    }
+    const shared = forceFresh ? null : await redisGetJson(key);
     // Protect reads that were already in flight when logout/role removal committed.
     const after = await authorizationState(decoded);
     if (after.generation !== current.generation) continue;
-    const entry = valid(shared) ? shared : {
+
+    // Fence in-flight Mongo reads against concurrent local or cross-instance revocations
+    // before writing anything back into L1 or Redis.
+    if (localTombstoneEpoch(decoded.sid, userId) > startEpoch) continue;
+    const tokensAfter = await readRevocationTokens(decoded.sid, userId);
+    if (tokensAfter.sidToken !== tokensBefore.sidToken || tokensAfter.userToken !== tokensBefore.userToken) {
+      continue;
+    }
+
+    const sessionExpiresAt = new Date(current.session.expiresAt).getTime();
+    if (!Number.isFinite(sessionExpiresAt) || sessionExpiresAt <= Date.now()) throw unauthorized();
+    const sharedUsable = valid(shared)
+      && isFreshTrustedEntry(shared, Date.now())
+      && (shared.sidRevokeToken ?? null) === tokensAfter.sidToken
+      && (shared.userRevokeToken ?? null) === tokensAfter.userToken;
+    const entry = sharedUsable ? shared : {
       generation: current.generation,
       payload: payload(current.user),
-      validUntil: Math.min(Date.now() + SESSION_CACHE_TTL_MS, new Date(current.session.expiresAt).getTime()),
+      validUntil: Math.min(Date.now() + SESSION_CACHE_TTL_MS, sessionExpiresAt),
+      sessionExpiresAt,
+      ...(process.env.REDIS_URL ? { sidRevokeToken: tokensAfter.sidToken, userRevokeToken: tokensAfter.userToken } : {}),
     };
     const remaining = entry.validUntil - Date.now();
     if (remaining <= 0) throw unauthorized();
-    sessionCache.set(cacheKey, entry, { ttl: remaining });
-    if (!valid(shared)) await redisSetJson(key, entry, Math.max(1, Math.ceil(remaining / 1000)));
-    recordCache(valid(shared) ? 'shared' : 'fresh');
+    if (localTombstoneEpoch(decoded.sid, userId) > startEpoch) continue;
+    sessionCache.set(cacheKey, { ...entry, localEpoch: startEpoch }, { ttl: remaining });
+    if (!sharedUsable) await redisSetJson(key, entry, Math.max(1, Math.ceil(remaining / 1000)));
+    observeCacheOperation({ cache: 'auth-session', layer: sharedUsable ? 'redis' : 'source', outcome: sharedUsable ? 'hit' : 'miss' });
+    recordCache(sharedUsable ? 'shared' : 'fresh');
     return entry.payload;
   }
   throw unauthorized();
 }
 
 export async function evictSessionCache(sid, userId) {
-  invalidateSocketAuthorization({ sid, userId: String(userId) });
-  sessionCache.delete(`${sid}:${userId}`);
-  await redisDelete(sharedSessionKey(sid, userId));
-  await publishSessionEviction({ sid, userId: String(userId) });
+  const normalizedUserId = String(userId);
+  recordLocalTombstone({ sid, userId: normalizedUserId });
+  invalidateSocketAuthorization({ sid, userId: normalizedUserId });
+  sessionCache.delete(`${sid}:${normalizedUserId}`);
+  await writeRevocationMarker(revokedSidKey(sid, normalizedUserId));
+  try {
+    await redisDelete(sharedSessionKey(sid, normalizedUserId));
+  } catch {
+    subscriberHealthy = false;
+    reportRedisFailure();
+  }
+  await publishSessionEviction({ sid, userId: normalizedUserId });
 }
 
 export async function evictUserSessionCache(userId) {
+  const normalizedUserId = String(userId);
+  recordLocalTombstone({ userId: normalizedUserId });
   // Also fences asynchronous readers when Redis is offline or delivery is lost.
-  await getUsersCollection().updateOne({ id: String(userId) }, { $inc: { authRevision: 1 } });
-  evictLocalUser(userId);
-  invalidateSocketAuthorization({ userId: String(userId) });
-  getBattleRealtimeServer()?.in(`user:${String(userId)}`).disconnectSockets(true);
+  await getUsersCollection().updateOne({ id: normalizedUserId }, { $inc: { authRevision: 1 } });
+  evictLocalUser(normalizedUserId);
+  invalidateSocketAuthorization({ userId: normalizedUserId });
+  getBattleRealtimeServer()?.in(`user:${normalizedUserId}`).disconnectSockets(true);
   if (!process.env.REDIS_URL) return;
-  const rows = await sessions().find({ userId: String(userId) }, { projection: { _id: 1 } }).toArray();
-  await redisDelete(...rows.map(row => sharedSessionKey(row._id, userId)));
-  await publishSessionEviction({ userId: String(userId) });
+  await writeRevocationMarker(revokedUserKey(normalizedUserId));
+  const rows = await sessions().find({ userId: normalizedUserId }, { projection: { _id: 1 } }).toArray();
+  try {
+    await redisDelete(...rows.map(row => sharedSessionKey(row._id, normalizedUserId)));
+  } catch {
+    subscriberHealthy = false;
+    reportRedisFailure();
+  }
+  await publishSessionEviction({ userId: normalizedUserId });
 }
 
 export async function revokeUserSessions(userId, reason = 'admin-action') {

@@ -7,9 +7,22 @@ import { invalidateQuestionMetadata } from "./questionMetadataCache.js";
 import { refreshUploadedQuestionMetadata } from "./questionMetadataService.js";
 import { getQuestionsCollection } from "../../config/mongodb.js";
 import { questionCountsCache, questionsQueryCache } from "./questionCache.js";
-import { normalizedQuestionKeys } from "./questionNormalizer.js";
+import { buildNormalizedQuestionFields, deriveModeKey, normalizeSearchKey } from "./questionNormalizer.js";
 import { trainingQuestionMetadata } from '../training/domain/questionMetadata.js';
 import { normalizeLocalizedQuestion } from "./questionLocalization.js";
+
+function dedupeScopeQuestions(questions) {
+  const seen = new Set();
+  const deduped = [];
+  for (const question of questions) {
+    if (!question || typeof question !== "object") continue;
+    const key = `${normalizeSearchKey(question.subject)}::${normalizeSearchKey(question.topic)}::${deriveModeKey(question)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(question);
+  }
+  return deduped;
+}
 
 export async function createQuestion(newQuestion, { examMode } = {}) {
   assertQuestionExamMode(newQuestion, examMode);
@@ -22,13 +35,12 @@ export async function createQuestion(newQuestion, { examMode } = {}) {
   }
   item.topic = String(item.topic).trim() || "misc";
 
-  Object.assign(item, normalizedQuestionKeys(item), trainingQuestionMetadata(item), battleQuestionMetadata(item));
+  Object.assign(item, buildNormalizedQuestionFields(item), trainingQuestionMetadata(item), battleQuestionMetadata(item));
   await collection.insertOne(item);
   questionsQueryCache.clear();
   questionCountsCache.clear();
   await invalidateQuestionMetadata();
-
-  await refreshUploadedQuestionMetadata([item]);
+  await refreshUploadedQuestionMetadata(dedupeScopeQuestions([item]));
 
   const { _id, ...resource } = item;
   return resource;
@@ -82,11 +94,14 @@ export async function createQuestionsBulk(questionsData, { importId, examMode } 
       item.ingestionHash = digest(JSON.stringify(q));
       if (!q.id) item.id = `q_${item.ingestionKey}`;
     }
-    return Object.assign(assignQuestionIdentity(item), normalizedQuestionKeys(item), trainingQuestionMetadata(item), battleQuestionMetadata(item));
+    const identified = assignQuestionIdentity(item);
+    return Object.assign(identified, buildNormalizedQuestionFields(identified), trainingQuestionMetadata(identified), battleQuestionMetadata(identified));
   });
 
   const results = new Array(normalizedQuestions.length);
   for (const index of invalid) results[index] = { status: 'rejected', reason: { code: 'INVALID_ROW', message: 'Question must be an object' } };
+  let hadMutation = false;
+  const succeeded = [];
   try {
     for (let offset = 0; offset < normalizedQuestions.length; offset += 500) {
       let pending = normalizedQuestions.slice(offset, offset + 500).map((value, index) => ({ value, index: offset + index })).filter(entry => entry.value);
@@ -107,12 +122,15 @@ export async function createQuestionsBulk(questionsData, { importId, examMode } 
           if (failure?.code === 11000 && !importId && attempt < 3) {
             const value = { ...entry.value, id: `q_${crypto.randomUUID()}` };
             delete value._id;
-            Object.assign(value, trainingQuestionMetadata(value), battleQuestionMetadata(value));
+            Object.assign(value, buildNormalizedQuestionFields(value), trainingQuestionMetadata(value), battleQuestionMetadata(value));
             retry.push({ ...entry, value });
           } else if (failure) {
+            if (ambiguous) hadMutation = true;
             results[entry.index] = { status: 'rejected', reason: { code: failure.code, message: ambiguous ? 'Write outcome unknown; retry with the same import ID' : failure.errmsg || failure.message || 'Bulk row failed' } };
           } else {
+            hadMutation = true;
             const { _id, ...value } = entry.value;
+            succeeded.push(value);
             results[entry.index] = { status: 'fulfilled', value };
           }
         });
@@ -121,11 +139,42 @@ export async function createQuestionsBulk(questionsData, { importId, examMode } 
     }
     return results;
   } finally {
-    questionsQueryCache.clear();
-    questionCountsCache.clear();
-    await invalidateQuestionMetadata();
-    await refreshUploadedQuestionMetadata(normalizedQuestions.filter(Boolean));
+    if (hadMutation) {
+      questionsQueryCache.clear();
+      questionCountsCache.clear();
+      await invalidateQuestionMetadata();
+      const refreshTargets = dedupeScopeQuestions(succeeded.length ? succeeded : normalizedQuestions);
+      if (refreshTargets.length) {
+        await refreshUploadedQuestionMetadata(refreshTargets);
+      }
+    }
   }
+}
+
+const IMMUTABLE_QUESTION_FIELDS = new Set([
+  '_id', 'id', 'questionUid', 'ingestionKey', 'ingestionHash', 'createdAt',
+  'battleSelectionKey', 'rankedEligible', 'battleEligible',
+  'trainingMetadataVersion', 'trainingCandidate', 'trainingEligible',
+  'topicKey', 'subjectKey', 'quizKey', 'modeKey', 'keyVersion',
+  'examKey', 'conceptKey', 'chapterKey', 'topicGroupKey', 'examModeKey',
+  'yearInt', 'shiftInt', 'selectionKey',
+]);
+
+function mergeTranslations(existingTranslations, incomingTranslations) {
+  if (!incomingTranslations || typeof incomingTranslations !== 'object' || Array.isArray(incomingTranslations)) {
+    return existingTranslations;
+  }
+  const base = existingTranslations && typeof existingTranslations === 'object' && !Array.isArray(existingTranslations)
+    ? { ...existingTranslations }
+    : {};
+  for (const [lang, value] of Object.entries(incomingTranslations)) {
+    if (value && typeof value === 'object' && !Array.isArray(value) && base[lang] && typeof base[lang] === 'object' && !Array.isArray(base[lang])) {
+      base[lang] = { ...base[lang], ...value };
+    } else {
+      base[lang] = value;
+    }
+  }
+  return base;
 }
 
 export async function modifyQuestion(id, updates, topic = undefined, examMode = undefined) {
@@ -133,22 +182,35 @@ export async function modifyQuestion(id, updates, topic = undefined, examMode = 
   const existing = await resolveQuestion(collection, id, { topic, examMode });
   if (!existing) return null;
 
-  const normalizedUpdates = normalizeLocalizedQuestion(updates);
-  const updated = { ...existing, ...normalizedUpdates, id: existing.id, questionUid: existing.questionUid };
+  const filteredUpdates = Object.fromEntries(
+    Object.entries(updates || {}).filter(([key]) => !IMMUTABLE_QUESTION_FIELDS.has(key))
+  );
+  const normalizedUpdates = normalizeLocalizedQuestion(filteredUpdates);
+  const mergedTranslations = normalizedUpdates.translations !== undefined
+    ? mergeTranslations(existing.translations, normalizedUpdates.translations)
+    : existing.translations;
+  const updated = {
+    ...existing,
+    ...normalizedUpdates,
+    ...(mergedTranslations !== undefined ? { translations: mergedTranslations } : {}),
+    id: existing.id,
+    questionUid: existing.questionUid,
+    updatedAt: new Date().toISOString(),
+  };
   assertQuestionExamMode(updated, examMode);
-  delete updated._id;
 
   if (!updated.topic) {
     updated.topic =
       existing.topic || updates.chapter || updates.subject || "misc";
   }
 
-  Object.assign(updated, normalizedQuestionKeys(updated), trainingQuestionMetadata(updated), battleQuestionMetadata(updated));
+  Object.assign(updated, buildNormalizedQuestionFields(updated), trainingQuestionMetadata(updated), battleQuestionMetadata(updated));
+  delete updated._id;
   await collection.updateOne(scopedQuestionFilter({ _id: existing._id }, examMode), { $set: updated });
   questionsQueryCache.clear();
   questionCountsCache.clear();
   await invalidateQuestionMetadata();
-  await refreshUploadedQuestionMetadata([existing, updated]);
+  await refreshUploadedQuestionMetadata(dedupeScopeQuestions([existing, updated]));
   return updated;
 }
 
@@ -162,6 +224,91 @@ export async function removeQuestion(id, topic = undefined, examMode = undefined
   questionCountsCache.clear();
   await invalidateQuestionMetadata();
   return result.deletedCount > 0;
+}
+
+async function resolveQuestionsBatch(collection, uniqueIds, examMode, context = {}) {
+  const uidIds = [];
+  const legacyIds = [];
+  for (const id of uniqueIds) {
+    if (/^q_[a-f0-9]{32}$/.test(id)) uidIds.push(id);
+    else legacyIds.push(id);
+  }
+
+  const resolvedMap = new Map();
+  const readBatch = async (filter, limit) => {
+    let cursor = collection.find(filter);
+    if (typeof cursor.project === 'function') {
+      cursor = cursor.project({ _id: 1, id: 1, questionUid: 1 });
+    }
+    if (typeof cursor.limit === 'function' && limit) {
+      cursor = cursor.limit(limit);
+    }
+    return cursor.toArray();
+  };
+
+  if (uidIds.length > 0) {
+    const uidFilter = scopedQuestionFilter({ questionUid: { $in: uidIds } }, examMode);
+    const uidRows = await readBatch(uidFilter, uidIds.length + 1);
+    for (const row of uidRows) {
+      if (row?._id !== undefined) resolvedMap.set(String(row._id), row._id);
+    }
+  }
+
+  if (legacyIds.length > 0) {
+    const expandedValues = [];
+    const seenVal = new Set();
+    for (const id of legacyIds) {
+      if (!seenVal.has(id)) {
+        seenVal.add(id);
+        expandedValues.push(id);
+      }
+      if (Number.isFinite(Number(id))) {
+        const numeric = Number(id);
+        if (!seenVal.has(numeric)) {
+          seenVal.add(numeric);
+          expandedValues.push(numeric);
+        }
+      }
+    }
+    const baseLegacyFilter = {
+      id: { $in: expandedValues },
+      ...(context.topic ? { topic: String(context.topic) } : {}),
+      ...(context.subject ? { subject: String(context.subject) } : {}),
+    };
+    const legacyFilter = scopedQuestionFilter(baseLegacyFilter, examMode);
+    const legacyRows = await readBatch(legacyFilter, legacyIds.length * 2 + 1);
+    const rowsByExactId = new Map();
+    for (const row of legacyRows) {
+      const key = row?.id !== undefined ? row.id : row?._id;
+      if (!rowsByExactId.has(key)) rowsByExactId.set(key, []);
+      rowsByExactId.get(key).push(row);
+    }
+    for (const id of legacyIds) {
+      const candidateKeys = [id];
+      if (id.trim() && Number.isFinite(Number(id))) {
+        const numeric = Number(id);
+        if (!candidateKeys.includes(numeric)) candidateKeys.push(numeric);
+      }
+      const matchedByDocId = new Map();
+      for (const candidateKey of candidateKeys) {
+        for (const row of rowsByExactId.get(candidateKey) || []) {
+          if (row?._id !== undefined) matchedByDocId.set(String(row._id), row);
+        }
+      }
+      const matches = [...matchedByDocId.values()];
+      if (matches.length > 1) {
+        throw Object.assign(
+          new Error('Question ID is ambiguous. Send questionUid or an unambiguous topic.'),
+          { statusCode: 409, code: 'AMBIGUOUS_QUESTION_ID' },
+        );
+      }
+      if (matches.length === 1 && matches[0]?._id !== undefined) {
+        resolvedMap.set(String(matches[0]._id), matches[0]._id);
+      }
+    }
+  }
+
+  return [...resolvedMap.values()];
 }
 
 export async function removeQuestionsBulk(ids, examMode = undefined, context = {}) {
@@ -181,10 +328,9 @@ export async function removeQuestionsBulk(ids, examMode = undefined, context = {
   }
 
   try {
-    const resolved = [];
-    for (const id of uniqueIds) {
-      const question = await resolveQuestion(collection, id, { examMode, ...context });
-      if (question) resolved.push(question._id);
+    const resolved = await resolveQuestionsBatch(collection, uniqueIds, examMode, context);
+    if (resolved.length === 0) {
+      return { deleted: 0, failed: 0, total: uniqueIds.length };
     }
     const result = await collection.deleteMany(scopedQuestionFilter({ _id: { $in: resolved } }, examMode));
     questionsQueryCache.clear();

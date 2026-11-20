@@ -76,6 +76,10 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
     if (questionPanelRef.current) questionPanelRef.current.scrollTop = 0;
   }, [currentQuestionIndex, currentSectionIndex, filter]);
 
+  const [retryCount, setRetryCount] = useState(0);
+  const requestedSectionRef = useRef(requestedSection);
+  useEffect(() => { requestedSectionRef.current = requestedSection; }, [requestedSection]);
+
   useEffect(() => {
     if (!ready) return;
     const controller = new AbortController();
@@ -89,7 +93,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
         setError(null);
         setAttempt(res);
         setPaperTitle(details?.slot ? paperDisplayTitle(details.slot) : undefined);
-        const sectionIndex = res.paper?.sections.findIndex(section => (section.key || section.id) === requestedSection) ?? -1;
+        const sectionIndex = res.paper?.sections.findIndex(section => (section.key || section.id) === requestedSectionRef.current) ?? -1;
         setCurrentSectionIndex(Math.max(0, sectionIndex));
         setCurrentQuestionIndex(0);
         setLanguage(res.language ?? 'en');
@@ -104,7 +108,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
         setLoading(false);
       });
     return () => controller.abort();
-  }, [attemptId, examSlug, testId, owner, ready, scope, requestedSection]);
+  }, [attemptId, examSlug, testId, owner, ready, scope, retryCount]);
 
   const sections = attempt?.paper?.sections ?? EMPTY_SECTIONS;
   const currentSection = sections[currentSectionIndex];
@@ -170,9 +174,14 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
       <AnalyticsTemplate showBottomNav={false} showNavRail={false}>
         <div className={styles.loadingContainer}>
           <p>{error || 'Attempt not found.'}</p>
-          <button data-ui-button="primary" className={styles.btnPrimary} onClick={() => router.back(`/mock-test/${examSlug}`)}>
-            Back to Tests
-          </button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button data-ui-button="secondary" className={styles.btnPrimary} onClick={() => { setError(null); setLoading(true); setRetryCount(c => c + 1); }}>
+              Retry
+            </button>
+            <button data-ui-button="primary" className={styles.btnPrimary} onClick={() => router.back(`/mock-test/${examSlug}`)}>
+              Back to Tests
+            </button>
+          </div>
         </div>
       </AnalyticsTemplate>
     );
@@ -180,9 +189,16 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
 
   const currentItem = filteredAnalysis[currentQuestionIndex];
   const currentQ = currentItem?.question;
-  const questionText = currentQ?.translations?.question[language] ?? currentQ?.question ?? currentQ?.text ?? '';
+  const questionText = currentQ?.translations?.question?.[language]?.trim()
+    || currentQ?.translations?.question?.en?.trim()
+    || currentQ?.question
+    || currentQ?.text
+    || '';
   const questionImage = currentQ?.questionImage || currentQ?.image;
-  const solutionText = currentQ?.translations?.solution?.[language] ?? currentQ?.solution ?? '';
+  const solutionText = currentQ?.translations?.solution?.[language]?.trim()
+    || currentQ?.translations?.solution?.en?.trim()
+    || currentQ?.solution
+    || '';
 
   const handlePrev = () => {
     if (currentQuestionIndex > 0) {
@@ -251,8 +267,8 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                 <div className={styles.questionMeta}>
                   <span className={styles.qNumBadge} aria-live="polite">Question {currentItem.index + 1} of {questions.length}</span>
                   <span className={`${styles.statusBadge} ${styles['status_' + currentItem.status]}`}>
-                    {currentItem.status === 'correct' && `Correct (+${currentSection?.marking?.correct ?? 2} marks)`}
-                    {currentItem.status === 'incorrect' && `Incorrect (-${currentSection?.marking?.incorrect ?? 0.5} marks)`}
+                    {currentItem.status === 'correct' && `Correct (+${currentSection?.marking?.correct ?? attempt.paper?.marksPerQuestion ?? 2} marks)`}
+                    {currentItem.status === 'incorrect' && `Incorrect (-${currentSection?.marking?.incorrect ?? attempt.paper?.negativeMarks ?? 0.5} marks)`}
                     {currentItem.status === 'skipped' && 'Skipped · 0 marks'}
                   </span>
                 </div>
@@ -283,7 +299,10 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                 {/* Options */}
                 <div className={styles.optionsList}>
                   {currentQ.options?.map((option, oIdx: number) => {
-                    const opt = currentQ.translations?.options[language][oIdx] ?? (typeof option === 'string' ? option : option.text);
+                    const fallbackOpt = typeof option === 'string' ? option : option.text;
+                    const opt = currentQ.translations?.options?.[language]?.[oIdx]?.trim()
+                      || currentQ.translations?.options?.en?.[oIdx]?.trim()
+                      || fallbackOpt;
                     const letter = String.fromCharCode(65 + oIdx); // 'A', 'B', 'C', 'D'
                     const isUserPick = [currentItem.userAns].flat().some(value => mockAnswerIndex(value, currentQ.options, true) === oIdx);
                     const isCorrect = [currentItem.correctAns].flat().some(value => mockAnswerIndex(value, currentQ.options) === oIdx);
@@ -304,7 +323,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                             </div>
                           )}
                         </div>
-                        {isCorrect && <span className={styles.correctLabel}>Correct answer</span>}
+                        {isCorrect && <span className={styles.correctLabel}>{isUserPick ? 'Your answer · Correct' : 'Correct answer'}</span>}
                         {isUserPick && !isCorrect && <span className={styles.userWrongLabel}>Your answer</span>}
                       </div>
                     );
@@ -317,7 +336,10 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                     <h3 className={styles.solutionHeading}>Explanation</h3>
                     {(solutionText) && (
                       <div className={styles.solutionText}>
-                        <RichContent text={solutionText} />
+                        <RichContent
+                          text={solutionText}
+                          imageDimensions={{ width: currentQ.solutionImageWidth, height: currentQ.solutionImageHeight }}
+                        />
                       </div>
                     )}
                     {currentQ.solutionImage && !solutionText.includes(currentQ.solutionImage) && (
@@ -363,9 +385,11 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
             <button className={styles.closeSheet} aria-label="Close question navigator" onClick={() => setPaletteOpen(false)}><X size={20} /></button>
           </div>
           <div className={styles.sheetContent}>
-            <ReviewQuestionNavigator questions={questionAnalysis} filteredQuestions={filteredAnalysis}
-              filter={filter} selectedIndex={currentQuestionIndex} onFilter={selectFilter}
-              onSelect={index => { setCurrentQuestionIndex(index); setPaletteOpen(false); }} />
+            {paletteOpen && (
+              <ReviewQuestionNavigator questions={questionAnalysis} filteredQuestions={filteredAnalysis}
+                filter={filter} selectedIndex={currentQuestionIndex} onFilter={selectFilter}
+                onSelect={index => { setCurrentQuestionIndex(index); setPaletteOpen(false); }} />
+            )}
           </div>
         </dialog>
       </div>

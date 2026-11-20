@@ -1,5 +1,7 @@
 import type { GeometryDiagram } from "@/components/geometry/diagramSchema";
+import { canonicalQuestionKey, DEFAULT_MAX_STUDY_MODE_PAGES } from "@/features/quiz/model/constants";
 import { API_BASE } from "@/lib/api-base";
+import { abortError } from "@/shared/api/policy";
 import { request,requestResponse } from "@/shared/api/request";
 export interface Question {
   id: string;
@@ -63,10 +65,17 @@ export function questionKey(params: QuestionParams): string {
   }
   return `${API_BASE}/api/questions?${query}`;
 }
-export async function fetchQuestionKey(url: string): Promise<Question[]> {
+export interface FetchQuestionKeyOptions {
+  signal?: AbortSignal;
+  maxPages?: number;
+}
+
+export async function fetchQuestionKey(url: string, options: FetchQuestionKeyOptions = {}): Promise<Question[]> {
+  const { signal, maxPages = DEFAULT_MAX_STUDY_MODE_PAGES } = options;
   const type = new URL(url, 'http://localhost').searchParams.get('questionType');
   const library = type === 'study-mode' || type === 'studymode';
   const questions: Question[] = [];
+  const seenKeys = new Set<string>();
   const query = new URL(url, 'http://localhost');
   const requestedLimit = Number(query.searchParams.get('limit'));
   if (!query.searchParams.has('offset') || query.searchParams.get('offset') === '0') {
@@ -77,24 +86,35 @@ export async function fetchQuestionKey(url: string): Promise<Question[]> {
     query.searchParams.set('includeTotal', 'false');
     query.searchParams.set('limit', String(requestedLimit > 0 ? Math.min(200, requestedLimit) : (library ? 200 : 50)));
   }
-  const seen = new Set<string>();
-  for (;;) {
+  const seenCursors = new Set<string>();
+  const pageCap = Math.max(1, Math.floor(maxPages));
+  for (let pageCount = 0; pageCount < pageCap; pageCount += 1) {
+    if (signal?.aborted) throw abortError();
+    const requestInit: RequestInit = signal ? { cache: 'no-store', signal } : { cache: 'no-store' };
     const data = await request<{ questions?: Question[]; nextCursor?: string | null; hasMore?: boolean }>(
-      `${url.split('?')[0]}?${query.searchParams}`, { cache: 'no-store' },
+      `${url.split('?')[0]}?${query.searchParams}`, requestInit,
     );
-    questions.push(...(data.questions ?? []));
+    if (signal?.aborted) throw abortError();
+    for (const item of data.questions ?? []) {
+      const canonical = canonicalQuestionKey(item);
+      if (canonical) {
+        if (seenKeys.has(canonical)) continue;
+        seenKeys.add(canonical);
+      }
+      questions.push(item);
+    }
     if (query.searchParams.get('pagination') !== 'cursor' || !data.hasMore) break;
     if (requestedLimit > 0 && questions.length >= requestedLimit) break;
-    if (!data.nextCursor || seen.has(data.nextCursor)) throw new Error('Invalid question pagination');
-    seen.add(data.nextCursor);
+    if (!data.nextCursor || seenCursors.has(data.nextCursor)) throw new Error('Invalid question pagination');
+    seenCursors.add(data.nextCursor);
     query.searchParams.set('cursor', data.nextCursor);
     if (requestedLimit > 0) query.searchParams.set('limit', String(Math.min(200, requestedLimit - questions.length)));
   }
   if (type === 'study-mode' || type === 'studymode') return questions.filter(isStudyModeQuestion);
   return type === 'all' ? questions : questions.filter(question => !isStudyModeQuestion(question));
 }
-export function fetchQuestions(params: QuestionParams): Promise<Question[]> {
-  return fetchQuestionKey(questionKey(params));
+export function fetchQuestions(params: QuestionParams, options?: FetchQuestionKeyOptions): Promise<Question[]> {
+  return fetchQuestionKey(questionKey(params), options);
 }
 
 // Fetch random questions for practice test

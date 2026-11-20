@@ -132,8 +132,8 @@ function MobileQuizFooterControls({
 
   return (
     <footer data-ui-chrome="footer" className="ios-series-footer">
-      {/* Mount eagerly once a question is present so the dynamic chunk preloads before clicking AI. */}
-      {!hideAiTutor && currentQ && (
+      {/* Defer QuizChatbot mount until after answer submission so initial mobile Q1 paint avoids loading KaTeX/Markdown/Bengali fonts. */}
+      {!hideAiTutor && currentQ && (isCurrentSubmitted || tutorOpen) && (
         <QuizChatbot
           key={`ios-chat-${currentIndex}`}
           isVisible={isCurrentSubmitted}

@@ -5,6 +5,40 @@ export const getOwnedAttempt = async (attemptId, userId) => {
   return getMockAttemptsCollection().findOne({ id: String(attemptId), userId: String(userId) });
 };
 
+// Lightweight projection for high-frequency autosaves — avoids pulling 100KB+ of question text/translations/solutions.
+export const getOwnedAttemptForAutosave = async (attemptId, userId) => {
+  return getMockAttemptsCollection().findOne(
+    { id: String(attemptId), userId: String(userId) },
+    {
+      projection: {
+        _id: 1,
+        id: 1,
+        userId: 1,
+        status: 1,
+        assessmentMode: 1,
+        startedAt: 1,
+        deadlineAt: 1,
+        revision: 1,
+        answers: 1,
+        questionStatuses: 1,
+        sectionTimers: 1,
+        timerSection: 1,
+        currentSection: 1,
+        currentQuestion: 1,
+        sectionRemainingTimes: 1,
+        sectionStartedAt: 1,
+        sectionsExhausted: 1,
+        'paper.schemaDriven': 1,
+        'paper.compositeTimer': 1,
+        'paper.sections.key': 1,
+        'paper.sections.timeLimitMin': 1,
+        'paper.sections.questions.id': 1,
+        'paper.sections.questions.questionType': 1,
+      },
+    }
+  );
+};
+
 export const getAttemptByStartKey = async (userId, startKey) => {
   return getMockAttemptsCollection().findOne({ userId: String(userId), startKey });
 };

@@ -32,7 +32,10 @@ describe('public quiz queries during auth restoration', () => {
     await waitFor(() => expect(result.current.questions).toHaveLength(1));
     expect(result.current.isLoading).toBe(true); // Data can arrive before private actions become ready.
     expect(mocks.fetch).toHaveBeenCalledTimes(2);
-    for (const call of mocks.fetch.mock.calls) expect(call.slice(1)).toEqual([{}, { auth: 'none' }]);
+    for (const call of mocks.fetch.mock.calls) {
+      expect(call[1]).toEqual(call[0].includes('/session?') ? { signal: expect.any(AbortSignal) } : {});
+      expect(call[2]).toEqual({ auth: 'none' });
+    }
     mocks.loading = false; mocks.user = { id: 'first' }; rerender();
     expect(mocks.fetch).toHaveBeenCalledTimes(2);
     expect(result.current.isLoading).toBe(false);

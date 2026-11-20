@@ -45,6 +45,10 @@ export interface QuizQuestion {
   sessionPlaceholder?: boolean;
   questionImageWidth?: number;
   questionImageHeight?: number;
+  solutionImageWidth?: number;
+  solutionImageHeight?: number;
+  examDate?: string;
+  shift?: string;
   concept: string;
   formula: string;
   question: string;

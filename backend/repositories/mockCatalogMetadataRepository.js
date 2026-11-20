@@ -42,6 +42,9 @@ export async function initializeMockCatalogMetadata(db) {
 }
 
 export async function mutateMockCatalog(examSlug, mutation) {
+  if (!examSlug || examSlug === READY) {
+    throw Object.assign(new Error('Invalid exam slug'), { statusCode: 400 });
+  }
   return withMongoTransaction(async ({ db, session }) => {
     // Serialize same-exam writers before reading the new counts. The slot change
     // and its snapshot commit together; failures roll both back.
@@ -60,9 +63,13 @@ export async function readMockCatalogSummary() {
 
 export async function readMockCatalogMetadata(examSlug, { kind = 'mock', tier = '', year = '' } = {}) {
   const collection = getMongoDB().collection(COLLECTION);
+  if (!examSlug || examSlug === READY) {
+    if (!await collection.findOne({ _id: READY }, { projection: { _id: 1 } })) throw missing();
+    return { metadata: { mockCount: 0, pyqCount: 0, tiers: [], years: [] }, total: 0 };
+  }
   const saved = await collection.findOne({ _id: examSlug });
   if (!saved && !await collection.findOne({ _id: READY }, { projection: { _id: 1 } })) throw missing();
-  const snapshot = saved || empty(examSlug);
+  const snapshot = saved && Array.isArray(saved.groups) ? saved : empty(examSlug);
   const total = snapshot.groups.filter(group => group.kind === kind && (!tier || !group.tier || group.tier === tier) && (!year || group.year === Number(year))).reduce((sum, group) => sum + group.count, 0);
   return { metadata: { mockCount: snapshot.mockCount, pyqCount: snapshot.pyqCount, tiers: snapshot.tiers, years: snapshot.years }, total };
 }

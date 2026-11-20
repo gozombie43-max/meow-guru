@@ -26,21 +26,37 @@ export function isResumeData(value: unknown): value is ResumeData {
   if (row.difficulty !== undefined && !['easy', 'medium', 'hard'].includes(String(row.difficulty))) return false;
   return ['conceptFilter', 'examFilter'].every(key => row[key] === undefined || typeof row[key] === 'string');
 }
-export function useQuizResume(storageKey: string) {
+export function useQuizResume(storageKey: string, legacyStorageKey?: string) {
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const loadResume = useCallback(() => {
     try {
-      const value: unknown = JSON.parse(window.localStorage.getItem(storageKey) ?? 'null');
-      if (isResumeData(value) && value.submittedQuestions?.length) {
-        setResumeData(value);
+      const readValid = (key: string): ResumeData | null => {
+        const value: unknown = JSON.parse(window.localStorage.getItem(key) ?? 'null');
+        return isResumeData(value) && value.submittedQuestions?.length ? value : null;
+      };
+      const scoped = readValid(storageKey);
+      if (scoped) {
+        setResumeData(scoped);
         return true;
+      }
+      if (legacyStorageKey && legacyStorageKey !== storageKey) {
+        const legacy = readValid(legacyStorageKey);
+        if (legacy) {
+          setResumeData(legacy);
+          return true;
+        }
       }
     } catch { /* Invalid or inaccessible storage starts a fresh session. */ }
     return false;
-  }, [storageKey]);
+  }, [storageKey, legacyStorageKey]);
   const clearResume = useCallback(() => {
-    try { window.localStorage.removeItem(storageKey); } catch { /* Storage may be unavailable. */ }
+    try {
+      window.localStorage.removeItem(storageKey);
+      if (legacyStorageKey && legacyStorageKey !== storageKey) {
+        window.localStorage.removeItem(legacyStorageKey);
+      }
+    } catch { /* Storage may be unavailable. */ }
     setResumeData(null);
-  }, [storageKey]);
+  }, [storageKey, legacyStorageKey]);
   return { resumeData, setResumeData, loadResume, clearResume };
 }

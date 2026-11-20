@@ -21,9 +21,17 @@ export function normalizeLocalizedQuestion(input) {
     ? item.solution
     : null;
 
-  if (!questionLocalized && !optionsLocalized && !solutionLocalized) {
+  const answerLocalized = isLocalizedText(item.correctAnswer)
+    ? item.correctAnswer
+    : null;
+
+  if (!questionLocalized && !optionsLocalized && !solutionLocalized && !answerLocalized) {
     // Legacy question — leave completely unchanged.
     return item;
+  }
+
+  if (answerLocalized) {
+    item.correctAnswer = answerLocalized.en ?? answerLocalized.bn ?? "";
   }
 
   const translations = {

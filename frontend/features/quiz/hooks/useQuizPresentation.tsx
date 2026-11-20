@@ -81,7 +81,12 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
   }, []);
 
   const renderQuestionLine = useCallback((line: string) => {
-    const regex = /(?:\*\*'([^']+)'\*\*|__'([^']+)'__|'([^']+)')/g;
+    // Skip single-quote highlighting when math delimiters ($...$, \(...\), \[...\]) are present
+    // so LaTeX primes like $f'(x) + g'(x)$ are never split across separate MathText nodes.
+    if (/(?:\$\$|\$|\\\(|\\\[)/.test(line)) {
+      return [<MathText key="q-chunk-0" text={line} />];
+    }
+    const regex = /(?:\*\*'([^']+)'\*\*|__'([^']+)'__|(?<![\p{L}\p{N}])'([^']+)'(?![\p{L}\p{N}]))/gu;
     const nodes: React.ReactNode[] = [];
     let lastIndex = 0;
     let match: RegExpExecArray | null;

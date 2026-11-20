@@ -6,9 +6,11 @@ import { registerBattleRelay } from "../infrastructure/battleOutbox.js";
 import { finishBattle } from "./battleCompletion.js";
 export { finishBattle, sendBattleResultNotifications } from "./battleCompletion.js";
 // backend/battle/battleSocket.js
+import { createHash } from 'node:crypto';
 import { Server } from 'socket.io';
 import { z } from 'zod';
 import { createAdapter } from '@socket.io/mongo-adapter';
+import { getRedisClient, redisKey } from '../config/redis.js';
 import {
   createRoom, joinRoom, getRoom, deleteRoom,
   setQuestions, submitAnswer, buildPublicQuestion,
@@ -60,6 +62,26 @@ const answerPayloadSchema = z.union([
 ]);
 const matchmakingSchema = z.object({ subject: z.enum(["mathematics", "reasoning", "english", "general-awareness", "iit-jam-physics"]), topic: z.string().min(1).max(80), questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]) });
 const socialChallengeSchema = z.object({ targetUserId: z.string().min(1).max(200), subject: z.enum(["mathematics", "reasoning", "english", "general-awareness", "iit-jam-physics"]), topic: z.string().min(1).max(80), questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]) });
+const roomCreatePayloadSchema = z.object({
+  playerName: z.string().trim().max(80).optional(),
+  subject: z.enum(["mathematics", "reasoning", "english", "general-awareness", "iit-jam-physics"]).optional().default('mathematics'),
+  topic: z.string().min(1).max(80).optional().default('all'),
+  questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]).optional().default(10),
+});
+const roomJoinPayloadSchema = z.object({
+  code: z.string().min(1).max(32),
+  playerName: z.string().trim().max(80).optional(),
+});
+const roomInvitePayloadSchema = z.object({
+  code: z.string().min(1).max(32),
+  email: z.string().trim().min(1).max(254),
+});
+const rematchPayloadSchema = z.object({
+  rematchToken: z.string().min(1).max(4096),
+  playerName: z.string().trim().max(80).optional(),
+});
+
+const hashTokenKey = (tokenKey) => createHash('sha256').update(String(tokenKey)).digest('hex');
 
 export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) {
   // Build an explicit origin allowlist for Socket.IO.
@@ -90,6 +112,98 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     }
     return state;
   };
+
+  // Horizontal multi-instance safe cooldowns & rematch token replay protection via Redis SET NX PX,
+  // with graceful local Map fallback when Redis is unavailable.
+  async function acquireUserCooldown(userId, action, localField, cooldownMs) {
+    const safeUserId = String(userId || '');
+    const state = getUserCooldownState(safeUserId);
+    try {
+      const redis = await getRedisClient();
+      if (redis) {
+        const acquired = await redis.set(
+          redisKey(`battle:cooldown:${action}:${safeUserId}`),
+          '1',
+          { NX: true, PX: cooldownMs },
+        );
+        if (!acquired) return false;
+        state[localField] = Date.now();
+        return true;
+      }
+    } catch {
+      // Fall back to per-instance Map when Redis is unavailable.
+    }
+    const now = Date.now();
+    if (now - state[localField] < cooldownMs) return false;
+    state[localField] = now;
+    return true;
+  }
+
+  async function isUserCooldownActive(userId, action, localField, cooldownMs) {
+    const safeUserId = String(userId || '');
+    const state = getUserCooldownState(safeUserId);
+    try {
+      const redis = await getRedisClient();
+      if (redis) {
+        const exists = await redis.get(redisKey(`battle:cooldown:${action}:${safeUserId}`));
+        return Boolean(exists);
+      }
+    } catch {
+      // Fall back to local state.
+    }
+    return Date.now() - state[localField] < cooldownMs;
+  }
+
+  async function markUserCooldown(userId, action, localField, cooldownMs) {
+    const safeUserId = String(userId || '');
+    const state = getUserCooldownState(safeUserId);
+    state[localField] = Date.now();
+    try {
+      const redis = await getRedisClient();
+      if (redis) {
+        await redis.set(redisKey(`battle:cooldown:${action}:${safeUserId}`), '1', { PX: cooldownMs });
+      }
+    } catch {
+      // Best effort; local Map already updated.
+    }
+  }
+
+  async function consumeRematchTokenOnce(tokenKey, expMs) {
+    const now = Date.now();
+    const ttlMs = Math.max(1000, expMs - now);
+    const recordLocally = () => {
+      for (const [key, exp] of consumedRematchTokens.entries()) {
+        if (exp <= now) consumedRematchTokens.delete(key);
+      }
+      if (consumedRematchTokens.size > 10_000) {
+        const oldest = consumedRematchTokens.keys().next().value;
+        if (oldest !== undefined) consumedRematchTokens.delete(oldest);
+      }
+      consumedRematchTokens.set(tokenKey, expMs);
+    };
+    try {
+      const redis = await getRedisClient();
+      if (redis) {
+        const acquired = await redis.set(
+          redisKey(`battle:rematch-token:${hashTokenKey(tokenKey)}`),
+          '1',
+          { NX: true, PX: ttlMs },
+        );
+        if (!acquired) return false;
+        // Mirror locally so an immediate Redis outage cannot replay a just-consumed token on this instance.
+        recordLocally();
+        return true;
+      }
+    } catch {
+      // Fall back to per-instance Map when Redis is unavailable.
+    }
+    for (const [key, exp] of consumedRematchTokens.entries()) {
+      if (exp <= now) consumedRematchTokens.delete(key);
+    }
+    if (consumedRematchTokens.has(tokenKey)) return false;
+    recordLocally();
+    return true;
+  }
 
   const io = new Server(httpServer, {
     cors: {
@@ -183,12 +297,13 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
         else socket.emit('matchmaking:error', { code: 'RESUME_REQUIRED', message: 'Checking your current match…' });
       } catch (error) { runtimeLog.error(error); socket.emit('matchmaking:error', { message: 'Could not cancel matchmaking. Please reconnect.' }); }
     });
-    onEvent('battle:challengeUser', async (raw) => {
+    onEvent('battle:challengeUser', async (raw = {}) => {
       if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
       const parsed = socialChallengeSchema.safeParse(raw);
       if (!parsed.success || parsed.data.targetUserId === socket.user.id) return socket.emit('room:error', { message: 'Invalid battle invitation.' });
-      if (Date.now() - userCooldown.lastRoomCreateTime < ROOM_CREATE_COOLDOWN_MS) return socket.emit('room:error', { message: 'Please wait before sending another invitation.' });
-      userCooldown.lastRoomCreateTime = Date.now();
+      if (!(await acquireUserCooldown(socket.user?.id || socket.id, 'room-create', 'lastRoomCreateTime', ROOM_CREATE_COOLDOWN_MS))) {
+        return socket.emit('room:error', { message: 'Please wait before sending another invitation.' });
+      }
       try {
         const { targetUserId, subject, topic, questionCount } = parsed.data;
         const target = await getUsersCollection().findOne({ id: targetUserId, status: { $nin: ['banned', 'suspended'] } }, { projection: { id: 1 } });
@@ -276,17 +391,16 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     });
 
     // ── Create room ──────────────────────────────────────
-    onEvent('room:create', async ({ playerName, subject = 'mathematics', topic = 'all', questionCount = 10 }) => {
+    onEvent('room:create', async (raw = {}) => {
       if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
-      const now = Date.now();
-      if (now - userCooldown.lastRoomCreateTime < ROOM_CREATE_COOLDOWN_MS) {
+      if (!(await acquireUserCooldown(socket.user?.id || socket.id, 'room-create', 'lastRoomCreateTime', ROOM_CREATE_COOLDOWN_MS))) {
         socket.emit('room:error', { message: 'Please wait before creating another room.' });
         return;
       }
-      userCooldown.lastRoomCreateTime = now;
 
-      const parsed = matchmakingSchema.safeParse({ subject, topic, questionCount });
+      const parsed = roomCreatePayloadSchema.safeParse(raw && typeof raw === 'object' ? raw : {});
       if (!parsed.success) return socket.emit('room:error', { message: 'Invalid battle settings.' });
+      const { playerName, subject, topic, questionCount } = parsed.data;
       try {
         const code = await createRoom(socket.id, playerName, subject, topic, questionCount, socket.user?.id);
         socket.join(code);
@@ -335,17 +449,24 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     });
 
     // ── Invite opponent ──────────────────────────────────
-    onEvent('room:invite', async ({ code, email }) => {
-      const now = Date.now();
-      if (now - userCooldown.lastInviteTime < 10000) {
+    onEvent('room:invite', async (raw = {}) => {
+      if (!(await acquireUserCooldown(socket.user?.id || socket.id, 'invite', 'lastInviteTime', 10_000))) {
         socket.emit('room:inviteResult', {
           ok: false,
           message: 'Please wait before sending another invite.',
         });
         return;
       }
-      userCooldown.lastInviteTime = now;
 
+      const parsed = roomInvitePayloadSchema.safeParse(raw && typeof raw === 'object' ? raw : {});
+      if (!parsed.success) {
+        socket.emit('room:inviteResult', {
+          ok: false,
+          message: 'Invalid room code or email address.',
+        });
+        return;
+      }
+      const { code, email } = parsed.data;
       const normalizedCode = normalizeBattleCode(code);
       const normalizedEmail = String(email ?? '').trim().toLowerCase();
 
@@ -447,13 +568,22 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     });
 
     // ── Rematch ──────────────────────────────────────────
-    onEvent('battle:rematch', async ({ rematchToken, playerName }) => {
+    onEvent('battle:rematch', async (raw = {}) => {
       try {
         if (!canCreateBattle(socket.user.id)) {
           socket.emit('battle:rematchResult', { ok: false, message: 'New battles are temporarily unavailable.' });
           return;
         }
-        if (Date.now() - userCooldown.lastRematchTime < 10_000) {
+        const parsed = rematchPayloadSchema.safeParse(raw && typeof raw === 'object' ? raw : {});
+        if (!parsed.success) {
+          socket.emit('battle:rematchResult', {
+            ok: false,
+            message: 'Rematch request is invalid or expired.',
+          });
+          return;
+        }
+        const { rematchToken, playerName } = parsed.data;
+        if (await isUserCooldownActive(socket.user?.id || socket.id, 'rematch', 'lastRematchTime', 10_000)) {
           socket.emit('battle:rematchResult', {
             ok: false,
             message: 'Please wait before requesting another rematch.',
@@ -468,19 +598,13 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
         }
 
         const now = Date.now();
-        for (const [key, exp] of consumedRematchTokens.entries()) {
-          if (exp <= now) consumedRematchTokens.delete(key);
-        }
         const tokenKey = String(payload.jti || rematchToken);
-        if (consumedRematchTokens.has(tokenKey)) {
+        const tokenExpMs = payload.exp ? payload.exp * 1000 : now + 10 * 60 * 1000;
+        if (!(await consumeRematchTokenOnce(tokenKey, tokenExpMs))) {
           throw new Error('Rematch token already used');
         }
-        consumedRematchTokens.set(
-          tokenKey,
-          payload.exp ? payload.exp * 1000 : now + 10 * 60 * 1000
-        );
 
-        userCooldown.lastRematchTime = now;
+        await markUserCooldown(socket.user?.id || socket.id, 'rematch', 'lastRematchTime', 10_000);
 
         const safePlayerName = String(playerName || socket.user?.name || 'A player').trim();
 
@@ -530,7 +654,13 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     });
 
     // ── Join room ────────────────────────────────────────
-    onEvent('room:join', async ({ code, playerName }) => {
+    onEvent('room:join', async (raw = {}) => {
+      const parsed = roomJoinPayloadSchema.safeParse(raw && typeof raw === 'object' ? raw : {});
+      if (!parsed.success) {
+        socket.emit('room:error', { message: 'Enter a valid room code.' });
+        return;
+      }
+      const { code, playerName } = parsed.data;
       const normalizedCode = normalizeBattleCode(code);
       if (!battleCodePattern.test(normalizedCode)) {
         socket.emit('room:error', { message: 'Enter a valid room code.' });

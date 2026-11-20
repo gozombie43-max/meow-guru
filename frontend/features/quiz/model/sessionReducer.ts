@@ -132,7 +132,7 @@ export function quizSessionReducer(state: QuizSessionState, event: QuizEvent): Q
     case 'NAVIGATE': {
       if (event.count <= 0) return state;
       const currentIndex = Math.max(0, Math.min(event.index, event.count - 1));
-      if (currentIndex === state.currentIndex && state.submitError === '') return state;
+      if (currentIndex === state.currentIndex && state.submitError === '' && state.phase !== 'completed') return state;
       return { ...state, currentIndex, submitError: '', phase: state.phase === 'idle' ? 'idle' : state.submittedQuestions.has(currentIndex) ? 'answered' : 'running' };
     }
     case 'SOLUTION': return state.phase === 'idle' || state.phase === 'completed' ? state : { ...state, phase: event.open ? 'solution' : state.submittedQuestions.has(state.currentIndex) ? 'answered' : 'running' };

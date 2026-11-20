@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { examPaperSchema } from '@meow/contracts/exam-paper';
 import { getMockSlotsCollection } from '../../config/mongodb.js';
+import { hasZipImages } from './mockSlotService.js';
 import { parseQuestionExamMode } from '../questions/questionExamMode.js';
 import { validateQuestions, validateConfidentialUpload } from '../assessmentPolicy.js';
 import { mockAnswerIndex } from '../mockAnswer.js';
@@ -110,7 +111,8 @@ export async function saveAdminPaperQuestions(examSlug, slotId, examMode, input,
   }
   if (validateOnly) return { valid: true, savedQuestions: edits.length };
   const updatedAt = new Date(Math.max(Date.now(), Date.parse(slot.updatedAt || '') + 1 || 0)).toISOString();
-  const result = await getMockSlotsCollection().updateOne({ id: slotId, examSlug, updatedAt: slot.updatedAt === undefined ? { $exists: false } : slot.updatedAt }, { $set: { ...updates, updatedAt } });
+  const zipFlag = hasZipImages({ ...slot, ...updates });
+  const result = await getMockSlotsCollection().updateOne({ id: slotId, examSlug, updatedAt: slot.updatedAt === undefined ? { $exists: false } : slot.updatedAt }, { $set: { ...updates, hasZipImages: zipFlag, updatedAt } });
   if (!result.matchedCount) throw failure(409, 'This paper changed while saving. Reload the paper before saving.');
   return { success: true, updatedAt, savedQuestions: edits.length };
 }

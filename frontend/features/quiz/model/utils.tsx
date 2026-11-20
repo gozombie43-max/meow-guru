@@ -1,6 +1,7 @@
 import { quizCorrectIndex } from '@meow/contracts/quiz-grading';
 import { type Question as ApiQuestion } from '@/features/quiz/api/questions';
 import { QuizMode, Difficulty, QuizQuestionRecord, QuizQuestion } from '@/features/quiz/model/types';
+import { canonicalQuestionKey } from './constants';
 
 export const MODE_LABELS: Record<QuizMode, string> = {
   concept: "PYQ",
@@ -147,6 +148,7 @@ export function toQuizQuestion(
 }
 
 export function ensureUniqueQuestionIds(questions: QuizQuestionRecord[]): QuizQuestionRecord[] {
+  const seenCanonicalKeys = new Set<string>();
   const usedIds = new Set<string | number>();
   let _nextNumericId: number | null = null;
   const getNextNumericId = () => {
@@ -159,20 +161,37 @@ export function ensureUniqueQuestionIds(questions: QuizQuestionRecord[]): QuizQu
     return _nextNumericId++;
   };
 
-  return questions.map((question) => {
-    if (question.id !== undefined && question.id !== null && question.id !== '' && !usedIds.has(question.id)) {
-      usedIds.add(question.id);
-      return question;
+  const unique: QuizQuestionRecord[] = [];
+  for (const question of questions) {
+    if (question.sessionPlaceholder) {
+      unique.push(question);
+      continue;
     }
 
+    const canonical = canonicalQuestionKey(question);
+    if (canonical) {
+      if (seenCanonicalKeys.has(canonical)) {
+        // Drop true duplicates instead of minting synthetic IDs that render duplicate questions.
+        continue;
+      }
+      seenCanonicalKeys.add(canonical);
+    }
+
+    if (question.id !== undefined && question.id !== null && question.id !== '' && !usedIds.has(question.id)) {
+      usedIds.add(question.id);
+      unique.push(question);
+      continue;
+    }
+
+    // Only assign a fallback ID when a distinct question genuinely lacks a usable ID.
     let fallbackId: string | number = getNextNumericId();
     while (usedIds.has(fallbackId)) {
       fallbackId = getNextNumericId();
     }
-    
     usedIds.add(fallbackId);
-    return { ...question, id: fallbackId };
-  });
+    unique.push({ ...question, id: fallbackId });
+  }
+  return unique;
 }
 
 

@@ -49,11 +49,25 @@ it('bounds a stalled connection handshake and releases all coalesced callers', a
   expect(raw.connect).toHaveBeenCalledTimes(1);
 });
 
-it('falls back after a command that never receives a reply and opens the circuit', async () => {
+it('keeps the shared socket alive on a single transient timeout and destroys/opens after consecutive timeouts breach the threshold', async () => {
   raw.get.mockImplementation(() => new Promise(() => {}));
-  const read = api.redisGetJson('stalled');
+  // First two transient timeouts fall back individually without destroying the shared socket.
+  const first = api.redisGetJson('stalled-1');
   await vi.advanceTimersByTimeAsync(1000);
-  expect(await read).toBeNull();
+  expect(await first).toBeNull();
+  expect(raw.destroy).not.toHaveBeenCalled();
+  expect(api.redisCircuitHealth()).toBe('closed');
+
+  const second = api.redisGetJson('stalled-2');
+  await vi.advanceTimersByTimeAsync(1000);
+  expect(await second).toBeNull();
+  expect(raw.destroy).not.toHaveBeenCalled();
+  expect(api.redisCircuitHealth()).toBe('closed');
+
+  // Third consecutive timeout breaches the threshold -> destroys stalled socket & opens circuit.
+  const third = api.redisGetJson('stalled-3');
+  await vi.advanceTimersByTimeAsync(1000);
+  expect(await third).toBeNull();
   expect(raw.destroy).toHaveBeenCalled();
   expect(api.redisCircuitHealth()).toBe('open');
   expect(await api.getRedisClient()).toBeNull();
@@ -98,16 +112,54 @@ it('keeps the access-code HTTP route available when the shared limiter waits for
     const response = await fetch(`http://127.0.0.1:${server.address().port}/api/access-code/check`, { signal: AbortSignal.timeout(4000) });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ valid: false });
-    expect(raw.eval).toHaveBeenCalledTimes(1);
-    expect(api.redisCircuitHealth()).toBe('open');
+    expect(raw.eval).toHaveBeenCalledTimes(2);
     const verification = await fetch(`http://127.0.0.1:${server.address().port}/api/access-code/verify`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}), signal: AbortSignal.timeout(2000),
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}), signal: AbortSignal.timeout(3000),
     });
     expect(verification.status).toBe(400);
     await verification.json();
+    // Third consecutive timeout trips the isolated rate-limit circuit; the auth limiter on the same request bypasses Redis immediately,
+    // while the shared cache circuit stays closed and unaffected.
+    expect(raw.eval).toHaveBeenCalledTimes(3);
+    expect(api.rateLimitRedisCircuitHealth()).toBe('open');
+    expect(api.redisCircuitHealth()).toBe('closed');
   } finally {
     await new Promise(resolve => { server.close(resolve); server.closeAllConnections(); });
   }
+});
+
+it('raises commandsQueueMaxLength to 2048 by default, isolates the rate-limit client, and reports non-blocking cache stats', async () => {
+  const rateRaw = {
+    isReady: true, isOpen: true, on: vi.fn(), connect: vi.fn(async () => {}), ping: vi.fn(async () => 'PONG'),
+    eval: vi.fn(async () => [1, 8000, Date.now() + 8000]), info: vi.fn(async () => 'used_memory:1024\r\nmaxmemory_policy:allkeys-lru\r\nkeyspace_hits:90\r\nkeyspace_misses:10'),
+    destroy: vi.fn(() => { rateRaw.isOpen = false; }),
+  };
+  mock.createClient.mockReturnValueOnce(raw).mockReturnValueOnce(rateRaw);
+  const cacheClient = await api.getRedisClient();
+  const rateClient = await api.getRateLimitRedisClient();
+  expect(cacheClient).not.toBeNull();
+  expect(rateClient).not.toBeNull();
+  expect(mock.createClient).toHaveBeenCalledTimes(2);
+  expect(mock.createClient.mock.calls[0][0].commandsQueueMaxLength).toBe(2048);
+  expect(mock.createClient.mock.calls[1][0].commandsQueueMaxLength).toBe(2048);
+
+  // Tripping the rate-limit circuit must NOT open or degrade the cache-read client.
+  rateRaw.eval.mockRejectedValue(new Error('rate-limit burst failure'));
+  for (let i = 0; i < 5; i++) {
+    await expect(rateClient.eval('return 1', { keys: ['k'], arguments: [] })).rejects.toThrow();
+  }
+  expect(api.rateLimitRedisCircuitHealth()).toBe('open');
+  expect(api.redisCircuitHealth()).toBe('closed');
+  expect(api.redisHealth()).toBe('healthy');
+
+  const stats = api.getRedisCacheStats();
+  expect(stats).toMatchObject({
+    configured: true,
+    commandsQueueMaxLength: 2048,
+    recommendedEvictionPolicy: 'allkeys-lru',
+    cache: { health: 'healthy', circuit: 'closed' },
+    rateLimit: { health: 'degraded', circuit: 'open' },
+  });
 });
 
 it('bounds JSON values and skips oversized reads and writes without breaking callers', async () => {
@@ -136,4 +188,21 @@ it('keeps explicit namespace identity stable across equivalent Mongo URI forms',
   vi.stubEnv('MONGODB_URI', 'mongodb://host/a'); const key = api.redisKey('scope');
   vi.stubEnv('MONGODB_URI', 'mongodb://host/a?retryWrites=true');
   expect(api.redisKey('scope')).toBe(key);
+});
+
+it('falls back to defaults (not min bounds) when numeric Redis env vars are empty or whitespace', async () => {
+  vi.stubEnv('REDIS_COMMANDS_QUEUE_MAX', '');
+  vi.stubEnv('REDIS_COMMAND_TIMEOUT_MS', '   ');
+  vi.stubEnv('REDIS_CONSECUTIVE_TIMEOUT_THRESHOLD', '');
+
+  await api.getRedisClient();
+  expect(mock.createClient).toHaveBeenCalledWith(expect.objectContaining({
+    commandsQueueMaxLength: 2048,
+    commandOptions: { timeout: 1000 },
+  }));
+  expect(api.getRedisCacheStats()).toMatchObject({
+    commandsQueueMaxLength: 2048,
+    commandTimeoutMs: 1000,
+    consecutiveTimeoutThreshold: 3,
+  });
 });

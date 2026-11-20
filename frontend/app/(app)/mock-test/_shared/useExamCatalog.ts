@@ -26,7 +26,7 @@ export function useExamCatalog(exam: string, tab: string, tier: string, loadingO
   const pages = useSWRInfinite((index, previous) => {
     if (!hydrated || loadingOnly || !metadata || tab === 'overview' || (previous && previous.nextOffset === null)) return null;
     return index === 0 ? firstKey : firstKey.replace(/offset=0$/, `offset=${previous.nextOffset}`);
-  }, fetchCatalog, { ...options, revalidateFirstPage: true, persistSize: false });
+  }, fetchCatalog, { ...options, revalidateFirstPage: false, persistSize: false });
   const refreshMetadata = metadataRequest.mutate;
   const refreshPages = pages.mutate;
   useEffect(() => {

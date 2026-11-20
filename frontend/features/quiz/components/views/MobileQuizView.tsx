@@ -280,7 +280,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
                     {String.fromCharCode(65 + index)}
                   </span>
                   <span className="ios-series-option-value">
-                    <RichContent text={toPlainOption(option)} />
+                    <RichContent text={toPlainOption(option)} as="span" />
                   </span>
                   <span className="ios-series-option-status">
                     {(isCorrect || isWrong) ? (

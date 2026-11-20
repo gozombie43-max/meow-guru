@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { notifyRecentQuizUpdated } from "@/lib/recent-study";
 import type { createResumeSaver } from '../model/resumeDelta';
 import type { SessionResult, Difficulty, QuizQuestion } from "@/features/quiz/model/types";
 
@@ -54,11 +53,20 @@ export function useQuizSync({
 }): void {
   const localFlush = useRef<(() => void) | null>(null);
   const serverFlush = useRef<(() => void) | null>(null);
+  const questionsRef = useRef(questions);
+  useEffect(() => {
+    questionsRef.current = questions;
+  }, [questions]);
+
+  const hasQuestions = questions.length > 0;
+  const currentAnchor = questions[currentIndex]?.sessionAnchor;
+
   useEffect(() => () => { localFlush.current?.(); serverFlush.current?.(); }, []);
+
   useEffect(() => {
     serverFlush.current = null;
     if (!token || !started || showAnalytics) return;
-    if (questions.length === 0) return;
+    if (!hasQuestions) return;
     if (resumeRequested && !resumeAppliedRef.current) return;
 
     const submittedList = Array.from(submittedQuestions);
@@ -70,15 +78,14 @@ export function useQuizSync({
       href: quizHref,
       mode,
       currentIndex,
-      questionAnchor: questions[currentIndex]?.sessionAnchor,
+      questionAnchor: currentAnchor ?? questionsRef.current[currentIndex]?.sessionAnchor,
       sessionFilters,
-      totalQuestions: questions.length,
+      totalQuestions: questionsRef.current.length,
       selectedAnswers,
       submittedQuestions: submittedList,
       results,
       status: "in-progress" as const,
     };
-    notifyRecentQuizUpdated?.(snapshotPayload);
     const save = () => {
       saver.save(snapshotPayload).catch(() => {});
     };
@@ -91,8 +98,9 @@ export function useQuizSync({
     return () => { window.clearTimeout(saveTimeout); document.removeEventListener('visibilitychange', hidden); window.removeEventListener('pagehide', save); };
   }, [
     currentIndex,
+    currentAnchor,
+    hasQuestions,
     mode,
-    questions.length,
     quizHref,
     quizKey,
     resumeRequested,
@@ -107,13 +115,12 @@ export function useQuizSync({
     showAnalytics,
     subjectId,
     saver,
-    questions,
     sessionFilters,
   ]);
 
   useEffect(() => {
     if (!token || !showAnalytics) return;
-    if (questions.length === 0) return;
+    if (!hasQuestions) return;
 
     const submittedList = Array.from(submittedQuestions);
     const save = () => saver.save({
@@ -124,9 +131,9 @@ export function useQuizSync({
       href: quizHref,
       mode,
       currentIndex,
-      questionAnchor: questions[currentIndex]?.sessionAnchor,
+      questionAnchor: currentAnchor ?? questionsRef.current[currentIndex]?.sessionAnchor,
       sessionFilters,
-      totalQuestions: questions.length,
+      totalQuestions: questionsRef.current.length,
       selectedAnswers,
       submittedQuestions: submittedList,
       results,
@@ -136,8 +143,9 @@ export function useQuizSync({
     void save();
   }, [
     currentIndex,
+    currentAnchor,
+    hasQuestions,
     mode,
-    questions.length,
     quizHref,
     quizKey,
     results,
@@ -149,13 +157,12 @@ export function useQuizSync({
     showAnalytics,
     subjectId,
     saver,
-    questions,
     sessionFilters,
   ]);
 
   useEffect(() => {
     localFlush.current = null;
-    if (typeof window === "undefined" || !started || questions.length === 0)
+    if (typeof window === "undefined" || !started || !hasQuestions)
       return;
     if (submittedQuestions.size === 0) return;
 
@@ -165,7 +172,7 @@ export function useQuizSync({
       results,
       currentIndex,
       mode,
-      questionAnchor: questions[currentIndex]?.sessionAnchor,
+      questionAnchor: currentAnchor ?? questionsRef.current[currentIndex]?.sessionAnchor,
       conceptFilter,
       examFilter,
       selectedClassificationConcepts: Array.from(
@@ -184,7 +191,8 @@ export function useQuizSync({
     return () => { clearTimeout(timer); document.removeEventListener('visibilitychange', hidden); window.removeEventListener('pagehide', persist); };
   }, [
     started,
-    questions.length,
+    hasQuestions,
+    currentAnchor,
     selectedAnswers,
     submittedQuestions,
     results,
@@ -195,6 +203,5 @@ export function useQuizSync({
     selectedClassificationConcepts,
     difficulty,
     storageKey,
-    questions,
   ]);
 }

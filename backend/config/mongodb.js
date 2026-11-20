@@ -5,8 +5,24 @@ import { observeMongo } from '../infrastructure/logger.js';
 import { mongoPoolWaiting, dependencyLatency } from '../infrastructure/metrics.js';
 import { attachMongoOperationMetrics } from '../infrastructure/mongoOperationMetrics.js';
 
+const DEFAULT_MAX_POOL_SIZE = 50;
+const DEFAULT_MIN_POOL_SIZE = 5;
+
+function parseBoundedInt(raw, fallback, min, max) {
+  const parsed = Number.parseInt(String(raw ?? ''), 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
+export function getConfiguredPoolSizes(env = process.env) {
+  const maxPoolSize = parseBoundedInt(env.MONGO_MAX_POOL_SIZE, DEFAULT_MAX_POOL_SIZE, 1, 500);
+  const minPoolSize = parseBoundedInt(env.MONGO_MIN_POOL_SIZE, DEFAULT_MIN_POOL_SIZE, 0, maxPoolSize);
+  return { maxPoolSize, minPoolSize };
+}
+
 let poolWaiting = 0;
-export function mongoPoolHealth() { return { waiting: poolWaiting, capacity: 30 }; }
+let configuredMaxPoolSize = getConfiguredPoolSizes().maxPoolSize;
+export function mongoPoolHealth() { return { waiting: poolWaiting, capacity: configuredMaxPoolSize }; }
 
 const dnsServers = process.env.MONGODB_DNS_SERVERS;
 
@@ -39,13 +55,29 @@ async function openMongoDB() {
     throw new Error("MONGODB_URI is not configured");
   }
 
+  const { maxPoolSize, minPoolSize } = getConfiguredPoolSizes();
+  configuredMaxPoolSize = maxPoolSize;
+
   const connectingClient = new MongoClient(uri, {
     serverSelectionTimeoutMS: 5000, connectTimeoutMS: 10000,
-    maxPoolSize: 30, minPoolSize: 0, maxIdleTimeMS: 60000, waitQueueTimeoutMS: 5000,
+    maxPoolSize, minPoolSize, maxIdleTimeMS: 60000, waitQueueTimeoutMS: 5000,
     monitorCommands: true,
   });
-  connectingClient.on('commandSucceeded', event => observeMongo(event));
-  connectingClient.on('commandFailed', event => observeMongo(event, true));
+  const commandCollections = new Map();
+  connectingClient.on('commandStarted', event => {
+    const raw = event.commandName === 'getMore' ? event.command?.collection : event.command?.[event.commandName];
+    if (typeof raw === 'string' && raw) {
+      if (commandCollections.size > 4096) commandCollections.clear();
+      commandCollections.set(event.requestId, raw);
+    }
+  });
+  const finishCommand = (event, failed) => {
+    const collection = commandCollections.get(event.requestId);
+    commandCollections.delete(event.requestId);
+    observeMongo(event, failed, collection ? { collection } : undefined);
+  };
+  connectingClient.on('commandSucceeded', event => finishCommand(event, false));
+  connectingClient.on('commandFailed', event => finishCommand(event, true));
   attachMongoOperationMetrics(connectingClient);
   connectingClient.on('connectionCheckOutStarted', () => { poolWaiting++; mongoPoolWaiting.set(poolWaiting); });
   const checkoutFinished = event => {

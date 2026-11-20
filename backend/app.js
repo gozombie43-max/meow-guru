@@ -2,8 +2,8 @@ import { isTrustedOrigin } from './auth/requestOrigin.js';
 import { requestLogging } from './infrastructure/logger.js';
 import { requestTrace } from './infrastructure/tracing.js';
 import { optionalWorkAdmission } from './middleware/overload.js';
-import { metricsHandler } from './infrastructure/metrics.js';
-import { redisHealth, redisCircuitHealth } from './config/redis.js';
+import { metricsHandler, getCacheHitSummary } from './infrastructure/metrics.js';
+import { redisHealth, redisCircuitHealth, getRedisCacheStats } from './config/redis.js';
 import { cacheInvalidationHealth } from './infrastructure/cacheInvalidation.js';
 import { maintenanceQueueHealth } from './infrastructure/maintenanceQueue.js';
 import { optionalServiceHealth, optionalServiceReady } from './infrastructure/optionalServices.js';
@@ -38,6 +38,7 @@ import { initAuthRoutes } from './routes/auth.routes.js';
 import { initUserRoutes } from './routes/user.routes.js';
 
 import questionRoutes from './routes/questionRoutes.js';
+import quizSessionV1Routes from './routes/v1/quizSessionRoutes.js';
 import mocktestRoutes from './routes/mocktest.js';
 import accessCodeRoutes from './routes/accessCodes.js';
 import progressRoutes from './routes/progress.routes.js';
@@ -128,6 +129,8 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
         ? process.env.DEPLOYMENT_ENVIRONMENT
         : 'unknown',
       mode: quizOnlyMode ? 'quiz-only' : 'full',
+      redisCacheStats: getRedisCacheStats(),
+      cacheHitSummary: getCacheHitSummary(),
       uptimeSeconds: Math.round(process.uptime()),
       timestamp: new Date().toISOString(),
     });
@@ -153,6 +156,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   );
 
   app.use('/api/questions', questionRoutes);
+  app.use('/api/v1/quiz', quizSessionV1Routes);
   app.use('/api/mocktest', mocktestRoutes);
   app.use('/api/progress', progressRoutes);
   app.use('/api/upload', uploadLimiter, lazyRouter(() => import('./routes/imageUpload.js')));

@@ -1,3 +1,5 @@
+import { DEFAULT_QUIZ_BATCH_SIZE } from '@/features/quiz/model/constants';
+
 type EarlySession = {
   base: string;
   expiresAt: number;
@@ -31,7 +33,7 @@ declare global {
 }
 
 // Keep this function self-contained: its source runs before framework hydration.
-function startEarlySession(base: string) {
+function startEarlySession(base: string, quizBatchSize: number) {
   const browser = window;
   if (browser.__MEOW_SESSION_BOOTSTRAP__ || !browser.fetch || !browser.AbortController) return;
   const controller = new browser.AbortController();
@@ -116,7 +118,7 @@ function startEarlySession(base: string) {
       q.set('subject', subject);
       q.set('topic', topic);
       q.set('mode', mode);
-      q.set('limit', '100');
+      q.set('limit', String(quizBatchSize));
       q.set('includeTotal', 'false');
       const sUrl = `${base}/api/questions/session?${q.toString()}`;
       preloadJson(`public:GET:${sUrl}`, sUrl, { credentials: 'omit' }, null);
@@ -218,7 +220,7 @@ function startEarlySession(base: string) {
           q.set('mode', mode);
           if (entry?.questionAnchor) q.set('anchor', entry.questionAnchor);
           if (entry?.currentIndex !== undefined) q.set('resumeIndex', String(entry.currentIndex));
-          q.set('limit', '100');
+          q.set('limit', String(quizBatchSize));
           q.set('includeTotal', 'false');
           const sUrl = `${base}/api/questions/session?${q.toString()}`;
           preloadJson(`public:GET:${sUrl}`, sUrl, { credentials: 'omit' }, null);
@@ -231,7 +233,7 @@ function startEarlySession(base: string) {
 }
 
 export function earlySessionScript(base: string) {
-  return `(${startEarlySession.toString()})(${JSON.stringify(base).replace(/</g, '\\u003c')});`;
+  return `(${startEarlySession.toString()})(${JSON.stringify(base).replace(/</g, '\\u003c')},${JSON.stringify(DEFAULT_QUIZ_BATCH_SIZE)});`;
 }
 
 function pendingSession(base: string) {

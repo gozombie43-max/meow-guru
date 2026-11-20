@@ -62,13 +62,13 @@ describe("quiz cursor pages", () => {
     expect(result.current.questions.map(q => q.id)).toEqual(['a', 'b']);
     expect(result.current.totalCount).toBe(100);
   });
-  it("requests 50 and appends one cursor page even with concurrent triggers", async () => {
+  it("requests 25 and appends one cursor page even with concurrent triggers", async () => {
     fetchMock
       .mockResolvedValueOnce(page("1", "cursor-1"))
       .mockResolvedValueOnce(page("2", null));
     const { result } = setup();
     await waitFor(() => expect(result.current.questions).toHaveLength(1));
-    expect(fetchMock.mock.calls[0][0]).toContain("limit=50");
+    expect(fetchMock.mock.calls[0][0]).toContain("limit=25");
     await act(async () => {
       await Promise.all([
         result.current.fetchMore(),

@@ -7,6 +7,7 @@ export { analyzeAnswers,exportQuestions,fetchAllQueryResults,fetchImageQuestions
 export { fetchQuestionsSession, fetchQuestionsRevealWindow } from './questions/questionSessionService.js';
 export { checkDuplicates,createQuestion,createQuestionsBulk,modifyQuestion,removeQuestion,removeQuestionsBulk } from './questions/questionWriteService.js';
 
+import { quizCorrectIndex } from '@meow/contracts/questions';
 import { findAnsweredQuestion, recordQuestionAnswer } from '../repositories/questionProgressRepository.js';
 import { invalidateTopicProgress } from './questions/topicProgressCache.js';
 
@@ -20,13 +21,16 @@ export const processUserAnswer = async (userId, questionId, providedAnswer, subm
     throw error;
   }
   
-  // Check against string correct answer or array correct index
-  let isCorrect = false;
-  if (typeof question.correctAnswer === 'string') {
-    isCorrect = providedAnswer === question.options.indexOf(question.correctAnswer);
-  } else if (typeof question.correctAnswer === 'number') {
-    isCorrect = providedAnswer === question.correctAnswer;
-  }
+  // Grade consistently via quizCorrectIndex (supports MCQ text/letter/index and image_mcq).
+  const imageKeys = Object.keys(question.optionRegions || {});
+  const options =
+    Array.isArray(question.options) && question.options.length
+      ? question.options.map(String)
+      : question.questionType === 'image_mcq'
+        ? (imageKeys.length ? imageKeys : ['a', 'b', 'c', 'd']).sort().map((key) => key.toUpperCase())
+        : [];
+  const correctIdx = quizCorrectIndex(question, options);
+  const isCorrect = correctIdx !== null && Number(providedAnswer) === correctIdx;
   
   const topic = question.topic || question.chapter || question.subject || 'unknown';
   

@@ -71,7 +71,7 @@ it.each([null, 'restored-attempt'])('loads the attempt when the first token and 
     expect(getAttempt).toHaveBeenCalledExactlyOnceWith(resume, 'restored-token', expect.any(AbortSignal));
     expect(startTest).not.toHaveBeenCalled();
   } else {
-    expect(startTest).toHaveBeenCalledExactlyOnceWith('ssc-cgl', 'test', 'restored-token', expect.any(String));
+    expect(startTest).toHaveBeenCalledExactlyOnceWith('ssc-cgl', 'test', 'restored-token', expect.any(String), false, expect.any(AbortSignal));
     expect(getAttempt).not.toHaveBeenCalled();
   }
 });

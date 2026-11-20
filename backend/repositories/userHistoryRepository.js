@@ -2,7 +2,8 @@ import { getMongoDB, withMongoTransaction } from '../config/mongodb.js';
 import { mergeQuizEntry } from '../services/userHistory.js';
 
 const names = { recentQuizzes: 'userQuizHistory', aiChats: 'aiConversations', bookmarkEntries: 'userBookmarks' };
-const keyFor = (field, row) => field === 'aiChats' ? row.id : (field === 'bookmarkEntries' ? row.questionId : row.quizKey);
+const keyFieldFor = field => field === 'aiChats' ? 'id' : (field === 'bookmarkEntries' ? 'questionId' : 'quizKey');
+const keyFor = (field, row) => row?.[keyFieldFor(field)];
 const limits = { recentQuizzes: 12, aiChats: 30, bookmarkEntries: 60 };
 export const analyticsFields = ['failureMap', 'masteryMap', 'timePerQuestion'];
 
@@ -36,7 +37,7 @@ export async function readSeparatedHistory(db, userId, field, session, { summari
 async function storeEntry(db, userId, field, entry, session) {
   const key = keyFor(field, entry);
   if (typeof key !== 'string' || !key) throw Object.assign(new Error('History identity is required'), { statusCode: 400 });
-  const filter = { userId: String(userId), [field === 'aiChats' ? 'id' : 'quizKey']: key };
+  const filter = { userId: String(userId), [keyFieldFor(field)]: key };
   const { messages, ...metadata } = entry;
   await db.collection(names[field]).replaceOne(filter, { ...metadata, userId: String(userId), ...(field === 'aiChats' ? { messageCount: (messages || []).length, messagePositionVersion: 0 } : {}) }, { session, upsert: true });
   if (field === 'aiChats') {
@@ -55,7 +56,7 @@ export async function mutateSeparatedHistory(userId, field, mutate) {
     const beforeById = new Map(before.map(row => [keyFor(field, row), row]));
     for (const entry of next) if (JSON.stringify(entry) !== JSON.stringify(beforeById.get(keyFor(field, entry)))) await storeEntry(db, userId, field, entry, session);
     const retained = next.map(row => keyFor(field, row));
-    await db.collection(names[field]).deleteMany({ userId: String(userId), [field === 'aiChats' ? 'id' : 'quizKey']: { $nin: retained } }, { session });
+    await db.collection(names[field]).deleteMany({ userId: String(userId), [keyFieldFor(field)]: { $nin: retained } }, { session });
     if (field === 'aiChats') await db.collection('aiMessages').deleteMany({ userId: String(userId), conversationId: { $nin: retained } }, { session });
     // The small revision update fences concurrent saves and account deletion.
     await db.collection('users').updateOne({ _id: user._id, historyStorageVersion: 1 }, { $inc: { [`${field}Revision`]: 1 } }, { session });

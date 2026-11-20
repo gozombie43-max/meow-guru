@@ -1,5 +1,6 @@
 import { beforeAll, afterAll, beforeEach, expect, it, vi } from 'vitest';
 import express from 'express';
+import sharp from 'sharp';
 
 const { putObject, deleteObject, createQuestion, exportQuestions } = vi.hoisted(() => ({ putObject: vi.fn(), deleteObject: vi.fn(), createQuestion: vi.fn(), exportQuestions: vi.fn() }));
 vi.mock('../../infrastructure/objectStorage.js', () => ({ putObject, deleteObject, stableImageUrl: key => `/api/upload/image/${Buffer.from(key).toString('base64url')}` }));
@@ -7,8 +8,9 @@ vi.mock('../../services/questionService.js', () => ({ createQuestion, exportQues
 vi.mock('../../middleware/auth.js', () => ({ default: (_req, _res, next) => next() }));
 import router from '../questionRoutes.js';
 
-let server, base;
+let server, base, validPng;
 beforeAll(async () => {
+  validPng = await sharp({ create: { width: 4, height: 4, channels: 3, background: '#0071e3' } }).png().toBuffer();
   const app = express();
   app.use('/api/questions', router);
   server = app.listen(0, '127.0.0.1');
@@ -24,11 +26,11 @@ function form(valid = true) {
   body.set('optionAText', 'First'); body.set('optionBText', 'Second');
   body.set('optionCText', 'Third'); body.set('optionDText', 'Fourth');
   body.set('correctIndex', '0');
-  body.set('questionImage', new Blob(['question'], { type: 'image/png' }), 'q.png');
-  body.set('optionAImage', new Blob(['option'], { type: 'image/png' }), 'a.png');
+  body.set('questionImage', new Blob([validPng], { type: 'image/png' }), 'q.png');
+  body.set('optionAImage', new Blob([validPng], { type: 'image/png' }), 'a.png');
   return body;
 }
-it('stores question and option image references using the shared resolver', async () => {
+it('stores question and option image references as servable .webp keys using the shared resolver', async () => {
   const response = await fetch(base, { method: 'POST', body: form() });
   expect(response.status).toBe(201);
   const saved = createQuestion.mock.calls[0][0];
@@ -37,7 +39,17 @@ it('stores question and option image references using the shared resolver', asyn
   expect(saved.correctAnswer).toBe(saved.options[0]);
   expect(JSON.stringify(saved)).not.toContain('/uploads/');
   expect(putObject).toHaveBeenCalledTimes(2);
+  expect(putObject.mock.calls[0][0]).toMatch(/^question-images\/uploads\/.+\.webp$/);
+  expect(putObject.mock.calls[0][2]).toBe('image/webp');
   expect(deleteObject).not.toHaveBeenCalled();
+});
+it('rejects disguised non-image payloads with 400 before uploading', async () => {
+  const body = form();
+  body.set('questionImage', new Blob(['<svg onload=alert(1)></svg>'], { type: 'image/png' }), 'evil.png');
+  const response = await fetch(base, { method: 'POST', body });
+  expect(response.status).toBe(400);
+  expect(putObject).not.toHaveBeenCalled();
+  expect(createQuestion).not.toHaveBeenCalled();
 });
 it('cleans uploaded objects when question validation rejects the request', async () => {
   const response = await fetch(base, { method: 'POST', body: form(false) });

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import api from "@/shared/api/client";
 import { useAuth } from "@/context/AuthContext";
+import { fetchCatalog, type CatalogPage } from "@/app/(app)/mock-test/_shared/catalog-cache";
+import type { MockTestSlot } from "@/app/(app)/mock-test/_shared/exam-config";
 
 type Paper = {
   id: string;
@@ -25,42 +27,74 @@ type Attempt = {
 export default function TrainingMockCatalog({ exam }: { exam: string }) {
   const { loading: authLoading, token } = useAuth();
   const ready = !authLoading && Boolean(token);
-  const [papers, setPapers] = useState<Paper[]>([]),
-    [attempts, setAttempts] = useState<Attempt[]>([]),
-    [year, setYear] = useState(""),
-    [shift, setShift] = useState(""),
-    [loading, setLoading] = useState(true),
-    [error, setError] = useState("");
+  const [loaded, setLoaded] = useState<{
+    exam: string;
+    papers: Paper[];
+    attempts: Attempt[];
+    error: string;
+  } | null>(null);
+  const [filters, setFilters] = useState<{ exam: string; year: string; shift: string }>({
+    exam,
+    year: "",
+    shift: "",
+  });
   useEffect(() => {
     if (!ready) return;
+    const controller = new AbortController();
     let live = true;
+    const slotsKey = `/api/mocktest/${encodeURIComponent(exam)}/slots`;
     Promise.all([
-      api.get(`/api/mocktest/${exam}/slots`),
-      api.get(`/api/mocktest/${exam}/history`),
+      // Do not attach component-local AbortSignal to globally deduplicated fetchCatalog
+      // so StrictMode remounts or concurrent mounts never abort a shared in-flight request.
+      fetchCatalog(slotsKey, async (): Promise<CatalogPage> => {
+        const res = await api.get(slotsKey);
+        const slots = (res.data?.slots || []) as MockTestSlot[];
+        return {
+          slots,
+          metadata: res.data?.metadata ?? { mockCount: 0, pyqCount: 0, tiers: [] },
+          total: res.data?.total ?? slots.length,
+          nextOffset: null,
+        };
+      }),
+      api.get(`/api/mocktest/${encodeURIComponent(exam)}/history`, { signal: controller.signal }),
     ])
       .then(([catalog, history]) => {
         if (live) {
-          setPapers(
-            (catalog.data.slots || []).filter(
-              (p: Paper) => p.hasFixedPaper && (p.isPyq || p.type === "pyq"),
+          setLoaded({
+            exam,
+            papers: ((catalog.slots || []) as unknown as Paper[]).filter(
+              (p: Paper) => p.hasFixedPaper && (p.isPyq || p.type?.toLowerCase() === "pyq"),
             ),
-          );
-          setAttempts(history.data.attempts || []);
+            attempts: history.data.attempts || [],
+            error: "",
+          });
         }
       })
       .catch(() => {
-        if (live)
-          setError(
-            "Could not load previous papers. Try the full mock catalog below.",
-          );
-      })
-      .finally(() => {
-        if (live) setLoading(false);
+        if (live && !controller.signal.aborted) {
+          setLoaded({
+            exam,
+            papers: [],
+            attempts: [],
+            error:
+              "Could not load previous papers. Try the full mock catalog below.",
+          });
+        }
       });
     return () => {
       live = false;
+      controller.abort();
     };
   }, [exam, ready]);
+  const loading = authLoading || (ready && loaded?.exam !== exam);
+  const papers = ready && loaded?.exam === exam ? loaded.papers : [];
+  const attempts = ready && loaded?.exam === exam ? loaded.attempts : [];
+  const error = ready && loaded?.exam === exam ? loaded.error : "";
+  const year = filters.exam === exam ? filters.year : "";
+  const shift = filters.exam === exam ? filters.shift : "";
+  const setYear = (nextYear: string) => setFilters({ exam, year: nextYear, shift: "" });
+  const setShift = (nextShift: string) =>
+    setFilters((prev) => ({ exam, year: prev.exam === exam ? prev.year : "", shift: nextShift }));
   const filtered = papers.filter(
     (p) => (!year || String(p.year) === year) && (!shift || p.shift === shift),
   );

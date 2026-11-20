@@ -4,6 +4,9 @@
  * @returns {number | null}
  */
 export function quizCorrectIndex(question, options) {
+  if (typeof question.correctAnswer === 'number' && Number.isInteger(question.correctAnswer)) {
+    if (question.correctAnswer >= 0 && question.correctAnswer < options.length) return question.correctAnswer;
+  }
   const letter = String(question.correctLetter ?? '').trim().toLowerCase();
   if (letter) {
     const index = letter.charCodeAt(0) - 97;
@@ -11,12 +14,13 @@ export function quizCorrectIndex(question, options) {
   }
   const text = String(question.correctAnswer ?? '').trim();
   if (!text) return null;
+  // Check exact option text match before single-letter/numeric fallback so single-letter options (e.g. ["B","C","A","D"]) grade accurately.
+  const exact = options.findIndex(option => String(option).trim() === text);
+  if (exact >= 0) return exact;
   if (/^[a-z]$/i.test(text)) {
     const index = text.toLowerCase().charCodeAt(0) - 97;
     if (index >= 0 && index < options.length) return index;
   }
-  const exact = options.findIndex(option => String(option).trim() === text);
-  if (exact >= 0) return exact;
   const numeric = Number(text);
   if (Number.isInteger(numeric)) {
     if (numeric >= 0 && numeric < options.length) return numeric;

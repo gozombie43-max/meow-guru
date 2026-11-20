@@ -262,8 +262,8 @@ describe('P0-D Global Shell Chrome', () => {
 
       const examLandingTsx = readFrontend('app/(app)/mock-test/_shared/ExamLandingPage.tsx');
       expect(examLandingTsx).toContain('locked ? styles.actionOutline : styles.actionStart');
-      expect(examLandingTsx).not.toContain('Resume Mock');
-      expect(examLandingTsx).not.toContain('In progress');
+      expect(examLandingTsx).toContain('Resume Mock');
+      expect(examLandingTsx).toContain('In progress');
     });
   });
 });

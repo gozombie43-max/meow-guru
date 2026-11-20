@@ -492,7 +492,7 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
                             {String.fromCharCode(65 + index)}
                           </span>
                           <span className="mac-series-option-value">
-                            <RichContent text={option} />
+                            <RichContent text={option} as="span" />
                           </span>
                           {(isUserAnswer || isCorrect || isWrong) && (
                             <span className="mac-series-option-status">
