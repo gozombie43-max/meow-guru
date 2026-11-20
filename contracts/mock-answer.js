@@ -18,20 +18,22 @@ export function mockAnswerIndex(answer, options, selected = false) {
 export const isUnanswered = answer => answer == null || answer === '' || (Array.isArray(answer) && answer.length === 0);
 export function mockAnswerCorrect(question, selected, key) {
   if (isUnanswered(selected) || key == null) return false;
-  if (question.questionType === 'NAT') {
+  const questionType = String(question?.questionType || 'MCQ').toUpperCase();
+  if (questionType === 'NAT') {
     if (!['number', 'string'].includes(typeof selected) || String(selected).trim() === '') return false;
     const number = Number(selected);
     if (!Number.isFinite(number)) return false;
     if (typeof key === 'object' && !Array.isArray(key)) return Number.isFinite(key.min) && Number.isFinite(key.max) && number >= key.min && number <= key.max;
-    return Number.isFinite(Number(key)) && number === Number(key);
+    const expected = Number(key);
+    return Number.isFinite(expected) && Math.abs(number - expected) <= 1e-6;
   }
-  if (question.questionType === 'MSQ') {
+  if (questionType === 'MSQ') {
     if (!Array.isArray(selected) || !Array.isArray(key) || !key.length) return false;
     const wanted = key.map(value => mockAnswerIndex(value, question.options));
     const actual = selected.map(value => mockAnswerIndex(value, question.options, true));
     return !wanted.includes(null) && !actual.includes(null) && new Set(actual).size === actual.length && actual.length === new Set(wanted).size && actual.every(value => wanted.includes(value));
   }
-  return Array.isArray(question.options) && question.options.length
+  return Array.isArray(question?.options) && question.options.length
     ? mockAnswerIndex(key, question.options) !== null && mockAnswerIndex(selected, question.options, true) === mockAnswerIndex(key, question.options)
     : String(selected) === String(key);
 }

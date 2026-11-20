@@ -51,18 +51,18 @@ function useIncrementalCount(total: number, resetKey: string, rootRef: RefObject
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [hasMore, total, count, rootRef]);
+  }, [hasMore, total, rootRef]);
 
   return { visible: hasObserver ? Math.min(count, total) : total, hasMore, sentinelRef };
 }
 
 export function SubjectHubMobile({ view }: { view: SubjectHubView }) {
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const {
     config,
     CATEGORIES,
     router,
+    searchInputRef,
     searchQuery,
     setSearchQuery,
     mobileCategory,

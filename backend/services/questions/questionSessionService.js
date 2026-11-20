@@ -1,18 +1,31 @@
-import { cachedQuestionPage } from './questionCache.js';
+import { createHash } from 'node:crypto';
+import { cachedQuestionPage, isNormalizedQuestionKeysEnabled, registerQuestionCacheClearer } from './questionCache.js';
 import { canonicalQuestionQuery, parseSessionSelection } from './questionQueryIdentity.js';
-import { getQuestionsCollection } from "../../config/mongodb.js";
-import { isNormalizedQuestionKeysEnabled } from "./questionCache.js";
-import { normalizeSearchKey } from "./questionNormalizer.js";
+import { getQuestionsCollection } from '../../config/mongodb.js';
+import {
+  normalizeFilterKey,
+  normalizeSearchKey,
+  parseShiftInt,
+  parseYearInt,
+} from './questionNormalizer.js';
 import { quizQuestionProjection, toQuizQuestionDTO } from './quizQuestionDTO.js';
+import { questionExamModeCondition } from './questionExamMode.js';
+import {
+  buildGeneralAwarenessChapterCondition,
+  buildGeneralAwarenessTopicCondition,
+  resolveGeneralAwarenessTopicGroupSlug,
+} from './generalAwarenessTopics.js';
 import { quizCorrectIndex } from '@meow/contracts/questions';
+import { observeQuestionDelivery } from '../../infrastructure/metrics.js';
 import {
   buildExcludeStudyModeCondition,
   buildModeFilter,
   caseInsensitiveExact,
   combineMongoConditions,
-} from "./questionQueryBuilder.js";
+} from './questionQueryBuilder.js';
 
-const sessionInternalProjection = {
+// Used strictly inside opt-in fetchQuestionsRevealWindow — NEVER in question delivery reads.
+const revealInternalProjection = {
   ...quizQuestionProjection,
   correctAnswer: 1,
   correctLetter: 1,
@@ -24,6 +37,56 @@ const sessionInternalProjection = {
 
 const MAX_SERVER_REVEAL_CACHE = 2000;
 const serverRevealCache = new Map();
+registerQuestionCacheClearer(() => serverRevealCache.clear());
+
+const SESSION_FINGERPRINT_FIELDS = [
+  'topic',
+  'subject',
+  'chapter',
+  'mode',
+  'letter',
+  'exam',
+  'concept',
+  'year',
+  'shift',
+  'examDate',
+  'date',
+  'examMode',
+];
+
+function sessionQueryFingerprint(params) {
+  return createHash('sha256')
+    .update(JSON.stringify(SESSION_FINGERPRINT_FIELDS.map((key) => params[key] ?? '')))
+    .digest('hex')
+    .slice(0, 24);
+}
+
+function encodeSessionCursor(fingerprint, objectId) {
+  return Buffer.from(
+    JSON.stringify({ v: 1, f: fingerprint, _id: String(objectId) }),
+  ).toString('base64url');
+}
+
+function decodeSessionCursor(cursor, expectedFingerprint) {
+  if (typeof cursor !== 'string' || cursor.length === 0 || cursor.length > 2048) {
+    throw Object.assign(new Error('Invalid question cursor'), { statusCode: 400 });
+  }
+  try {
+    const parsed = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));
+    if (
+      !parsed ||
+      parsed.v !== 1 ||
+      parsed.f !== expectedFingerprint ||
+      typeof parsed._id !== 'string' ||
+      !/^[a-fA-F0-9]{24}$/.test(parsed._id)
+    ) {
+      throw new Error('Malformed cursor');
+    }
+    return parsed._id;
+  } catch {
+    throw Object.assign(new Error('Invalid question cursor'), { statusCode: 400 });
+  }
+}
 
 function buildQuestionReveal(question) {
   if (!question || typeof question !== 'object') return null;
@@ -56,55 +119,78 @@ function setBoundedReveal(key, reveal) {
   }
 }
 
+// Key strictly by canonical unique identities (_id / sessionAnchor / questionUid) — never ambiguous legacy `id`.
 function cacheServerReveal(question) {
   const reveal = buildQuestionReveal(question);
   if (!reveal) return null;
   if (question._id) setBoundedReveal(`anchor:${String(question._id)}`, reveal);
   if (question.sessionAnchor) setBoundedReveal(`anchor:${String(question.sessionAnchor)}`, reveal);
   if (question.questionUid) setBoundedReveal(`uid:${String(question.questionUid)}`, reveal);
-  if (question.id !== undefined) setBoundedReveal(`id:${String(question.id)}`, reveal);
   return reveal;
 }
 
 function lookupCachedReveal(item) {
   if (!item || typeof item !== 'object') return undefined;
   return (
-    (item.sessionAnchor && serverRevealCache.get(`anchor:${String(item.sessionAnchor)}`)) ||
-    (item.questionUid && serverRevealCache.get(`uid:${String(item.questionUid)}`)) ||
-    (item.id !== undefined && serverRevealCache.get(`id:${String(item.id)}`)) ||
-    (item.clientKey !== undefined && serverRevealCache.get(`id:${String(item.clientKey)}`))
+    (typeof item.sessionAnchor === 'string' && serverRevealCache.get(`anchor:${item.sessionAnchor}`)) ||
+    (typeof item.questionUid === 'string' && serverRevealCache.get(`uid:${item.questionUid}`))
   );
+}
+
+function applyMaxTime(cursor, ms = 5000) {
+  return typeof cursor?.maxTimeMS === 'function' ? cursor.maxTimeMS(ms) : cursor;
 }
 
 async function buildfetchQuestionsSession(params) {
   const collection = getQuestionsCollection();
-  const { topic, subject, mode, limit = 50, cursor: cursorId, letter, exam, concept } = params;
+  const {
+    topic,
+    subject,
+    chapter,
+    mode,
+    limit = 50,
+    cursor: cursorId,
+    letter,
+    exam,
+    concept,
+    year,
+    shift,
+    examDate,
+    date,
+    examMode,
+  } = params;
   const useNormalizedKeys = isNormalizedQuestionKeysEnabled();
-  const parsedLimit = Math.max(
-    1,
-    Math.min(200, Math.floor(Number(limit)) || 50),
-  );
+  const parsedLimit = Math.max(1, Math.min(200, Math.floor(Number(limit)) || 50));
+  const fingerprint = sessionQueryFingerprint(params);
+
   const conditions = [];
+  if (examMode) {
+    conditions.push(questionExamModeCondition(examMode));
+  }
+
+  const gaGroupSlug = topic ? resolveGeneralAwarenessTopicGroupSlug(topic) : null;
+  const isGaQuery = Boolean(gaGroupSlug) || normalizeSearchKey(subject) === 'generalawareness';
 
   if (topic) {
-    const normalizedTopic = normalizeSearchKey(topic);
-    const isSynonymAntonymTopic =
-      normalizedTopic === "synonymsantonyms" ||
-      normalizedTopic === "antosynopyq";
-    if (isSynonymAntonymTopic) {
-      conditions.push(useNormalizedKeys ? {
-        topicKey: { $in: ['antosynopyq', 'synonymsantonyms'] },
-      } : {
-        topic: { $in: [topic, "antosynopyq", "synonyms-antonyms"] },
-      });
+    const gaTopicCondition = gaGroupSlug ? buildGeneralAwarenessTopicCondition(gaGroupSlug, useNormalizedKeys) : null;
+    if (gaTopicCondition) {
+      conditions.push(gaTopicCondition);
     } else {
-      conditions.push(
-        useNormalizedKeys
-          ? { topicKey: normalizeSearchKey(topic) }
-          : { topic },
-      );
+      const normalizedTopic = normalizeSearchKey(topic);
+      const isSynonymAntonymTopic =
+        normalizedTopic === 'synonymsantonyms' || normalizedTopic === 'antosynopyq';
+      if (isSynonymAntonymTopic) {
+        conditions.push(
+          useNormalizedKeys
+            ? { topicKey: { $in: ['antosynopyq', 'synonymsantonyms'] } }
+            : { topic: { $in: [topic, 'antosynopyq', 'synonyms-antonyms'] } },
+        );
+      } else {
+        conditions.push(useNormalizedKeys ? { topicKey: normalizeSearchKey(topic) } : { topic });
+      }
     }
   }
+
   if (subject && (!topic || normalizeSearchKey(subject) === 'iitjamphysics')) {
     conditions.push(
       useNormalizedKeys
@@ -113,94 +199,242 @@ async function buildfetchQuestionsSession(params) {
     );
   }
 
-  if (letter) {
-    const lettersArray = letter.split(',').map(l => l.trim()).filter(Boolean);
-    if (lettersArray.length > 0) {
-      conditions.push(useNormalizedKeys ? { letter: { $in: lettersArray.map(l => l.toUpperCase()) } } : { letter: { $in: lettersArray.map(l => caseInsensitiveExact(l)) } });
+  if (chapter) {
+    const gaChapterCondition = isGaQuery ? buildGeneralAwarenessChapterCondition(chapter, useNormalizedKeys) : null;
+    if (gaChapterCondition) {
+      conditions.push(gaChapterCondition);
+    } else if (useNormalizedKeys) {
+      conditions.push({
+        $or: [
+          { chapterKey: normalizeFilterKey(chapter) },
+          { chapterKey: { $exists: false }, chapter: caseInsensitiveExact(chapter) },
+        ],
+      });
+    } else {
+      conditions.push({ chapter: caseInsensitiveExact(chapter) });
     }
   }
 
-  if (exam && exam !== "all") {
+  if (letter) {
+    const lettersArray = letter.split(',').map((l) => l.trim()).filter(Boolean);
+    if (lettersArray.length > 0) {
+      conditions.push(
+        useNormalizedKeys
+          ? { letter: { $in: lettersArray.map((l) => l.toUpperCase()) } }
+          : { letter: { $in: lettersArray.map((l) => caseInsensitiveExact(l)) } },
+      );
+    }
+  }
+
+  // Use indexed exact-match examKey / conceptKey when normalized keys are enabled,
+  // with an `$exists: false` fallback for un-backfilled fixtures.
+  if (exam && exam !== 'all') {
     const examsArray = parseSessionSelection(exam);
     if (examsArray.length > 0) {
-      conditions.push(useNormalizedKeys ? { exam: { $in: examsArray } } : { exam: { $in: examsArray.map(e => caseInsensitiveExact(e)) } });
+      conditions.push(
+        useNormalizedKeys
+          ? {
+              $or: [
+                { examKey: { $in: examsArray.map(normalizeFilterKey) } },
+                { examKey: { $exists: false }, exam: { $in: examsArray.map((e) => caseInsensitiveExact(e)) } },
+              ],
+            }
+          : { exam: { $in: examsArray.map((e) => caseInsensitiveExact(e)) } },
+      );
     }
   }
 
-  if (concept && concept !== "all") {
+  if (concept && concept !== 'all') {
     const conceptsArray = parseSessionSelection(concept);
     if (conceptsArray.length > 0) {
-      conditions.push(useNormalizedKeys ? { concept: { $in: conceptsArray } } : { concept: { $in: conceptsArray.map(c => caseInsensitiveExact(c)) } });
+      conditions.push(
+        useNormalizedKeys
+          ? {
+              $or: [
+                { conceptKey: { $in: conceptsArray.map(normalizeFilterKey) } },
+                { conceptKey: { $exists: false }, concept: { $in: conceptsArray.map((c) => caseInsensitiveExact(c)) } },
+              ],
+            }
+          : { concept: { $in: conceptsArray.map((c) => caseInsensitiveExact(c)) } },
+      );
     }
+  }
+
+  if (year !== undefined && year !== '') {
+    const parsedYear = parseYearInt(year);
+    if (parsedYear !== null) {
+      conditions.push(
+        useNormalizedKeys
+          ? {
+              $or: [
+                { yearInt: parsedYear },
+                { yearInt: { $exists: false }, year: { $in: [parsedYear, String(parsedYear)] } },
+              ],
+            }
+          : { year: { $in: [parsedYear, String(parsedYear)] } },
+      );
+    }
+  }
+
+  if (shift !== undefined && shift !== '') {
+    const rawShift = String(shift).trim();
+    const parsedShift = parseShiftInt(rawShift);
+    if (parsedShift !== null) {
+      conditions.push(
+        useNormalizedKeys
+          ? {
+              $or: [
+                { shiftInt: parsedShift },
+                { shiftInt: { $exists: false }, shift: { $in: [parsedShift, rawShift] } },
+              ],
+            }
+          : { shift: { $in: [parsedShift, rawShift] } },
+      );
+    } else {
+      conditions.push({ shift: caseInsensitiveExact(rawShift) });
+    }
+  }
+
+  const effectiveDate = examDate || date;
+  if (effectiveDate) {
+    conditions.push({ examDate: caseInsensitiveExact(String(effectiveDate).trim()) });
   }
 
   // Apply mode filter
   if (mode) {
     if (useNormalizedKeys) {
-      conditions.push({ modeKey: mode === "ai-challenge" ? "aiChallenge" : mode });
+      conditions.push({ modeKey: mode === 'ai-challenge' ? 'aiChallenge' : mode });
     } else {
-      const modeFilter = buildModeFilter(mode);
-      conditions.push(modeFilter);
+      conditions.push(buildModeFilter(mode));
     }
   } else {
-    // Default: exclude study-mode
     conditions.push(useNormalizedKeys ? { modeKey: { $ne: 'studyMode' } } : buildExcludeStudyModeCondition());
   }
 
   const baseFilter = combineMongoConditions(conditions);
-  let startIndex = 0;
-  if (!cursorId && (params.anchor || params.resumeIndex !== undefined || params.windowOffset !== undefined)) {
-    const requested = Number(params.windowOffset ?? params.resumeIndex ?? 0);
-    if (!Number.isSafeInteger(requested) || requested < 0 || requested > 10000)
-      throw Object.assign(new Error('Invalid resume window'), { statusCode: 400 });
-    let anchorIndex = requested;
-    if (params.anchor) {
-      const { ObjectId } = await import('mongodb');
-      if (!ObjectId.isValid(String(params.anchor))) throw Object.assign(new Error('Invalid question anchor'), { statusCode: 400 });
-      const anchor = await collection.findOne(combineMongoConditions([baseFilter, { _id: new ObjectId(String(params.anchor)) }]), { projection: { _id: 1 } });
-      if (anchor) anchorIndex = await collection.countDocuments(combineMongoConditions([baseFilter, { _id: { $lt: anchor._id } }]));
-    }
-    startIndex = Math.floor(anchorIndex / parsedLimit) * parsedLimit;
-    if (startIndex > 10000) throw Object.assign(new Error('Resume window is too large'), { statusCode: 400 });
-  }
-  // Cursor-based pagination using _id
-  if (cursorId) {
-    try {
-      const { ObjectId } = await import("mongodb");
-      conditions.push({ _id: { $gt: new ObjectId(cursorId) } });
-    } catch {
-      throw Object.assign(new Error("Invalid question cursor"), { statusCode: 400 });
-    }
-  }
-
-  const mongoFilter = combineMongoConditions(conditions);
-
-  // Fetch limit + 1 to know if there are more. Populate serverRevealCache in memory before DTO redaction.
-  const query = collection.find(mongoFilter).project(sessionInternalProjection).sort({ _id: 1 });
-  if (startIndex) query.skip(startIndex);
-  const countFilter = combineMongoConditions(
-    conditions.filter((c) => !c._id || !c._id.$gt)
-  );
-  
-  const [resources, totalCount] = await Promise.all([
-    query.limit(parsedLimit + 1).toArray(),
+  const countTotalPromise =
     params.includeTotal === 'true' || params.includeTotal === true
-      ? collection.countDocuments(countFilter) : undefined,
-  ]);
+      ? collection.countDocuments(baseFilter, { maxTimeMS: 5000 })
+      : Promise.resolve(undefined);
 
+  let startIndex = 0;
+  let resources;
+
+  if (cursorId) {
+    const decodedObjectId = decodeSessionCursor(cursorId, fingerprint);
+    const { ObjectId } = await import('mongodb');
+    const mongoFilter = combineMongoConditions([...conditions, { _id: { $gt: new ObjectId(decodedObjectId) } }]);
+    let query = collection.find(mongoFilter).project(quizQuestionProjection).sort({ _id: 1 });
+    query = applyMaxTime(query, 5000);
+    resources = await query.limit(parsedLimit + 1).toArray();
+  } else if (params.anchor) {
+    const { ObjectId } = await import('mongodb');
+    if (!ObjectId.isValid(String(params.anchor))) {
+      throw Object.assign(new Error('Invalid question anchor'), { statusCode: 400 });
+    }
+    const anchorObjectId = new ObjectId(String(params.anchor));
+    const anchor = await collection.findOne(
+      combineMongoConditions([baseFilter, { _id: anchorObjectId }]),
+      { projection: { _id: 1 } },
+    );
+
+    if (anchor) {
+      const wantsWindowAlignment = params.resumeIndex !== undefined || params.windowOffset !== undefined;
+      if (wantsWindowAlignment) {
+        const anchorIndex = await collection.countDocuments(
+          combineMongoConditions([baseFilter, { _id: { $lt: anchor._id } }]),
+          { maxTimeMS: 5000 },
+        );
+        startIndex = Math.floor(anchorIndex / parsedLimit) * parsedLimit;
+        if (startIndex > 10000) {
+          throw Object.assign(new Error('Resume window is too large'), { statusCode: 400 });
+        }
+        const offsetInWindow = anchorIndex - startIndex;
+        // Direct _id keyset seek around anchor — zero $skip!
+        const [beforeDocs, afterDocs] = await Promise.all([
+          offsetInWindow > 0
+            ? applyMaxTime(
+                collection
+                  .find(combineMongoConditions([baseFilter, { _id: { $lt: anchor._id } }]))
+                  .project(quizQuestionProjection)
+                  .sort({ _id: -1 }),
+                5000,
+              )
+                .limit(offsetInWindow)
+                .toArray()
+            : Promise.resolve([]),
+          applyMaxTime(
+            collection
+              .find(combineMongoConditions([baseFilter, { _id: { $gte: anchor._id } }]))
+              .project(quizQuestionProjection)
+              .sort({ _id: 1 }),
+            5000,
+          )
+            .limit(parsedLimit - offsetInWindow + 1)
+            .toArray(),
+        ]);
+        beforeDocs.reverse();
+        resources = [...beforeDocs, ...afterDocs];
+      } else {
+        // Pure direct _id keyset seek from anchor (zero countDocuments, zero $skip).
+        let query = collection
+          .find(combineMongoConditions([baseFilter, { _id: { $gte: anchor._id } }]))
+          .project(quizQuestionProjection)
+          .sort({ _id: 1 });
+        query = applyMaxTime(query, 5000);
+        resources = await query.limit(parsedLimit + 1).toArray();
+      }
+    } else {
+      const requested = Number(params.windowOffset ?? params.resumeIndex ?? 0);
+      if (!Number.isSafeInteger(requested) || requested < 0 || requested > 10000) {
+        throw Object.assign(new Error('Invalid resume window'), { statusCode: 400 });
+      }
+      startIndex = Math.floor(requested / parsedLimit) * parsedLimit;
+      let query = collection.find(baseFilter).project(quizQuestionProjection).sort({ _id: 1 });
+      query = applyMaxTime(query, 5000);
+      if (startIndex) query = query.skip(startIndex);
+      resources = await query.limit(parsedLimit + 1).toArray();
+    }
+  } else {
+    if (params.resumeIndex !== undefined || params.windowOffset !== undefined) {
+      const requested = Number(params.windowOffset ?? params.resumeIndex ?? 0);
+      if (!Number.isSafeInteger(requested) || requested < 0 || requested > 10000) {
+        throw Object.assign(new Error('Invalid resume window'), { statusCode: 400 });
+      }
+      startIndex = Math.floor(requested / parsedLimit) * parsedLimit;
+      if (startIndex > 10000) {
+        throw Object.assign(new Error('Resume window is too large'), { statusCode: 400 });
+      }
+    }
+    let query = collection.find(baseFilter).project(quizQuestionProjection).sort({ _id: 1 });
+    query = applyMaxTime(query, 5000);
+    if (startIndex) query = query.skip(startIndex);
+    resources = await query.limit(parsedLimit + 1).toArray();
+  }
+
+  const totalCount = await countTotalPromise;
   const hasMore = resources.length > parsedLimit;
   const pageItems = resources.slice(0, parsedLimit);
 
-  const nextCursor =
-    hasMore && pageItems.length > 0
-      ? pageItems[pageItems.length - 1]._id.toString()
-      : null;
-
+  const seenIds = new Set();
+  let duplicatesPrevented = 0;
+  const uniqueItems = [];
   for (const item of pageItems) {
-    cacheServerReveal(item);
+    const key = String(item.questionUid || item._id || item.id || '');
+    if (key && seenIds.has(key)) {
+      duplicatesPrevented++;
+      continue;
+    }
+    if (key) seenIds.add(key);
+    uniqueItems.push(item);
   }
 
-  const questions = pageItems.map(toQuizQuestionDTO);
+  const nextCursor =
+    hasMore && pageItems.length > 0 && pageItems[pageItems.length - 1]._id
+      ? encodeSessionCursor(fingerprint, pageItems[pageItems.length - 1]._id)
+      : null;
+
+  const questions = uniqueItems.map(toQuizQuestionDTO);
 
   const result = {
     questions,
@@ -210,12 +444,25 @@ async function buildfetchQuestionsSession(params) {
     startIndex,
   };
 
+  try {
+    observeQuestionDelivery({
+      endpoint: '/api/questions/session',
+      mode: mode || 'session',
+      payloadBytes: Buffer.byteLength(JSON.stringify(result)),
+      batchSize: questions.length,
+      duplicatesPrevented,
+      surface: 'session-batch',
+    });
+  } catch {
+    // Telemetry is best-effort.
+  }
+
   return result;
 }
 
 export async function fetchQuestionsSession(params) {
   const query = canonicalQuestionQuery('session', params);
-  return cachedQuestionPage("fetchQuestionsSession", query, () => buildfetchQuestionsSession(query));
+  return cachedQuestionPage('fetchQuestionsSession', query, () => buildfetchQuestionsSession(query));
 }
 
 export async function fetchQuestionsRevealWindow(rawItems) {
@@ -243,50 +490,45 @@ export async function fetchQuestionsRevealWindow(rawItems) {
     const { ObjectId } = await import('mongodb');
     const orFilters = [];
     for (const { item } of missing) {
-      if (item.sessionAnchor) {
-        if (ObjectId.isValid(String(item.sessionAnchor))) {
-          orFilters.push({ _id: new ObjectId(String(item.sessionAnchor)) });
-        }
-        orFilters.push({ _id: String(item.sessionAnchor) });
+      if (typeof item.sessionAnchor === 'string' && /^[a-fA-F0-9]{24}$/.test(item.sessionAnchor)) {
+        orFilters.push({ _id: new ObjectId(item.sessionAnchor) });
       }
-      if (item.questionUid) {
-        orFilters.push({ questionUid: String(item.questionUid) });
+      if (typeof item.questionUid === 'string' && /^q_[a-f0-9]{32}$/.test(item.questionUid)) {
+        orFilters.push({ questionUid: item.questionUid });
       }
-      if (item.id !== undefined) {
+      // Strictly accept primitive string or finite integer IDs — prevents NoSQL operator injection.
+      if (typeof item.id === 'string' && item.id.trim().length > 0 && item.id.length <= 200) {
+        orFilters.push({ id: item.id });
+      } else if (typeof item.id === 'number' && Number.isSafeInteger(item.id)) {
         orFilters.push({ id: item.id });
         orFilters.push({ id: String(item.id) });
       }
     }
     if (orFilters.length > 0) {
-      const docs = await collection
+      let query = collection
         .find({ $or: orFilters })
-        .project(sessionInternalProjection)
-        .limit(bounded.length * 3)
-        .toArray();
+        .project(revealInternalProjection)
+        .limit(bounded.length * 3);
+      query = applyMaxTime(query, 5000);
+      const docs = await query.toArray();
       for (const doc of docs) {
         cacheServerReveal(doc);
       }
-      for (const { clientKey, item } of missing) {
-        const resolved = lookupCachedReveal(item);
-        if (resolved) {
-          revealsMap.set(clientKey, resolved);
+      const docByLegacyId = new Map();
+      for (const doc of docs) {
+        if (doc.id !== undefined) {
+          const k = String(doc.id);
+          if (!docByLegacyId.has(k)) docByLegacyId.set(k, doc);
         }
       }
-      // Warm ahead the next 60 questions from the earliest anchor in the background
-      // so subsequent prefetches hit serverRevealCache in <5ms even after a cold restart.
-      if (process.env.NODE_ENV !== 'test') {
-        const firstAnchor = missing.map(m => m.item?.sessionAnchor).find(a => a && ObjectId.isValid(String(a)));
-        if (firstAnchor) {
-          void collection
-            .find({ _id: { $gte: new ObjectId(String(firstAnchor)) } })
-            .project(sessionInternalProjection)
-            .sort({ _id: 1 })
-            .limit(60)
-            .toArray()
-            .then(aheadDocs => {
-              for (const doc of aheadDocs) cacheServerReveal(doc);
-            })
-            .catch(() => {});
+      for (const { clientKey, item } of missing) {
+        const resolved =
+          lookupCachedReveal(item) ||
+          (typeof item.id === 'string' || typeof item.id === 'number'
+            ? buildQuestionReveal(docByLegacyId.get(String(item.id)))
+            : undefined);
+        if (resolved) {
+          revealsMap.set(clientKey, resolved);
         }
       }
     }

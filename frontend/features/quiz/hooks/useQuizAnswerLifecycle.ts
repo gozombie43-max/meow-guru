@@ -37,7 +37,7 @@ export function useQuizAnswerLifecycle({
   onAnswerRevealed?: (index: number, questionId: string | number, revealed: QuizAnswerResponse) => void;
 }) {
   const { currentIndex, selectedAnswers, submittedQuestions } = state;
-  const { timerRef, maxTime, stopTimer } = timer;
+  const { timerRef, maxTime, stopTimer, getElapsed } = timer;
   const submitting = useRef(new Set<number>());
 
   const handleSelectAnswer = useCallback((answer: number) => {
@@ -56,7 +56,14 @@ export function useQuizAnswerLifecycle({
     const generation = state.sessionGeneration ?? 0;
     submitting.current.add(index);
     stopTimer();
-    const timeTaken = Math.max(1, timerRef.current?.getElapsed ? timerRef.current.getElapsed() : maxTime - (timerRef.current?.getTimeLeft() ?? 0));
+    const timeTaken = Math.max(
+      1,
+      timerRef.current?.getElapsed
+        ? timerRef.current.getElapsed()
+        : timerRef.current?.getTimeLeft
+          ? maxTime - timerRef.current.getTimeLeft()
+          : (getElapsed ? getElapsed() : 1),
+    );
 
     // Check if the answer key for this question was already prefetched into the LRU cache.
     const prefetched = getPrefetchedReveal?.(index, questionId);
@@ -71,7 +78,6 @@ export function useQuizAnswerLifecycle({
 
     const event: QuizEvent = { type: 'SUBMIT', question: effectiveQuestion, timeTaken };
     dispatch(event);
-    invalidateTopicProgressCache();
     onAnswerSubmitted?.();
 
     const vibrate = (correct: boolean) => { try { navigator.vibrate?.(correct ? [12, 35, 18] : 20); } catch {} };
@@ -127,7 +133,7 @@ export function useQuizAnswerLifecycle({
     } else if (!answerKnown) {
       dispatch({ type: 'ERROR', message: 'Sign in to check your answers and see solutions.' });
     }
-  }, [currentQ, state, submittedQuestions, currentIndex, selectedAnswers, stopTimer, timerRef, maxTime, token, dispatch, persistAnswer, snapshot, getPrefetchedReveal, onAnswerSubmitted, onAnswerRevealed]);
+  }, [currentQ, state, submittedQuestions, currentIndex, selectedAnswers, stopTimer, timerRef, maxTime, getElapsed, token, dispatch, persistAnswer, snapshot, getPrefetchedReveal, onAnswerSubmitted, onAnswerRevealed]);
 
   const handleClearResponse = useCallback(() => dispatch({ type: 'CLEAR' }), [dispatch]);
   const resetAnswers = useCallback(() => {

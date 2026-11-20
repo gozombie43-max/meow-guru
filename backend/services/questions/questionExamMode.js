@@ -14,11 +14,26 @@ export function parseQuestionExamMode(value) {
 }
 
 // Include legacy routing labels as well as canonical uploads in the same bank.
-export function questionExamModeCondition(value) {
+export function questionExamModeCondition(value, options = {}) {
   const mode = parseQuestionExamMode(value);
   if (!mode) return {};
+  if (options?.useNormalizedKeys === true) {
+    return { examModeKey: mode };
+  }
   const jam = { $or: routingFields.map(field => ({ [field]: jamPattern })) };
-  return mode === 'iit-jam' ? jam : { $nor: [jam] };
+  const legacy = mode === 'iit-jam' ? jam : { $nor: [jam] };
+  if (options?.useNormalizedKeys === false) {
+    return legacy;
+  }
+  if (process.env.QUESTIONS_NORMALIZED_KEYS === 'true') {
+    return {
+      $or: [
+        { examModeKey: mode },
+        { examModeKey: { $exists: false }, ...legacy },
+      ],
+    };
+  }
+  return legacy;
 }
 
 export function assertQuestionExamMode(question, value) {
@@ -48,5 +63,5 @@ export function assertQuestionSourceMode(question, value) {
   if (mode === 'ssc' ? hasJam : hasSsc) throw Object.assign(new Error('Question belongs to a different exam mode'), { statusCode: 400 });
 }
 
-export const scopedQuestionFilter = (filter, examMode) => examMode === undefined
-  ? filter : { $and: [filter, questionExamModeCondition(examMode)] };
+export const scopedQuestionFilter = (filter, examMode, options) => examMode === undefined
+  ? filter : { $and: [filter, questionExamModeCondition(examMode, options)] };

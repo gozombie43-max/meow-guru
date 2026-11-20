@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getCachedTranslation, useTranslation } from "@/hooks/useTranslation";
 import { planQuestionTranslation } from "@/lib/question-translation";
 
@@ -53,73 +53,109 @@ export function useTranslatedQuestion<T extends TranslatableQuestion>(
     nativeTranslation.solution.trim().length > 0;
 
   const hasNativeContent = hasNativeQuestion && hasNativeOptions && (!includeSolution || hasNativeSolution);
-
+  const hasQuestion = Boolean(currentQ);
   const questionContext = `${context} ${currentQ?.concept ?? ""} ${currentQ?.chapter ?? ""}`;
-  
-  // Create a pseudo-question containing only missing parts for translation
-  const fallbackQuestion = {
-    question: hasNativeQuestion ? "" : currentQ?.question,
-    options: hasNativeOptions ? undefined : currentQ?.options,
-    solution: !includeSolution || hasNativeSolution ? "" : currentQ?.solution,
-  };
+  const rawQuestion = hasNativeQuestion ? "" : (currentQ?.question ?? "");
+  const rawOptionsJson = hasNativeOptions ? "" : JSON.stringify(currentQ?.options ?? null);
+  const rawSolution = !includeSolution || hasNativeSolution ? "" : (currentQ?.solution ?? "");
 
-  const plan = planQuestionTranslation(fallbackQuestion, questionContext);
+  // Memoize translation planning on primitive values so fresh inline object/array props
+  // never cause redundant regex masking or re-trigger effects.
+  const plan = useMemo(() => {
+    const parsedOptions = rawOptionsJson ? (JSON.parse(rawOptionsJson) as string[] | null) : null;
+    return planQuestionTranslation(
+      {
+        question: rawQuestion,
+        options: parsedOptions ?? undefined,
+        solution: rawSolution,
+      },
+      questionContext,
+    );
+  }, [rawQuestion, rawOptionsJson, rawSolution, questionContext]);
+
   const sourceTexts = plan.source;
-  const key = JSON.stringify([activeLang, sourceTexts, questionContext]);
+  const key = useMemo(
+    () => JSON.stringify([activeLang, sourceTexts, questionContext]),
+    [activeLang, sourceTexts, questionContext],
+  );
 
-  const upcomingKey = JSON.stringify(upcomingQuestions.slice(0, 1)
-    .filter((q) => q.questionType !== "image_mcq")
-    .filter((q) => {
-       if (activeLang === "en") return false;
-       const t = (q.translations as Record<string, TranslationData> | undefined)?.[activeLang];
-       const qText = t?.question;
-       const opts = t?.options;
-       return !(qText && opts?.length === q.options?.length);
-    })
-    .map((q) => {
-       const t = (q.translations as Record<string, TranslationData> | undefined)?.[activeLang];
-       const fallbackQ = {
-          question: t?.question ? "" : q.question,
-          options: (t?.options?.length === q.options?.length) ? undefined : q.options,
-          solution: "",
-       };
-       return planQuestionTranslation(fallbackQ, `${context} ${q.concept ?? ""} ${q.chapter ?? ""}`).texts;
-    }));
-
+  const planRef = useRef(plan);
   useEffect(() => {
-    if (activeLang === "en" || skipTranslation || hasNativeContent) {
+    planRef.current = plan;
+  }, [plan]);
+
+  const nextCandidate = upcomingQuestions[0];
+  const nextNative =
+    activeLang !== "en" && nextCandidate?.translations
+      ? (nextCandidate.translations as Record<string, TranslationData>)[activeLang]
+      : undefined;
+  const nextNeedsTranslation = Boolean(
+    activeLang !== "en"
+      && !skipTranslation
+      && nextCandidate
+      && nextCandidate.questionType !== "image_mcq"
+      && !(nextNative?.question && nextNative.options?.length === nextCandidate.options?.length),
+  );
+  const nextQuestionText = nextNeedsTranslation && !nextNative?.question ? (nextCandidate?.question ?? "") : "";
+  const nextOptionsJson =
+    nextNeedsTranslation && nextNative?.options?.length !== nextCandidate?.options?.length
+      ? JSON.stringify(nextCandidate?.options ?? null)
+      : "";
+  const nextContext = nextCandidate ? `${context} ${nextCandidate.concept ?? ""} ${nextCandidate.chapter ?? ""}` : "";
+
+  const upcomingTexts = useMemo(() => {
+    if (!nextNeedsTranslation) return [] as string[];
+    const parsedOptions = nextOptionsJson ? (JSON.parse(nextOptionsJson) as string[] | null) : null;
+    return planQuestionTranslation(
+      {
+        question: nextQuestionText,
+        options: parsedOptions ?? undefined,
+        solution: "",
+      },
+      nextContext,
+    ).texts;
+  }, [nextNeedsTranslation, nextQuestionText, nextOptionsJson, nextContext]);
+
+  const upcomingKey = useMemo(() => JSON.stringify(upcomingTexts), [upcomingTexts]);
+  const upcomingTextsRef = useRef(upcomingTexts);
+  useEffect(() => {
+    upcomingTextsRef.current = upcomingTexts;
+  }, [upcomingTexts]);
+
+  // Translate the active question only when its own serialized key/language changes.
+  useEffect(() => {
+    if (activeLang === "en" || skipTranslation || hasNativeContent || !hasQuestion) {
       return;
     }
 
+    const controller = new AbortController();
     let cancelled = false;
-    const [, allTexts, translationContext] = JSON.parse(key) as [string, string[], string];
-    // allTexts corresponds to the source from fallbackQuestion, length is 2 + options.length
-    // options are in the middle.
-    
-    // Construct the fallbackQuestion again based on allTexts.
-    const fallbackQ = {
-      question: allTexts[0],
-      options: allTexts.slice(1, -1),
-      solution: allTexts[allTexts.length - 1]
-    };
+    const currentPlan = planRef.current;
 
-    const currentPlan = planQuestionTranslation(fallbackQ, translationContext);
-    
-    // Only translate the texts that aren't empty? `planQuestionTranslation` already masks empty strings if handled, but we can just pass currentPlan.texts
-    translate(currentPlan.texts, activeLang).then(async (translated) => {
-      if (cancelled) return;
+    void translate(currentPlan.texts, activeLang, false, controller.signal).then((translated) => {
+      if (cancelled || controller.signal.aborted) return;
       setCompleted({ key, texts: currentPlan.restore(translated) });
-      
-      for (const texts of JSON.parse(upcomingKey) as string[][]) {
-        if (cancelled) break;
-        await translate(texts, activeLang, true);
-      }
     });
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
-  }, [activeLang, key, upcomingKey, skipTranslation, hasNativeContent, translate]);
+  }, [activeLang, key, skipTranslation, hasNativeContent, hasQuestion, translate]);
+
+  // Prefetch one upcoming question independently—even when the current question has native content.
+  useEffect(() => {
+    if (activeLang === "en" || skipTranslation || upcomingTextsRef.current.length === 0) {
+      return;
+    }
+
+    const controller = new AbortController();
+    void translate(upcomingTextsRef.current, activeLang, true, controller.signal);
+
+    return () => {
+      controller.abort();
+    };
+  }, [activeLang, skipTranslation, upcomingKey, translate]);
 
   const useSourceText = !currentQ || activeLang === "en" || skipTranslation;
   const cached = plan.texts.map((text) => getCachedTranslation(text, activeLang));

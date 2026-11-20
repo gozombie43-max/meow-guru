@@ -1,7 +1,8 @@
-import { cachedQuestionPage } from './questionCache.js';
+import { cachedQuestionPage, isNormalizedQuestionKeysEnabled } from './questionCache.js';
 import { questionExamModeCondition } from './questionExamMode.js';
 import { canonicalQuestionQuery } from './questionQueryIdentity.js';
 import { toPublicQuestionDTO } from './quizQuestionDTO.js';
+import { PUBLIC_QUESTION_PROJECTION } from './questionReadService.js';
 import { ObjectId } from 'mongodb';
 import { createHash } from 'node:crypto';
 import { readQuestionFacets } from './questionFacets.js';
@@ -13,7 +14,14 @@ import {
   resolveGeneralAwarenessTopicGroupSlug,
 } from './generalAwarenessTopics.js';
 import { caseInsensitiveExact, combineMongoConditions, buildStudyModeMatchCondition, buildExcludeStudyModeCondition } from './questionQueryBuilder.js';
-import { isNormalizedQuestionKeysEnabled } from './questionCache.js';
+
+let cachedCursorProjection = null;
+function getCursorQuestionProjection() {
+  if (!cachedCursorProjection) {
+    cachedCursorProjection = Object.freeze({ ...PUBLIC_QUESTION_PROJECTION, _id: 1 });
+  }
+  return cachedCursorProjection;
+}
 
 // Opt-in canonical listing. Legacy offset clients retain their existing contract.
 async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
@@ -25,19 +33,35 @@ async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
   if (reverse && !sorted) throw Object.assign(new Error('Reverse pagination requires an explicit sort'), { statusCode: 400 });
   const direction = (params.sort === 'desc' ? -1 : 1) * (reverse ? -1 : 1);
   const collation = { locale: 'en', numericOrdering: true, strength: 2 };
-  const fingerprint = createHash('sha256').update(JSON.stringify(['topic', 'subject', 'chapter', 'concept', 'difficulty', 'quizName', 'questionType', 'exam', 'search', 'sort'].map(key => params[key] || '').concat(params.examMode ? [params.examMode] : []))).digest('hex').slice(0, 24);
+  const fingerprint = createHash('sha256').update(JSON.stringify(['topic', 'subject', 'chapter', 'concept', 'difficulty', 'quizName', 'questionType', 'exam', 'year', 'shift', 'examDate', 'date', 'search', 'sort'].map(key => params[key] || '').concat(params.examMode ? [params.examMode] : []))).digest('hex').slice(0, 24);
   let boundary;
-  if (params.cursor && (sorted || !/^[a-fA-F0-9]{24}$/.test(String(params.cursor)))) {
+  if (params.cursor) {
     try {
       if (String(params.cursor).length > 2048) throw new Error();
       boundary = JSON.parse(Buffer.from(String(params.cursor), 'base64url').toString());
-      if (boundary.v !== 1 || ![fingerprint, legacyFingerprint].includes(boundary.f) || !/^[a-fA-F0-9]{24}$/.test(boundary._id) || (sorted && typeof boundary.id !== 'string')) throw new Error();
+      if (
+        boundary.v !== 1 ||
+        ![fingerprint, legacyFingerprint].includes(boundary.f) ||
+        !/^[a-fA-F0-9]{24}$/.test(boundary._id) ||
+        (sorted && typeof boundary.id !== 'string' && typeof boundary.id !== 'number')
+      ) throw new Error();
     } catch { throw Object.assign(new Error('Invalid question cursor'), { statusCode: 400 }); }
   }
-  if (params.exam) conditions.push(normalized ? { exam: params.exam } : { exam: caseInsensitiveExact(params.exam) });
+  if (params.exam) conditions.push({ exam: caseInsensitiveExact(params.exam) });
+  if (params.year !== undefined && params.year !== '') {
+    const parsedYear = Number(params.year);
+    if (Number.isInteger(parsedYear)) conditions.push({ year: { $in: [parsedYear, String(parsedYear)] } });
+  }
+  if (params.shift !== undefined && params.shift !== '') {
+    const rawShift = String(params.shift).trim();
+    const numericShift = Number(rawShift);
+    conditions.push(Number.isInteger(numericShift) ? { shift: { $in: [numericShift, rawShift] } } : { shift: caseInsensitiveExact(rawShift) });
+  }
+  const effectiveDate = params.examDate || params.date;
+  if (effectiveDate) conditions.push({ examDate: caseInsensitiveExact(String(effectiveDate).trim()) });
   if (params.search) {
     const escaped = String(params.search).slice(0, 200).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    conditions.push({ $or: ['question', 'id', 'chapter'].map(field => ({ [field]: new RegExp(escaped, 'i') })) });
+    conditions.push({ $or: ['question', 'translations.bn.question', 'id', 'chapter', 'concept', 'exam'].map(field => ({ [field]: new RegExp(escaped, 'i') })) });
   }
   const gaGroupSlug = resolveGeneralAwarenessTopicGroupSlug(params.topic);
   const isGaQuery = Boolean(gaGroupSlug) || normalizeSearchKey(params.subject) === 'generalawareness';
@@ -63,9 +87,10 @@ async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
   }
   if (params.chapter) {
     const gaChapterCondition = isGaQuery ? buildGeneralAwarenessChapterCondition(params.chapter, normalized) : null;
-    conditions.push(gaChapterCondition || (normalized ? { chapter: params.chapter } : { chapter: caseInsensitiveExact(params.chapter) }));
+    conditions.push(gaChapterCondition || { chapter: caseInsensitiveExact(params.chapter) });
   }
-  for (const field of ['concept', 'difficulty']) if (params[field]) conditions.push(normalized ? { [field]: field === 'difficulty' ? String(params[field]).toLowerCase() : params[field] } : { [field]: caseInsensitiveExact(params[field]) });
+  if (params.concept) conditions.push({ concept: caseInsensitiveExact(params.concept) });
+  if (params.difficulty) conditions.push(normalized ? { difficulty: String(params.difficulty).toLowerCase() } : { difficulty: caseInsensitiveExact(params.difficulty) });
   if (params.quizName) {
     const regex = caseInsensitiveExact(params.quizName);
     const alternatives = ['quizName', 'quizId', 'source'].map(field => ({ [field]: regex }));
@@ -93,7 +118,7 @@ async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
   let lastTotal = lastPage ? await collection.countDocuments(countFilter, { maxTimeMS: 5000, ...(sorted ? { collation } : {}) }) : undefined;
   let queryLimit = lastPage ? (lastTotal % limit || limit) : limit;
   const read = filter => {
-    let query = collection.find(filter, { maxTimeMS: 5000, timeoutMS: 10000 }).sort(sorted ? { id: direction, _id: direction } : { _id: 1 });
+    let query = collection.find(filter, { projection: getCursorQuestionProjection(), maxTimeMS: 5000, timeoutMS: 10000 }).sort(sorted ? { id: direction, _id: direction } : { _id: 1 });
     if (sorted) query = query.collation(collation);
     return query.limit(queryLimit + 1).toArray();
   };
@@ -103,7 +128,7 @@ async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
     const fallbackConditions = conditions.filter(c => !c.topic);
     fallbackConditions.push({ $or: ['topic', 'chapter', 'subject', 'quizTopic', 'quizName', 'source'].map(field => ({ [field]: caseInsensitiveExact(params.topic) })) });
     countFilter = combineMongoConditions(fallbackConditions);
-    if (lastPage) { lastTotal = await collection.countDocuments(countFilter, { maxTimeMS: 5000, collation }); queryLimit = lastTotal % limit || limit; }
+    if (lastPage) { lastTotal = await collection.countDocuments(countFilter, { maxTimeMS: 5000, ...(sorted ? { collation } : {}) }); queryLimit = lastTotal % limit || limit; }
     rows = await read(countFilter);
     fallback = true;
   }
@@ -126,6 +151,6 @@ async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
 
 export async function fetchQuestionCursorPage(params) {
   const query = canonicalQuestionQuery('cursor', params);
-  const legacyFingerprint = createHash('sha256').update(JSON.stringify(['topic', 'subject', 'chapter', 'concept', 'difficulty', 'quizName', 'questionType', 'exam', 'search', 'sort'].map(key => params[key] || '').concat(params.examMode ? [params.examMode] : []))).digest('hex').slice(0, 24);
+  const legacyFingerprint = createHash('sha256').update(JSON.stringify(['topic', 'subject', 'chapter', 'concept', 'difficulty', 'quizName', 'questionType', 'exam', 'search', 'sort'].map(key => query[key] || '').concat(query.examMode ? [query.examMode] : []))).digest('hex').slice(0, 24);
   return cachedQuestionPage("fetchQuestionCursorPage", query, () => buildfetchQuestionCursorPage(query, legacyFingerprint));
 }

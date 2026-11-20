@@ -72,8 +72,8 @@ export const EXAM_CONFIGS = {
     compositeTimer: true,
     totalDurationMin: 45,
     sections: [
-      { key: 'reasoning', label: 'Numerical & Mathematical Ability', questionCount: 20, timeLimitMin: 0, marking: { correct: 1, incorrect: 0.25 }, topics: ['mathematics', 'quantitative-aptitude'] },
-      { key: 'math', label: 'Reasoning & General Intelligence', questionCount: 20, timeLimitMin: 0, marking: { correct: 1, incorrect: 0.25 }, topics: ['reasoning', 'general-intelligence'] },
+      { key: 'math', label: 'Numerical & Mathematical Ability', questionCount: 20, timeLimitMin: 0, marking: { correct: 1, incorrect: 0.25 }, topics: ['mathematics', 'quantitative-aptitude'] },
+      { key: 'reasoning', label: 'Reasoning & General Intelligence', questionCount: 20, timeLimitMin: 0, marking: { correct: 1, incorrect: 0.25 }, topics: ['reasoning', 'general-intelligence'] },
       { key: 'english', label: 'English Language', questionCount: 25, timeLimitMin: 0, marking: { correct: 1, incorrect: 0.25 }, topics: ['english'] },
       { key: 'ga', label: 'General Awareness', questionCount: 25, timeLimitMin: 0, marking: { correct: 1, incorrect: 0.25 }, topics: ['general-awareness', 'general-knowledge'] },
     ],

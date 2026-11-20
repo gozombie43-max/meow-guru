@@ -1,3 +1,4 @@
+import { randomBytes, randomInt } from 'node:crypto';
 import { toPublicQuestionDTO } from './quizQuestionDTO.js';
 import { resolveQuestion } from './questionIdentity.js';
 import { parseQuestionExamMode, questionExamModeCondition } from './questionExamMode.js';
@@ -7,10 +8,12 @@ import { fetchQuestionCursorPage } from "./questionCursorService.js";
 import { readQuestionFacets } from "./questionFacets.js";
 import { logger } from '../../infrastructure/logger.js';
 import { getQuestionsCollection } from "../../config/mongodb.js";
-import { questionsQueryCache, questionCountsCache, revisionedQuestionCacheKey } from "./questionCache.js";
+import * as questionCache from "./questionCache.js";
+import { questionsQueryCache, revisionedQuestionCacheKey, isNormalizedQuestionKeysEnabled } from "./questionCache.js";
 import {
   isStudyModeRecord,
   matchesNormalizedTopic,
+  normalizeFilterKey,
   normalizeQuizKey,
   normalizeSearchKey,
 } from "./questionNormalizer.js";
@@ -19,7 +22,6 @@ import {
   buildGeneralAwarenessTopicCondition,
   resolveGeneralAwarenessTopicGroupSlug,
 } from "./generalAwarenessTopics.js";
-import { isNormalizedQuestionKeysEnabled } from "./questionCache.js";
 import {
   buildExcludeStudyModeCondition,
   buildStudyModeMatchCondition,
@@ -27,6 +29,47 @@ import {
   combineMongoConditions,
   matchesQuizNameFilter,
 } from "./questionQueryBuilder.js";
+
+// Strict safe inclusion projection for public question reads: never pulls
+// answer keys, solutions, ingestion hashes, training internals, or battle keys.
+export const PUBLIC_QUESTION_PROJECTION = Object.freeze(
+  Object.fromEntries([
+    ['_id', 0],
+    ...[
+      'id', 'questionUid', 'topic', 'subject', 'chapter', 'chapterSlug', 'topicGroup',
+      'concept', 'concepts', 'subtopic', 'category', 'difficulty', 'exam', 'examName',
+      'examYear', 'tier', 'year', 'examDate', 'shift', 'language',
+      'formula', 'trapType', 'hint', 'question', 'questionText', 'text', 'options',
+      'quizName', 'quizTopic', 'quizSubject', 'questionType',
+      'questionImage', 'questionImageWidth', 'questionImageHeight',
+      'optionRegions', 'optionImages', 'optionAImage', 'optionBImage', 'optionCImage', 'optionDImage',
+      'image', 'diagram', 'needs_diagram',
+      'word', 'letter', 'source', 'quizId', 'meanings', 'synonyms', 'antonyms',
+      'homophones', 'homonyms', 'prompt', 'phrase', 'definition', 'meaning', 'clue',
+      'answerTranslation', 'wordTranslation', 'translation',
+      'tags', 'translations', 'createdAt', 'updatedAt',
+    ].map(field => [field, 1]),
+  ]),
+);
+
+export const ANALYZE_ANSWERS_PROJECTION = Object.freeze({
+  _id: 0,
+  id: 1,
+  questionUid: 1,
+  topic: 1,
+  subject: 1,
+  correctAnswer: 1,
+  options: 1,
+});
+
+function fisherYatesShuffle(items) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = randomInt(i + 1);
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 export async function fetchAllQueryResults(
   container,
@@ -55,6 +98,7 @@ export async function fetchImageQuestions(
   limit = 20,
 ) {
   const collection = getQuestionsCollection();
+  const safeTopic = typeof topic === "string" && topic.trim() ? topic.trim() : "visual_reasoning";
 
   const parsedLimit = Number.isFinite(Number(limit))
     ? Math.min(100, Math.max(1, Math.floor(Number(limit)) || 20))
@@ -63,9 +107,9 @@ export async function fetchImageQuestions(
   const resources = await collection
     .find({
       questionType: "image_mcq",
-      topic,
+      topic: safeTopic,
     })
-    .project({ _id: 0 })
+    .project(PUBLIC_QUESTION_PROJECTION)
     .limit(parsedLimit)
     .toArray();
 
@@ -157,12 +201,22 @@ export async function fetchQuestions(params) {
       conditions.push(gaChapterCondition || (useNormalizedKeys ? { chapter } : { chapter: caseInsensitiveExact(chapter) }));
     }
     if (concept) {
-      conditions.push(useNormalizedKeys ? { concept } : { concept: caseInsensitiveExact(concept) });
+      conditions.push(
+        useNormalizedKeys
+          ? { $or: [{ conceptKey: normalizeFilterKey(concept) }, { conceptKey: { $exists: false }, concept }] }
+          : { concept: caseInsensitiveExact(concept) },
+      );
     }
     if (difficulty) {
       conditions.push(useNormalizedKeys ? { difficulty: String(difficulty).toLowerCase() } : { difficulty: caseInsensitiveExact(difficulty) });
     }
-    if (params.exam) conditions.push(useNormalizedKeys ? { exam: params.exam } : { exam: caseInsensitiveExact(params.exam) });
+    if (params.exam) {
+      conditions.push(
+        useNormalizedKeys
+          ? { $or: [{ examKey: normalizeFilterKey(params.exam) }, { examKey: { $exists: false }, exam: params.exam }] }
+          : { exam: caseInsensitiveExact(params.exam) },
+      );
+    }
     if (params.search) {
       const escaped = String(params.search).slice(0, 200).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       conditions.push({ $or: ['question', 'id', 'chapter'].map(field => ({ [field]: new RegExp(escaped, 'i') })) });
@@ -227,7 +281,7 @@ export async function fetchQuestions(params) {
     let effectiveFilter = mongoFilter;
 
     // ── Execute query with DB-side pagination ─────────────
-    let cursor = collection.find(mongoFilter).project({ _id: 0 });
+    let cursor = collection.find(mongoFilter).project(PUBLIC_QUESTION_PROJECTION);
     if (params.sort === 'asc' || params.sort === 'desc') {
       const direction = params.sort === 'desc' ? -1 : 1;
       cursor = cursor.collation({ locale: 'en', numericOrdering: true, strength: 2 }).sort({ id: direction, _id: direction });
@@ -261,7 +315,7 @@ export async function fetchQuestions(params) {
       effectiveFilter = combineMongoConditions(fallbackConditions);
       let fallbackCursor = collection
         .find(effectiveFilter)
-        .project({ _id: 0 });
+        .project(PUBLIC_QUESTION_PROJECTION);
       if (params.sort === 'asc' || params.sort === 'desc') {
         const direction = params.sort === 'desc' ? -1 : 1;
         fallbackCursor = fallbackCursor.collation({ locale: 'en', numericOrdering: true, strength: 2 }).sort({ id: direction, _id: direction });
@@ -320,14 +374,16 @@ export async function fetchQuestions(params) {
 }
 
 export async function fetchPracticeTest(params) {
+  const safeParams = params && typeof params === 'object' ? params : {};
   const collection = getQuestionsCollection();
-  const { subject, difficulty, count = 10 } = params;
+  const { subject, difficulty, count = 10, examMode } = safeParams;
   const requestedCount = Number.isFinite(Number(count))
     ? parseInt(count, 10)
     : 10;
   const limit = Math.min(100, Math.max(1, requestedCount || 10));
+  const poolLimit = limit * 3;
 
-  const useNormalizedKeys = isNormalizedQuestionKeysEnabled();
+  const useNormalizedKeys = safeParams.useNormalizedKeys ?? isNormalizedQuestionKeysEnabled();
   const conditions = [];
 
   if (subject) {
@@ -336,20 +392,73 @@ export async function fetchPracticeTest(params) {
   if (difficulty) {
     conditions.push(useNormalizedKeys ? { difficulty: String(difficulty).toLowerCase() } : { difficulty: caseInsensitiveExact(difficulty) });
   }
+  if (examMode) {
+    conditions.push(
+      questionExamModeCondition(
+        examMode,
+        safeParams.useNormalizedKeys !== undefined ? { useNormalizedKeys: safeParams.useNormalizedKeys } : {},
+      ),
+    );
+  }
+  if (useNormalizedKeys) {
+    conditions.push({ modeKey: { $ne: 'studyMode' } });
+  }
 
-  if (useNormalizedKeys) conditions.push({ modeKey: { $ne: 'studyMode' } });
-  const resources = await collection
-    .find(combineMongoConditions(conditions))
-    .project({ _id: 0, id: 1, subject: 1, chapter: 1, concept: 1, question: 1, options: 1, difficulty: 1, questionType: 1, quizName: 1, word: 1, meanings: 1 })
-    .limit(limit * 3)
-    .toArray();
+  const practiceProjection = {
+    _id: 0, id: 1, questionUid: 1, subject: 1, chapter: 1, concept: 1,
+    question: 1, options: 1, difficulty: 1, questionType: 1, quizName: 1, word: 1, meanings: 1,
+  };
+
+  const runPoolQuery = async (filter, maxRows, sortSpec = null) => {
+    let cursor = collection.find(filter).project(practiceProjection);
+    if (sortSpec && typeof cursor.sort === 'function') {
+      cursor = cursor.sort(sortSpec);
+    }
+    return cursor.limit(maxRows).toArray();
+  };
+
+  let resources;
+  if (useNormalizedKeys) {
+    const pivot = typeof safeParams.pivot === 'string' && /^[a-f0-9]{16}$/i.test(safeParams.pivot)
+      ? safeParams.pivot.toLowerCase()
+      : randomBytes(8).toString('hex');
+    const sortSpec = { selectionKey: 1, _id: 1 };
+    const head = await runPoolQuery(
+      combineMongoConditions([...conditions, { selectionKey: { $gte: pivot } }]),
+      poolLimit,
+      sortSpec,
+    );
+    if (head.length < poolLimit) {
+      const tail = await runPoolQuery(
+        combineMongoConditions([...conditions, { selectionKey: { $lt: pivot } }]),
+        poolLimit - head.length,
+        sortSpec,
+      );
+      resources = [...head, ...tail];
+    } else {
+      resources = head;
+    }
+    if (resources.length === 0) {
+      // Fallback for un-backfilled fixtures lacking selectionKey.
+      resources = await runPoolQuery(combineMongoConditions(conditions), poolLimit);
+    }
+  } else {
+    resources = await runPoolQuery(combineMongoConditions(conditions), poolLimit);
+  }
 
   const filteredResources = useNormalizedKeys ? resources : resources.filter((q) => !isStudyModeRecord(q));
-  if (filteredResources.length === 0) return null;
+  const deduped = [];
+  const seen = new Set();
+  for (const q of filteredResources) {
+    const key = String(q.questionUid || q.id || '');
+    if (key && seen.has(key)) continue;
+    if (key) seen.add(key);
+    deduped.push(q);
+  }
+  if (deduped.length === 0) return null;
 
-  return filteredResources
-    .sort(() => Math.random() - 0.5)
-    .slice(0, Math.min(limit, filteredResources.length))
+  return fisherYatesShuffle(deduped)
+    .slice(0, Math.min(limit, deduped.length))
     .map((q) => ({
       id: q.id,
       subject: q.subject,
@@ -373,7 +482,7 @@ export async function analyzeAnswers(answers) {
   if (ids.length > 0) {
     questionDocs = await collection
       .find({ id: { $in: ids } })
-      .project({ _id: 0 })
+      .project(ANALYZE_ANSWERS_PROJECTION)
       .toArray();
   }
 
@@ -451,11 +560,22 @@ export async function analyzeAnswers(answers) {
 }
 
 export async function fetchQuestionById(id, topic = undefined, examMode = undefined) {
-  const collection = getQuestionsCollection();
-
-  const row = await resolveQuestion(collection, id, { topic, examMode });
-  if (!row) return null;
-  return toPublicQuestionDTO(row);
+  const load = async () => {
+    const collection = getQuestionsCollection();
+    const row = await resolveQuestion(
+      collection,
+      id,
+      { topic, examMode },
+      { projection: PUBLIC_QUESTION_PROJECTION },
+    );
+    if (!row) return null;
+    return toPublicQuestionDTO(row);
+  };
+  if (typeof questionCache.cachedQuestionById === 'function') {
+    const key = JSON.stringify([String(id ?? ''), topic ?? '', examMode ?? '']);
+    return questionCache.cachedQuestionById(key, load);
+  }
+  return load();
 }
 
 
@@ -522,7 +642,11 @@ export async function exportQuestions(params = {}) {
     );
   }
   if (concept) {
-    conditions.push(useNormalizedKeys ? { concept } : { concept: caseInsensitiveExact(concept) });
+    conditions.push(
+      useNormalizedKeys
+        ? { $or: [{ conceptKey: normalizeFilterKey(concept) }, { conceptKey: { $exists: false }, concept }] }
+        : { concept: caseInsensitiveExact(concept) },
+    );
   }
   if (difficulty) {
     conditions.push(
@@ -532,7 +656,11 @@ export async function exportQuestions(params = {}) {
     );
   }
   if (exam) {
-    conditions.push(useNormalizedKeys ? { exam } : { exam: caseInsensitiveExact(exam) });
+    conditions.push(
+      useNormalizedKeys
+        ? { $or: [{ examKey: normalizeFilterKey(exam) }, { examKey: { $exists: false }, exam }] }
+        : { exam: caseInsensitiveExact(exam) },
+    );
   }
   if (search) {
     const escaped = String(search)

@@ -281,6 +281,12 @@ describe('metadata and catalog database work', () => {
     expect(rows.map(row => [row.id, row.hasFixedPaper, row.questionCount])).toEqual([['fixed', true, 4], ['empty', false, 100], ['dynamic', false, 75], ['native', true, 3]]);
     expect(JSON.stringify(rows)).not.toContain('private content');
     expect(rows.every(row => !('fixedQuestions' in row) && !('sourcePaper' in row))).toBe(true);
-    expect(spy.mock.calls[0][0].at(-1)).toEqual({ $project: { fixedQuestions: 0, sourcePaper: 0, _fixedCount: 0, _id: 0, _cosmosRid: 0 } });
+    const pipeline = spy.mock.calls[0][0];
+    const projectIndex = pipeline.findIndex(stage => stage.$project);
+    const sortIndex = pipeline.findIndex(stage => stage.$sort);
+    expect(projectIndex).toBeGreaterThan(-1);
+    expect(projectIndex).toBeLessThan(sortIndex);
+    expect(pipeline[projectIndex]).toEqual({ $project: { fixedQuestions: 0, sourcePaper: 0, _fixedCount: 0, _id: 0, _cosmosRid: 0 } });
+    expect(pipeline.at(-1)).toEqual({ $limit: 500 });
   });
 });

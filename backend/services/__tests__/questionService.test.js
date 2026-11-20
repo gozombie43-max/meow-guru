@@ -23,6 +23,7 @@ fetchQuestionById,
 fetchQuestionCounts,
 fetchQuestions,
 fetchQuestionsSession,
+invalidateQuestionCacheRevision,
 isStudyModeRecord,
 matchesNormalizedTopic,
 modifyQuestion,
@@ -33,11 +34,14 @@ questionsQueryCache,
 removeQuestion,
 removeQuestionsBulk,
 } from '../questionService.js';
+import { ANALYZE_ANSWERS_PROJECTION, PUBLIC_QUESTION_PROJECTION } from '../questions/questionReadService.js';
 
 function createCursor(resources) {
   const cursor = {
     project: vi.fn(() => cursor),
+    sort: vi.fn(() => cursor),
     limit: vi.fn(() => cursor),
+    maxTimeMS: vi.fn(() => cursor),
     toArray: vi.fn(async () => resources),
   };
   return cursor;
@@ -45,6 +49,7 @@ function createCursor(resources) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  invalidateQuestionCacheRevision();
   questionsQueryCache.clear();
   questionCountsCache.clear();
 });
@@ -251,7 +256,7 @@ describe('MongoDB-backed question reads', () => {
       questionType: 'image_mcq',
       topic: 'visual_reasoning',
     });
-    expect(cursor.project).toHaveBeenCalledWith({ _id: 0 });
+    expect(cursor.project).toHaveBeenCalledWith(PUBLIC_QUESTION_PROJECTION);
     expect(cursor.limit).toHaveBeenCalledWith(5);
     expect(result).toEqual({
       count: 1,
@@ -287,7 +292,7 @@ describe('MongoDB-backed question reads', () => {
     });
 
     expect(collection.find).toHaveBeenCalledTimes(2);
-    expect(fallbackCursor.project).toHaveBeenCalledWith({ _id: 0 });
+    expect(fallbackCursor.project).toHaveBeenCalledWith(PUBLIC_QUESTION_PROJECTION);
     expect(result).toEqual({
       count: 1,
       questions: [
@@ -366,7 +371,7 @@ describe('MongoDB-backed question reads', () => {
     expect(collection.find).toHaveBeenCalledWith({
       id: { $in: ['shared-id', 'unknown-subject'] },
     });
-    expect(cursor.project).toHaveBeenCalledWith({ _id: 0 });
+    expect(cursor.project).toHaveBeenCalledWith(ANALYZE_ANSWERS_PROJECTION);
     expect(result).toEqual({
       summary: {
         totalQuestions: 2,
@@ -392,7 +397,10 @@ describe('MongoDB-backed question reads', () => {
     getQuestionsCollectionMock.mockReturnValue(collection);
 
     await expect(fetchQuestionById('q457', 'algebra')).resolves.toEqual(question);
-    expect(collection.find).toHaveBeenCalledWith({ id: { $in: ['q457'] }, topic: 'algebra' });
+    expect(collection.find).toHaveBeenCalledWith(
+      { id: { $in: ['q457'] }, topic: 'algebra' },
+      { projection: PUBLIC_QUESTION_PROJECTION },
+    );
   });
 
   it('uses supplied IDs as question identity and falls back to normalized content for anonymous rows', async () => {
@@ -491,6 +499,14 @@ describe('MongoDB-backed question writes', () => {
       quizKey: '',
       modeKey: 'concept',
       keyVersion: 1,
+      examKey: '',
+      conceptKey: '',
+      chapterKey: 'algebra',
+      topicGroupKey: '',
+      examModeKey: 'ssc',
+      yearInt: null,
+      shiftInt: null,
+      selectionKey: expect.stringMatching(/^[a-f0-9]{16}$/),
     });
     expect(questionsQueryCache.has('stale')).toBe(false);
   });
@@ -590,20 +606,32 @@ describe('MongoDB-backed question writes', () => {
     );
 
     expect(collection.find).toHaveBeenCalledWith({ id: { $in: ['q457'] }, topic: 'algebra' });
+    const expectedModified = {
+      ...ineligibleAlgebra,
+      id: 'q457',
+      questionUid: undefined,
+      topic: 'algebra',
+      question: 'After',
+      updatedAt: expect.any(String),
+      topicKey: 'algebra',
+      subjectKey: '',
+      quizKey: '',
+      modeKey: 'concept',
+      keyVersion: 1,
+      examKey: '',
+      conceptKey: '',
+      chapterKey: '',
+      topicGroupKey: '',
+      examModeKey: 'ssc',
+      yearInt: null,
+      shiftInt: null,
+      selectionKey: expect.stringMatching(/^[a-f0-9]{16}$/),
+    };
     expect(collection.updateOne).toHaveBeenCalledWith(
       { _id: 'mongo-id' },
-      {
-        $set: {
-          ...ineligibleAlgebra,
-          id: 'q457',
-          questionUid: undefined,
-          topic: 'algebra',
-          question: 'After',
-          topicKey: 'algebra', subjectKey: '', quizKey: '', modeKey: 'concept', keyVersion: 1,
-        },
-      }
+      { $set: expectedModified }
     );
-    expect(result).toEqual({ ...ineligibleAlgebra, id: 'q457', questionUid: undefined, topic: 'algebra', question: 'After', topicKey: 'algebra', subjectKey: '', quizKey: '', modeKey: 'concept', keyVersion: 1 });
+    expect(result).toEqual(expectedModified);
   });
 
   it('returns null or false when a write target does not exist', async () => {
@@ -663,22 +691,64 @@ describe('MongoDB-backed question writes', () => {
     await expect(checkDuplicates([{ question: '   ' }, {}])).resolves.toEqual([]);
   });
 
-  it('bulk deletes unique ids and preserves the controller result contract', async () => {
+  it('bulk deletes unique ids in a batched $in lookup and preserves the controller result contract', async () => {
     const collection = {
-      find: vi.fn(filter => createCursor([{ _id: filter.id.$in[0], id: filter.id.$in[0] }])),
+      find: vi.fn(filter => createCursor((filter.id?.$in || []).map(id => ({ _id: id, id })))),
       deleteMany: vi.fn(async () => ({ deletedCount: 2 })),
     };
     getQuestionsCollectionMock.mockReturnValue(collection);
 
     const result = await removeQuestionsBulk([' q1 ', 'q1', 'q2']);
 
+    expect(collection.find).toHaveBeenCalledTimes(1);
     expect(collection.deleteMany).toHaveBeenCalledWith({ _id: { $in: ['q1', 'q2'] } });
     expect(result).toEqual({ deleted: 2, failed: 0, total: 2 });
   });
 
+  it('rejects ambiguous legacy IDs with 409 during batched bulk delete', async () => {
+    const collection = {
+      find: vi.fn(() => createCursor([
+        { _id: 'dup-1', id: 'shared-legacy' },
+        { _id: 'dup-2', id: 'shared-legacy' },
+      ])),
+      deleteMany: vi.fn(),
+    };
+    getQuestionsCollectionMock.mockReturnValue(collection);
+
+    await expect(removeQuestionsBulk(['shared-legacy'])).rejects.toMatchObject({
+      statusCode: 409,
+      code: 'AMBIGUOUS_QUESTION_ID',
+    });
+    expect(collection.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it('resolves numeric-equivalent legacy IDs and detects 409 ambiguity across string/number variants', async () => {
+    const singleCollection = {
+      find: vi.fn(() => createCursor([{ _id: 'num-doc', id: 1 }])),
+      deleteMany: vi.fn(async () => ({ deletedCount: 1 })),
+    };
+    getQuestionsCollectionMock.mockReturnValue(singleCollection);
+    await expect(removeQuestionsBulk(['01'])).resolves.toEqual({ deleted: 1, failed: 0, total: 1 });
+    expect(singleCollection.deleteMany).toHaveBeenCalledWith({ _id: { $in: ['num-doc'] } });
+
+    const ambiguousCollection = {
+      find: vi.fn(() => createCursor([
+        { _id: 'str-doc', id: '01' },
+        { _id: 'num-doc', id: 1 },
+      ])),
+      deleteMany: vi.fn(),
+    };
+    getQuestionsCollectionMock.mockReturnValue(ambiguousCollection);
+    await expect(removeQuestionsBulk(['01'])).rejects.toMatchObject({
+      statusCode: 409,
+      code: 'AMBIGUOUS_QUESTION_ID',
+    });
+    expect(ambiguousCollection.deleteMany).not.toHaveBeenCalled();
+  });
+
   it('uses the selected topic and subject to resolve legacy IDs safely during a bulk delete', async () => {
     const collection = {
-      find: vi.fn(() => createCursor([{ _id: 'question-a' }])),
+      find: vi.fn(() => createCursor([{ _id: 'question-a', id: 'reused-id' }])),
       deleteMany: vi.fn(async () => ({ deletedCount: 1 })),
     };
     getQuestionsCollectionMock.mockReturnValue(collection);
@@ -689,7 +759,7 @@ describe('MongoDB-backed question writes', () => {
 
   it('reports every requested id as failed when bulk deletion throws', async () => {
     const collection = {
-      find: vi.fn(filter => createCursor([{ _id: filter.id.$in[0] }])),
+      find: vi.fn(filter => createCursor((filter.id?.$in || []).map(id => ({ _id: id, id })))),
       deleteMany: vi.fn(async () => {
         throw new Error('write failed');
       }),
@@ -713,6 +783,7 @@ describe('MongoDB-backed question writes', () => {
       project: vi.fn().mockReturnThis(),
       sort: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
+      maxTimeMS: vi.fn().mockReturnThis(),
       toArray: vi.fn().mockResolvedValue(mockDocs),
     };
     

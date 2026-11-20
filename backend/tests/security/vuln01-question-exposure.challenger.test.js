@@ -183,7 +183,7 @@ describe('ADVERSARIAL CHALLENGER: VULN-01 Question Redaction & Security Boundary
 
         // Verify that prototype properties are not own properties
         expect(Object.hasOwn(cleaned, 'correctAnswer')).toBe(false);
-        expect(Object.hasOwn(cleaned, 'solution')).toBeUndefined ? expect(Object.prototype.hasOwnProperty.call(cleaned, 'solution')).toBe(false) : expect(Object.hasOwn(cleaned, 'solution')).toBe(false);
+        expect(Object.hasOwn(cleaned, 'solution')).toBe(false);
 
         // When serialized over the wire via JSON.stringify, prototype properties must not leak
         const wireString = JSON.stringify(cleaned);

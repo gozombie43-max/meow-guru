@@ -68,6 +68,22 @@ export function mergeQuestionWithReveal(
       : `${solutionText}\n\n${solutionImageMarkdown}`
     : solutionImageMarkdown;
 
+  const mergedTranslations = (() => {
+    if (!revealed.translations) return rawQuestion.translations;
+    if (!rawQuestion.translations) return revealed.translations;
+    const base = { ...rawQuestion.translations };
+    for (const lang of Object.keys(revealed.translations) as Array<keyof typeof revealed.translations>) {
+      const incoming = revealed.translations[lang];
+      const existing = base[lang];
+      if (incoming && existing && typeof incoming === 'object' && typeof existing === 'object') {
+        base[lang] = { ...existing, ...incoming };
+      } else if (incoming !== undefined) {
+        base[lang] = incoming;
+      }
+    }
+    return base;
+  })();
+
   return {
     ...rawQuestion,
     correctAnswer,
@@ -76,7 +92,9 @@ export function mergeQuestionWithReveal(
         ? (rawQuestion.options[correctAnswer] ?? rawQuestion.answer)
         : rawQuestion.answer,
     solution: revealedSolution || rawQuestion.solution,
-    translations: revealed.translations ?? rawQuestion.translations,
+    ...(revealed.solutionImageWidth !== undefined ? { solutionImageWidth: revealed.solutionImageWidth } : {}),
+    ...(revealed.solutionImageHeight !== undefined ? { solutionImageHeight: revealed.solutionImageHeight } : {}),
+    translations: mergedTranslations,
   };
 }
 

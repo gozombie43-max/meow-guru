@@ -58,6 +58,8 @@ export function useQuizController({
     hasMore,
     isFetchingMore,
     fetchMore,
+    retryFetchMore,
+    isSessionError,
     conceptOptions,
     examOptions,
     classificationGroups,
@@ -73,7 +75,7 @@ export function useQuizController({
   } = filters;
 
   const { currentIndex, started, showAnalytics, isSolutionOpen, setIsSolutionOpen, currentQ,
-    user, token, quizHref, resumeData, handleStart, handleResume, handleRestartFromPopup,
+    user, token, quizHref, isAdvancingNext, resumeData, handleStart, handleResume, handleRestartFromPopup,
     handleCancelResume, handleRestart, selectedAnswers, submittedQuestions, selectedAnswer,
     bestStreak, results, submitError, handleSelectAnswer, handleSubmitCurrent, handleClearResponse,
     showQuestion, goToQuestion, handlePrev, handleNext, timerRef, maxTime, gradedQuestions } = useQuizSessionLifecycle({
@@ -202,6 +204,9 @@ export function useQuizController({
     hasMore,
     isFetchingMore,
     fetchMore,
+    retryFetchMore,
+    isSessionError,
+    isAdvancingNext,
     handleNext,
     handleSubmitCurrent,
     isSolutionOpen,

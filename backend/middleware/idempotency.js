@@ -10,11 +10,14 @@ function canonical(value) {
 
 // No lease stealing: a crash after the business commit must never run it again.
 // An unresolved record returns 409 until reconciled or its 24-hour retention ends.
-export function idempotency(operation) {
+export function idempotency(operation, { strict = false } = {}) {
   return async (req, res, next) => {
     const key = req.get('Idempotency-Key');
-    if (!key) return next();
-    if (!/^[a-zA-Z0-9_-]{8,100}$/.test(key)) return res.status(400).json({ error: 'Invalid Idempotency-Key' });
+    if (!key) {
+      if (strict) return res.status(400).json({ error: 'Idempotency-Key header is required' });
+      return next();
+    }
+    if (!/^[a-zA-Z0-9_:-]{8,128}$/.test(key)) return res.status(400).json({ error: 'Invalid Idempotency-Key' });
     const userId = req.user?.id || req.user?._id;
     if (!userId) return res.status(401).json({ error: 'Authentication required' });
     if (req.is('multipart/form-data')) return res.status(400).json({ error: 'Use the upload-specific idempotency protocol' });
@@ -35,19 +38,34 @@ export function idempotency(operation) {
     }
     const send = res.json.bind(res);
     let saving = false;
+    res.on('close', () => {
+      if (!saving && !res.headersSent && !res.writableEnded) {
+        void collection.deleteOne({ _id: id, status: 'pending' }).catch(() => {});
+      }
+    });
     res.json = body => {
       if (saving) return res;
       saving = true;
       const responseStatus = res.statusCode;
+      // Retryable failures (conflicts, rate limits, server errors) must not be cached for 24 hours;
+      // release the pending record so the caller can safely retry with the same Idempotency-Key.
+      const retryable = responseStatus >= 500 || responseStatus === 409 || responseStatus === 429;
       void (async () => {
         try {
+          if (retryable) {
+            await collection.deleteOne({ _id: id, status: 'pending' });
+            if (!res.headersSent) send(body);
+            return;
+          }
           if (Buffer.byteLength(JSON.stringify(body)) > 1024 * 1024) throw new Error('Response exceeds idempotency storage budget');
           await collection.updateOne({ _id: id, status: 'pending' }, { $set: { status: 'completed', responseStatus, response: body, completedAt: new Date() } });
-          send(body);
+          if (!res.headersSent) send(body);
         } catch {
           // Keep the pending record. The mutation may already have committed.
-          res.status(503).set('Retry-After', '3');
-          send({ error: 'Request outcome could not be saved', code: 'IDEMPOTENCY_PENDING' });
+          if (!res.headersSent) {
+            res.status(503).set('Retry-After', '3');
+            send({ error: 'Request outcome could not be saved', code: 'IDEMPOTENCY_PENDING' });
+          }
         }
       })();
       return res;

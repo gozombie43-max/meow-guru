@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 
 import { useRouter } from "next/navigation";
-import { Layers, Sparkles, Target, ChevronLeft, ChevronDown, Check, X, Search } from "lucide-react";
+import { Layers, Sparkles, Target, ArrowLeft, ChevronDown, Check, Minus, X, Search } from "lucide-react";
 
 import { useQuizTheme } from "@/features/quiz/components/QuizThemeProvider";
 import styles from "@/features/quiz/components/ui/SeriesStartViews.module.css";
@@ -107,7 +107,7 @@ export function IosQuizStartMobile({
           className={styles.iosBackBtn}
           aria-label="Back"
         >
-          <ChevronLeft size={22} strokeWidth={2.4} />
+          <ArrowLeft size={20} strokeWidth={2.2} />
         </button>
         <strong className={styles.iosNavTitle}>
           {mode === "concept" ? title : `${title} - ${modeInfo.label}`}
@@ -185,29 +185,54 @@ export function IosQuizStartMobile({
             {/* Optional Search */}
             {(onSearchChange !== undefined || Boolean(activeSearch)) && (
               <div className={styles.iosSearchRow}>
-                <Search size={14} className={styles.iosSearchIcon} />
+                <Search size={15} className={styles.iosSearchIcon} aria-hidden="true" />
                 <input
-                  type="search" spellCheck={false} autoCapitalize="none" autoCorrect="off" autoComplete="off"
+                  type="search"
+                  spellCheck={false}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  autoComplete="off"
+                  data-custom-focus
+                  enterKeyHint="search"
                   value={activeSearch}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder="Search concept groups..."
                   className={styles.iosSearchInput}
-                 aria-label="Search concept groups..."/>
+                  aria-label="Search concept groups..."
+                />
                 {activeSearch && (
-                  <button data-ui-button="secondary"
+                  <button
                     type="button"
+                    data-custom-focus
+                    data-ui-interaction="none"
                     onClick={() => handleSearchChange("")}
                     className={styles.iosClearSearch}
                     aria-label="Clear search"
                   >
-                    <X size={12} />
+                    <X size={13} strokeWidth={2.2} />
                   </button>
                 )}
               </div>
             )}
 
             {/* Concept Groups */}
-            <p className={styles.iosHeading}>Concept Groups</p>
+            <div className={styles.iosSectionHeader}>
+              <p className={styles.iosHeading}>Concept Groups</p>
+              {selectedCount > 0 ? (
+                <button
+                  type="button"
+                  data-custom-focus
+                  className={styles.iosClearSelectionBtn}
+                  onClick={() => onToggleGroup(Array.from(selected))}
+                >
+                  Clear ({selectedCount})
+                </button>
+              ) : (
+                <span className={styles.iosGroupCount}>
+                  {filteredGroups.length} {filteredGroups.length === 1 ? "group" : "groups"}
+                </span>
+              )}
+            </div>
             <section className={styles.iosConceptList} aria-label="Concept groups">
               {filteredGroups.map((group) => {
                 const selectedInGroup = group.concepts.filter((c) => selected.has(c)).length;
@@ -217,7 +242,12 @@ export function IosQuizStartMobile({
                 const isExpanded = expandedGroups.has(group.id);
 
                 return (
-                  <div key={group.id} className={styles.iosConceptGroupContainer}>
+                  <div
+                    key={group.id}
+                    className={`${styles.iosConceptGroupContainer} ${
+                      isSelected || isPartial ? styles.iosConceptGroupSelected : ""
+                    }`}
+                  >
                     <div className={styles.iosConceptRow}>
                       <div
                         className={styles.iosConceptRowContent}
@@ -244,7 +274,11 @@ export function IosQuizStartMobile({
                           <strong className={styles.iosGroupTitle}>{group.label}</strong>
                           <small className={styles.iosGroupMeta}>
                             {group.concepts.length} concept{group.concepts.length === 1 ? "" : "s"}
-                            {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
+                            {selectedInGroup > 0 && (
+                              <span className={styles.iosGroupMetaSelected}>
+                                {" "}· {selectedInGroup} selected
+                              </span>
+                            )}
                           </small>
                         </span>
                       </div>
@@ -273,8 +307,13 @@ export function IosQuizStartMobile({
                           }`}
                           onClick={() => onToggleGroup(group.concepts)}
                           aria-label={`Toggle all concepts in ${group.label}`}
+                          aria-pressed={isSelected || isPartial}
                         >
-                          {(isSelected || isPartial) && <Check size={12} strokeWidth={3} />}
+                          {isSelected ? (
+                            <Check size={12} strokeWidth={3} />
+                          ) : isPartial ? (
+                            <Minus size={12} strokeWidth={3} />
+                          ) : null}
                         </button>
                       </div>
                     </div>

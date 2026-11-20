@@ -245,6 +245,7 @@ export const GENERAL_AWARENESS_CHAPTERS_BY_TOPIC = {
 const GROUP_BY_NORMALIZED_KEY = new Map();
 const GROUP_KEYS_MAP = new Map();
 const GROUP_STRINGS_MAP = new Map();
+const CHAPTER_VARIANTS_BY_KEY = new Map();
 
 for (const [groupSlug, chapters] of Object.entries(GENERAL_AWARENESS_CHAPTERS_BY_TOPIC)) {
   const normGroup = normalizeKey(groupSlug);
@@ -252,8 +253,20 @@ for (const [groupSlug, chapters] of Object.entries(GENERAL_AWARENESS_CHAPTERS_BY
   const keySet = new Set([normGroup]);
   const strSet = new Set([groupSlug]);
   for (const ch of chapters) {
+    const variants = [
+      ch.slug,
+      ch.title,
+      ch.title.replace(/&/g, "and"),
+      ch.title.replace(/&/g, " and "),
+      ch.title.replace(/\band\b/gi, "&"),
+    ];
     for (const k of expandNormalizedKeys(ch.title, ch.slug)) {
       keySet.add(k);
+      if (!CHAPTER_VARIANTS_BY_KEY.has(k)) CHAPTER_VARIANTS_BY_KEY.set(k, new Set());
+      const bucket = CHAPTER_VARIANTS_BY_KEY.get(k);
+      for (const variant of variants) {
+        if (variant) bucket.add(variant);
+      }
     }
     strSet.add(ch.title);
     strSet.add(ch.slug);
@@ -287,15 +300,78 @@ function caseInsensitiveExact(value) {
   return new RegExp(`^${escapeRegex(String(value || "").trim())}$`, "i");
 }
 
-export function buildGeneralAwarenessTopicCondition(topic, normalized) {
+function normalizeFilterKeyLocal(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+export function buildGeneralAwarenessTopicKeyCondition(topic) {
   const slug = resolveGeneralAwarenessTopicGroupSlug(topic);
   if (!slug) return null;
+  const keys = GROUP_KEYS_MAP.get(slug) || [normalizeKey(slug)];
+  return {
+    $or: [
+      { topicKey: { $in: keys } },
+      { topicGroupKey: normalizeFilterKeyLocal(slug) },
+    ],
+  };
+}
+
+function canonicalChapterVariants(trimmed) {
+  const slug = toTopicSlug(trimmed);
+  const compactSlug = trimmed
+    .normalize("NFKD")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  const spacedSlug = trimmed.replace(/-/g, " ");
+  const withAnd = trimmed.replace(/&/g, "and");
+  const withAmp = trimmed.replace(/\band\b/gi, "&");
+  const keys = getGeneralAwarenessChapterKeys(trimmed);
+  const catalogVariants = keys.flatMap((k) => Array.from(CHAPTER_VARIANTS_BY_KEY.get(k) || []));
+  const rawVariants = Array.from(
+    new Set([trimmed, slug, compactSlug, spacedSlug, withAnd, withAmp, ...catalogVariants].filter(Boolean)),
+  );
+  const chapterKeys = Array.from(
+    new Set(rawVariants.map(normalizeFilterKeyLocal).filter(Boolean)),
+  );
+  return { slug, keys, rawVariants, chapterKeys };
+}
+
+export function buildGeneralAwarenessChapterKeyCondition(chapter) {
+  const trimmed = String(chapter || "").trim();
+  if (!trimmed) return null;
+  const { keys, chapterKeys } = canonicalChapterVariants(trimmed);
+  return {
+    $or: [
+      { topicKey: { $in: keys } },
+      { chapterKey: { $in: chapterKeys } },
+    ],
+  };
+}
+
+export function buildGeneralAwarenessTopicCondition(topic, normalized, options = {}) {
+  const slug = resolveGeneralAwarenessTopicGroupSlug(topic);
+  if (!slug) return null;
+  const groupKey = normalizeFilterKeyLocal(slug);
+  if (options?.exactKeys === true) {
+    const keys = GROUP_KEYS_MAP.get(slug) || [normalizeKey(slug)];
+    return {
+      $or: [
+        { topicKey: { $in: keys } },
+        { topicGroupKey: groupKey },
+      ],
+    };
+  }
   if (normalized) {
     const keys = GROUP_KEYS_MAP.get(slug) || [normalizeKey(slug)];
     return {
       $or: [
         { topicKey: { $in: keys } },
-        { topicGroup: caseInsensitiveExact(slug) },
+        { topicGroupKey: groupKey },
+        { topicGroupKey: { $exists: false }, topicGroup: caseInsensitiveExact(slug) },
       ],
     };
   }
@@ -311,21 +387,27 @@ export function buildGeneralAwarenessTopicCondition(topic, normalized) {
   };
 }
 
-export function buildGeneralAwarenessChapterCondition(chapter, normalized) {
+export function buildGeneralAwarenessChapterCondition(chapter, normalized, options = {}) {
   const trimmed = String(chapter || "").trim();
   if (!trimmed) return null;
-  const slug = toTopicSlug(trimmed);
-  const withAnd = trimmed.replace(/&/g, "and");
-  const withAmp = trimmed.replace(/\band\b/gi, "&");
-  const chapterRegexes = Array.from(new Set([trimmed, slug, withAnd, withAmp])).map(caseInsensitiveExact);
-
-  if (normalized) {
-    const keys = getGeneralAwarenessChapterKeys(trimmed);
+  const { slug, keys, rawVariants, chapterKeys } = canonicalChapterVariants(trimmed);
+  if (options?.exactKeys === true) {
     return {
       $or: [
         { topicKey: { $in: keys } },
-        { chapter: { $in: chapterRegexes } },
-        { chapterSlug: caseInsensitiveExact(slug) },
+        { chapterKey: { $in: chapterKeys } },
+      ],
+    };
+  }
+  const chapterRegexes = rawVariants.map(caseInsensitiveExact);
+
+  if (normalized) {
+    return {
+      $or: [
+        { topicKey: { $in: keys } },
+        { chapterKey: { $in: chapterKeys } },
+        { chapterKey: { $exists: false }, chapter: { $in: chapterRegexes } },
+        { chapterKey: { $exists: false }, chapterSlug: caseInsensitiveExact(slug) },
       ],
     };
   }

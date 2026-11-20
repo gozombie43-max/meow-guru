@@ -231,8 +231,8 @@ function StandardMockTestPage() {
       }).catch(() => { if (active) setCountError('Paper counts unavailable.'); });
     };
     load();
-    const unsubscribe = exams.map(exam => subscribeMockCatalog(exam, load));
-    return () => { active = false; unsubscribe.forEach(stop => stop()); };
+    const unsubscribe = subscribeMockCatalog('*', load);
+    return () => { active = false; unsubscribe(); };
   }, [countRevision]);
 
   useEffect(() => {
@@ -313,13 +313,12 @@ function StandardMockTestPage() {
                 <section className={styles.section}>
                   {countError && <p role="status">{countError} <button type="button" data-ui-button="secondary" onClick={() => setCountRevision(value => value + 1)}>Retry counts</button></p>}
                   <div className={styles.examGrid}>
-                    {filteredExams.map((card) => (
+                    {filteredExams.map((card, cardIdx) => (
                       <Link
                         data-ui-button="state"
                         key={card.id}
                         className={styles.examCard}
                         href={`/mock-test/${card.id}`}
-                        prefetch={true}
                       >
                         <div className={styles.examTop}>
                           <div className={styles.examLogoBox}>
@@ -327,7 +326,10 @@ function StandardMockTestPage() {
                               <img
                                 src={card.logoUrl}
                                 alt={card.name}
-                                loading="eager"
+                                width={40}
+                                height={40}
+                                loading={cardIdx < 6 ? "eager" : "lazy"}
+                                decoding="async"
                                 onError={(e) => {
                                   const target = e.currentTarget;
                                   if (target.src.endsWith('.webp')) {

@@ -83,18 +83,31 @@ function parseParts(input: string): Part[] {
     // numerals embedded in prose should use the sentence's font and weight.
     const proseNumber = hasProse && part.type === "inline"
       && /^[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:\\?%)?$/.test(part.content);
+    const nextType = proseNumber ? "text" : part.type;
     return {
-      type: proseNumber ? "text" : part.type,
-      content: proseNumber ? part.content.replace(/\\%/g, "%") : part.content.replace(/__DOLLAR__/g, "$"),
+      type: nextType,
+      content: proseNumber
+        ? part.content.replace(/\\%/g, "%")
+        : part.content.replace(/__DOLLAR__/g, nextType === "text" ? "$" : "\\$"),
     };
   });
 
-  if (partsCache.size > MAX_CACHE_SIZE) {
-    partsCache.clear();
+  if (partsCache.size >= MAX_CACHE_SIZE) {
+    const oldest = partsCache.keys().next().value;
+    if (oldest !== undefined) partsCache.delete(oldest);
   }
   partsCache.set(input, result);
 
   return result;
+}
+
+function escapeHtml(raw: string): string {
+  return raw
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function renderKatexSafe(content: string, displayMode: boolean): string {
@@ -109,13 +122,14 @@ function renderKatexSafe(content: string, displayMode: boolean): string {
       displayMode,
       trust: false,
     });
-    if (katexHtmlCache.size > MAX_CACHE_SIZE) {
-      katexHtmlCache.clear();
+    if (katexHtmlCache.size >= MAX_CACHE_SIZE) {
+      const oldest = katexHtmlCache.keys().next().value;
+      if (oldest !== undefined) katexHtmlCache.delete(oldest);
     }
     katexHtmlCache.set(cacheKey, html);
     return html;
   } catch {
-    return content;
+    return escapeHtml(content);
   }
 }
 

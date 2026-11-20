@@ -2,9 +2,17 @@ import { resolveQuestion } from '../services/questions/questionIdentity.js';
 import { withMongoTransaction, getQuestionsCollection, getUserTopicProgressCollection } from '../config/mongodb.js';
 import { advanceTopicProgressRevision } from '../services/questions/topicProgressCache.js';
 export const findAnsweredQuestion = (questionId, context = {}) => resolveQuestion(getQuestionsCollection(), questionId, context);
-export const readUserTopicProgress = userId => getUserTopicProgressCollection().find({ userId }).toArray();
+export const readUserTopicProgress = userId => getUserTopicProgressCollection().find({ userId: String(userId) }).toArray();
 export async function recordQuestionAnswer(userId, questionUid, topic, isCorrect, legacyId) {
- return withMongoTransaction(({ db, session }) => recordQuestionAnswerInTransaction(db, session, userId, questionUid, topic, isCorrect, legacyId));
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await withMongoTransaction(({ db, session }) =>
+        recordQuestionAnswerInTransaction(db, session, userId, questionUid, topic, isCorrect, legacyId)
+      );
+    } catch (error) {
+      if (error?.code !== 11000 || attempt === 2) throw error;
+    }
+  }
 }
 
 export async function recordQuestionAnswerInTransaction(db, session, userId, questionUid, topic, isCorrect, legacyId) {

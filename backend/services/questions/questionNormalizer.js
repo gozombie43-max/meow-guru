@@ -1,4 +1,82 @@
+import { createHash } from "node:crypto";
 import { getGeneralAwarenessGroupTopicKeys } from "./generalAwarenessTopics.js";
+
+const EXAM_MODE_ROUTING_FIELDS = [
+  "subject",
+  "quizSubject",
+  "topic",
+  "quizTopic",
+  "exam",
+  "subjectId",
+  "topicId",
+];
+const EXAM_MODE_JAM_PATTERN = /^iit[-_\s]*jam(?:[-_\s]|$)/i;
+
+export function normalizeFilterKey(value) {
+  if (value === undefined || value === null) return "";
+  if (typeof value === "object") return "";
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+export function parseYearInt(value) {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value === "number") {
+    return Number.isInteger(value) && value >= 1900 && value <= 2100 ? value : null;
+  }
+  if (typeof value !== "string") return null;
+  const match = value.trim().match(/^([12]\d{3})$/);
+  if (!match) return null;
+  const parsed = Number.parseInt(match[1], 10);
+  return parsed >= 1900 && parsed <= 2100 ? parsed : null;
+}
+
+export function parseShiftInt(value) {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value === "number") {
+    return Number.isInteger(value) && value >= 1 && value <= 10 ? value : null;
+  }
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > 32) return null;
+  let rest = trimmed.toLowerCase();
+  if (rest.startsWith("shift")) {
+    rest = rest.slice(5).trimStart();
+    if (rest.startsWith("-") || rest.startsWith(":")) {
+      rest = rest.slice(1).trimStart();
+    }
+  }
+  if (!/^(?:[1-9]|10)$/.test(rest)) return null;
+  return Number.parseInt(rest, 10);
+}
+
+export function deriveExamModeKey(question) {
+  if (!question || typeof question !== "object") return "ssc";
+  const isJam = EXAM_MODE_ROUTING_FIELDS.some((field) => {
+    const raw = question[field];
+    const values = Array.isArray(raw) ? raw : [raw];
+    return values.some(
+      (entry) =>
+        (typeof entry === "string" || typeof entry === "number") &&
+        EXAM_MODE_JAM_PATTERN.test(String(entry).trim()),
+    );
+  });
+  return isJam ? "iit-jam" : "ssc";
+}
+
+export function deriveSelectionKey(question) {
+  const seed =
+    question?.questionUid ||
+    question?.ingestionKey ||
+    (question?._id !== undefined && question?._id !== null ? String(question._id) : "") ||
+    (question?.id !== undefined && question?.id !== null ? String(question.id) : "");
+  return createHash("sha256")
+    .update(`selection:v1:${seed}`)
+    .digest("hex")
+    .slice(0, 16);
+}
 
 export function normalizeSearchKey(value) {
   return String(value || "")
@@ -112,6 +190,7 @@ export function isStudyModeRecord(q) {
 }
 
 export function deriveModeKey(question) {
+  if (!question || typeof question !== "object") return "concept";
   const quizTag = normalizeQuizKey(question.quizName || question.quizId || question.source);
   const normalizedTopic = normalizeSearchKey(question.topic);
   const questionType = String(question.questionType || "").trim().toLowerCase();
@@ -156,13 +235,29 @@ export function deriveModeKey(question) {
 
 // Versioned ingestion keys. Keep display fields and legacy lookup semantics intact.
 export function normalizedQuestionKeys(question) {
+  const q = question && typeof question === "object" ? question : {};
   return {
-    topicKey: normalizeSearchKey(question.topic),
-    subjectKey: normalizeSearchKey(question.subject || question.quizSubject),
+    topicKey: normalizeSearchKey(q.topic),
+    subjectKey: normalizeSearchKey(q.subject || q.quizSubject),
     quizKey: normalizeQuizKey(
-      question.quizName || question.quizId || question.source,
+      q.quizName || q.quizId || q.source,
     ),
-    modeKey: deriveModeKey(question),
+    modeKey: deriveModeKey(q),
     keyVersion: 1,
+  };
+}
+
+// Extended normalized filter & selection keys populated on write and migration 027.
+export function buildNormalizedQuestionFields(question) {
+  return {
+    ...normalizedQuestionKeys(question),
+    examKey: normalizeFilterKey(question?.exam),
+    conceptKey: normalizeFilterKey(question?.concept),
+    chapterKey: normalizeFilterKey(question?.chapter || question?.chapterSlug),
+    topicGroupKey: normalizeFilterKey(question?.topicGroup),
+    examModeKey: deriveExamModeKey(question),
+    yearInt: parseYearInt(question?.year),
+    shiftInt: parseShiftInt(question?.shift),
+    selectionKey: deriveSelectionKey(question),
   };
 }

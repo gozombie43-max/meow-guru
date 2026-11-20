@@ -6,7 +6,10 @@ const cursor = z.string().max(2048).optional();
 const objectId = z.union([z.literal(''), z.string().regex(/^[a-fA-F0-9]{24}$/)]).optional();
 const flag = z.union([z.boolean(), z.string().max(5)]).optional().transform(value => value === true || value === 'true');
 const number = z.union([z.number(), z.string().max(20)]).optional();
-const filters = { topic: text, subject: text, chapter: text, concept: text, difficulty: text, quizName: text, questionType: text, exam: text, examMode: z.enum(['ssc', 'iit-jam']).optional() };
+const yearParam = z.union([z.number().int().min(1900).max(2100), z.string().regex(/^[12]\d{3}$/), z.literal('')]).optional();
+const shiftParam = z.union([z.number().int().min(1).max(10), z.string().max(40)]).optional();
+const dateParam = z.string().max(40).optional();
+const filters = { topic: text, subject: text, chapter: text, concept: text, difficulty: text, quizName: text, questionType: text, exam: text, year: yearParam, shift: shiftParam, examDate: dateParam, date: dateParam, examMode: z.enum(['ssc', 'iit-jam']).optional() };
 // A selection contains many full labels, rather than a single short label.
 const sessionSelection = z.union([
   z.string().max(65536),
@@ -22,9 +25,9 @@ export function parseSessionSelection(value) {
 const schemas = {
   legacy: z.object({ ...filters, offset: number, limit: number, search: text, sort: text, includeTotal: flag, includeFacets: flag }),
   cursor: z.object({ ...filters, cursor, limit: number, search: text, sort: text, before: flag, last: flag, includeTotal: flag, includeFacets: flag }),
-  session: z.object({ topic: text, subject: text, mode: text, letter: text, exam: sessionSelection, concept: sessionSelection, cursor: objectId, anchor: objectId, resumeIndex: number, windowOffset: number, limit: number, includeTotal: flag }),
-  counts: z.object({ topic: text, subject: text }),
-  metadata: z.object({ topic: text, subject: text, mode: text }),
+  session: z.object({ topic: text, subject: text, chapter: text, mode: text, letter: text, exam: sessionSelection, concept: sessionSelection, year: yearParam, shift: shiftParam, examDate: dateParam, date: dateParam, examMode: z.enum(['ssc', 'iit-jam']).optional(), cursor, anchor: objectId, resumeIndex: number, windowOffset: number, limit: number, includeTotal: flag }),
+  counts: z.object({ topic: text, subject: text, examMode: z.enum(['ssc', 'iit-jam']).optional() }),
+  metadata: z.object({ topic: text, subject: text, mode: text, examMode: z.enum(['ssc', 'iit-jam']).optional() }),
 };
 
 export function canonicalQuestionQuery(family, input, normalized = process.env.QUESTIONS_NORMALIZED_KEYS === 'true') {
@@ -67,7 +70,27 @@ export function canonicalQuestionQuery(family, input, normalized = process.env.Q
     if (query.windowOffset !== undefined) { query.windowOffset = Number(query.windowOffset); delete query.resumeIndex; }
     else if (query.resumeIndex !== undefined) query.resumeIndex = Number(query.resumeIndex);
     if (query.cursor) {
-      query.cursor = query.cursor.toLowerCase();
+      const trimmedCursor = String(query.cursor).trim();
+      if (/^[a-fA-F0-9]{24}$/.test(trimmedCursor)) {
+        query.cursor = trimmedCursor.toLowerCase();
+      } else {
+        let validBase64Cursor;
+        try {
+          const decoded = JSON.parse(Buffer.from(trimmedCursor, 'base64url').toString('utf8'));
+          validBase64Cursor = Boolean(
+            decoded &&
+            decoded.v === 1 &&
+            typeof decoded.f === 'string' &&
+            decoded.f.length > 0 &&
+            typeof decoded._id === 'string' &&
+            /^[a-fA-F0-9]{24}$/.test(decoded._id),
+          );
+        } catch {
+          validBase64Cursor = false;
+        }
+        if (!validBase64Cursor) throw Object.assign(new Error('Invalid question query'), { statusCode: 400 });
+        query.cursor = trimmedCursor;
+      }
       delete query.anchor; delete query.resumeIndex; delete query.windowOffset;
     } else {
       const offset = query.windowOffset ?? query.resumeIndex;

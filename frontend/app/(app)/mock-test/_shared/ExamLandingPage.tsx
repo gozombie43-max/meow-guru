@@ -85,9 +85,12 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
 
   const activeTab = searchParams.get('tab') === 'prev' ? 'prev' : searchParams.get('tab') === 'overview' ? 'overview' : 'mock';
   const updateFilter = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set(key, value);
-    window.history.replaceState(null, '', `/mock-test/${examSlug}?${params}`);
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : searchParams.toString());
+    if (value) params.set(key, value);
+    else params.delete(key);
+    if (key === 'tab' && value !== 'prev') params.delete('year');
+    const qs = params.toString();
+    window.history.replaceState(null, '', qs ? `/mock-test/${examSlug}?${qs}` : `/mock-test/${examSlug}`);
   };
   const setActiveTab = (tab: string) => updateFilter('tab', tab);
   const [historyState, setHistory] = useState<{ owner: string | undefined; exam: string; attempts: MockAttemptHistory[] } | null>(null);
@@ -97,8 +100,8 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
   const selectedYear = searchParams.get('year') ?? undefined;
   const setSelectedYear = (year: string) => updateFilter('year', year);
   const catalog = useExamCatalog(examSlug, activeTab, selectedTier, loadingOnly, selectedYear);
-  const { metadata, effectiveTier, effectiveYear } = catalog;
-  const pyqCount = activeTab === 'prev' ? catalog.total : metadata?.pyqCount;
+  const { metadata, effectiveTier, effectiveYear, hasMore, loadingMore, error: catalogError, loadMore } = catalog;
+  const pyqCount = metadata?.pyqCount ?? (activeTab === 'prev' ? catalog.total : undefined);
   const tiers = metadata?.tiers || [];
   const tierInfo = useMemo(() => getTierLabel(examSlug), [examSlug]);
   const loadingHistory = ready && !(historyState?.owner === owner && historyState?.exam === examSlug);
@@ -109,13 +112,13 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
   }, [examSlug, activeTab, effectiveTier, effectiveYear]);
   useEffect(() => {
     const sentinel = sentinelRef.current;
-    if (!sentinel || !catalog.hasMore || catalog.loadingMore || catalog.error) return;
+    if (!sentinel || !hasMore || loadingMore || catalogError) return;
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) catalog.loadMore();
+      if (entry.isIntersecting) loadMore();
     }, { root: contentRef.current, rootMargin: '200px' });
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [catalog]);
+  }, [hasMore, loadingMore, catalogError, loadMore, activeTab]);
 
   // Fetch attempt history for this exam
   useEffect(() => {
@@ -138,6 +141,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
   // Merge slot status with user history
   const getSlotState = (slot: MockTestSlot) => {
     const slotAttempts = history.filter((h) => h.testId === slot.id);
+    const inProgress = slotAttempts.find((h) => h.status === 'in_progress');
     const completed = slotAttempts.find((h) => h.status === 'completed');
 
     if (completed) {
@@ -146,13 +150,18 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
         score: completed.result?.totalScore ?? 0,
         maxScore: completed.result?.maxScore ?? 100,
         attemptId: completed.id,
+        inProgressAttemptId: inProgress?.id,
         language: completed.language,
       };
     }
     if (!slot.isFree) {
-      return { status: 'locked' as const };
+      return { status: 'locked' as const, inProgressAttemptId: undefined };
     }
-    return { status: 'not_started' as const };
+    return { status: 'not_started' as const, inProgressAttemptId: inProgress?.id };
+  };
+
+  const handleResume = (slotId: string, attemptId: string) => {
+    router.push(`/mock-test/${examSlug}/${slotId}/attempt?resume=${encodeURIComponent(attemptId)}`);
   };
 
   const handleStart = (slotId: string) => {
@@ -218,10 +227,15 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
               <div className={styles.paperStatus}>
               <span className={`${styles.statusBadge} ${completed ? styles.badgeCompleted : locked ? styles.badgeLocked : styles.badgeNew}`}>
                 <StatusIcon size={15} aria-hidden="true" />
-                {completed ? 'Completed' : locked ? 'Pro' : 'Not attempted'}
+                {completed ? 'Completed' : state.inProgressAttemptId ? 'In progress' : locked ? 'Pro' : 'Not attempted'}
               </span>
               </div>
               <div className={styles.testLineAction}>
+                {state.inProgressAttemptId && !locked && (
+                  <button type="button" data-ui-button="secondary" aria-label="Resume Mock" className={`${styles.paperAction} ${styles.actionOutline}`} onClick={() => handleResume(slot.id, state.inProgressAttemptId!)}>
+                    <span className={styles.actionFace}><Play size={14} aria-hidden="true" /><span>Resume</span></span>
+                  </button>
+                )}
                 {completed && slot.assessmentMode !== 'confidential' && (
                   <button type="button" data-ui-button="secondary" aria-label="Retake" className={`${styles.paperAction} ${styles.actionOutline}`} onClick={() => handleRetake(slot.id, state.language)}>
                     <span className={styles.actionFace}><RotateCcw size={14} aria-hidden="true" /><span>Retake</span></span>
@@ -346,7 +360,7 @@ export default function ExamLandingPage({ examSlug, loadingOnly = false }: ExamL
                           onChange={(e) => setSelectedYear(e.target.value)}
                           aria-label="Select year"
                         >
-                          <option value="">Year</option>
+                          <option value="">All years</option>
                           {(metadata?.years || []).map(year => <option key={year} value={year}>{year}</option>)}
                         </select>
                         <ChevronDown size={12} className={styles.dropdownChevron} />

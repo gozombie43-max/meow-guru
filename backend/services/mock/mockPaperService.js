@@ -1,13 +1,59 @@
+import { randomBytes } from 'node:crypto';
 import { JAM_SECTIONS, jamQuestionTopic } from '@meow/contracts/jam';
-import { assertQuestionSourceMode } from '../questions/questionExamMode.js';
-import { assignQuestionIdentity, resolveQuestion } from '../questions/questionIdentity.js';
+import { assertQuestionSourceMode, questionExamModeCondition } from '../questions/questionExamMode.js';
+import { assignQuestionIdentity } from '../questions/questionIdentity.js';
 import { battleQuestionMetadata } from '../questions/battleQuestionMetadata.js';
-import { fetchSlotById } from './mockSlotService.js';
+import { fetchSlotById, hasZipImages } from './mockSlotService.js';
 import { shuffleArray, exactCI, stripAnswer } from './mockModel.js';
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
 import { invalidateQuestionMetadata } from '../questions/questionMetadataCache.js';
+import * as questionCache from '../questions/questionCache.js';
 import { trainingQuestionMetadata } from '../training/domain/questionMetadata.js';
-import { normalizedQuestionKeys } from "../questions/questionNormalizer.js";
+import { buildNormalizedQuestionFields } from '../questions/questionNormalizer.js';
+import { buildExcludeStudyModeCondition, combineMongoConditions } from '../questions/questionQueryBuilder.js';
+
+// Safe inclusion projection for dynamic mock paper construction:
+// keeps display/translation/solution/answer fields needed to assemble the paper & server answerKey
+// while never pulling ingestion, training, or battle internal metadata.
+const MOCK_DYNAMIC_QUESTION_PROJECTION = Object.freeze({
+  _id: 0,
+  id: 1,
+  questionUid: 1,
+  question: 1,
+  questionHindi: 1,
+  text: 1,
+  questionType: 1,
+  options: 1,
+  correctAnswer: 1,
+  answer: 1,
+  correctLetter: 1,
+  solution: 1,
+  solutionImage: 1,
+  solutionImageWidth: 1,
+  solutionImageHeight: 1,
+  explanation: 1,
+  subject: 1,
+  topic: 1,
+  chapter: 1,
+  concept: 1,
+  difficulty: 1,
+  exam: 1,
+  year: 1,
+  shift: 1,
+  examDate: 1,
+  image: 1,
+  questionImage: 1,
+  questionImageWidth: 1,
+  questionImageHeight: 1,
+  optionImages: 1,
+  optionAImage: 1,
+  optionBImage: 1,
+  optionCImage: 1,
+  optionDImage: 1,
+  passage: 1,
+  sectionKey: 1,
+  translations: 1,
+});
 
 import { validateQuestions, validateConfidentialUpload, invalidPaper } from '../assessmentPolicy.js';
 import { getExamConfig } from '../../config/exam-config.js';
@@ -16,7 +62,17 @@ import { buildSchemaPaper, uploadSchemaPaper } from './schemaPaperService.js';
 import { mutateMockCatalog } from '../../repositories/mockCatalogMetadataRepository.js';
 
 export async function uploadFullPaper({ slotData, questions, paper, examMode }) {
-  if (paper) return uploadSchemaPaper({ slotData, paper, examMode });
+  if (paper) {
+    const schemaResult = await uploadSchemaPaper({ slotData, paper, examMode });
+    if (typeof questionCache.invalidateQuestionCaches === 'function') {
+      const targetExam = schemaResult?.examSlug || slotData?.examSlug;
+      await questionCache.invalidateQuestionCaches({
+        ...(targetExam ? { exam: targetExam } : {}),
+        bumpRevision: true,
+      }).catch(() => {});
+    }
+    return schemaResult;
+  }
   if (!slotData || !slotData.id || !slotData.examSlug || !slotData.configKey || !slotData.title) {
     throw new Error('Missing slot metadata (id, examSlug, configKey, title)');
   }
@@ -91,10 +147,35 @@ export async function uploadFullPaper({ slotData, questions, paper, examMode }) 
     };
   });
 
-  for (const question of normalizedQuestions) {
-    const existing = slotData.assessmentMode === 'confidential' ? null : await resolveQuestion(questionsCollection, question.id, { topic: question.topic, examMode });
-    const identity = existing?.questionUid || assignQuestionIdentity({ ingestionKey: `mock:${slotData.examSlug}:${slotData.id}:${question.id}` }).questionUid;
-    question.questionUid = identity;
+  // Batch-resolve existing question identities in 1 query instead of N sequential lookups.
+  if (slotData.assessmentMode !== 'confidential') {
+    const allIds = [...new Set(normalizedQuestions.map(q => q.id))];
+    const cursor = allIds.length
+      ? questionsCollection.find(
+          { id: { $in: allIds } },
+          { projection: { _id: 0, id: 1, topic: 1, questionUid: 1 } }
+        )
+      : null;
+    const existingRows = cursor
+      ? await (typeof cursor.limit === 'function' ? cursor.limit(Math.max(allIds.length * 2, 2)) : cursor).toArray()
+      : [];
+    const byId = new Map();
+    for (const row of existingRows) {
+      const list = byId.get(row.id) || [];
+      list.push(row);
+      byId.set(row.id, list);
+    }
+    for (const question of normalizedQuestions) {
+      const candidates = byId.get(question.id) || [];
+      const topicMatch = candidates.find(c => String(c.topic || '').toLowerCase() === String(question.topic || '').toLowerCase());
+      const existing = topicMatch || (candidates.length === 1 ? candidates[0] : null);
+      const identity = existing?.questionUid || assignQuestionIdentity({ ingestionKey: `mock:${slotData.examSlug}:${slotData.id}:${question.id}` }).questionUid;
+      question.questionUid = identity;
+    }
+  } else {
+    for (const question of normalizedQuestions) {
+      question.questionUid = assignQuestionIdentity({ ingestionKey: `mock:${slotData.examSlug}:${slotData.id}:${question.id}` }).questionUid;
+    }
   }
 
   validateQuestions(normalizedQuestions);
@@ -121,6 +202,7 @@ export async function uploadFullPaper({ slotData, questions, paper, examMode }) 
     order: Number(slotData.order) || 1,
     questionCount: normalizedQuestions.length,
     hasFixedPaper: true,
+    hasZipImages: hasZipImages({ fixedQuestions: normalizedQuestions }),
     fixedQuestions: normalizedQuestions,
     assessmentMode: slotData.assessmentMode === 'confidential' ? 'confidential' : 'practice',
     timingPolicy: slotData.timingPolicy || 'composite',
@@ -146,28 +228,50 @@ export async function uploadFullPaper({ slotData, questions, paper, examMode }) 
     }
   ));
 
-  // 2. Also optionally batch upsert questions into question bank
+  // 2. Batch upsert MCQ questions into the question bank in a single bulkWrite instead of N sequential updateOnes.
   let insertedToBank = 0;
-  for (const q of slotDoc.assessmentMode === 'confidential' ? [] : normalizedQuestions.filter(question => question.questionType === 'MCQ')) {
-    try {
-      await questionsCollection.updateOne(
-        {
-          questionUid: q.questionUid,
-        },
-        {
-          $set: { ...q, ...normalizedQuestionKeys(q), ...trainingQuestionMetadata(q), ...battleQuestionMetadata(q) },
-        },
-        {
+  const bankQuestions = slotDoc.assessmentMode === 'confidential'
+    ? []
+    : normalizedQuestions.filter(question => question.questionType === 'MCQ');
+  if (bankQuestions.length > 0) {
+    if (typeof questionsCollection.bulkWrite === 'function') {
+      const ops = bankQuestions.map(q => ({
+        updateOne: {
+          filter: { questionUid: q.questionUid },
+          update: {
+            $set: { ...q, ...buildNormalizedQuestionFields(q), ...trainingQuestionMetadata(q), ...battleQuestionMetadata(q) },
+          },
           upsert: true,
+        },
+      }));
+      try {
+        const bulkResult = await questionsCollection.bulkWrite(ops, { ordered: false });
+        insertedToBank = (bulkResult.upsertedCount || 0) + (bulkResult.matchedCount || 0);
+      } catch (err) {
+        runtimeLog.warn(`Batch upsert questions warning for slot ${slotDoc.id}:`, err.message);
+        const r = err.result;
+        insertedToBank = r ? ((r.nUpserted || r.upsertedCount || 0) + (r.nMatched || r.matchedCount || 0)) : 0;
+      }
+    } else {
+      for (const q of bankQuestions) {
+        try {
+          await questionsCollection.updateOne(
+            { questionUid: q.questionUid },
+            { $set: { ...q, ...buildNormalizedQuestionFields(q), ...trainingQuestionMetadata(q), ...battleQuestionMetadata(q) } },
+            { upsert: true }
+          );
+          insertedToBank++;
+        } catch (err) {
+          runtimeLog.warn(`Upsert question ${q.id} warning:`, err.message);
         }
-      );
-      insertedToBank++;
-    } catch (err) {
-      runtimeLog.warn(`Upsert question ${q.id} warning:`, err.message);
+      }
     }
   }
 
   if (insertedToBank) await invalidateQuestionMetadata();
+  if (typeof questionCache.invalidateQuestionCaches === 'function') {
+    await questionCache.invalidateQuestionCaches({ exam: slotDoc.examSlug, bumpRevision: !insertedToBank }).catch(() => {});
+  }
 
   return {
     success: true,
@@ -215,9 +319,11 @@ export async function buildPaper({ examSlug, testId, slot: loadedSlot }) {
 
     for (const section of config.sections) {
       // Tagged questions belong to exactly one section. Positional fallback may
-      // consume only untagged questions, never reuse another section's questions.
+      // top up partially filled or empty sections from untagged questions only.
       const sectionQuestions = assigned.get(section.key);
-      if (sectionQuestions.length === 0) sectionQuestions.push(...unassigned.splice(0, section.questionCount));
+      if (sectionQuestions.length < section.questionCount && unassigned.length > 0) {
+        sectionQuestions.push(...unassigned.splice(0, section.questionCount - sectionQuestions.length));
+      }
 
       for (const q of sectionQuestions) {
         answerKey[q.questionUid || q.id] = q.correctAnswer ?? q.answer ?? null;
@@ -246,54 +352,96 @@ export async function buildPaper({ examSlug, testId, slot: loadedSlot }) {
   }
 
   // Case B: Dynamic paper generation from question pool
-  // Keep section order and answer-key precedence while limiting simultaneous reads.
+  // Keep section order, prevent cross-section duplicates via globalSeen,
+  // enforce examMode + non-studyMode, and use unbiased selectionKey random pivot + wraparound.
+  const examMode = String(examSlug || slot.examSlug || '').startsWith('iit-jam') ? 'iit-jam' : 'ssc';
+  const useNormalizedKeys =
+    typeof questionCache.isNormalizedKeysEnabled === 'function'
+      ? questionCache.isNormalizedKeysEnabled()
+      : process.env.QUESTIONS_NORMALIZED_KEYS !== 'false';
+  const globalSeen = new Set();
   for (let offset = 0; offset < config.sections.length; offset += 3) {
     const batch = await Promise.all(config.sections.slice(offset, offset + 3).map(async section => {
-      const sectionKeys = {};
       const overfetchCount = section.questionCount * 3;
       const topicList = section.topics.map(t => t.toLowerCase());
+      const normalizedKeys = [...new Set(topicList.map(t => t.replace(/[^a-z0-9]/g, '')).filter(Boolean))];
+      const fetchLimit = Math.min(overfetchCount * Math.max(topicList.length, 1), 600);
 
       let allQuestions = [];
       if (topicList.length > 0) {
         try {
-          const topicRegexes =
-            topicList.map(
-              (topic) =>
-                exactCI(topic)
+          const projection = MOCK_DYNAMIC_QUESTION_PROJECTION;
+          const modeFilter = questionExamModeCondition(examMode);
+          const nonStudyFilter = useNormalizedKeys
+            ? { $or: [{ modeKey: { $exists: true, $ne: 'studyMode' } }, { modeKey: { $exists: false }, ...buildExcludeStudyModeCondition() }] }
+            : buildExcludeStudyModeCondition();
+          const pivot = randomBytes(8).toString('hex');
+          const sortSpec = { selectionKey: 1, _id: 1 };
+
+          let resources = [];
+          const runQuery = (filter, limit, applySort = false) => {
+            let cursor = questionsCollection.find(filter, { projection });
+            if (applySort && typeof cursor.sort === 'function') {
+              cursor = cursor.sort(sortSpec);
+            }
+            if (typeof cursor.maxTimeMS === 'function') {
+              cursor = cursor.maxTimeMS(5000);
+            }
+            return { cursor, promise: cursor.limit(limit).toArray() };
+          };
+
+          if (useNormalizedKeys && normalizedKeys.length > 0) {
+            const baseNormFilter = combineMongoConditions([
+              modeFilter,
+              nonStudyFilter,
+              { topicKey: { $in: normalizedKeys } },
+            ]);
+            const headExec = runQuery(
+              combineMongoConditions([baseNormFilter, { selectionKey: { $gte: pivot } }]),
+              fetchLimit,
+              true,
             );
+            const headRows = await headExec.promise;
+            resources = headRows;
+            const supportsRealSort = typeof headExec.cursor?.sort === 'function';
+            if (supportsRealSort && resources.length < fetchLimit) {
+              const tailExec = runQuery(
+                combineMongoConditions([baseNormFilter, { selectionKey: { $lt: pivot } }]),
+                fetchLimit - resources.length,
+                true,
+              );
+              resources = [...resources, ...(await tailExec.promise)];
+            }
+            if (supportsRealSort && resources.length < section.questionCount) {
+              // Fallback for un-backfilled fixtures lacking selectionKey/topicKey.
+              const topicRegexes = topicList.map((topic) => exactCI(topic));
+              const fallbackFilter = combineMongoConditions([
+                modeFilter,
+                buildExcludeStudyModeCondition(),
+                { topic: { $in: topicRegexes } },
+              ]);
+              const fallbackRows = await runQuery(fallbackFilter, fetchLimit, false).promise;
+              if (fallbackRows.length > resources.length) resources = fallbackRows;
+            }
+          } else {
+            const topicRegexes = topicList.map((topic) => exactCI(topic));
+            const legacyFilter = combineMongoConditions([
+              modeFilter,
+              buildExcludeStudyModeCondition(),
+              { topic: { $in: topicRegexes } },
+            ]);
+            resources = await runQuery(legacyFilter, fetchLimit, false).promise;
+          }
 
-          const resources =
-            await questionsCollection
-              .find(
-                {
-                  topic: {
-                    $in: topicRegexes,
-                  },
-                },
-                {
-                  projection: {
-                    _id: 0,
-                    _cosmosRid: 0,
-                  },
-                }
-              )
-              .limit(
-                overfetchCount *
-                Math.max(
-                  topicList.length,
-                  1
-                )
-              )
-              .toArray();
-
-          allQuestions =
-            resources.map(q => ({ ...q, legacyId: q.id, id: q.questionUid || q.id }));
+          allQuestions = resources
+            .filter(q => Array.isArray(q.options) && q.options.length > 0 && (q.correctAnswer ?? q.answer) != null)
+            .map(q => ({ ...q, legacyId: q.id, id: q.questionUid || q.id }));
         } catch (err) {
           runtimeLog.warn(`Query for topics [${topicList.join(', ')}] failed:`, err.message);
         }
       }
 
-      // Deduplicate by id
+      // Deduplicate within section
       const seen = new Set();
       allQuestions = allQuestions.filter(q => {
         if (seen.has(q.id)) return false;
@@ -301,11 +449,17 @@ export async function buildPaper({ examSlug, testId, slot: loadedSlot }) {
         return true;
       });
 
+      return { section, allQuestions };
+    }));
+
+    for (const { section, allQuestions } of batch) {
+      // Deduplicate across sections sequentially so no question appears in two sections.
+      const uniqueQuestions = allQuestions.filter(q => !globalSeen.has(q.id));
+
       // Apply 30/50/20 difficulty distribution
-      const easy = allQuestions.filter(q => (q.difficulty || '').toLowerCase() === 'easy');
-      const medium = allQuestions.filter(q => (q.difficulty || '').toLowerCase() === 'medium');
-      const hard = allQuestions.filter(q => (q.difficulty || '').toLowerCase() === 'hard');
-      const rest = allQuestions.filter(q => !['easy', 'medium', 'hard'].includes((q.difficulty || '').toLowerCase()));
+      const easy = uniqueQuestions.filter(q => (q.difficulty || '').toLowerCase() === 'easy');
+      const medium = uniqueQuestions.filter(q => (q.difficulty || '').toLowerCase() === 'medium');
+      const hard = uniqueQuestions.filter(q => (q.difficulty || '').toLowerCase() === 'hard');
 
       const easyCount = Math.round(section.questionCount * 0.3);
       const hardCount = Math.round(section.questionCount * 0.2);
@@ -319,28 +473,27 @@ export async function buildPaper({ examSlug, testId, slot: loadedSlot }) {
 
       if (selected.length < section.questionCount) {
         const selectedIds = new Set(selected.map(q => q.id));
-        const remaining = allQuestions.filter(q => !selectedIds.has(q.id));
+        const remaining = uniqueQuestions.filter(q => !selectedIds.has(q.id));
         selected.push(...shuffleArray(remaining).slice(0, section.questionCount - selected.length));
       }
 
       selected = shuffleArray(selected).slice(0, section.questionCount);
 
+      const sectionKeys = {};
       for (const q of selected) {
+        globalSeen.add(q.id);
         sectionKeys[q.questionUid || q.id] = q.correctAnswer ?? q.answer ?? null;
       }
 
-      return { answerKey: sectionKeys, section: {
+      sections.push({
         key: section.key,
         label: section.label,
         questionCount: section.questionCount,
         timeLimitMin: section.timeLimitMin,
         marking: section.marking,
         questions: selected.map(stripAnswer),
-      } };
-    }));
-    for (const result of batch) {
-      sections.push(result.section);
-      Object.assign(answerKey, result.answerKey);
+      });
+      Object.assign(answerKey, sectionKeys);
     }
   }
 

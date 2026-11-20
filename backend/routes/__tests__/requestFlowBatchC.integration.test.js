@@ -98,8 +98,11 @@ it('builds dynamic paper sections in batches of three and retains configured ord
     const result = await work;
     expect(peak).toBe(3);
     expect(result.clientPaper.sections.map(section => section.key)).toEqual(['ga', 'reasoning', 'quant', 'english']);
-    expect(result.answerKey.shared).toBe(1);
-    expect(result.clientPaper.sections.every(section => section.questions[0].correctAnswer === undefined)).toBe(true);
+    // Cross-section deduplication gives the first configured section ('ga', index 0) precedence and prevents duplicates.
+    expect(result.answerKey.shared).toBe(0);
+    const allQuestions = result.clientPaper.sections.flatMap(section => section.questions);
+    expect(allQuestions).toHaveLength(1);
+    expect(allQuestions.every(question => question.correctAnswer === undefined)).toBe(true);
   } finally { gates.forEach(gate => gate.release()); await work; }
 });
 

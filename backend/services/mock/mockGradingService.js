@@ -4,7 +4,11 @@ import { getExamConfig } from '../../config/exam-config.js';
 import { getMockAttemptsCollection } from '../../config/mongodb.js';
 
 export function gradeAttempt({ attemptDoc }) {
-  const config = attemptDoc.paper?.schemaDriven ? attemptDoc.paper : getExamConfig(attemptDoc.configKey);
+  const paperSections = Array.isArray(attemptDoc.paper?.sections) ? attemptDoc.paper.sections : [];
+  const hasSnapshottedMarking = paperSections.length > 0 && paperSections.every(s => s?.marking && typeof s.marking.correct === 'number');
+  const config = attemptDoc.paper?.schemaDriven || hasSnapshottedMarking
+    ? attemptDoc.paper
+    : getExamConfig(attemptDoc.configKey);
   if (!config) throw new Error(`Config not found: ${attemptDoc.configKey}`);
 
   const sectionResults = [];
@@ -12,8 +16,11 @@ export function gradeAttempt({ attemptDoc }) {
   let maxScore = 0;
 
   for (const sectionConfig of config.sections) {
-    const paperSection = (attemptDoc.paper?.sections || []).find(s => s.key === sectionConfig.key);
+    const paperSection = paperSections.find(s => s.key === sectionConfig.key);
     if (!paperSection) continue;
+    const marking = paperSection.marking && typeof paperSection.marking.correct === 'number'
+      ? paperSection.marking
+      : sectionConfig.marking;
 
     let correct = 0;
     let incorrect = 0;
@@ -32,8 +39,8 @@ export function gradeAttempt({ attemptDoc }) {
       }
     }
 
-    const sectionScore = (correct * sectionConfig.marking.correct) - (incorrect * sectionConfig.marking.incorrect);
-    const sectionMax = paperSection.questions.length * sectionConfig.marking.correct;
+    const sectionScore = (correct * marking.correct) - (incorrect * marking.incorrect);
+    const sectionMax = Math.round((paperSection.questions.length * marking.correct) * 100) / 100;
 
     sectionResults.push({
       key: sectionConfig.key,
@@ -51,11 +58,13 @@ export function gradeAttempt({ attemptDoc }) {
     maxScore += sectionMax;
   }
 
+  const roundedTotal = Math.round(totalScore * 100) / 100;
+  const roundedMax = Math.round(maxScore * 100) / 100;
   return {
     sections: sectionResults,
-    totalScore: Math.round(totalScore * 100) / 100,
-    maxScore,
-    percentage: maxScore > 0 ? Math.round((totalScore / maxScore) * 10000) / 100 : 0,
+    totalScore: roundedTotal,
+    maxScore: roundedMax,
+    percentage: roundedMax > 0 ? Math.round((roundedTotal / roundedMax) * 10000) / 100 : 0,
   };
 }
 
@@ -90,12 +99,7 @@ export async function computePercentile({
     ]);
 
     return total > 0
-      ? Math.round(
-          (
-            countBelow /
-            total
-          ) * 10000
-        ) / 100
+      ? Math.min(100, Math.max(0, Math.round((countBelow / total) * 10000) / 100))
       : 50;
   } catch (err) {
     runtimeLog.warn(

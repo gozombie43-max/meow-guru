@@ -84,11 +84,11 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
                 buttonRefs.current[code] = node;
               }}
               onClick={() => onChange(code)}
-              disabled={loading}
+              disabled={loading && code !== "en"}
               className={[
                 "lang-toggle-option relative z-10 h-8 min-w-[62px] rounded-[11px] bg-transparent px-2.5 text-[12px] font-medium leading-none outline-none transition-[color,transform] duration-300 ease-out active:scale-[0.98]",
                 active === code ? "is-active" : "",
-                loading ? "cursor-not-allowed" : "",
+                loading && code !== "en" ? "cursor-not-allowed" : "",
               ].filter(Boolean).join(" ")}
             >
               {code === "bn" && active !== "bn" ? (

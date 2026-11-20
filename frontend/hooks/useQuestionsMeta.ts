@@ -18,13 +18,13 @@ interface QuestionsMeta {
 
 type GroupingStatus = Pick<QuestionsMeta, 'groupingStatus' | 'groupingFingerprint' | 'conceptGroups' | 'metadataChanged'>;
 
-const fetcher = async (url: string): Promise<QuestionsMeta> => {
-  const early = consumeEarlyRouteData<QuestionsMeta>(API_BASE, `public:GET:${url}`, null);
+const fetcher = async (url: string, signal?: AbortSignal): Promise<QuestionsMeta> => {
+  const early = consumeEarlyRouteData<QuestionsMeta>(API_BASE, `public:GET:${url}`, null, signal);
   if (early) {
     const preloaded = await early;
     if (preloaded) return preloaded;
   }
-  const res = await fetchWithRetry(url, {}, { auth: 'none' });
+  const res = await fetchWithRetry(url, signal ? { signal } : {}, { auth: 'none' });
   if (!res.ok) throw new Error('Failed to fetch questions meta');
   return res.json();
 };
@@ -69,21 +69,22 @@ export function useQuestionsMeta(params: {
   useEffect(() => {
     if (!fingerprint) return;
     const statusUrl = `${API_BASE}/api/questions/concept-groups/${encodeURIComponent(fingerprint)}`;
+    const pollController = new AbortController();
     let cancelled = false;
     let stopped = false;
     let inFlight = false;
     let queuedPoll = false;
 
     const pollStatus = async () => {
-      if (cancelled || stopped) return;
+      if (cancelled || stopped || pollController.signal.aborted) return;
       if (inFlight) {
         queuedPoll = true;
         return;
       }
       inFlight = true;
       try {
-        const next = await fetcher(statusUrl);
-        if (cancelled || stopped) return;
+        const next = await fetcher(statusUrl, pollController.signal);
+        if (cancelled || stopped || pollController.signal.aborted) return;
         setGroupingError(undefined);
         if (next.metadataChanged && next.groupingFingerprint === fingerprint) {
           stopped = true;
@@ -98,11 +99,11 @@ export function useQuestionsMeta(params: {
           return;
         }
       } catch (err) {
-        if (cancelled || stopped) return;
+        if (cancelled || stopped || pollController.signal.aborted) return;
         setGroupingError(err);
       } finally {
         inFlight = false;
-        if (!cancelled && !stopped && queuedPoll) {
+        if (!cancelled && !stopped && !pollController.signal.aborted && queuedPoll) {
           queuedPoll = false;
           void pollStatus();
         }
@@ -116,6 +117,7 @@ export function useQuestionsMeta(params: {
 
     return () => {
       cancelled = true;
+      pollController.abort();
       clearInterval(timer);
     };
   }, [fingerprint, mutate]);

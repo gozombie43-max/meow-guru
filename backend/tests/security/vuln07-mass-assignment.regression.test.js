@@ -54,8 +54,8 @@ vi.mock('../../repositories/noteImageRepository.js', () => ({
   scheduleNoteImageCleanup: vi.fn(async () => {}),
 }));
 
-vi.mock('../../repositories/mockTestRepository.js', () => ({
-  getOwnedAttempt: vi.fn(async (attemptId, userId) => ({
+vi.mock('../../repositories/mockTestRepository.js', () => {
+  const makeAttempt = (attemptId, userId) => ({
     _id: 'attempt_mongo_1',
     id: attemptId,
     userId,
@@ -74,12 +74,16 @@ vi.mock('../../repositories/mockTestRepository.js', () => ({
         },
       ],
     },
-  })),
-  updateAttemptProgress: vi.fn(async (_filter, update) => {
-    mockTestState.updates.push(update);
-    return { modifiedCount: 1 };
-  }),
-}));
+  });
+  return {
+    getOwnedAttempt: vi.fn(async (attemptId, userId) => makeAttempt(attemptId, userId)),
+    getOwnedAttemptForAutosave: vi.fn(async (attemptId, userId) => makeAttempt(attemptId, userId)),
+    updateAttemptProgress: vi.fn(async (_filter, update) => {
+      mockTestState.updates.push(update);
+      return { modifiedCount: 1 };
+    }),
+  };
+});
 
 import notesRouter from '../../routes/notes.routes.js';
 import { autosaveAttempt } from '../../controllers/mockTestController.js';

@@ -18,7 +18,7 @@ export function fetchCatalogSummary(exams: string[]): Promise<ExamPaperCounts[]>
   if (cached && cached.revision === revision && Date.now() - cached.savedAt < TTL && Array.isArray(cached.exams)) return Promise.resolve(cached.exams);
   if (pending?.revision === revision) return pending.promise;
   const promise = (async () => {
-    const response = await requestResponse(`${API_BASE}/api/mocktest/catalog-metadata`, {}, { auth: 'none' });
+    const response = await requestResponse(`${API_BASE}/api/mocktest/catalog-metadata`, { cache: 'no-store' }, { auth: 'none' });
     if (!response.ok) throw new Error('Paper counts unavailable. Please retry.');
     const data = await response.json() as { exams: ExamPaperCounts[] };
     if (!Array.isArray(data.exams) || data.exams.some(exam => typeof exam.examSlug !== 'string' || !Number.isSafeInteger(exam.total) || exam.total < 0 || !Number.isSafeInteger(exam.mockCount) || !Number.isSafeInteger(exam.pyqCount) || exam.mockCount < 0 || exam.pyqCount < 0 || exam.total !== exam.mockCount + exam.pyqCount)) throw new Error('Invalid paper count metadata. Please retry.');

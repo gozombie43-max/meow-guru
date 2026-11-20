@@ -61,8 +61,51 @@ function snapshotsEqual(a: RecentQuizPayload, b: RecentQuizPayload) {
     && (a.submittedQuestions ?? []).every((index, i) => index === b.submittedQuestions?.[i]);
 }
 
+function reconcileRevealedSnapshot(
+  saved: RecentQuizPayload | undefined,
+  next: RecentQuizPayload,
+): RecentQuizPayload {
+  if (!saved || !Array.isArray(saved.results) || !Array.isArray(next.results)) {
+    return next;
+  }
+  const savedByIndex = new Map<number, SessionResult>();
+  for (const row of saved.results as SessionResult[]) {
+    if (typeof row?.correct === 'number' && row.correct >= 0) {
+      savedByIndex.set(row.questionIndex, row);
+    }
+  }
+  if (savedByIndex.size === 0) return next;
+
+  let changed = false;
+  const mergedResults = (next.results as SessionResult[]).map((row) => {
+    const revealed = savedByIndex.get(row.questionIndex);
+    if (
+      revealed
+      && (typeof row.correct !== 'number' || row.correct < 0)
+      && row.selected === revealed.selected
+    ) {
+      changed = true;
+      return { ...row, correct: revealed.correct, isCorrect: revealed.isCorrect };
+    }
+    return row;
+  });
+
+  return changed ? { ...next, results: mergedResults } : next;
+}
+
+const ANSWER_RETRY_BACKOFF_MS = [2_000, 5_000, 15_000] as const;
+
 export function createResumeSaver(identity: string | null, sessionKey: string) {
   let saved: RecentQuizPayload | undefined, generation = 0, tail = Promise.resolve();
+  let retryTimer: ReturnType<typeof setTimeout> | null = null;
+  let retryAttempt = 0;
+  let disposed = false;
+  const clearRetryTimer = () => {
+    if (retryTimer !== null) {
+      clearTimeout(retryTimer);
+      retryTimer = null;
+    }
+  };
   const pending: Array<{
     base: Omit<QuizAnswerCommand, 'resume'>;
     snapshot: RecentQuizPayload;
@@ -75,11 +118,24 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
     tail = next;
     return next;
   };
+  const scheduleBackoffRetry = () => {
+    if (disposed || retryTimer !== null || !pending.length || session.controller.signal.aborted) return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+    if (retryAttempt >= ANSWER_RETRY_BACKOFF_MS.length) return;
+    const delay = ANSWER_RETRY_BACKOFF_MS[retryAttempt++];
+    retryTimer = setTimeout(() => {
+      retryTimer = null;
+      if (disposed || !pending.length || session.controller.signal.aborted) return;
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+      void serialize(drainAnswers).catch(() => {});
+    }, delay);
+  };
   const drainAnswers = async () => {
     while (pending.length) {
       const entry = pending[0];
+      const baseSnapshot = reconcileRevealedSnapshot(saved, entry.snapshot);
       // Freeze the payload as well as the key across uncertain response retries.
-      entry.command ??= { ...entry.base, resume: quizSnapshotDelta(saved, entry.snapshot) };
+      entry.command ??= { ...entry.base, resume: quizSnapshotDelta(saved, baseSnapshot) };
       if (session.controller.signal.aborted) throw new DOMException('Session changed', 'AbortError');
       let res;
       try {
@@ -87,22 +143,35 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
       } catch (error) {
         // A definitive rejection can never succeed; drop it so later answers still sync.
         const status = (error as { response?: { status?: number } })?.response?.status ?? 0;
-        if ([400, 404, 409, 422].includes(status)) { pending.shift(); entry.onRejected?.(); continue; }
+        if ([400, 404, 409, 422].includes(status)) {
+          pending.shift();
+          retryAttempt = 0;
+          clearRetryTimer();
+          entry.onRejected?.();
+          continue;
+        }
+        const errObj = error && typeof error === 'object' ? (error as { name?: unknown; code?: unknown; kind?: unknown }) : null;
+        const isAbort = Boolean(
+          errObj && (errObj.name === 'AbortError' || errObj.name === 'CanceledError' || errObj.code === 'ERR_CANCELED' || errObj.kind === 'aborted'),
+        );
+        if (!isAbort) scheduleBackoffRetry();
         throw error;
       }
       const revealed = res?.data as QuizAnswerResponse | undefined;
       const correctIndex = revealed?.correct;
-      saved = typeof correctIndex === 'number' && correctIndex >= 0 && Array.isArray(entry.snapshot.results)
+      saved = typeof correctIndex === 'number' && correctIndex >= 0 && Array.isArray(baseSnapshot.results)
         ? {
-            ...entry.snapshot,
-            results: (entry.snapshot.results as SessionResult[]).map(row =>
+            ...baseSnapshot,
+            results: (baseSnapshot.results as SessionResult[]).map(row =>
               row.questionIndex === entry.base.questionIndex
                 ? { ...row, correct: correctIndex, isCorrect: row.selected === correctIndex }
                 : row,
             ),
           }
-        : entry.snapshot;
+        : baseSnapshot;
       pending.shift();
+      retryAttempt = 0;
+      clearRetryTimer();
       entry.onResolved?.(revealed);
     }
   };
@@ -110,11 +179,15 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
     identity,
     controller: new AbortController(),
     retryPending: () => {
+      if (disposed) return;
+      retryAttempt = 0;
+      clearRetryTimer();
       if (pending.length && !session.controller.signal.aborted) {
         void serialize(drainAnswers).catch(() => {});
       }
     },
   };
+  session.controller.signal.addEventListener('abort', clearRetryTimer, { once: true });
   for (const ref of sessions) if (!ref.deref()) sessions.delete(ref);
   sessions.add(new WeakRef(session));
   const saver = createCoalescedSave<{ snapshot: RecentQuizPayload; generation: number }>(next => serialize(async () => {
@@ -122,9 +195,10 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
     if (next.generation < generation) return;
     await drainAnswers();
     if (next.generation < generation) return;
-    if (saved && snapshotsEqual(saved, next.snapshot)) return;
-    await saveRecentQuiz(getAccessToken() ?? '', quizSnapshotDelta(saved, next.snapshot), session.controller.signal);
-    saved = next.snapshot;
+    const effective = reconcileRevealedSnapshot(saved, next.snapshot);
+    if (saved && snapshotsEqual(saved, effective)) return;
+    await saveRecentQuiz(getAccessToken() ?? '', quizSnapshotDelta(saved, effective), session.controller.signal);
+    saved = effective;
   }), (a, b) => a.generation === b.generation && snapshotsEqual(a.snapshot, b.snapshot));
   return {
     key: sessionKey,
@@ -133,13 +207,21 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
       return saver.save({ snapshot, generation });
     },
     retryPending() {
+      retryAttempt = 0;
+      clearRetryTimer();
       if (!pending.length) return Promise.resolve();
       return serialize(drainAnswers);
+    },
+    dispose() {
+      disposed = true;
+      clearRetryTimer();
     },
     answer(base: Omit<QuizAnswerCommand, 'resume'>, snapshot: RecentQuizPayload,
       callbacks: { onResolved?: (data?: QuizAnswerResponse) => void; onRejected?: () => void } = {}): Promise<QuizAnswerResponse | undefined> {
       notifyRecentQuizUpdated?.(snapshot);
       generation++;
+      retryAttempt = 0;
+      clearRetryTimer();
       let latestResponse: QuizAnswerResponse | undefined;
       pending.push({
         base,

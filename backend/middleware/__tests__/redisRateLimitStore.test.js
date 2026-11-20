@@ -1,16 +1,16 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 
-const { redis, fallback, getRedisClient } = vi.hoisted(() => ({
+const { redis, fallback, getRateLimitRedisClient } = vi.hoisted(() => ({
   redis: { eval: vi.fn(), del: vi.fn() },
   fallback: { init: vi.fn(), increment: vi.fn(), decrement: vi.fn(), resetKey: vi.fn() },
-  getRedisClient: vi.fn(),
+  getRateLimitRedisClient: vi.fn(),
 }));
-vi.mock('../../config/redis.js', () => ({ getRedisClient, redisKey: key => `test:${key}`, reportRedisFailure: vi.fn() }));
+vi.mock('../../config/redis.js', () => ({ getRateLimitRedisClient, getRedisClient: getRateLimitRedisClient, redisKey: key => `test:${key}`, reportRedisFailure: vi.fn() }));
 vi.mock('../mongoRateLimitStore.js', () => ({ MongoRateLimitStore: class { constructor() { return fallback; } } }));
 
 import { RedisRateLimitStore } from '../redisRateLimitStore.js';
 it('preserves quiz allowances while retaining conservative authentication limits during outages', async () => {
-  getRedisClient.mockResolvedValue(null);
+  getRateLimitRedisClient.mockResolvedValue(null);
   const quiz = new RedisRateLimitStore('training', { outagePolicy: 'availability' });
   const auth = new RedisRateLimitStore('auth');
   quiz.init({ windowMs: 9000 }); auth.init({ windowMs: 9000 });
@@ -20,7 +20,7 @@ it('preserves quiz allowances while retaining conservative authentication limits
 
 beforeEach(() => {
   vi.clearAllMocks();
-  getRedisClient.mockResolvedValue(redis);
+  getRateLimitRedisClient.mockResolvedValue(redis);
   redis.eval.mockImplementation(async () => [3, 8000, Date.now() + 8000]);
   fallback.increment.mockResolvedValue({ totalHits: 2, resetTime: new Date(1000) });
 });
@@ -44,7 +44,7 @@ it('uses the new shared window after rollover and recovery despite larger local 
   store.init({ windowMs: 9000 });
   redis.eval.mockResolvedValueOnce([10, 1000, 9000]);
   expect((await store.increment('learner')).totalHits).toBe(10);
-  getRedisClient.mockResolvedValueOnce(null);
+  getRateLimitRedisClient.mockResolvedValueOnce(null);
   expect((await store.increment('learner')).totalHits).toBe(22);
   clock.mockReturnValue(9001);
   redis.eval.mockResolvedValueOnce([1, 8999, 18000]);
@@ -56,7 +56,7 @@ it('uses the new shared window after rollover and recovery despite larger local 
 it('uses conservative local counts without MongoDB on Redis failure', async () => {
   const store = new RedisRateLimitStore('auth');
   store.init({ windowMs: 9000 });
-  getRedisClient.mockResolvedValueOnce(null);
+  getRateLimitRedisClient.mockResolvedValueOnce(null);
   expect((await store.increment('ip')).totalHits).toBe(2);
   redis.eval.mockRejectedValueOnce(new Error('connection lost'));
   expect((await store.increment('ip')).totalHits).toBe(4);

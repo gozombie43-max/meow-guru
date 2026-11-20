@@ -15,14 +15,35 @@ const databaseLatency = createHistogram();
 let databaseErrors = 0;
 let runtimeHealth = { eventLoopP99Ms: 0 };
 export function getRuntimeHealth() { return { ...runtimeHealth, rssBytes: process.memoryUsage().rss }; }
-export function observeMongo(event, failed = false) {
+const DEFAULT_MONGO_SLOW_QUERY_MS = 100;
+export function getMongoSlowQueryThresholdMs(env = process.env) {
+  const raw = env.MONGO_SLOW_QUERY_MS;
+  if (raw === undefined || raw === null || String(raw).trim() === '') return DEFAULT_MONGO_SLOW_QUERY_MS;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : DEFAULT_MONGO_SLOW_QUERY_MS;
+}
+
+export function observeMongo(event, failed = false, meta = undefined) {
+  if (!event) return;
   if (event.commandName === 'getMore' && !failed) return; // Change streams intentionally wait for events.
   databaseLatency.record(Math.max(1, Math.round(event.duration * 1000)));
   dependencyLatency.observe({ dependency: 'mongo', operation: event.commandName || 'unknown' }, event.duration / 1000);
   if (failed) dependencyErrors.inc({ dependency: 'mongo' });
   if (failed) databaseErrors++;
+  const collection = meta?.collection || event.collection;
+  const slowThresholdMs = getMongoSlowQueryThresholdMs();
   // Never record commands, filters, documents, or credentials.
-  if (failed || event.duration > 500) logger.warn({ command: event.commandName, durationMs: event.duration, failed }, 'Mongo operation');
+  if (failed || event.duration > slowThresholdMs) {
+    logger.warn(
+      {
+        command: event.commandName,
+        ...(collection ? { collection } : {}),
+        durationMs: event.duration,
+        failed,
+      },
+      'Mongo operation',
+    );
+  }
 }
 export function requestLogging(req, res, next) {
   const supplied = req.headers['x-request-id'];

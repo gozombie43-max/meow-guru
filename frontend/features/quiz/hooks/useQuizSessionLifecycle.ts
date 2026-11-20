@@ -5,7 +5,7 @@ import { useQuizSync } from "@/features/quiz/hooks/useQuizSync";
 import { useQuizTimer } from "@/features/quiz/hooks/useQuizTimer";
 import type { SessionResult, SubjectConfig } from "@/features/quiz/model/types";
 import { useAuth } from "@/context/AuthContext";
-import { useCallback, useEffect, useMemo, useRef, useReducer } from "react";
+import { useCallback, useEffect, useMemo, useRef, useReducer, useState } from "react";
 import { useQuizAnswerLifecycle } from "./useQuizAnswerLifecycle";
 import { initialQuizSession, quizSessionReducer } from "../model/sessionReducer";
 import useSWR from 'swr';
@@ -26,8 +26,8 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   resumeRequested: boolean; jumpIdRaw: string | null; filters: ReturnType<typeof useQuizFilters>;
   closePalette: () => void;
 }) {
-  const jumpId = Number.parseInt(jumpIdRaw ?? "", 10);
-  const { questions, hasMore, isFetchingMore, fetchMore, conceptFilter, setConceptFilter, examFilter, setExamFilter,
+  const jumpIdNormalized = jumpIdRaw?.trim() || "";
+  const { questions, hasMore, isFetchingMore, fetchMore, retryFetchMore, isSessionError, conceptFilter, setConceptFilter, examFilter, setExamFilter,
     selectedClassificationConcepts, setSelectedClassificationConcepts, ensureQuestion } = filters;
   const [state, dispatch] = useReducer(quizSessionReducer, undefined, initialQuizSession);
   const { currentIndex, selectedAnswers, submittedQuestions, difficulty, results } = state;
@@ -37,14 +37,15 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   const setIsSolutionOpen = useCallback((open: boolean) => dispatch({ type: 'SOLUTION', open }), [dispatch]);
   const timer = useQuizTimer();
   const { startTimer, stopTimer } = timer;
-  const storageKey = `${subjectConfig.subjectId}_quiz_resume_${slug}_${mode}`;
-  const { resumeData, setResumeData, loadResume, clearResume } = useQuizResume(storageKey);
 
   const { user, token, refreshUser, loading: authLoading } = useAuth();
   const quizKey = `${subjectConfig.subjectId}:${slug}`;
   const practiceBase = routeBase ?? `/${subjectConfig.subjectId}/${slug}`;
   const quizHref = `${practiceBase}/quiz`;
   const identity = authSessionIdentity(token);
+  const legacyStorageKey = `${subjectConfig.subjectId}_quiz_resume_${slug}_${mode}`;
+  const storageKey = identity ? `${identity}:${legacyStorageKey}` : legacyStorageKey;
+  const { resumeData, setResumeData, loadResume, clearResume } = useQuizResume(storageKey, legacyStorageKey);
 
   // Bounded in-memory LRU cache scoped to this session and user identity.
   const cache = useMemo(
@@ -53,16 +54,8 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   );
   useEffect(() => () => cache.clear(), [cache]);
 
-  const handleRevealPrefetched = useCallback((index: number, questionId: string | number, revealed: QuizAnswerResponse) => {
-    if (submittedQuestions.has(index)) {
-      const q = questions[index];
-      cache.setAnswerResult(index, questionId, revealed, q && !q.sessionPlaceholder ? q : undefined);
-      dispatch({ type: 'REVEAL', index, questionId, revealed });
-    }
-  }, [cache, questions, submittedQuestions, dispatch]);
-
   const getPrefetchedReveal = useCallback((index: number, questionId?: string | number) => {
-    return cache.getPrefetchedReveal(index, questionId);
+    return cache.getAnswerResult(index, questionId);
   }, [cache]);
 
   const resumeSummary = useMemo(() => {
@@ -89,7 +82,7 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     : (resumeDetail ?? (!isLoadingDetail ? resumeSummary : undefined));
   const resumeAppliedRef = useRef(false);
 
-  // Background prefetch of next 2 questions (content, answer keys/solutions, window pages, and images) + LRU warming.
+  // Background prefetch of upcoming batch, window placeholders, and images + LRU warming.
   useQuizPrefetch({
     started,
     showAnalytics,
@@ -97,10 +90,10 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     questions,
     hasMore,
     isFetchingMore,
+    hasError: Boolean(isSessionError),
     fetchMore,
     ensureQuestion,
     cache,
-    onRevealPrefetched: handleRevealPrefetched,
   });
 
   const rawCurrentQ = questions[currentIndex]?.sessionPlaceholder ? undefined : questions[currentIndex];
@@ -142,8 +135,13 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   const savedIndex = anchorIndex >= 0 ? anchorIndex : resumeEntry?.currentIndex ?? 0;
   const readyResume = resumeRequested && Boolean(resumeEntry)
     && questions.length > 0 && (savedIndex < questions.length || !hasMore) && !questions[savedIndex]?.sessionPlaceholder;
-  const targetIndex = jumpIdRaw && Number.isFinite(jumpId)
-    ? questions.findIndex(question => question.id === jumpId) : -1;
+  const targetIndex = jumpIdNormalized
+    ? questions.findIndex(question =>
+        String(question.id) === jumpIdNormalized
+        || (question.rawId !== undefined && String(question.rawId) === jumpIdNormalized)
+        || (question.questionUid !== undefined && question.questionUid === jumpIdNormalized)
+      )
+    : -1;
   useEffect(() => {
     if (initialization || !(readyResume || (!resumeRequested && targetIndex >= 0))) return;
     const index = readyResume ? Math.max(0, Math.min(savedIndex, questions.length - 1)) : targetIndex;
@@ -200,14 +198,15 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     }
     if (!hasMore) return;
     if ((resumeRequested && Boolean(resumeEntry) && savedIndex >= questions.length)
-      || (!resumeRequested && jumpIdRaw && Number.isFinite(jumpId) && targetIndex < 0)) void fetchMore();
-  }, [initialization, hasMore, questions, resumeRequested, resumeEntry, savedIndex, ensureQuestion, jumpIdRaw, jumpId, targetIndex, fetchMore]);
+      || (!resumeRequested && Boolean(jumpIdNormalized) && targetIndex < 0 && questions.length < 1000)) void fetchMore();
+  }, [initialization, hasMore, questions, resumeRequested, resumeEntry, savedIndex, ensureQuestion, jumpIdNormalized, targetIndex, fetchMore]);
 
   const sessionFilters = useMemo(() => ({ exam: examFilter || undefined,
     concept: serializeConceptSelection(Array.from(selectedClassificationConcepts)) || undefined,
     letter: Array.from(filters.selectedLetters ?? []).join(',') || undefined,
   }), [examFilter, selectedClassificationConcepts, filters.selectedLetters]);
   const saver = useMemo(() => createResumeSaver(identity, `${quizKey}:${mode}`), [identity, quizKey, mode]);
+  useEffect(() => () => saver.dispose(), [saver]);
   const snapshot = useCallback((next: typeof state): RecentQuizPayload => ({
     quizKey, title, subject: subjectConfig.subjectId, slug, href: quizHref, mode,
     currentIndex: next.currentIndex, questionAnchor: questions[next.currentIndex]?.sessionAnchor,
@@ -303,8 +302,13 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
 
 
   const navigationRequest = useRef(0);
+  const pendingAdvanceFromRef = useRef<number | null>(null);
+  const [isAdvancingNext, setIsAdvancingNext] = useState(false);
+
   const showQuestion = useCallback((index: number) => {
     if (!questions.length) return;
+    pendingAdvanceFromRef.current = null;
+    setIsAdvancingNext(false);
     const safeIndex = Math.max(0, Math.min(index, questions.length - 1));
     const request = ++navigationRequest.current;
     const navigate = () => {
@@ -323,18 +327,53 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
     }
     navigate();
   }, [questions, ensureQuestion, stopTimer, started, showAnalytics, submittedQuestions, startTimer, dispatch, cache]);
+
+  useEffect(() => {
+    const waitingFrom = pendingAdvanceFromRef.current;
+    if (waitingFrom === null) return;
+    if (questions.length > waitingFrom + 1) {
+      pendingAdvanceFromRef.current = null;
+      const nextIndex = waitingFrom + 1;
+      queueMicrotask(() => {
+        showQuestion(nextIndex);
+      });
+      return;
+    }
+    if (!isFetchingMore && (isSessionError || !hasMore)) {
+      pendingAdvanceFromRef.current = null;
+      queueMicrotask(() => {
+        setIsAdvancingNext(false);
+        if (isSessionError) {
+          dispatch({ type: 'ERROR', message: 'Could not load the next questions. Please try again.' });
+        }
+      });
+    }
+  }, [questions.length, isFetchingMore, isSessionError, hasMore, showQuestion, dispatch]);
+
   const goToQuestion = useCallback((number: number) => showQuestion(number - 1), [showQuestion]);
   const handlePrev = useCallback(() => { if (currentIndex > 0) showQuestion(currentIndex - 1); }, [currentIndex, showQuestion]);
   function handleNext() {
     if (currentIndex < questions.length - 1) showQuestion(currentIndex + 1);
     else if (hasMore) {
-      void fetchMore();
-      dispatch({ type: 'ERROR', message: 'Loading the next questions. Please try Next again shortly.' });
+      pendingAdvanceFromRef.current = currentIndex;
+      setIsAdvancingNext(true);
+      const loadNext = retryFetchMore ?? fetchMore;
+      void Promise.resolve(loadNext()).catch(() => {
+        if (pendingAdvanceFromRef.current === currentIndex) {
+          pendingAdvanceFromRef.current = null;
+          setIsAdvancingNext(false);
+          dispatch({ type: 'ERROR', message: 'Could not load the next questions. Please try again.' });
+        }
+      });
     } else {
+      pendingAdvanceFromRef.current = null;
+      setIsAdvancingNext(false);
       stopTimer(); refreshUser(); dispatch({ type: 'FINISH' });
     }
   }
   function handleRestart() {
+    pendingAdvanceFromRef.current = null;
+    setIsAdvancingNext(false);
     stopTimer();
     cache.clear();
     answers.resetAnswers();
@@ -342,6 +381,6 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   }
   const navigation = { showQuestion, goToQuestion, handlePrev, handleNext };
   return { ...answers, ...navigation, ...timer, currentIndex, started, showAnalytics, gradedQuestions,
-    isSolutionOpen, setIsSolutionOpen, currentQ, user, token, quizHref,
+    isSolutionOpen, setIsSolutionOpen, currentQ, user, token, quizHref, isAdvancingNext,
     resumeData, handleStart, handleResume, handleRestartFromPopup, handleCancelResume, handleRestart };
 }

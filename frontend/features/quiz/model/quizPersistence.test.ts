@@ -68,6 +68,26 @@ it('does not let an older checkpoint overwrite an answer queued while it waits',
   wait.resolve(); await Promise.all([first, stale, second]);
   expect(mocks.checkpoint).not.toHaveBeenCalled();
 });
+it('suppresses redundant checkpoint saves when a delayed pre-reveal snapshot retries an unrevealed answer', async () => {
+  mocks.answer.mockRejectedValueOnce(new Error('Lost response')).mockResolvedValue({ data: { correct: 1, isCorrect: true } });
+  const saver = createResumeSaver('token', 'quiz-unrevealed');
+  const unrevealed: RecentQuizPayload = {
+    ...snapshot(0),
+    results: [{ questionIndex: 0, selected: 1, correct: -1, isCorrect: false }],
+  };
+  const revealed: RecentQuizPayload = {
+    ...snapshot(0),
+    results: [{ questionIndex: 0, selected: 1, correct: 1, isCorrect: true }],
+  };
+  await expect(saver.answer(answer(), unrevealed)).rejects.toThrow('Lost response');
+  // Delayed sync with the pre-reveal snapshot triggers the retry and must NOT follow with a redundant PATCH.
+  await saver.save(structuredClone(unrevealed));
+  // Post-reveal sync with the server-confirmed result must also be suppressed.
+  await saver.save(revealed);
+  expect(mocks.answer).toHaveBeenCalledTimes(2);
+  expect(mocks.answer.mock.calls[1][0]).toBe(mocks.answer.mock.calls[0][0]);
+  expect(mocks.checkpoint).not.toHaveBeenCalled();
+});
 it('aborts in-flight commands and queued checkpoints on logout/account change', async () => {
   const wait = deferred(); mocks.answer.mockReturnValueOnce(wait.promise);
   const saver = createResumeSaver('token', 'quiz');

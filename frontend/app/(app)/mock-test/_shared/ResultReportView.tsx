@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type CSSProperties } from 'react';
+import Link from 'next/link';
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpen, ChartNoAxesColumnIncreasing, Check, ChevronLeft, ChevronRight, ClipboardList, LockKeyhole, Minus, RotateCcw, Target, X } from 'lucide-react';
 import type { MockAttempt, MockResultSection } from './api';
 import styles from './ResultReport.module.css';
@@ -68,14 +69,44 @@ function SectionResults({ sections, onReview }: { sections: MockResultSection[];
   </section>;
 }
 
+const SAFE_RELATIVE_PATH_RE = /^\/[a-z0-9-]+(?:\/[a-z0-9-]+)*$/;
+const SAFE_SLUG_RE = /^[a-z0-9-]+$/;
+
+function focusTopicHref(area: string) {
+  const raw = String(area || '').trim().toLowerCase();
+  if (SAFE_RELATIVE_PATH_RE.test(raw)) return raw;
+  const slug = raw.replace(/[^a-z0-9-]/g, '');
+  if (!SAFE_SLUG_RE.test(slug)) return '/dashboard';
+  if (['percentages', 'profit-and-loss', 'simple-interest', 'compound-interest', 'ratio-and-proportion', 'time-and-work', 'time-and-distance', 'algebra', 'geometry', 'trigonometry', 'mensuration', 'number-system', 'average', 'mixture-and-alligation', 'lcm-and-hcf', 'data-interpretation'].includes(slug)) {
+    return `/mathematics/arithmetic/${slug}`;
+  }
+  if (['analogy', 'coding-decoding', 'number-series', 'syllogism', 'blood-relations', 'seating-arrangement', 'puzzles', 'direction-sense', 'venn-diagrams'].includes(slug)) {
+    return `/reasoning/${slug}`;
+  }
+  if (['history', 'polity', 'geography', 'economy', 'physics', 'chemistry', 'biology', 'static-gk'].includes(slug)) {
+    return `/general-awareness/${slug}`;
+  }
+  return `/english/${slug}`;
+}
+
 function FocusTopics({ areas }: { areas: string[] }) {
-  const [selected, setSelected] = useState(areas[0]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const safeIndex = selectedIndex >= 0 && selectedIndex < areas.length ? selectedIndex : 0;
+  const selectedArea = areas[safeIndex] ?? areas[0] ?? '';
+  const href = focusTopicHref(selectedArea);
   return <div className={styles.focusTopics}>
     <label htmlFor="result-focus-topic">Focus on</label>
-    <select id="result-focus-topic" value={selected} onChange={event => setSelected(event.target.value)}>
+    <select
+      id="result-focus-topic"
+      value={selectedArea}
+      onChange={event => {
+        const nextIndex = areas.indexOf(event.target.value);
+        if (nextIndex !== -1) setSelectedIndex(nextIndex);
+      }}
+    >
       {areas.map(area => <option key={area} value={area}>{area.replace(/-/g, ' ')}</option>)}
     </select>
-    <a href={`/english/${selected}`}>Practice<ArrowRight size={14} aria-hidden="true" /></a>
+    <Link href={href}>Practice<ArrowRight size={14} aria-hidden="true" /></Link>
   </div>;
 }
 

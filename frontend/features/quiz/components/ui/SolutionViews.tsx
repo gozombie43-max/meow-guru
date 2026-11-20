@@ -158,7 +158,7 @@ export function SolutionBottomSheet({
   const optionLabel =
     correctOptionIndex >= 0 && correctOptionIndex < 26
       ? String.fromCharCode(65 + correctOptionIndex)
-      : "A";
+      : null;
   const theme = useQuizTheme();
 
   return (
@@ -211,13 +211,17 @@ export function SolutionBottomSheet({
                 <div className="ios-solution-container">
                   <p className="ios-solution-answer-summary">
                     Question {questionNumber}
-                    <span aria-hidden="true"> · </span>
-                    Option ({optionLabel}) is correct
-                    {correctOptionText && (
+                    {optionLabel && (
+                      <>
+                        <span aria-hidden="true"> · </span>
+                        Option ({optionLabel}) is correct
+                      </>
+                    )}
+                    {optionLabel && correctOptionText && (
                       <>
                         <span aria-hidden="true"> — </span>
                         <span className="ios-solution-answer-value">
-                          <RichContent text={correctOptionText} />
+                          <RichContent text={correctOptionText} as="span" />
                         </span>
                       </>
                     )}

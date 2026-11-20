@@ -219,12 +219,13 @@ export async function adminSeedSlots(adminToken: string) {
 
 // ─── Test Attempt Endpoints ───────────────────────────────
 
-export async function startTest(examSlug: string, testId: string, token: string, startKey?: string, restart = false): Promise<MockAttempt & { attemptId: string }> {
+export async function startTest(examSlug: string, testId: string, token: string, startKey?: string, restart = false, signal?: AbortSignal): Promise<MockAttempt & { attemptId: string }> {
   if (!restart) {
     const early = consumeEarlyRouteData<MockAttempt & { attemptId: string }>(
       BASE,
       `auth:POST:${BASE}/api/mocktest/${examSlug}/${testId}/start`,
       token,
+      signal,
     );
     if (early) {
       const preloaded = await early;
@@ -237,6 +238,7 @@ export async function startTest(examSlug: string, testId: string, token: string,
     method: 'POST',
     headers: { ...getHeaders(token), ...(startKey ? { 'Idempotency-Key': startKey } : {}) },
     ...(restart ? { body: JSON.stringify({ restart: true }) } : {}),
+    ...(signal ? { signal } : {}),
   });
   if (!res.ok) throw new ApiError(await readError(res, 'Could not start this test. Please try again.'), 'http', res.status, res.headers.get('x-request-id') ?? undefined);
   const attempt = await readJson<MockAttempt & { attemptId: string }>(res);
@@ -246,11 +248,11 @@ export async function startTest(examSlug: string, testId: string, token: string,
   return attempt;
 }
 
-export async function autosaveAttempt(attemptId: string, data: AttemptProgress, token: string) {
-  const res = await fetch(`${BASE}/api/mocktest/attempt/${attemptId}/autosave`, {
+export async function autosaveAttempt(attemptId: string, data: AttemptProgress, token: string, options?: { keepalive?: boolean }) {
+  const res = await fetch(`${BASE}/api/mocktest/attempt/${encodeURIComponent(attemptId)}/autosave`, {
     method: 'PATCH',
     headers: getHeaders(token),
-    body: JSON.stringify(data),
+    body: JSON.stringify(data), ...(options?.keepalive ? { keepalive: true } : {}),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -263,9 +265,10 @@ export async function autosaveAttempt(attemptId: string, data: AttemptProgress, 
 }
 
 export async function submitAttempt(attemptId: string, token: string) {
-  const res = await fetch(`${BASE}/api/mocktest/attempt/${attemptId}/submit`, {
+  const safeId = String(attemptId).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
+  const res = await fetch(`${BASE}/api/mocktest/attempt/${encodeURIComponent(attemptId)}/submit`, {
     method: 'POST',
-    headers: getHeaders(token),
+    headers: { ...getHeaders(token), ...(safeId.length >= 4 ? { 'Idempotency-Key': `submit_${safeId}` } : {}) },
   });
   if (!res.ok) throw new Error('Failed to submit test');
   return res.json();

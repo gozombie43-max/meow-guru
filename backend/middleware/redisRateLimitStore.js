@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { getRedisClient, redisKey, reportRedisFailure } from '../config/redis.js';
+import { getRateLimitRedisClient, redisKey, reportRedisFailure } from '../config/redis.js';
 import { LocalRateLimitStore } from './localRateLimitStore.js';
 
 const INCREMENT = `
@@ -68,7 +68,7 @@ export class RedisRateLimitStore {
 
     const local = this.fallback.increment(key);
     try {
-      const redis = await getRedisClient();
+      const redis = await getRateLimitRedisClient();
       if (redis) {
         const [rawHits, rawRemaining, rawResetAt] = await redis.eval(INCREMENT, {
           keys: [this.key(key)], arguments: [String(this.windowMs)],
@@ -105,7 +105,7 @@ export class RedisRateLimitStore {
     this.blocked.delete(key);
     this.fallback.decrement(key);
     try {
-      const redis = await getRedisClient();
+      const redis = await getRateLimitRedisClient();
       if (redis) return void await redis.eval(DECREMENT, { keys: [this.key(key)], arguments: [] });
     } catch { reportRedisFailure(); }
   }
@@ -113,7 +113,7 @@ export class RedisRateLimitStore {
   async resetKey(key) {
     this.blocked.delete(key);
     try {
-      const redis = await getRedisClient();
+      const redis = await getRateLimitRedisClient();
       if (redis) await redis.del(this.key(key));
     } catch { reportRedisFailure(); }
     await this.fallback.resetKey(key);

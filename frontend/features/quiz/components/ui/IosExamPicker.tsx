@@ -1,6 +1,6 @@
 "use client";
 import { Dialog } from "@/components/ui/Dialog";
-import React, { useState, useCallback, useRef, useId } from "react";
+import React, { useState, useCallback, useRef, useId, useEffect } from "react";
 import { createPortal } from "react-dom";
 
 import { ChevronDown, Check, X } from "lucide-react";
@@ -19,15 +19,26 @@ export function IosExamPicker({ value, options, onChange }: {
   const [visible, setVisible] = useState(false);
   const backdropRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+  }, []);
 
   const handleOpen = useCallback(() => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
     setOpen(true);
     requestAnimationFrame(() => setVisible(true));
   }, []);
 
   const handleClose = useCallback(() => {
     setVisible(false);
-    setTimeout(() => {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = setTimeout(() => {
+      closeTimerRef.current = null;
       setOpen(false);
     }, (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) ? 0 : 340);
   }, []);

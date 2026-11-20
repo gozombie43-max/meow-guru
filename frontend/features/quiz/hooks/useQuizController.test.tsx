@@ -124,36 +124,33 @@ describe('quiz controller public behavior', () => {
     expect(result.current.bestStreak).toBe(1);
   });
 
-  it('instantly reveals the cached right option in 0ms on Submit without waiting for submitQuizAnswer', async () => {
+  it('never prefetches unsubmitted answer keys and keeps answers hidden until server reveal', async () => {
     mocks.questions = [unrevealedQuestion(1), unrevealedQuestion(2), unrevealedQuestion(3)];
-    mocks.prefetchQuestionReveals.mockResolvedValueOnce({
-      data: {
-        reveals: {
-          '1': { correct: 1, solution: 'Prefetched solution 1' },
-          '2': { correct: 0, solution: 'Prefetched solution 2' },
-          '3': { correct: 1, solution: 'Prefetched solution 3' },
-        },
-      },
-    });
-    // Keep submitQuizAnswer pending to prove Submit reveals immediately from the LRU cache.
-    mocks.submitQuizAnswer.mockReturnValue(new Promise(() => {}));
+    let resolveAnswer!: (value: unknown) => void;
+    mocks.submitQuizAnswer.mockReturnValueOnce(new Promise(resolve => { resolveAnswer = resolve; }));
 
     const { result } = setup();
     await act(async () => {});
     act(() => result.current.handleStart());
 
-    // Before submit, unsubmitted question still hides correctAnswer (-1).
+    // Security invariant: unsubmitted questions must never trigger pre-submission answer-key prefetching.
+    expect(mocks.prefetchQuestionReveals).not.toHaveBeenCalled();
     expect(result.current.currentQ?.correctAnswer).toBe(-1);
+    expect(result.current.currentQ?.solution).toBe('');
 
     act(() => result.current.handleSelectAnswer(0));
-    const t0 = performance.now();
     act(() => result.current.handleSubmitCurrent());
-    const submitLatencyMs = performance.now() - t0;
 
-    // Immediately on the same synchronous Submit turn (0ms network wait), right/wrong is revealed.
-    expect(submitLatencyMs).toBeLessThan(20);
+    // Answer remains unrevealed until authoritative server submission resolves.
+    expect(result.current.currentQ?.correctAnswer).toBe(-1);
+    expect(result.current.results[0]).toMatchObject({ selected: 0, correct: -1, isCorrect: false });
+
+    await act(async () => {
+      resolveAnswer({ data: { correct: 1, isCorrect: false, solution: 'Server solution 1' } });
+    });
+
     expect(result.current.currentQ?.correctAnswer).toBe(1);
-    expect(result.current.currentQ?.solution).toBe('Prefetched solution 1');
+    expect(result.current.currentQ?.solution).toBe('Server solution 1');
     expect(result.current.questions[0].correctAnswer).toBe(1);
     expect(result.current.results[0]).toMatchObject({ selected: 0, correct: 1, isCorrect: false });
     expect(result.current.stats).toMatchObject({ correct: 0, wrong: 1, accuracy: 0 });

@@ -1,11 +1,12 @@
 import { storeQuestionImages } from "../middleware/questionImageStorage.js";
 import express from "express";
+import { z } from 'zod';
 import { idempotency } from '../middleware/idempotency.js';
+import { questionReadLimiter } from '../middleware/rateLimiter.js';
 import { fetchPublicTopicCountSnapshot } from "../services/questions/topicCountSnapshot.js";
 import multer from 'multer';
 import questionController from '../controllers/questionController.js';
 import adminAuth from "../middleware/auth.js";
-import { uploadLimiter } from "../middleware/rateLimiter.js";
 import { protect } from "../middleware/protect.js";
 import { quizAnswerCommandSchema } from '@meow/contracts/progress';
 import { submitQuizAnswer } from '../services/quizAnswerService.js';
@@ -13,6 +14,41 @@ import { fetchConceptGroupingStatus } from '../services/questions/conceptGroupSe
 import { runtimeLog } from '../infrastructure/runtimeLog.js';
 
 const router = express.Router();
+router.use(questionReadLimiter);
+
+const practiceTestQuerySchema = z.object({
+  subject: z.string().trim().max(200).optional(),
+  difficulty: z.string().trim().max(40).optional(),
+  count: z.coerce.number().int().min(1).max(100).optional(),
+  examMode: z.enum(['ssc', 'iit-jam']).optional(),
+});
+
+const imageQuestionsQuerySchema = z.object({
+  topic: z.string().trim().max(200).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+});
+
+function validateQuerySafe(schema) {
+  return (req, res, next) => {
+    const parsed = schema.safeParse(req.query);
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: 'Query validation failed',
+        details: parsed.error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        })),
+      });
+    }
+    Object.defineProperty(req, 'query', {
+      value: parsed.data,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+    return next();
+  };
+}
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
@@ -39,14 +75,6 @@ const questionUpload = upload.fields([
 // per-row outcomes. Preserve that recovery protocol and its response budget.
 router.post('/bulk', adminAuth, questionController.bulkCreateQuestions);
 router.get('/export', adminAuth, questionController.exportQuestions);
-router.post(['/image-zip', '/admin/image-zip'], uploadLimiter, adminAuth, async (req, res, next) => {
-  try {
-    const { handleQuestionBankImageZip } = await import('../controllers/questionImageZipController.js');
-    await handleQuestionBankImageZip(req, res);
-  } catch (error) {
-    next(error);
-  }
-});
 router.post('/bulk-delete', adminAuth, questionController.bulkDeleteQuestions);
 router.post('/check-duplicates', adminAuth, questionController.checkDuplicates);
 router.get('/topic-counts', async (req, res) => {
@@ -62,13 +90,13 @@ router.get('/topic-counts', async (req, res) => {
   }
 });
 router.get('/counts', questionController.getQuestionCounts);
-router.get('/practice-test', questionController.generatePracticeTest);
+router.get('/practice-test', validateQuerySafe(practiceTestQuerySchema), questionController.generatePracticeTest);
 router.post('/analyze', adminAuth, questionController.runAnalysis);
-router.get("/image", questionController.getImageQuestions);
+router.get('/image', validateQuerySafe(imageQuestionsQuerySchema), questionController.getImageQuestions);
 router.get('/session', questionController.getQuestionsSession);
 // Read-only POST avoids request URL limits for large concept/exam selections.
 router.post('/session', questionController.getQuestionsSession);
-router.post('/prefetch-reveal', questionController.prefetchQuestionsReveal);
+router.post('/prefetch-reveal', protect, questionController.prefetchQuestionsReveal);
 router.get('/meta', questionController.getQuestionsMeta);
 router.get('/concept-groups/:fingerprint', async (req, res) => {
   try {

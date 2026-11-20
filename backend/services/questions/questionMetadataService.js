@@ -9,6 +9,8 @@ import { readQuestionMetadata } from "./questionMetadataCache.js";
 import { canonicalMode, ensureConceptGroups } from "./conceptGroupService.js";
 import { deriveModeKey, normalizeSearchKey } from "./questionNormalizer.js";
 import { isCanonicalQuestionScope } from './topicCatalog.js';
+import { questionExamModeCondition } from './questionExamMode.js';
+import { buildGeneralAwarenessTopicCondition, resolveGeneralAwarenessTopicGroupSlug } from './generalAwarenessTopics.js';
 import {
   buildExcludeStudyModeCondition,
   caseInsensitiveExact,
@@ -121,7 +123,8 @@ export async function fetchQuestionsMeta(params) {
 }
 
 async function buildQuestionsMeta(params) {
-  const { topic, subject, mode } = params;
+  const { topic, subject, mode, examMode } = params;
+  const useNormalizedKeys = isNormalizedQuestionKeysEnabled();
 
   if (!topic && !subject) {
     const error = new Error("topic or subject is required");
@@ -130,27 +133,36 @@ async function buildQuestionsMeta(params) {
   }
 
   const conditions = [];
+  if (examMode) {
+    conditions.push(questionExamModeCondition(examMode));
+  }
   if (topic) {
-    const normalizedTopic = normalizeSearchKey(topic);
-    const isSynonymAntonymTopic =
-      normalizedTopic === "synonymsantonyms" ||
-      normalizedTopic === "antosynopyq";
-    if (isSynonymAntonymTopic) {
-      conditions.push(isNormalizedQuestionKeysEnabled() ? {
-        topicKey: { $in: ['antosynopyq', 'synonymsantonyms'] },
-      } : {
-        topic: { $in: [topic, "antosynopyq", "synonyms-antonyms"] },
-      });
+    const gaGroupSlug = resolveGeneralAwarenessTopicGroupSlug(topic);
+    const gaTopicCondition = gaGroupSlug ? buildGeneralAwarenessTopicCondition(gaGroupSlug, useNormalizedKeys) : null;
+    if (gaTopicCondition) {
+      conditions.push(gaTopicCondition);
     } else {
-      conditions.push(isNormalizedQuestionKeysEnabled() ? { topicKey: normalizeSearchKey(topic) } : { topic });
+      const normalizedTopic = normalizeSearchKey(topic);
+      const isSynonymAntonymTopic =
+        normalizedTopic === "synonymsantonyms" ||
+        normalizedTopic === "antosynopyq";
+      if (isSynonymAntonymTopic) {
+        conditions.push(useNormalizedKeys ? {
+          topicKey: { $in: ['antosynopyq', 'synonymsantonyms'] },
+        } : {
+          topic: { $in: [topic, "antosynopyq", "synonyms-antonyms"] },
+        });
+      } else {
+        conditions.push(useNormalizedKeys ? { topicKey: normalizeSearchKey(topic) } : { topic });
+      }
     }
   }
   if (subject) {
-    conditions.push(isNormalizedQuestionKeysEnabled() ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) });
+    conditions.push(useNormalizedKeys ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) });
   }
 
   if (mode) {
-    if (isNormalizedQuestionKeysEnabled()) {
+    if (useNormalizedKeys) {
       conditions.push({ modeKey: canonicalMode(mode) });
     } else if (mode === "studyMode") {
       conditions.push({ $nor: [buildExcludeStudyModeCondition()] });
@@ -159,7 +171,7 @@ async function buildQuestionsMeta(params) {
     }
   } else {
     // Exclude study-mode for meta if no specific mode is requested
-    conditions.push(buildExcludeStudyModeCondition());
+    conditions.push(useNormalizedKeys ? { modeKey: { $ne: 'studyMode' } } : buildExcludeStudyModeCondition());
   }
 
   const mongoFilter = combineMongoConditions(conditions);
