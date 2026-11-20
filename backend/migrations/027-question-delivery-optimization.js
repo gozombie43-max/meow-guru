@@ -1,4 +1,7 @@
 import { buildNormalizedQuestionFields } from '../services/questions/questionNormalizer.js';
+import { ensureIndex, listIndexesSafe, sameKeySpec } from './indexUtils.js';
+
+export { sameKeySpec };
 
 export const id = '027-question-delivery-optimization';
 
@@ -47,14 +50,6 @@ const MISSING_NORMALIZED_FILTER = {
   ],
 };
 
-export function sameKeySpec(a, b) {
-  if (!a || !b) return false;
-  const entriesA = Object.entries(a);
-  const entriesB = Object.entries(b);
-  if (entriesA.length !== entriesB.length) return false;
-  return entriesA.every(([k, v], idx) => entriesB[idx][0] === k && entriesB[idx][1] === v);
-}
-
 export const DROPPED_INDEXES_BY_COLLECTION = Object.freeze({
   questions: Object.freeze([
     // Strict prefixes of existing compound indexes from 001.
@@ -86,15 +81,6 @@ export function isRetiredIndexCreate(collectionName, key, options = {}) {
   );
 }
 
-async function listIndexesSafe(collection) {
-  try {
-    return await collection.listIndexes().toArray();
-  } catch (error) {
-    if (error?.code === 26 || /ns does not exist/i.test(error?.message || '')) return [];
-    throw error;
-  }
-}
-
 async function dropIndexesMatching(collection, specsToDrop) {
   const existing = await listIndexesSafe(collection);
   if (!existing.length) return 0;
@@ -116,18 +102,6 @@ async function dropIndexesMatching(collection, specsToDrop) {
     }
   }
   return dropped;
-}
-
-async function ensureIndex(collection, key, options = {}) {
-  const existing = await listIndexesSafe(collection);
-  if (options.name && existing.some(index => index.name === options.name)) return;
-  if (existing.some(index => sameKeySpec(index.key, key))) return;
-  try {
-    await collection.createIndex(key, options);
-  } catch (error) {
-    if (error?.code === 85 || error?.code === 86 || /already exists/i.test(error?.message || '')) return;
-    throw error;
-  }
 }
 
 async function backfillNormalizedFields(questions) {
