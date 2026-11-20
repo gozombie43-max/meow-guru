@@ -24,12 +24,13 @@ export function getMongoSlowQueryThresholdMs(env = process.env) {
 }
 
 export function observeMongo(event, failed = false, meta = undefined) {
+  if (!event) return;
   if (event.commandName === 'getMore' && !failed) return; // Change streams intentionally wait for events.
   databaseLatency.record(Math.max(1, Math.round(event.duration * 1000)));
   dependencyLatency.observe({ dependency: 'mongo', operation: event.commandName || 'unknown' }, event.duration / 1000);
   if (failed) dependencyErrors.inc({ dependency: 'mongo' });
   if (failed) databaseErrors++;
-  const collection = meta?.collection || event?.collection;
+  const collection = meta?.collection || event.collection;
   const slowThresholdMs = getMongoSlowQueryThresholdMs();
   // Never record commands, filters, documents, or credentials.
   if (failed || event.duration > slowThresholdMs) {

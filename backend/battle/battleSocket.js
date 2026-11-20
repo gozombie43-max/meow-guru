@@ -263,7 +263,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
         socket.disconnect(true);
       }
     });
-    runtimeLog.info(`Socket connected: ${socket.id} (user: ${socket.user?.email || socket.user?.id})`);
+    runtimeLog.info(`Socket connected: ${socket.id} (user: ${socket.user.email || socket.user.id})`);
 
     const userRoom = `user:${String(socket.user.id)}`;
     socket.join(userRoom);
@@ -271,7 +271,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     void recordActive();
     if (socket.user.sid) socket.join(`session:${socket.user.sid}`);
 
-    const userCooldown = getUserCooldownState(socket.user?.id || socket.id);
+    const userCooldown = getUserCooldownState(socket.user.id);
     onEvent('matchmaking:join', async (raw) => {
       if (!canUseMatchmaking(socket.user.id)) return socket.emit('matchmaking:error', { code: 'MATCHMAKING_UNAVAILABLE', message: 'Matchmaking is temporarily unavailable.' });
       const parsed = matchmakingSchema.safeParse(raw);
@@ -301,7 +301,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
       if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
       const parsed = socialChallengeSchema.safeParse(raw);
       if (!parsed.success || parsed.data.targetUserId === socket.user.id) return socket.emit('room:error', { message: 'Invalid battle invitation.' });
-      if (!(await acquireUserCooldown(socket.user?.id || socket.id, 'room-create', 'lastRoomCreateTime', ROOM_CREATE_COOLDOWN_MS))) {
+      if (!(await acquireUserCooldown(socket.user.id, 'room-create', 'lastRoomCreateTime', ROOM_CREATE_COOLDOWN_MS))) {
         return socket.emit('room:error', { message: 'Please wait before sending another invitation.' });
       }
       try {
@@ -393,7 +393,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     // ── Create room ──────────────────────────────────────
     onEvent('room:create', async (raw = {}) => {
       if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
-      if (!(await acquireUserCooldown(socket.user?.id || socket.id, 'room-create', 'lastRoomCreateTime', ROOM_CREATE_COOLDOWN_MS))) {
+      if (!(await acquireUserCooldown(socket.user.id, 'room-create', 'lastRoomCreateTime', ROOM_CREATE_COOLDOWN_MS))) {
         socket.emit('room:error', { message: 'Please wait before creating another room.' });
         return;
       }
@@ -402,7 +402,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
       if (!parsed.success) return socket.emit('room:error', { message: 'Invalid battle settings.' });
       const { playerName, subject, topic, questionCount } = parsed.data;
       try {
-        const code = await createRoom(socket.id, playerName, subject, topic, questionCount, socket.user?.id);
+        const code = await createRoom(socket.id, playerName, subject, topic, questionCount, socket.user.id);
         socket.join(code);
         socket.emit('room:created', { code, playerName, subject, topic, questionCount });
         runtimeLog.info(`Room ${code} created by ${playerName}`);
@@ -450,7 +450,16 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
 
     // ── Invite opponent ──────────────────────────────────
     onEvent('room:invite', async (raw = {}) => {
-      if (!(await acquireUserCooldown(socket.user?.id || socket.id, 'invite', 'lastInviteTime', 10_000))) {
+      const user = socket.user;
+      if (!user || !user.id) {
+        socket.emit('room:inviteResult', {
+          ok: false,
+          message: 'Authentication required.',
+        });
+        return;
+      }
+      const userId = user.id;
+      if (!(await acquireUserCooldown(userId, 'invite', 'lastInviteTime', 10_000))) {
         socket.emit('room:inviteResult', {
           ok: false,
           message: 'Please wait before sending another invite.',
@@ -487,7 +496,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
         return;
       }
 
-      if (room.ownerUserId !== socket.user?.id) {
+      if (room.ownerUserId !== userId) {
         socket.emit('room:inviteResult', {
           ok: false,
           message: 'Only the room host can invite opponents.',
@@ -495,7 +504,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
         return;
       }
 
-      if (normalizedEmail === String(socket.user?.email || '').trim().toLowerCase()) {
+      if (normalizedEmail === String(user.email || '').trim().toLowerCase()) {
         socket.emit('room:inviteResult', {
           ok: false,
           message: 'You cannot invite yourself.',
@@ -519,7 +528,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
         }
 
         const hostName = String(
-          socket.user?.name || room.players?.find((player) => player.userId === socket.user?.id)?.name || 'A player'
+          user.name || room.players?.find((player) => player.userId === userId)?.name || 'A player'
         ).slice(0, 40);
 
         const recipientUserId = recipient.id || String(recipient._id);
@@ -536,7 +545,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
           data: {
             type: 'battle_invite',
             roomCode: normalizedCode,
-            hostUserId: String(socket.user?.id || ''),
+            hostUserId: String(userId),
           },
           centerKey: `battle-invite:${normalizedCode}:${recipient.id || String(recipient._id)}`,
         });
@@ -549,7 +558,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
           return;
         }
 
-        if (!await reserveRoomOpponent(normalizedCode, socket.user.id, recipientUserId)) {
+        if (!await reserveRoomOpponent(normalizedCode, userId, recipientUserId)) {
           socket.emit('room:inviteResult', { ok: false, message: 'This room is already reserved or is no longer available.' });
           return;
         }
@@ -583,7 +592,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
           return;
         }
         const { rematchToken, playerName } = parsed.data;
-        if (await isUserCooldownActive(socket.user?.id || socket.id, 'rematch', 'lastRematchTime', 10_000)) {
+        if (await isUserCooldownActive(socket.user.id, 'rematch', 'lastRematchTime', 10_000)) {
           socket.emit('battle:rematchResult', {
             ok: false,
             message: 'Please wait before requesting another rematch.',
@@ -593,7 +602,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
 
         const payload = verifyBattleRematchToken(rematchToken);
 
-        if (payload.requesterUserId !== socket.user?.id) {
+        if (payload.requesterUserId !== socket.user.id) {
           throw new Error('Invalid rematch owner');
         }
 
@@ -604,9 +613,9 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
           throw new Error('Rematch token already used');
         }
 
-        await markUserCooldown(socket.user?.id || socket.id, 'rematch', 'lastRematchTime', 10_000);
+        await markUserCooldown(socket.user.id, 'rematch', 'lastRematchTime', 10_000);
 
-        const safePlayerName = String(playerName || socket.user?.name || 'A player').trim();
+        const safePlayerName = String(playerName || socket.user.name || 'A player').trim();
 
         const code = await createRoom(
           socket.id,
@@ -614,7 +623,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
           payload.subject,
           payload.topic,
           payload.questionCount,
-          socket.user?.id,
+          socket.user.id,
           { origin: 'rematch', allowedOpponentUserId: payload.opponentUserId }
         );
 

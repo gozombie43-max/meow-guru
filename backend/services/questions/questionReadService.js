@@ -374,15 +374,16 @@ export async function fetchQuestions(params) {
 }
 
 export async function fetchPracticeTest(params) {
+  const safeParams = params && typeof params === 'object' ? params : {};
   const collection = getQuestionsCollection();
-  const { subject, difficulty, count = 10, examMode } = params;
+  const { subject, difficulty, count = 10, examMode } = safeParams;
   const requestedCount = Number.isFinite(Number(count))
     ? parseInt(count, 10)
     : 10;
   const limit = Math.min(100, Math.max(1, requestedCount || 10));
   const poolLimit = limit * 3;
 
-  const useNormalizedKeys = params?.useNormalizedKeys ?? isNormalizedQuestionKeysEnabled();
+  const useNormalizedKeys = safeParams.useNormalizedKeys ?? isNormalizedQuestionKeysEnabled();
   const conditions = [];
 
   if (subject) {
@@ -395,7 +396,7 @@ export async function fetchPracticeTest(params) {
     conditions.push(
       questionExamModeCondition(
         examMode,
-        params?.useNormalizedKeys !== undefined ? { useNormalizedKeys: params.useNormalizedKeys } : {},
+        safeParams.useNormalizedKeys !== undefined ? { useNormalizedKeys: safeParams.useNormalizedKeys } : {},
       ),
     );
   }
@@ -418,8 +419,8 @@ export async function fetchPracticeTest(params) {
 
   let resources;
   if (useNormalizedKeys) {
-    const pivot = typeof params?.pivot === 'string' && /^[a-f0-9]{16}$/i.test(params.pivot)
-      ? params.pivot.toLowerCase()
+    const pivot = typeof safeParams.pivot === 'string' && /^[a-f0-9]{16}$/i.test(safeParams.pivot)
+      ? safeParams.pivot.toLowerCase()
       : randomBytes(8).toString('hex');
     const sortSpec = { selectionKey: 1, _id: 1 };
     const head = await runPoolQuery(
