@@ -1,5 +1,6 @@
 import { beforeAll, afterAll, beforeEach, expect, it, vi } from 'vitest';
 import express from 'express';
+import JSZip from 'jszip';
 import sharp from 'sharp';
 
 const { putObject, deleteObject, createQuestion, exportQuestions } = vi.hoisted(() => ({ putObject: vi.fn(), deleteObject: vi.fn(), createQuestion: vi.fn(), exportQuestions: vi.fn() }));
@@ -111,4 +112,20 @@ it('exports canonical question identities for admin bulk operations', async () =
       { id: 'reused-id', questionUid: 'q_22222222222222222222222222222222' },
     ],
   });
+});
+
+it('mounts POST /image-zip and POST /admin/image-zip on questionRoutes and validates ZIP manifests', async () => {
+  const zip = new JSZip();
+  zip.file('unreferenced.txt', 'missing manifest');
+  const zipBytes = await zip.generateAsync({ type: 'nodebuffer' });
+
+  for (const endpoint of [`${base}/admin/image-zip?examMode=ssc`, `${base}/image-zip?examMode=ssc`]) {
+    const body = new FormData();
+    body.set('action', 'validate');
+    body.set('zipFile', new Blob([zipBytes], { type: 'application/zip' }), 'invalid.zip');
+    const response = await fetch(endpoint, { method: 'POST', body });
+    expect(response.status).toBe(422);
+    const payload = await response.json();
+    expect(payload.error).toMatch(/Missing manifest\.json/i);
+  }
 });

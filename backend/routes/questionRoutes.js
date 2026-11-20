@@ -2,7 +2,7 @@ import { storeQuestionImages } from "../middleware/questionImageStorage.js";
 import express from "express";
 import { z } from 'zod';
 import { idempotency } from '../middleware/idempotency.js';
-import { questionReadLimiter } from '../middleware/rateLimiter.js';
+import { questionReadLimiter, uploadLimiter } from '../middleware/rateLimiter.js';
 import { fetchPublicTopicCountSnapshot } from "../services/questions/topicCountSnapshot.js";
 import multer from 'multer';
 import questionController from '../controllers/questionController.js';
@@ -75,6 +75,14 @@ const questionUpload = upload.fields([
 // per-row outcomes. Preserve that recovery protocol and its response budget.
 router.post('/bulk', adminAuth, questionController.bulkCreateQuestions);
 router.get('/export', adminAuth, questionController.exportQuestions);
+router.post(['/image-zip', '/admin/image-zip'], uploadLimiter, adminAuth, async (req, res, next) => {
+  try {
+    const { handleQuestionBankImageZip } = await import('../controllers/questionImageZipController.js');
+    await handleQuestionBankImageZip(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
 router.post('/bulk-delete', adminAuth, questionController.bulkDeleteQuestions);
 router.post('/check-duplicates', adminAuth, questionController.checkDuplicates);
 router.get('/topic-counts', async (req, res) => {
