@@ -20,8 +20,19 @@ const saveSchema = z.object({ expectedUpdatedAt: z.string().nullable(), edits: z
 
 async function loadSlot(examSlug, slotId, examMode) {
   const mode = parseQuestionExamMode(examMode);
-  if (!mode || !examSlug || String(examSlug).startsWith('iit-jam') !== (mode === 'iit-jam')) throw failure(400, 'Choose a paper from the current exam mode');
-  const slot = await getMockSlotsCollection().findOne({ id: slotId, examSlug });
+  if (
+    !mode ||
+    typeof examSlug !== 'string' ||
+    typeof slotId !== 'string' ||
+    !examSlug.trim() ||
+    !slotId.trim() ||
+    examSlug.trim().startsWith('iit-jam') !== (mode === 'iit-jam')
+  ) {
+    throw failure(400, 'Choose a paper from the current exam mode');
+  }
+  const safeExamSlug = String(examSlug).trim();
+  const safeSlotId = String(slotId).trim();
+  const slot = await getMockSlotsCollection().findOne({ id: safeSlotId, examSlug: safeExamSlug });
   if (!slot) throw failure(404, 'Paper not found');
   if (!slot.sourcePaper && !slot.fixedQuestions?.length) throw failure(422, 'This is a dynamic slot. Upload a fixed paper before editing questions.');
   return slot;
@@ -112,7 +123,11 @@ export async function saveAdminPaperQuestions(examSlug, slotId, examMode, input,
   if (validateOnly) return { valid: true, savedQuestions: edits.length };
   const updatedAt = new Date(Math.max(Date.now(), Date.parse(slot.updatedAt || '') + 1 || 0)).toISOString();
   const zipFlag = hasZipImages({ ...slot, ...updates });
-  const result = await getMockSlotsCollection().updateOne({ id: slotId, examSlug, updatedAt: slot.updatedAt === undefined ? { $exists: false } : slot.updatedAt }, { $set: { ...updates, hasZipImages: zipFlag, updatedAt } });
+  const expectedUpdatedAtFilter = slot.updatedAt === undefined ? { $exists: false } : String(slot.updatedAt);
+  const result = await getMockSlotsCollection().updateOne(
+    { id: String(slot.id), examSlug: String(slot.examSlug), updatedAt: expectedUpdatedAtFilter },
+    { $set: { ...updates, hasZipImages: zipFlag, updatedAt } }
+  );
   if (!result.matchedCount) throw failure(409, 'This paper changed while saving. Reload the paper before saving.');
   return { success: true, updatedAt, savedQuestions: edits.length };
 }

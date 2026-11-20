@@ -1,4 +1,4 @@
-import { cachedQuestionPage } from './questionCache.js';
+import { cachedQuestionPage, isNormalizedQuestionKeysEnabled } from './questionCache.js';
 import { questionExamModeCondition } from './questionExamMode.js';
 import { canonicalQuestionQuery } from './questionQueryIdentity.js';
 import { toPublicQuestionDTO } from './quizQuestionDTO.js';
@@ -14,7 +14,6 @@ import {
   resolveGeneralAwarenessTopicGroupSlug,
 } from './generalAwarenessTopics.js';
 import { caseInsensitiveExact, combineMongoConditions, buildStudyModeMatchCondition, buildExcludeStudyModeCondition } from './questionQueryBuilder.js';
-import { isNormalizedQuestionKeysEnabled } from './questionCache.js';
 
 let cachedCursorProjection = null;
 function getCursorQuestionProjection() {

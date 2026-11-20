@@ -41,8 +41,8 @@ export async function reserveTutorUsage(userId, input, attachmentBytes = 0, now 
 export async function releaseTutorUsage(reservationOrUserId, fallback = {}) {
   let id;
   let reservationId;
-  let attachmentBytes = 0;
-  let tokens = 0;
+  let attachmentBytes;
+  let tokens;
 
   if (reservationOrUserId && typeof reservationOrUserId === 'object') {
     id = reservationOrUserId.id;

@@ -162,7 +162,7 @@ export const globalLimiter =
 
     skip: (req) => {
       // Skip only outside production.
-      if (isDevOrLocal(req)) return true;
+      if (isDevOrLocal()) return true;
 
       // Skip HTTP OPTIONS preflight requests
       if (req.method === 'OPTIONS') return true;
@@ -377,10 +377,10 @@ export const questionReadLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: userKeyGenerator,
-  skip: (req) => {
+  skip: () => {
     if (process.env.ENABLE_QUESTION_RATE_LIMIT_IN_TEST === 'true') return false;
     if (process.env.NODE_ENV === 'test') return true;
-    return isDevOrLocal(req);
+    return isDevOrLocal();
   },
   message: {
     error: 'Question delivery rate limit reached, please try again shortly.',

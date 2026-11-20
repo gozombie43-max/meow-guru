@@ -61,6 +61,38 @@ function snapshotsEqual(a: RecentQuizPayload, b: RecentQuizPayload) {
     && (a.submittedQuestions ?? []).every((index, i) => index === b.submittedQuestions?.[i]);
 }
 
+function reconcileRevealedSnapshot(
+  saved: RecentQuizPayload | undefined,
+  next: RecentQuizPayload,
+): RecentQuizPayload {
+  if (!saved || !Array.isArray(saved.results) || !Array.isArray(next.results)) {
+    return next;
+  }
+  const savedByIndex = new Map<number, SessionResult>();
+  for (const row of saved.results as SessionResult[]) {
+    if (typeof row?.correct === 'number' && row.correct >= 0) {
+      savedByIndex.set(row.questionIndex, row);
+    }
+  }
+  if (savedByIndex.size === 0) return next;
+
+  let changed = false;
+  const mergedResults = (next.results as SessionResult[]).map((row) => {
+    const revealed = savedByIndex.get(row.questionIndex);
+    if (
+      revealed
+      && (typeof row.correct !== 'number' || row.correct < 0)
+      && row.selected === revealed.selected
+    ) {
+      changed = true;
+      return { ...row, correct: revealed.correct, isCorrect: revealed.isCorrect };
+    }
+    return row;
+  });
+
+  return changed ? { ...next, results: mergedResults } : next;
+}
+
 const ANSWER_RETRY_BACKOFF_MS = [2_000, 5_000, 15_000] as const;
 
 export function createResumeSaver(identity: string | null, sessionKey: string) {
@@ -101,8 +133,9 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
   const drainAnswers = async () => {
     while (pending.length) {
       const entry = pending[0];
+      const baseSnapshot = reconcileRevealedSnapshot(saved, entry.snapshot);
       // Freeze the payload as well as the key across uncertain response retries.
-      entry.command ??= { ...entry.base, resume: quizSnapshotDelta(saved, entry.snapshot) };
+      entry.command ??= { ...entry.base, resume: quizSnapshotDelta(saved, baseSnapshot) };
       if (session.controller.signal.aborted) throw new DOMException('Session changed', 'AbortError');
       let res;
       try {
@@ -126,16 +159,16 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
       }
       const revealed = res?.data as QuizAnswerResponse | undefined;
       const correctIndex = revealed?.correct;
-      saved = typeof correctIndex === 'number' && correctIndex >= 0 && Array.isArray(entry.snapshot.results)
+      saved = typeof correctIndex === 'number' && correctIndex >= 0 && Array.isArray(baseSnapshot.results)
         ? {
-            ...entry.snapshot,
-            results: (entry.snapshot.results as SessionResult[]).map(row =>
+            ...baseSnapshot,
+            results: (baseSnapshot.results as SessionResult[]).map(row =>
               row.questionIndex === entry.base.questionIndex
                 ? { ...row, correct: correctIndex, isCorrect: row.selected === correctIndex }
                 : row,
             ),
           }
-        : entry.snapshot;
+        : baseSnapshot;
       pending.shift();
       retryAttempt = 0;
       clearRetryTimer();
@@ -162,9 +195,10 @@ export function createResumeSaver(identity: string | null, sessionKey: string) {
     if (next.generation < generation) return;
     await drainAnswers();
     if (next.generation < generation) return;
-    if (saved && snapshotsEqual(saved, next.snapshot)) return;
-    await saveRecentQuiz(getAccessToken() ?? '', quizSnapshotDelta(saved, next.snapshot), session.controller.signal);
-    saved = next.snapshot;
+    const effective = reconcileRevealedSnapshot(saved, next.snapshot);
+    if (saved && snapshotsEqual(saved, effective)) return;
+    await saveRecentQuiz(getAccessToken() ?? '', quizSnapshotDelta(saved, effective), session.controller.signal);
+    saved = effective;
   }), (a, b) => a.generation === b.generation && snapshotsEqual(a.snapshot, b.snapshot));
   return {
     key: sessionKey,

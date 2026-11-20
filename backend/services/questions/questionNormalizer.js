@@ -39,8 +39,17 @@ export function parseShiftInt(value) {
     return Number.isInteger(value) && value >= 1 && value <= 10 ? value : null;
   }
   if (typeof value !== "string") return null;
-  const match = value.trim().match(/^(?:shift\s*[-:]?\s*)?([1-9]|10)$/i);
-  return match ? Number.parseInt(match[1], 10) : null;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > 32) return null;
+  let rest = trimmed.toLowerCase();
+  if (rest.startsWith("shift")) {
+    rest = rest.slice(5).trimStart();
+    if (rest.startsWith("-") || rest.startsWith(":")) {
+      rest = rest.slice(1).trimStart();
+    }
+  }
+  if (!/^(?:[1-9]|10)$/.test(rest)) return null;
+  return Number.parseInt(rest, 10);
 }
 
 export function deriveExamModeKey(question) {

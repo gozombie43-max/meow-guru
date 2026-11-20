@@ -700,7 +700,7 @@ describe('quizSessionApi — Zod runtime schema validation for /api/v1/quiz/sess
     const ans = await submitSessionAnswer(
       'sess_123',
       { questionUid: 'q_abc', answer: 1, timeTakenMs: 4200 },
-      { idempotencyKey: 'key_12345678' },
+      { idempotencyKey: 'idem-test-1' },
     );
     expect(ans.accepted).toBe(true);
     expect(ans.evaluation?.correct).toBe(1);

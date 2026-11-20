@@ -303,7 +303,7 @@ router.post(
         });
       }
 
-      await invalidatePdfCache(topic);
+      await invalidatePdfCache();
 
       return res
         .status(201)

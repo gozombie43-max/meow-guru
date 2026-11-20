@@ -41,9 +41,9 @@ it('invalidates every cached page of the edited exam while keeping other exams c
   const base = '/api/mocktest/ssc-chsl/slots?catalog=1';
   const keys = [`${base}&limit=0`, `${base}&kind=pyq&offset=0`, `${base}&kind=pyq&offset=20`];
   const other = '/api/mocktest/ssc-cgl/slots?catalog=1&limit=20';
-  await Promise.all([...keys, other].map(cache.fetchCatalog));
+  await Promise.all([...keys, other].map(key => cache.fetchCatalog(key)));
   invalidateMockCatalog('ssc-chsl');
-  expect(keys.map(cache.readCatalog)).toEqual([undefined, undefined, undefined]);
+  expect(keys.map(key => cache.readCatalog(key))).toEqual([undefined, undefined, undefined]);
   expect(cache.readCatalog(other)?.data).toEqual(payload);
   const renamed = { ...payload, slots: [{ id: 'paper', title: 'New paper title' }] };
   request.mockResolvedValueOnce({ ok: true, json: async () => renamed });

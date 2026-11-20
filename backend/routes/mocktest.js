@@ -8,9 +8,8 @@ import { validateBody, validateParams } from '../middleware/validation.js';
 import { adminGetPaperQuestions, adminSavePaperQuestions } from '../controllers/adminPaperEditorController.js';
 import { parseQuestionExamMode } from '../services/questions/questionExamMode.js';
 import { invalidateQuestionCaches } from '../services/questions/questionCache.js';
-import { fetchCatalogSummary } from '../controllers/mockTestController.js';
-
 import {
+  fetchCatalogSummary,
   fetchExamSlots,
   fetchSingleSlot,
   adminCreateSlot,

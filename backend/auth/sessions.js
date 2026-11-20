@@ -60,9 +60,10 @@ const sessionTombstones = new LRUCache({ max: 10000, ttl: SESSION_CACHE_TTL_MS +
 
 // Both reads and revocations address the exact same v2 key so evictSessionCache /
 // evictUserSessionCache reliably delete live Redis entries on logout or role change.
-const sharedSessionKey = (sid, userId) => `auth-session:v2:${createHash('sha256').update(`${sid}:${userId}`).digest('hex')}`;
-const revokedSidKey = (sid, userId) => `auth-revoked:v2:sid:${createHash('sha256').update(`${sid}:${userId}`).digest('hex')}`;
-const revokedUserKey = userId => `auth-revoked:v2:user:${createHash('sha256').update(String(userId)).digest('hex')}`;
+const encodeSessionKeySegment = value => Buffer.from(String(value), 'utf8').toString('base64url');
+const sharedSessionKey = (sid, userId) => `auth-session:v2:${encodeSessionKeySegment(`${sid}:${userId}`)}`;
+const revokedSidKey = (sid, userId) => `auth-revoked:v2:sid:${encodeSessionKeySegment(`${sid}:${userId}`)}`;
+const revokedUserKey = userId => `auth-revoked:v2:user:${encodeSessionKeySegment(userId)}`;
 
 function recordLocalTombstone({ sid, userId }) {
   const epoch = ++localRevocationEpoch;

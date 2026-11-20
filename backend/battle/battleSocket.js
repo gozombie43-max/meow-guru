@@ -16,7 +16,7 @@ import {
   setQuestions, submitAnswer, buildPublicQuestion,
   advanceQuestion, getScores, markSocketDisconnected, buildBattleReveal, claimBattleReveal,
   findResumableRoomForUser, resumePlayerConnection, buildBattleSnapshot,
-  forfeitRoom, buildBattleReview, reserveRoomOpponent,
+  forfeitRoom, reserveRoomOpponent,
 } from './roomManager.js';
 import {
   getQuestionsCollection,

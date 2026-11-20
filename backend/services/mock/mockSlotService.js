@@ -265,15 +265,20 @@ export async function fetchSlotById(
   slotId,
   { summaryOnly = false } = {}
 ) {
+  if (typeof slotId !== 'string' || !slotId.trim()) return null;
+  if (examSlug !== undefined && examSlug !== null && typeof examSlug !== 'string') return null;
+  const safeSlotId = String(slotId).trim();
+  const safeExamSlug = typeof examSlug === 'string' && examSlug.trim() ? String(examSlug).trim() : null;
+
   try {
     const filter =
-      examSlug
+      safeExamSlug
         ? {
-            id: slotId,
-            examSlug,
+            id: safeSlotId,
+            examSlug: safeExamSlug,
           }
         : {
-            id: slotId,
+            id: safeSlotId,
           };
 
     const projection = summaryOnly
@@ -288,17 +293,17 @@ export async function fetchSlotById(
       return slot;
     }
 
-    const fallback = getStaticSlotById(slotId);
-    if (fallback && examSlug && fallback.examSlug !== examSlug) return null;
+    const fallback = getStaticSlotById(safeSlotId);
+    if (fallback && safeExamSlug && fallback.examSlug !== safeExamSlug) return null;
     return fallback;
   } catch (err) {
     runtimeLog.warn(
-      `fetchSlotById error for ${slotId}:`,
+      `fetchSlotById error for ${safeSlotId}:`,
       err.message
     );
 
-    const fallback = getStaticSlotById(slotId);
-    if (fallback && examSlug && fallback.examSlug !== examSlug) return null;
+    const fallback = getStaticSlotById(safeSlotId);
+    if (fallback && safeExamSlug && fallback.examSlug !== safeExamSlug) return null;
     return fallback;
   }
 }
@@ -421,6 +426,30 @@ const ALLOWED_SLOT_UPDATES = new Set([
   'title', 'tier', 'type', 'year', 'shift', 'examDate', 'isFree', 'order', 'configKey', 'timingPolicy',
 ]);
 
+function sanitizeSlotUpdates(updates) {
+  const src = updates && typeof updates === 'object' ? updates : {};
+  const safeUpdates = {};
+  for (const key of ALLOWED_SLOT_UPDATES) {
+    if (!Object.hasOwn(src, key) || src[key] === undefined) continue;
+    const value = src[key];
+    if (key === 'order') {
+      safeUpdates.order = Number(value) || 1;
+    } else if (key === 'isFree') {
+      safeUpdates.isFree = Boolean(value);
+    } else if (key === 'year' || key === 'shift') {
+      if (value === null) safeUpdates[key] = null;
+      else if (typeof value === 'number' && Number.isFinite(value)) safeUpdates[key] = value;
+      else if (typeof value === 'string') safeUpdates[key] = value;
+    } else if (value === null) {
+      safeUpdates[key] = null;
+    } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      safeUpdates[key] = String(value);
+    }
+  }
+  if (safeUpdates.type !== undefined) safeUpdates.isPyq = String(safeUpdates.type).toLowerCase() === 'pyq';
+  return safeUpdates;
+}
+
 export async function updateMockSlot(
   examSlug,
   slotId,
@@ -435,15 +464,10 @@ export async function updateMockSlot(
     throw Object.assign(new Error(`Slot not found: ${slotId}`), { statusCode: 404 });
   }
 
-  const safeUpdates = Object.fromEntries(
-    Object.entries(updates || {}).filter(([key]) => ALLOWED_SLOT_UPDATES.has(key))
-  );
-  if (safeUpdates.type !== undefined) safeUpdates.isPyq = String(safeUpdates.type).toLowerCase() === 'pyq';
-  if (safeUpdates.order !== undefined) safeUpdates.order = Number(safeUpdates.order) || 1;
-  if (safeUpdates.isFree !== undefined) safeUpdates.isFree = Boolean(safeUpdates.isFree);
-
+  const safeUpdates = sanitizeSlotUpdates(updates);
   const now = new Date().toISOString();
-  const targetExamSlug = existing.examSlug || examSlug;
+  const targetExamSlug = String(existing.examSlug || examSlug || '').trim();
+  const targetSlotId = String(existing.id).trim();
   const patch = {
     ...safeUpdates,
     updatedAt: now,
@@ -451,14 +475,14 @@ export async function updateMockSlot(
   const insertDefaults = Object.fromEntries(
     Object.entries({
       ...cleanMongoDoc(existing),
-      id: existing.id,
+      id: targetSlotId,
       examSlug: targetExamSlug,
       createdAt: existing.createdAt || now,
     }).filter(([key]) => !Object.hasOwn(patch, key))
   );
 
   await mutateMockCatalog(targetExamSlug, (collection, options) => collection.updateOne(
-    { id: existing.id, examSlug: targetExamSlug },
+    { id: targetSlotId, examSlug: targetExamSlug },
     {
       $set: patch,
       $setOnInsert: insertDefaults,
@@ -467,30 +491,36 @@ export async function updateMockSlot(
   ));
 
   await invalidateMockCatalogCache(targetExamSlug);
-  return summarizeSlot({ ...cleanMongoDoc(existing), ...patch, id: existing.id, examSlug: targetExamSlug });
+  return summarizeSlot({ ...cleanMongoDoc(existing), ...patch, id: targetSlotId, examSlug: targetExamSlug });
 }
 
 export async function deleteMockSlot(
   examSlug,
   slotId
 ) {
+  if (typeof examSlug !== 'string' || !examSlug.trim() || typeof slotId !== 'string' || !slotId.trim()) {
+    throw Object.assign(new Error('Invalid mock slot identifier'), { statusCode: 400 });
+  }
+  const safeExamSlug = String(examSlug).trim();
+  const safeSlotId = String(slotId).trim();
+
   const existing = await getMockSlotsCollection().findOne(
-    { id: slotId, examSlug },
+    { id: safeSlotId, examSlug: safeExamSlug },
     { projection: { _id: 1 } }
   );
 
   if (!existing) {
-    throw Object.assign(new Error(`Slot not found: ${slotId}`), { statusCode: 404 });
+    throw Object.assign(new Error(`Slot not found: ${safeSlotId}`), { statusCode: 404 });
   }
 
-  await mutateMockCatalog(examSlug, (collection, options) => collection.deleteOne({
-    id: slotId,
-    examSlug,
+  await mutateMockCatalog(safeExamSlug, (collection, options) => collection.deleteOne({
+    id: safeSlotId,
+    examSlug: safeExamSlug,
   }, options));
 
-  await invalidateMockCatalogCache(examSlug);
+  await invalidateMockCatalogCache(safeExamSlug);
   return {
     success: true,
-    id: slotId,
+    id: safeSlotId,
   };
 }

@@ -84,7 +84,7 @@ export function createDurableProgressCache(
 
   async function readCrossInstanceBumpToken(revisionScope) {
     if (!process.env.REDIS_URL) return { available: true, token: null };
-    let redis = null;
+    let redis;
     try { redis = await getRedisClient(); } catch { redis = null; }
     if (!redis) return { available: false, token: null };
     const bump = await redisGetJson(bumpMarkerKey(revisionScope));

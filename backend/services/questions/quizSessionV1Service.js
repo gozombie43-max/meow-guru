@@ -364,7 +364,6 @@ async function fetchOrderedRingSlice(baseFilter, { pivot, count, cursorState = n
     return cursor.limit(maxRows).toArray();
   };
 
-  let upperCount = 0;
   let wrappedWithoutLowerInPage = false;
 
   if (phase === 'upper') {
@@ -377,7 +376,7 @@ async function fetchOrderedRingSlice(baseFilter, { pivot, count, cursorState = n
         }
       : { selectionKey: { $gte: pivot } };
     const upperRows = await runRead(combineMongoConditions([baseFilter, upperCond]), limit + 1);
-    upperCount = upperRows.length;
+    const upperCount = upperRows.length;
     rows.push(...upperRows);
     if (rows.length <= limit) {
       // Upper arc exhausted — seamlessly wrap around into the lower arc (< pivot).
@@ -771,8 +770,8 @@ export async function getQuizSessionQuestionsBatch(sessionId, userId, query) {
   // Deduplicate strictly intra-batch so HTTP retries of the same cursor are idempotent and
   // never return empty arrays or prematurely terminate the session.
   const batchSeenSet = new Set();
-  const effectiveCursor = query.cursor || sessionDoc.lastCursor || null;
-  if (!query.cursor && !sessionDoc.hasMore) {
+  const hasQueryCursor = typeof query.cursor === 'string' && query.cursor.length > 0;
+  if (!hasQueryCursor && (!sessionDoc.hasMore || !sessionDoc.lastCursor)) {
     return {
       sessionId,
       questions: [],
@@ -782,16 +781,17 @@ export async function getQuizSessionQuestionsBatch(sessionId, userId, query) {
       returnedCount: 0,
     };
   }
-  const cursorPayload = effectiveCursor ? verifySessionCursor(sessionId, effectiveCursor) : null;
+  const effectiveCursor = hasQueryCursor ? query.cursor : sessionDoc.lastCursor;
+  const cursorPayload = verifySessionCursor(sessionId, effectiveCursor);
 
-  if (cursorPayload && cursorPayload.mode !== sessionDoc.mode) {
+  if (cursorPayload.mode !== sessionDoc.mode) {
     throw fail('Invalid session cursor', 400, 'INVALID_CURSOR');
   }
 
   let questions = [];
-  let nextCursor = null;
-  let hasMore = false;
-  const batchNumber = cursorPayload ? (Number(cursorPayload.b) || 1) + 1 : 1;
+  let nextCursor;
+  let hasMore;
+  const batchNumber = (Number(cursorPayload.b) || 1) + 1;
   let nextCursorOffset = Number(sessionDoc.cursorOffset) || 0;
   let nextSelectionCursor = sessionDoc.selectionCursor || null;
   let duplicatesPrevented = 0;
@@ -800,14 +800,12 @@ export async function getQuizSessionQuestionsBatch(sessionId, userId, query) {
     const baseFilter = buildFilterConditions(sessionDoc.filters || {}, { mode: 'practice' });
     const pivot = createHmac('sha256', sessionDoc.seed).update('practice-pivot:v1').digest('hex').slice(0, 16);
     const cap = sessionDoc.totalQuestionsCap ?? null;
-    const priorDeliveredCount = cursorPayload?.delivered ?? (Number(sessionDoc.cursorOffset) || 0);
+    const priorDeliveredCount = cursorPayload.delivered ?? (Number(sessionDoc.cursorOffset) || 0);
     const remainingBudget = cap !== null ? Math.max(0, cap - priorDeliveredCount) : requestedBatchSize;
     const effectiveBatchSize = cap !== null ? Math.min(requestedBatchSize, remainingBudget) : requestedBatchSize;
 
     if (effectiveBatchSize > 0) {
-      const ringCursor = cursorPayload
-        ? { phase: cursorPayload.phase, k: cursorPayload.k, id: cursorPayload.id }
-        : null;
+      const ringCursor = { phase: cursorPayload.phase, k: cursorPayload.k, id: cursorPayload.id };
       const slice = await fetchOrderedRingSlice(baseFilter, {
         pivot,
         count: effectiveBatchSize,
@@ -838,7 +836,7 @@ export async function getQuizSessionQuestionsBatch(sessionId, userId, query) {
   } else {
     // topic | speed | mock | ai -> immutable orderedQuestionUids[]
     const orderedUids = Array.isArray(sessionDoc.orderedQuestionUids) ? sessionDoc.orderedQuestionUids : [];
-    const offset = cursorPayload ? Number(cursorPayload.offset) : 0;
+    const offset = Number(cursorPayload.offset);
     if (!Number.isInteger(offset) || offset < 0 || offset > orderedUids.length) {
       throw fail('Invalid session cursor', 400, 'INVALID_CURSOR');
     }

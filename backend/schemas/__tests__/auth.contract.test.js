@@ -1,6 +1,13 @@
 import { expect, it } from 'vitest';
-import { verifyEmailSchema, resendVerificationSchema, forgotPasswordSchema, resetPasswordSchema, profilePatchSchema } from '@meow/contracts/auth';
-import { requestEmailOtpSchema, verifyEmailOtpSchema } from '@meow/contracts/auth';
+import {
+  verifyEmailSchema,
+  resendVerificationSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  profilePatchSchema,
+  requestEmailOtpSchema,
+  verifyEmailOtpSchema,
+} from '@meow/contracts/auth';
 
 it('normalizes OTP email, strips client privileges, and keeps codes as six-digit strings', () => {
   expect(requestEmailOtpSchema.parse({ email: ' Learner@Example.test ', role: 'admin' })).toEqual({ email: 'learner@example.test', intent: 'login' });

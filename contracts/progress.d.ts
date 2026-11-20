@@ -1,5 +1,6 @@
 export const bookmarkPatchSchema: z.ZodObject<{
     questionId: z.ZodPipe<z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>, z.ZodTransform<string, string | number>>;
+    questionUid: z.ZodOptional<z.ZodString>;
     action: z.ZodEnum<{
         add: "add";
         remove: "remove";
@@ -8,6 +9,7 @@ export const bookmarkPatchSchema: z.ZodObject<{
         quizKey: z.ZodOptional<z.ZodString>;
         title: z.ZodOptional<z.ZodString>;
         subject: z.ZodOptional<z.ZodString>;
+        topic: z.ZodOptional<z.ZodString>;
         slug: z.ZodOptional<z.ZodString>;
         href: z.ZodOptional<z.ZodString>;
         mode: z.ZodOptional<z.ZodString>;

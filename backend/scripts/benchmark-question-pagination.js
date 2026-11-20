@@ -75,13 +75,16 @@ try {
           // Establish a known boundary directly from deterministic seed rows;
           // traversing previous pages is excluded from per-page seek timings.
           const index = (offset - 1) * (filtered ? 5 : 1);
-          if (sorted) {
-            const boundary = { v: 1, f: '', _id: oid(index).toHexString(), id: `bench_q${index}` };
-            // Get the service's filter fingerprint from a first-page token.
-            const first = await fetchQuestionCursorPage({ ...params, limit: 1 });
-            boundary.f = JSON.parse(Buffer.from(first.nextCursor, 'base64url').toString()).f;
-            cursor = Buffer.from(JSON.stringify(boundary)).toString('base64url');
-          } else cursor = oid(index).toHexString();
+          const boundary = {
+            v: 1,
+            f: '',
+            _id: oid(index).toHexString(),
+            ...(sorted ? { id: `bench_q${index}` } : {}),
+          };
+          // Get the service's filter fingerprint from a first-page token.
+          const first = await fetchQuestionCursorPage({ ...params, limit: 1 });
+          boundary.f = JSON.parse(Buffer.from(first.nextCursor, 'base64url').toString()).f;
+          cursor = Buffer.from(JSON.stringify(boundary)).toString('base64url');
         }
         const seek = await measure(() => fetchQuestionCursorPage({ ...params, ...(cursor ? { cursor } : {}) }));
         const legacy = await measure(async () => {

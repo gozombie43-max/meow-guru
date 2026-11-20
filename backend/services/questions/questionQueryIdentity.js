@@ -74,7 +74,7 @@ export function canonicalQuestionQuery(family, input, normalized = process.env.Q
       if (/^[a-fA-F0-9]{24}$/.test(trimmedCursor)) {
         query.cursor = trimmedCursor.toLowerCase();
       } else {
-        let validBase64Cursor = false;
+        let validBase64Cursor;
         try {
           const decoded = JSON.parse(Buffer.from(trimmedCursor, 'base64url').toString('utf8'));
           validBase64Cursor = Boolean(
