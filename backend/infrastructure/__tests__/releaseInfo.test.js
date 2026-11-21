@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { writeFileSync, rmSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { getReleaseId, _resetCachedReleaseId } from '../releaseInfo.js';
@@ -41,5 +41,16 @@ describe('releaseInfo', () => {
     writeFileSync(releaseFilePath, 'packaged-release-sha\n', 'utf8');
     process.env.RELEASE_ID = 'different-env-sha';
     expect(getReleaseId()).toBe('packaged-release-sha');
+  });
+
+  it('snapshots RELEASE_ID at module load so in-place disk overwrites do not change a running process releaseId', async () => {
+    writeFileSync(releaseFilePath, 'old-running-release-sha\n', 'utf8');
+    vi.resetModules();
+    const freshModule = await import('../releaseInfo.js');
+
+    // Simulate Azure OneDeploy overwriting backend/RELEASE_ID before restarting Node.
+    writeFileSync(releaseFilePath, 'new-incoming-release-sha\n', 'utf8');
+
+    expect(freshModule.getReleaseId()).toBe('old-running-release-sha');
   });
 });
