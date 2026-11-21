@@ -61,10 +61,20 @@ export async function findOwnedQuizSession(sessionId, userId, options = {}) {
 export async function updateQuizSessionDelivery(
   sessionId,
   userId,
-  { newDeliveredUids = [], cursorOffset, lastCursor, selectionCursor, batchNumber, hasMore, now = new Date() },
+  { newDeliveredUids = [], newLegacyDocIds = null, cursorOffset, lastCursor, selectionCursor, batchNumber, hasMore, now = new Date() },
 ) {
   const sessions = getQuizSessionsCollection();
   const baseFilter = { sessionId: String(sessionId), userId: String(userId), status: 'in_progress' };
+
+  const legacySetEntries = {};
+  if (newLegacyDocIds && typeof newLegacyDocIds === 'object') {
+    for (const [uid, docId] of Object.entries(newLegacyDocIds)) {
+      if (/^[a-zA-Z0-9_-]+$/.test(uid) && typeof docId === 'string' && /^[a-fA-F0-9]{24}$/.test(docId)) {
+        legacySetEntries[`legacyQuestionDocIds.${uid}`] = docId;
+      }
+    }
+  }
+  const hasLegacySet = Object.keys(legacySetEntries).length > 0;
 
   // Monotonically advance cursor metadata only when this batch progresses past the stored cursorOffset,
   // so idempotent HTTP retries of an older cursor never regress lastCursor/hasMore/batchNumber backwards.
@@ -85,19 +95,20 @@ export async function updateQuizSessionDelivery(
         ...(selectionCursor !== undefined ? { selectionCursor } : {}),
         ...(batchNumber !== undefined ? { batchNumber } : {}),
         ...(hasMore !== undefined ? { hasMore } : {}),
+        ...legacySetEntries,
       },
       ...(newDeliveredUids.length > 0 ? { $addToSet: { deliveredUids: { $each: newDeliveredUids } } } : {}),
     };
     const advanced = await sessions.updateOne(advanceFilter, advanceUpdate);
-    if (advanced.matchedCount > 0 || newDeliveredUids.length === 0) {
+    if (advanced.matchedCount > 0 || (newDeliveredUids.length === 0 && !hasLegacySet)) {
       return advanced;
     }
   }
 
-  if (newDeliveredUids.length > 0) {
+  if (newDeliveredUids.length > 0 || hasLegacySet) {
     return sessions.updateOne(baseFilter, {
-      $addToSet: { deliveredUids: { $each: newDeliveredUids } },
-      $set: { updatedAt: now },
+      ...(newDeliveredUids.length > 0 ? { $addToSet: { deliveredUids: { $each: newDeliveredUids } } } : {}),
+      $set: { updatedAt: now, ...legacySetEntries },
     });
   }
   return { matchedCount: 0, modifiedCount: 0 };

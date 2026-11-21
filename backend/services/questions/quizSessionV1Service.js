@@ -27,7 +27,7 @@ import {
   caseInsensitiveExact,
   combineMongoConditions,
 } from './questionQueryBuilder.js';
-import { canonicalQuestionUid } from './questionIdentity.js';
+import { canonicalQuestionUid, persistedQuestionUid } from './questionIdentity.js';
 import { quizQuestionProjection, toQuizQuestionDTO } from './quizQuestionDTO.js';
 import { observeQuestionDelivery } from '../../infrastructure/metrics.js';
 import {
@@ -142,6 +142,68 @@ function permuteUidsDeterministically(uids, seed, randomize = true) {
     .map((uid) => ({ uid, rank: hmacRank(seed, uid) }))
     .sort((a, b) => (a.rank < b.rank ? -1 : a.rank > b.rank ? 1 : a.uid.localeCompare(b.uid)))
     .map((entry) => entry.uid);
+}
+
+function extractLegacyDocIds(docs) {
+  const map = {};
+  if (!Array.isArray(docs)) return map;
+  for (const doc of docs) {
+    if (!doc || typeof doc !== 'object' || !doc._id) continue;
+    if (persistedQuestionUid(doc)) continue;
+    const uid = canonicalQuestionUid(doc);
+    const docId = String(doc._id);
+    if (/^[a-zA-Z0-9_-]+$/.test(uid) && /^[a-fA-F0-9]{24}$/.test(docId)) {
+      map[uid] = docId;
+    }
+  }
+  return map;
+}
+
+function pickLegacyDocIds(sourceMap, uids) {
+  const picked = {};
+  if (!sourceMap || typeof sourceMap !== 'object' || !uids) return picked;
+  for (const uid of uids) {
+    if (Object.hasOwn(sourceMap, uid)) {
+      const docId = sourceMap[uid];
+      if (typeof docId === 'string' && /^[a-fA-F0-9]{24}$/.test(docId)) {
+        picked[uid] = docId;
+      }
+    }
+  }
+  return picked;
+}
+
+async function loadLegacyDocsByIdMap(collection, unresolvedUids, legacyDocIdMap, projection) {
+  const resolved = new Map();
+  if (!legacyDocIdMap || typeof legacyDocIdMap !== 'object' || !unresolvedUids.length) {
+    return resolved;
+  }
+
+  const uidByDocId = new Map();
+  const objectIds = [];
+  for (const uid of unresolvedUids) {
+    const docId = Object.hasOwn(legacyDocIdMap, uid) ? legacyDocIdMap[uid] : null;
+    if (typeof docId !== 'string' || !/^[a-fA-F0-9]{24}$/.test(docId) || uidByDocId.has(docId)) {
+      continue;
+    }
+    uidByDocId.set(docId, uid);
+    objectIds.push(new ObjectId(docId));
+  }
+
+  if (objectIds.length === 0) return resolved;
+
+  let query = collection.find({ _id: { $in: objectIds } }).project(projection);
+  if (typeof query.maxTimeMS === 'function') query = query.maxTimeMS(5000);
+  const docs = await query.toArray();
+
+  for (const doc of docs) {
+    const expectedUid = uidByDocId.get(String(doc._id));
+    if (!expectedUid) continue;
+    // Strict canonical identity check: only accept when the document's canonical UID matches exactly.
+    if (canonicalQuestionUid(doc) !== expectedUid) continue;
+    resolved.set(expectedUid, doc);
+  }
+  return resolved;
 }
 
 function toSafeV1QuestionDTO(doc) {
@@ -298,7 +360,7 @@ function buildFilterConditions(filters = {}, { useNormalizedKeys = isNormalizedK
  * coalescing any cold misses into ONE single MongoDB `$in` query with strict `quizQuestionProjection`
  * (zero N+1 queries, zero answer-key over-fetching).
  */
-async function hydrateQuestionBatch(uids) {
+async function hydrateQuestionBatch(uids, legacyDocIdMap = null) {
   if (!Array.isArray(uids) || uids.length === 0) return [];
   const collection = getQuestionsCollection();
 
@@ -315,11 +377,26 @@ async function hydrateQuestionBatch(uids) {
       .find({ questionUid: { $in: toFetch } })
       .project(quizQuestionProjection);
     if (typeof query.maxTimeMS === 'function') query.maxTimeMS(5000);
-    return query.toArray().then((docs) => {
+    return query.toArray().then(async (docs) => {
       const map = new Map();
       for (const doc of docs) {
         const dto = toSafeV1QuestionDTO(doc);
         if (dto?.questionUid) map.set(dto.questionUid, dto);
+      }
+      if (legacyDocIdMap) {
+        const unresolved = toFetch.filter((uid) => !map.has(uid) && Object.hasOwn(legacyDocIdMap, uid));
+        if (unresolved.length > 0) {
+          const legacyDocs = await loadLegacyDocsByIdMap(
+            collection,
+            unresolved,
+            legacyDocIdMap,
+            quizQuestionProjection,
+          );
+          for (const [uid, doc] of legacyDocs) {
+            const dto = toSafeV1QuestionDTO(doc);
+            if (dto?.questionUid === uid) map.set(uid, dto);
+          }
+        }
       }
       return map;
     });
@@ -338,9 +415,24 @@ async function hydrateQuestionBatch(uids) {
   };
 
   const hydrated = await Promise.all(
-    uids.map((uid) =>
-      cachedQuestionById(`quiz-dto:${uid}`, () => loadFromCoalescedBatch(uid)),
-    ),
+    uids.map(async (uid) => {
+      const cached = await cachedQuestionById(`quiz-dto:${uid}`, () => loadFromCoalescedBatch(uid));
+      if (cached) return cached;
+      if (legacyDocIdMap && Object.hasOwn(legacyDocIdMap, uid)) {
+        const legacyDocs = await loadLegacyDocsByIdMap(
+          collection,
+          [uid],
+          legacyDocIdMap,
+          quizQuestionProjection,
+        );
+        const doc = legacyDocs.get(uid);
+        if (doc) {
+          const dto = toSafeV1QuestionDTO(doc);
+          if (dto?.questionUid === uid) return dto;
+        }
+      }
+      return null;
+    }),
   );
 
   return hydrated.filter(Boolean);
@@ -458,7 +550,9 @@ async function sampleSelectionUids(baseFilter, { seed, maxCount, randomize = tru
   }
 
   const uids = docs.map((doc) => canonicalQuestionUid(doc));
-  return permuteUidsDeterministically(uids, seed, randomize).slice(0, maxCount);
+  const selectedUids = permuteUidsDeterministically(uids, seed, randomize).slice(0, maxCount);
+  const legacyDocIds = pickLegacyDocIds(extractLegacyDocIds(docs), selectedUids);
+  return { uids: selectedUids, legacyDocIds };
 }
 
 async function loadTopicPoolUids(filters, baseFilter) {
@@ -484,8 +578,9 @@ async function loadTopicPoolUids(filters, baseFilter) {
     if (typeof cursor.maxTimeMS === 'function') cursor = cursor.maxTimeMS(5000);
     const docs = await cursor.limit(TOPIC_POOL_MAX_SIZE).toArray();
     const uids = [...new Set(docs.map((doc) => canonicalQuestionUid(doc)))];
+    const legacyDocIds = extractLegacyDocIds(docs);
     const revision = await getQuestionRevision();
-    return { revision, uids };
+    return { revision, uids, legacyDocIds };
   });
 }
 
@@ -558,6 +653,7 @@ export async function createQuizSession(userId, rawBody) {
   let hasMore = false;
   let cursorOffset = 0;
   let duplicatesPrevented = 0;
+  let sessionLegacyDocIds = {};
   const deliveredSet = new Set();
 
   if (mode === 'practice') {
@@ -575,6 +671,7 @@ export async function createQuizSession(userId, rawBody) {
     const deduped = deduplicateBatch(rawDtos, deliveredSet);
     questions = deduped.unique;
     duplicatesPrevented = deduped.duplicatesPrevented;
+    sessionLegacyDocIds = pickLegacyDocIds(extractLegacyDocIds(slice.pageDocs), deliveredSet);
     cursorOffset = questions.length;
 
     const underCap = maxQuestions === null || cursorOffset < maxQuestions;
@@ -593,10 +690,11 @@ export async function createQuizSession(userId, rawBody) {
     poolRevision = pool.revision ?? 0;
     const permuted = permuteUidsDeterministically(pool.uids || [], seed, randomize);
     orderedQuestionUids = input.totalQuestions ? permuted.slice(0, input.totalQuestions) : permuted;
+    sessionLegacyDocIds = pickLegacyDocIds(pool.legacyDocIds, orderedQuestionUids);
     totalCount = orderedQuestionUids.length;
 
     const firstSlice = orderedQuestionUids.slice(0, batchSize);
-    const hydrated = await hydrateQuestionBatch(firstSlice);
+    const hydrated = await hydrateQuestionBatch(firstSlice, sessionLegacyDocIds);
     const deduped = deduplicateBatch(hydrated, deliveredSet);
     questions = deduped.unique;
     duplicatesPrevented = deduped.duplicatesPrevented;
@@ -608,15 +706,17 @@ export async function createQuizSession(userId, rawBody) {
   } else if (mode === 'speed' || mode === 'mock') {
     const targetCount =
       input.totalQuestions ?? (mode === 'speed' ? DEFAULT_SPEED_QUESTIONS : DEFAULT_MOCK_QUESTIONS);
-    orderedQuestionUids = await sampleSelectionUids(baseFilter, {
+    const sampled = await sampleSelectionUids(baseFilter, {
       seed,
       maxCount: targetCount,
       randomize,
     });
+    orderedQuestionUids = sampled.uids;
+    sessionLegacyDocIds = sampled.legacyDocIds;
     totalCount = orderedQuestionUids.length;
 
     const firstSlice = orderedQuestionUids.slice(0, batchSize);
-    const hydrated = await hydrateQuestionBatch(firstSlice);
+    const hydrated = await hydrateQuestionBatch(firstSlice, sessionLegacyDocIds);
     const deduped = deduplicateBatch(hydrated, deliveredSet);
     questions = deduped.unique;
     duplicatesPrevented = deduped.duplicatesPrevented;
@@ -633,19 +733,22 @@ export async function createQuizSession(userId, rawBody) {
         ? { modeKey: 'aiChallenge' }
         : { quizName: { $in: [/^ai\s*challenge$/i, /^selectionway$/i] } },
     ]);
-    let sampled = await sampleSelectionUids(aiFilter, {
+    const aiSampled = await sampleSelectionUids(aiFilter, {
       seed,
       maxCount: targetCount,
       randomize,
     });
+    const sampled = [...aiSampled.uids];
+    const combinedLegacy = { ...aiSampled.legacyDocIds };
     if (sampled.length < targetCount) {
-      const fallbackUids = await sampleSelectionUids(baseFilter, {
+      const fallbackSampled = await sampleSelectionUids(baseFilter, {
         seed,
         maxCount: targetCount,
         randomize,
       });
+      Object.assign(combinedLegacy, fallbackSampled.legacyDocIds);
       const existing = new Set(sampled);
-      for (const uid of fallbackUids) {
+      for (const uid of fallbackSampled.uids) {
         if (!existing.has(uid)) {
           sampled.push(uid);
           existing.add(uid);
@@ -654,10 +757,11 @@ export async function createQuizSession(userId, rawBody) {
       }
     }
     orderedQuestionUids = sampled;
+    sessionLegacyDocIds = pickLegacyDocIds(combinedLegacy, orderedQuestionUids);
     totalCount = orderedQuestionUids.length;
 
     const firstSlice = orderedQuestionUids.slice(0, batchSize);
-    const hydrated = await hydrateQuestionBatch(firstSlice);
+    const hydrated = await hydrateQuestionBatch(firstSlice, sessionLegacyDocIds);
     const deduped = deduplicateBatch(hydrated, deliveredSet);
     questions = deduped.unique;
     duplicatesPrevented = deduped.duplicatesPrevented;
@@ -683,6 +787,7 @@ export async function createQuizSession(userId, rawBody) {
     ...(orderedQuestionUids !== null ? { orderedQuestionUids } : {}),
     ...(poolRevision !== null ? { poolRevision } : {}),
     ...(selectionCursor !== null ? { selectionCursor } : {}),
+    ...(Object.keys(sessionLegacyDocIds).length > 0 ? { legacyQuestionDocIds: sessionLegacyDocIds } : {}),
     deliveredUids: [...deliveredSet],
     cursorOffset,
     lastCursor: nextCursor,
@@ -795,6 +900,7 @@ export async function getQuizSessionQuestionsBatch(sessionId, userId, query) {
   let nextCursorOffset = Number(sessionDoc.cursorOffset) || 0;
   let nextSelectionCursor = sessionDoc.selectionCursor || null;
   let duplicatesPrevented = 0;
+  let batchLegacyDocIds = null;
 
   if (sessionDoc.mode === 'practice') {
     const baseFilter = buildFilterConditions(sessionDoc.filters || {}, { mode: 'practice' });
@@ -815,6 +921,10 @@ export async function getQuizSessionQuestionsBatch(sessionId, userId, query) {
       const deduped = deduplicateBatch(rawDtos, batchSeenSet);
       questions = deduped.unique;
       duplicatesPrevented = deduped.duplicatesPrevented;
+      batchLegacyDocIds = pickLegacyDocIds(
+        extractLegacyDocIds(slice.pageDocs),
+        questions.map((q) => q.questionUid),
+      );
       nextCursorOffset = priorDeliveredCount + questions.length;
 
       const underCap = cap === null || nextCursorOffset < cap;
@@ -841,7 +951,7 @@ export async function getQuizSessionQuestionsBatch(sessionId, userId, query) {
       throw fail('Invalid session cursor', 400, 'INVALID_CURSOR');
     }
     const sliceUids = orderedUids.slice(offset, offset + requestedBatchSize);
-    const hydrated = await hydrateQuestionBatch(sliceUids);
+    const hydrated = await hydrateQuestionBatch(sliceUids, sessionDoc.legacyQuestionDocIds || null);
     const deduped = deduplicateBatch(hydrated, batchSeenSet);
     questions = deduped.unique;
     duplicatesPrevented = deduped.duplicatesPrevented;
@@ -854,6 +964,7 @@ export async function getQuizSessionQuestionsBatch(sessionId, userId, query) {
 
   await updateQuizSessionDelivery(sessionId, userId, {
     newDeliveredUids: questions.map((q) => q.questionUid),
+    newLegacyDocIds: batchLegacyDocIds,
     cursorOffset: nextCursorOffset,
     lastCursor: nextCursor,
     selectionCursor: nextSelectionCursor,
@@ -914,22 +1025,38 @@ function formatAnswerKeyDoc(doc) {
   };
 }
 
-async function loadServerAnswerKey(questionUid) {
-  return cachedQuestionAnswerKey(questionUid, async () => {
+async function loadServerAnswerKey(questionUid, { legacyDocId = null } = {}) {
+  const uid = String(questionUid);
+  const cached = await cachedQuestionAnswerKey(uid, async () => {
     const collection = getQuestionsCollection();
     const doc = await collection.findOne(
-      { questionUid: String(questionUid) },
+      { questionUid: uid },
       { projection: ANSWER_KEY_PROJECTION },
     );
     return formatAnswerKeyDoc(doc);
   });
+  if (cached) return cached;
+
+  // Session-verified legacy document lookup: only when the owned session recorded the
+  // document's ObjectId at delivery time, AND strict canonical identity verification passes.
+  if (typeof legacyDocId === 'string' && /^[a-fA-F0-9]{24}$/.test(legacyDocId)) {
+    const collection = getQuestionsCollection();
+    const doc = await collection.findOne(
+      { _id: new ObjectId(legacyDocId) },
+      { projection: ANSWER_KEY_PROJECTION },
+    );
+    if (doc && canonicalQuestionUid(doc) === uid) {
+      return formatAnswerKeyDoc(doc);
+    }
+  }
+  return null;
 }
 
 /**
  * Batch-load server-only answer keys for post-submit review: hits L1/Redis via
  * `cachedQuestionAnswerKey` and coalesces all cold misses into ONE single MongoDB `$in` query.
  */
-async function loadServerAnswerKeysBatch(uids) {
+async function loadServerAnswerKeysBatch(uids, legacyDocIdMap = null) {
   if (!Array.isArray(uids) || uids.length === 0) return [];
   const collection = getQuestionsCollection();
 
@@ -968,11 +1095,36 @@ async function loadServerAnswerKeysBatch(uids) {
     return batchPromise.then((map) => map.get(uid) || null);
   };
 
-  return Promise.all(
+  const results = await Promise.all(
     uids.map((uid) =>
       cachedQuestionAnswerKey(uid, () => loadFromCoalescedBatch(uid)),
     ),
   );
+
+  if (legacyDocIdMap && typeof legacyDocIdMap === 'object') {
+    const missingEntries = [];
+    for (let i = 0; i < uids.length; i++) {
+      if (!results[i] && Object.hasOwn(legacyDocIdMap, uids[i])) {
+        missingEntries.push({ index: i, uid: uids[i] });
+      }
+    }
+    if (missingEntries.length > 0) {
+      const legacyDocs = await loadLegacyDocsByIdMap(
+        collection,
+        missingEntries.map((entry) => entry.uid),
+        legacyDocIdMap,
+        ANSWER_KEY_PROJECTION,
+      );
+      for (const { index, uid } of missingEntries) {
+        const doc = legacyDocs.get(uid);
+        if (doc) {
+          results[index] = formatAnswerKeyDoc(doc);
+        }
+      }
+    }
+  }
+
+  return results;
 }
 
 function resolveSingleAnswerIndex(rawAnswer, options, { strictBounds = false } = {}) {
@@ -1096,7 +1248,10 @@ export async function submitQuizSessionAnswer(sessionId, userId, body, idempoten
   );
 
   // Pre-load grading key via server-only Redis/L1 cache outside the write transaction.
-  const keyDoc = await loadServerAnswerKey(body.questionUid);
+  const legacyDocId = precheckSession.legacyQuestionDocIds && Object.hasOwn(precheckSession.legacyQuestionDocIds, body.questionUid)
+    ? precheckSession.legacyQuestionDocIds[body.questionUid]
+    : null;
+  const keyDoc = await loadServerAnswerKey(body.questionUid, { legacyDocId });
   if (!keyDoc) throw fail('Question not found', 404, 'QUESTION_NOT_FOUND');
 
   const { resolvedIndex, isCorrect } = evaluateSubmittedAnswer(body.answer, keyDoc);
@@ -1265,7 +1420,7 @@ export async function getQuizSessionResult(sessionId, userId) {
   const uniqueUids = [...new Set(orderedUids.filter(Boolean))];
 
   // Hydrate server answer keys in one coalesced batch for post-completion review only.
-  const keys = await loadServerAnswerKeysBatch(uniqueUids);
+  const keys = await loadServerAnswerKeysBatch(uniqueUids, session.legacyQuestionDocIds || null);
   const review = keys
     .filter(Boolean)
     .map((keyDoc) => {
