@@ -2,7 +2,34 @@ import { createHash } from 'node:crypto';
 import { ObjectId } from 'mongodb';
 import { scopedQuestionFilter } from './questionExamMode.js';
 
-export const canonicalQuestionUid = question => question.questionUid || `q_${createHash('sha256').update(`mongo:${String(question._id)}`).digest('hex').slice(0, 32)}`;
+export const QUESTION_CANONICAL_IDENTITY_INDEX = Object.freeze({
+  key: Object.freeze({ questionUid: 1 }),
+  options: Object.freeze({
+    unique: true,
+    partialFilterExpression: Object.freeze({ questionUid: Object.freeze({ $type: 'string' }) }),
+    name: 'question_canonical_identity',
+  }),
+});
+
+export const MISSING_QUESTION_UID_FILTER = Object.freeze({
+  $or: [
+    { questionUid: { $exists: false } },
+    { questionUid: null },
+    { questionUid: '' },
+    { questionUid: { $not: { $type: 'string' } } },
+    { questionUid: /^\s+$/ },
+  ],
+});
+
+export const persistedQuestionUid = question => (
+  typeof question?.questionUid === 'string' && question.questionUid.trim().length > 0
+    ? question.questionUid
+    : null
+);
+
+export const canonicalQuestionUid = question =>
+  persistedQuestionUid(question)
+  || `q_${createHash('sha256').update(`mongo:${String(question._id)}`).digest('hex').slice(0, 32)}`;
 
 // Allocate before insertion; retries of the same import row have the same identity.
 export function assignQuestionIdentity(question) {

@@ -1,6 +1,6 @@
 import { battleQuestionMetadata } from './battleQuestionMetadata.js';
 import { assertQuestionExamMode, parseQuestionExamMode, scopedQuestionFilter } from './questionExamMode.js';
-import { assignQuestionIdentity, resolveQuestion } from './questionIdentity.js';
+import { assignQuestionIdentity, canonicalQuestionUid, resolveQuestion } from './questionIdentity.js';
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
 import crypto from "crypto";
 import { invalidateQuestionMetadata } from "./questionMetadataCache.js";
@@ -194,7 +194,7 @@ export async function modifyQuestion(id, updates, topic = undefined, examMode = 
     ...normalizedUpdates,
     ...(mergedTranslations !== undefined ? { translations: mergedTranslations } : {}),
     id: existing.id,
-    questionUid: existing.questionUid,
+    questionUid: canonicalQuestionUid(existing),
     updatedAt: new Date().toISOString(),
   };
   assertQuestionExamMode(updated, examMode);

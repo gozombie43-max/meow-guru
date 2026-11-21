@@ -35,6 +35,7 @@ removeQuestion,
 removeQuestionsBulk,
 } from '../questionService.js';
 import { ANALYZE_ANSWERS_PROJECTION, PUBLIC_QUESTION_PROJECTION } from '../questions/questionReadService.js';
+import { canonicalQuestionUid } from '../questions/questionIdentity.js';
 
 function createCursor(resources) {
   const cursor = {
@@ -609,7 +610,7 @@ describe('MongoDB-backed question writes', () => {
     const expectedModified = {
       ...ineligibleAlgebra,
       id: 'q457',
-      questionUid: undefined,
+      questionUid: canonicalQuestionUid(existing),
       topic: 'algebra',
       question: 'After',
       updatedAt: expect.any(String),
