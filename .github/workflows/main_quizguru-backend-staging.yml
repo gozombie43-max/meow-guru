@@ -477,46 +477,62 @@ jobs:
           token_file="$(mktemp)"
           trap 'rm -f "$jwks_file" "$token_file"' EXIT
 
-          jwks_status="$(curl --silent --show-error --max-time 20 \
-            --output "$jwks_file" \
-            --write-out '%{http_code}' \
-            "https://${STAGING_APP_HOST}/auth/convex/.well-known/jwks.json")" \
-            || jwks_status="transport-error"
+          last_error=""
+          last_body_file=""
 
-          if [ "$jwks_status" != "200" ]; then
-            echo "::error::Convex JWKS endpoint returned HTTP $jwks_status"
-            cat "$jwks_file"
-            exit 1
+          for attempt in $(seq 1 18); do
+            : > "$jwks_file"
+            : > "$token_file"
+
+            jwks_status="$(curl --silent --show-error --max-time 20 \
+              --output "$jwks_file" \
+              --write-out '%{http_code}' \
+              "https://${STAGING_APP_HOST}/auth/convex/.well-known/jwks.json")" \
+              || jwks_status="transport-error"
+
+            if [ "$jwks_status" != "200" ]; then
+              last_error="Convex JWKS endpoint returned HTTP $jwks_status"
+              last_body_file="$jwks_file"
+            elif ! jq -e \
+              --arg kid "meow-convex-3b3030964606" \
+              '.keys | any(.[];
+                .kid == $kid and
+                .alg == "ES256" and
+                .kty == "EC" and
+                .crv == "P-256" and
+                (.key_ops | index("verify") != null)
+              )' "$jwks_file" >/dev/null; then
+              last_error="Convex JWKS key validation failed"
+              last_body_file="$jwks_file"
+            else
+              token_status="$(curl --silent --show-error --max-time 20 \
+                --output "$token_file" \
+                --write-out '%{http_code}' \
+                --request POST \
+                --header 'Content-Type: application/json' \
+                --data '{}' \
+                "https://${STAGING_APP_HOST}/auth/convex/token")" \
+                || token_status="transport-error"
+
+              if [ "$token_status" != "401" ]; then
+                last_error="Unauthenticated Convex token request returned HTTP $token_status instead of 401"
+                last_body_file="$token_file"
+              else
+                echo "PASS: Convex JWKS is publicly accessible."
+                echo "PASS: Expected ES256 public key is published."
+                echo "PASS: Unauthenticated token issuance is rejected."
+                exit 0
+              fi
+            fi
+
+            echo "Convex auth attempt $attempt/18: $last_error"
+            if [ "$attempt" -lt 18 ]; then
+              sleep 10
+            fi
+          done
+
+          echo "::error::${last_error:-Convex authentication endpoint verification failed}"
+          if [ -n "$last_body_file" ] && [ -f "$last_body_file" ]; then
+            cat "$last_body_file"
           fi
-
-          if ! jq -e \
-            --arg kid "meow-convex-3b3030964606" \
-            '.keys | any(.[];
-              .kid == $kid and
-              .alg == "ES256" and
-              .kty == "EC" and
-              .crv == "P-256" and
-              (.key_ops | index("verify") != null)
-            )' "$jwks_file" >/dev/null; then
-            echo "::error::Convex JWKS key validation failed"
-            exit 1
-          fi
-
-          token_status="$(curl --silent --show-error --max-time 20 \
-            --output "$token_file" \
-            --write-out '%{http_code}' \
-            --request POST \
-            --header 'Content-Type: application/json' \
-            --data '{}' \
-            "https://${STAGING_APP_HOST}/auth/convex/token")" \
-            || token_status="transport-error"
-
-          if [ "$token_status" != "401" ]; then
-            echo "::error::Unauthenticated Convex token request returned HTTP $token_status instead of 401"
-            cat "$token_file"
-            exit 1
-          fi
-
-          echo "PASS: Convex JWKS is publicly accessible."
-          echo "PASS: Expected ES256 public key is published."
-          echo "PASS: Unauthenticated token issuance is rejected."
+          exit 1
