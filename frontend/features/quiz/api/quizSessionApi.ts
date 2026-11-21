@@ -15,7 +15,7 @@ const localizedContentSchema = z.object({
 }).passthrough();
 
 export const quizSessionQuestionSchema = z.object({
-  questionUid: z.string().min(1),
+  questionUid: z.string().trim().min(1),
   id: z.union([z.string(), z.number()]).optional(),
   sessionAnchor: z.string().optional(),
   question: z.string().optional().default(''),
@@ -137,7 +137,7 @@ export type SubmitSessionAnswerRequest = z.input<typeof submitSessionAnswerReque
 
 export const submitSessionAnswerResponseSchema = z.object({
   sessionId: z.string().min(1),
-  questionUid: z.string().min(1),
+  questionUid: z.string().trim().min(1),
   accepted: z.boolean(),
   idempotent: z.boolean().optional(),
   revision: z.number().int().nonnegative(),

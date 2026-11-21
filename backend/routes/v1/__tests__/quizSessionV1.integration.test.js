@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
-import { Collection } from 'mongodb';
+import { Collection, ObjectId } from 'mongodb';
 import { once } from 'node:events';
 
 const redisState = vi.hoisted(() => {
@@ -93,6 +93,8 @@ import { migrate } from '../../../migrations/runner.js';
 import { createSession } from '../../../auth/sessions.js';
 import { createApp } from '../../../app.js';
 import { buildNormalizedQuestionFields } from '../../../services/questions/questionNormalizer.js';
+import { canonicalQuestionUid } from '../../../services/questions/questionIdentity.js';
+import * as migration028 from '../../../migrations/028-backfill-question-uids.js';
 import { invalidateQuestionCacheRevision } from '../../../services/questions/questionCache.js';
 import { fetchQuestionCursorPage } from '../../../services/questions/questionCursorService.js';
 import { fetchQuestionsSession } from '../../../services/questions/questionSessionService.js';
@@ -780,5 +782,180 @@ describe('Phase 4 & Phase 6: Standardized /api/v1/quiz/sessions Delivery API', (
     );
     expect(fetchAfterSubmit.status).toBe(409);
     expect((await fetchAfterSubmit.json()).code).toBe('SESSION_NOT_ACTIVE');
+  });
+
+  it('delivers and grades legacy documents without persisted questionUid using consistent canonical identity while preserving strict 404 validation', async () => {
+    await db.collection('questions').deleteMany({});
+    clearSharedLocalCaches();
+    invalidateQuestionCacheRevision();
+
+    const stagingDocId = new ObjectId('6a9bf2556b515a22c7f94639');
+    const secondLegacyId = new ObjectId();
+    const expectedStagingUid = 'q_9bdff06486fe9b21f07585ab75afeec5';
+    expect(canonicalQuestionUid({ _id: stagingDocId })).toBe(expectedStagingUid);
+
+    const legacyDocs = [
+      {
+        _id: stagingDocId,
+        id: 'pinn_numbersystem_45',
+        subject: 'mathematics',
+        topic: 'number-system',
+        chapter: 'number-system',
+        concept: 'Divisibility',
+        difficulty: 'medium',
+        exam: 'SSC CPO 09/12/2019 (Evening)',
+        quizName: 'PYQ',
+        question: 'Which number is divisible by 9?',
+        options: ['123', '234', '346', '457'],
+        correctAnswer: '234',
+        correctLetter: 'b',
+        solution: '2 + 3 + 4 = 9, which is divisible by 9.',
+      },
+      {
+        _id: secondLegacyId,
+        id: 'pinn_numbersystem_46',
+        subject: 'mathematics',
+        topic: 'number-system',
+        chapter: 'number-system',
+        concept: 'Remainders',
+        difficulty: 'easy',
+        exam: 'SSC CPO 09/12/2019 (Evening)',
+        quizName: 'PYQ',
+        question: 'What is 17 mod 5?',
+        options: ['1', '2', '3', '4'],
+        correctAnswer: '2',
+        correctLetter: 'b',
+        solution: '17 = 3 * 5 + 2.',
+      },
+    ].map((doc) => ({ ...doc, ...buildNormalizedQuestionFields(doc) }));
+
+    // Explicitly verify these legacy fixtures have NO persisted questionUid.
+    for (const doc of legacyDocs) expect(doc.questionUid).toBeUndefined();
+    await db.collection('questions').insertMany(legacyDocs);
+
+    // 1. Practice mode: create session -> deliver -> answer -> submit -> review.
+    const practiceCreate = await api('/api/v1/quiz/sessions', {
+      method: 'POST',
+      headers: { 'Idempotency-Key': 'legacy_practice_create_01' },
+      body: { mode: 'practice', subject: 'mathematics', topic: 'number-system', batchSize: 10 },
+    });
+    expect(practiceCreate.status).toBe(201);
+    const practiceSession = await practiceCreate.json();
+    expect(practiceSession.questions).toHaveLength(2);
+
+    const deliveredStaging = practiceSession.questions.find((q) => q.id === 'pinn_numbersystem_45');
+    expect(deliveredStaging).toBeDefined();
+    expect(deliveredStaging.questionUid).toBe(expectedStagingUid);
+    assertNoSensitiveFields(deliveredStaging);
+
+    // Answer submission using the delivered canonical questionUid succeeds (never 404 QUESTION_NOT_FOUND).
+    const practiceAnswer = await api(`/api/v1/quiz/sessions/${practiceSession.sessionId}/answers`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': 'legacy_practice_ans_01' },
+      body: {
+        questionUid: deliveredStaging.questionUid,
+        answer: 1,
+        timeTakenMs: 3100,
+        submissionId: 'legacy_practice_ans_01',
+      },
+    });
+    expect(practiceAnswer.status).toBe(200);
+    const practiceAnswerBody = await practiceAnswer.json();
+    expect(practiceAnswerBody).toMatchObject({
+      sessionId: practiceSession.sessionId,
+      questionUid: expectedStagingUid,
+      accepted: true,
+      evaluation: {
+        isCorrect: true,
+        correct: 1,
+        correctIndex: 1,
+      },
+    });
+
+    // Strict identity validation is NOT weakened:
+    // (a) Submitting legacy `id` instead of canonical `questionUid` returns 404 QUESTION_NOT_FOUND.
+    const legacyIdAttempt = await api(`/api/v1/quiz/sessions/${practiceSession.sessionId}/answers`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': 'legacy_id_rejected_01' },
+      body: { questionUid: 'pinn_numbersystem_45', answer: 1, submissionId: 'legacy_id_rejected_01' },
+    });
+    expect(legacyIdAttempt.status).toBe(404);
+    expect((await legacyIdAttempt.json()).code).toBe('QUESTION_NOT_FOUND');
+
+    // (b) Submitting an unknown canonical-shaped UID still returns 404 QUESTION_NOT_FOUND.
+    const bogusUidAttempt = await api(`/api/v1/quiz/sessions/${practiceSession.sessionId}/answers`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': 'legacy_bogus_uid_01' },
+      body: {
+        questionUid: 'q_0000000000000000000000000000dead',
+        answer: 1,
+        submissionId: 'legacy_bogus_uid_01',
+      },
+    });
+    expect(bogusUidAttempt.status).toBe(404);
+    expect((await bogusUidAttempt.json()).code).toBe('QUESTION_NOT_FOUND');
+
+    // Submit & review include the legacy question with full canonical identity.
+    const practiceSubmit = await api(`/api/v1/quiz/sessions/${practiceSession.sessionId}/submit`, {
+      method: 'POST',
+    });
+    expect(practiceSubmit.status).toBe(200);
+    const practiceResult = await api(`/api/v1/quiz/sessions/${practiceSession.sessionId}/result`);
+    expect(practiceResult.status).toBe(200);
+    const practiceResultBody = await practiceResult.json();
+    expect(practiceResultBody.review).toHaveLength(2);
+    expect(practiceResultBody.review.find((r) => r.questionUid === expectedStagingUid)).toMatchObject({
+      questionUid: expectedStagingUid,
+      attempted: true,
+      isCorrect: true,
+      correct: 1,
+    });
+
+    // 2. Topic mode & Mock mode also hydrate, deliver, and grade legacy docs consistently.
+    const topicCreate = await api('/api/v1/quiz/sessions', {
+      method: 'POST',
+      body: { mode: 'topic', subject: 'mathematics', topic: 'number-system', batchSize: 10 },
+    });
+    expect(topicCreate.status).toBe(201);
+    const topicSession = await topicCreate.json();
+    expect(topicSession.totalCount).toBe(2);
+    expect(topicSession.questions).toHaveLength(2);
+    expect(topicSession.questions.some((q) => q.questionUid === expectedStagingUid)).toBe(true);
+
+    const topicAnswer = await api(`/api/v1/quiz/sessions/${topicSession.sessionId}/answers`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': 'legacy_topic_ans_01' },
+      body: { questionUid: expectedStagingUid, answer: 1, submissionId: 'legacy_topic_ans_01' },
+    });
+    expect(topicAnswer.status).toBe(200);
+    expect((await topicAnswer.json()).evaluation).toMatchObject({ isCorrect: true, correct: 1 });
+
+    // 3. After migration 028 backfills questionUid, delivery & answer submission work purely via persisted questionUid.
+    await migration028.up(db);
+    clearSharedLocalCaches();
+    invalidateQuestionCacheRevision();
+
+    const persistedDoc = await db.collection('questions').findOne({ _id: stagingDocId });
+    expect(persistedDoc.questionUid).toBe(expectedStagingUid);
+
+    const postBackfillCreate = await api('/api/v1/quiz/sessions', {
+      method: 'POST',
+      body: { mode: 'practice', subject: 'mathematics', topic: 'number-system', batchSize: 10 },
+    });
+    expect(postBackfillCreate.status).toBe(201);
+    const postBackfillSession = await postBackfillCreate.json();
+    expect(postBackfillSession.questions.some((q) => q.questionUid === expectedStagingUid)).toBe(true);
+
+    // Persisted sessions need no legacyQuestionDocIds fallback map.
+    const storedSession = await db.collection('quizSessions').findOne({ sessionId: postBackfillSession.sessionId });
+    expect(storedSession.legacyQuestionDocIds).toBeUndefined();
+
+    const postBackfillAnswer = await api(`/api/v1/quiz/sessions/${postBackfillSession.sessionId}/answers`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': 'post_backfill_ans_01' },
+      body: { questionUid: expectedStagingUid, answer: 1, submissionId: 'post_backfill_ans_01' },
+    });
+    expect(postBackfillAnswer.status).toBe(200);
+    expect((await postBackfillAnswer.json()).evaluation).toMatchObject({ isCorrect: true, correct: 1 });
   });
 });

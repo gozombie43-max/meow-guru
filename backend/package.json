@@ -69,6 +69,7 @@
     "start:worker": "node --import ./instrumentation.js worker.js",
     "start:attachments": "node --import ./instrumentation.js attachment-worker.js",
     "db:migrate": "node scripts/migrate.js",
+    "db:backfill-question-uids": "node scripts/backfill-question-uids.js",
     "db:initialize-public-catalog": "node scripts/initialize-public-catalog.js",
     "db:normalize": "node scripts/normalize-question-keys.js",
     "db:migrate-images": "node scripts/migrate-local-question-images.js",
