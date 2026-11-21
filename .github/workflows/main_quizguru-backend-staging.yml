@@ -165,7 +165,7 @@ jobs:
             if ! az appservice plan create \
               --name "$plan_name" \
               --resource-group "$AZURE_RESOURCE_GROUP" \
-              --sku F1 \
+              --sku B1 \
               --is-linux \
               --output none 2>"$create_plan_error"; then
               cat "$create_plan_error" >&2
@@ -182,13 +182,10 @@ jobs:
 
           sku="$(az appservice plan show --name "$plan_name" --resource-group "$AZURE_RESOURCE_GROUP" --query sku.name --output tsv)"
           case "$sku" in
-            F1)
-              ;;
             B1)
-              echo '::warning title=Paid staging plan active::Staging App Service is temporarily using B1. Return quizguru-stage-plan to F1 when B1 testing is finished.'
               ;;
             *)
-              echo "::error::Refusing unsupported staging plan SKU: $sku. Allowed SKUs are F1 and B1."
+              echo "::error::Staging App Service plan must be B1 for always-on full-runtime testing; found SKU: $sku."
               exit 1
               ;;
           esac
@@ -328,8 +325,9 @@ jobs:
             '[
               {"name":"MONGODB_URI","value":$mongoUri},
               {"name":"MONGODB_DB","value":"quizDB_staging"},
-              {"name":"QUIZ_ONLY_MODE","value":"true"},
-              {"name":"RUN_EMBEDDED_WORKERS","value":"false"},
+              {"name":"QUIZ_ONLY_MODE","value":"false"},
+              {"name":"RUN_EMBEDDED_WORKERS","value":"true"},
+              {"name":"RUN_CONCEPT_GROUPING_WORKER","value":"true"},
               {"name":"DEPLOYMENT_ENVIRONMENT","value":"staging"},
               {"name":"PROCESS_ROLE","value":"api"},
               {"name":"NODE_ENV","value":"production"},
@@ -337,7 +335,8 @@ jobs:
               {"name":"TRAINING_LOCAL_INGRESS","value":"true"},
               {"name":"JWT_SECRET","value":$jwtSecret},
               {"name":"REFRESH_TOKEN_SECRET","value":$refreshSecret},
-              {"name":"FRONTEND_URL","value":"https://example.invalid"},
+              {"name":"FRONTEND_URL","value":"https://meowguru.me"},
+              {"name":"CORS_ALLOWED_ORIGINS","value":"https://meowguru.me"},
               {"name":"GOOGLE_CLIENT_ID","value":"staging-disabled"},
               {"name":"GOOGLE_CLIENT_SECRET","value":"staging-disabled"},
               {"name":"GOOGLE_CALLBACK_URL","value":$googleCallback},
@@ -359,7 +358,7 @@ jobs:
             --name "$STAGING_APP_NAME" \
             --resource-group "$RESOURCE_GROUP" \
             --startup-file 'npm --workspace backend start' \
-            --always-on false \
+            --always-on true \
             --output none
       - name: Deploy staging backend
         uses: azure/webapps-deploy@b686016b4de8820a23519503685d8d03fbfa03a6 # v3
