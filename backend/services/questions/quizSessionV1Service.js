@@ -1030,7 +1030,7 @@ async function loadServerAnswerKey(questionUid, { legacyDocId = null } = {}) {
   const cached = await cachedQuestionAnswerKey(uid, async () => {
     const collection = getQuestionsCollection();
     const doc = await collection.findOne(
-      { questionUid: uid },
+      { questionUid: { $eq: uid, $type: 'string' } },
       { projection: ANSWER_KEY_PROJECTION },
     );
     return formatAnswerKeyDoc(doc);
@@ -1070,7 +1070,12 @@ async function loadServerAnswerKeysBatch(uids, legacyDocIdMap = null) {
     if (toFetch.length === 0) return Promise.resolve(new Map());
 
     let query = collection
-      .find({ questionUid: { $in: toFetch } })
+      .find({
+        questionUid: {
+          $in: toFetch,
+          $type: 'string',
+        },
+      })
       .project(ANSWER_KEY_PROJECTION);
     if (typeof query.maxTimeMS === 'function') query = query.maxTimeMS(5000);
     return query.toArray().then((docs) => {
