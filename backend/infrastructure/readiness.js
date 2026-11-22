@@ -44,7 +44,7 @@ export async function checkReadiness({ force = false } = {}) {
     return inFlightReadiness;
   }
 
-  const runProbe = (async () => {
+  const probe = (async () => {
     try {
       await db.command({ ping: 1 }, { timeoutMS: 2000 });
       const checkTime = Date.now();
@@ -57,12 +57,15 @@ export async function checkReadiness({ force = false } = {}) {
       readinessValidUntil = 0;
       migrationsValidUntil = 0;
       throw error;
-    } finally {
-      if (inFlightReadiness === runProbe) {
-        inFlightReadiness = null;
-      }
     }
   })();
+
+  let runProbe;
+  runProbe = probe.finally(() => {
+    if (inFlightReadiness === runProbe) {
+      inFlightReadiness = null;
+    }
+  });
 
   if (!force) {
     inFlightReadiness = runProbe;

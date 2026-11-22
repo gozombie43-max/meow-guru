@@ -73,7 +73,7 @@ export function findAndroidDevicesForUsers(userIds) {
     { userId: { $in: userIds }, enabled: true, platform: 'android' },
     { projection: { _id: 0, userId: 1, lastSeenAt: 1, updatedAt: 1 }, maxTimeMS: ADMIN_QUERY_MAX_TIME_MS },
   );
-  if (typeof cursor?.limit === 'function') {
+  if (typeof cursor.limit === 'function') {
     cursor = cursor.limit(Math.max(100, userIds.length * 10));
   }
   return cursor.toArray();
@@ -89,7 +89,7 @@ export function findAndroidDevicesForUser(id) {
     { userId: String(id), enabled: true, platform: 'android' },
     { projection: { _id: 0, lastSeenAt: 1, updatedAt: 1 }, maxTimeMS: ADMIN_QUERY_MAX_TIME_MS },
   );
-  if (typeof cursor?.limit === 'function') {
+  if (typeof cursor.limit === 'function') {
     cursor = cursor.limit(25);
   }
   return cursor.toArray();

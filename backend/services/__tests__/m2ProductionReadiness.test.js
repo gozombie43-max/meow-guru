@@ -216,7 +216,7 @@ describe('M2 production readiness regressions', () => {
       expect(secondSeason).toHaveLength(1);
       expect(seasonCursor.toArray).toHaveBeenCalledTimes(1);
 
-      await invalidateBattleLeaderboardCache();
+      invalidateBattleLeaderboardCache();
       await getCachedGlobalLeaderboardItems(20);
       expect(globalCursor.toArray).toHaveBeenCalledTimes(2);
     });

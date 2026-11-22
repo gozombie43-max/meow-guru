@@ -54,7 +54,7 @@ export async function resolveQuestion(collection, reference, context = {}, optio
     const matched = options ? await collection.findOne(filter, options) : await collection.findOne(filter);
     if (matched) return matched;
     // Compatibility fallback for lightweight in-memory test mocks that only compare scalar `questionUid`.
-    if (typeof collection?.listIndexes !== 'function') {
+    if (typeof collection.listIndexes !== 'function') {
       const scalarFilter = scopedQuestionFilter({ questionUid: uid }, context.examMode);
       return options ? collection.findOne(scalarFilter, options) : collection.findOne(scalarFilter);
     }

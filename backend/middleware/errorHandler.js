@@ -10,12 +10,12 @@ import { captureException } from "../infrastructure/sentry.js";
 export function errorHandler(err, req, res, _next) {
   logger.error({ err, requestId: req.id }, "Unhandled request error");
   const status = err.status || err.statusCode || 500;
-  if (status >= 500 && !res?.sentry) {
+  if (status >= 500 && !res.sentry) {
     captureException(err, {
-      requestId: req?.id,
-      method: req?.method,
-      path: req?.originalUrl,
-      userId: req?.user?.id,
+      requestId: req.id,
+      method: req.method,
+      path: req.originalUrl,
+      userId: req.user?.id,
     });
   }
   if (status === 503 || err.retryAfter) res.set('Retry-After', String(err.retryAfter || 3));
