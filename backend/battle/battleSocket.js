@@ -83,14 +83,31 @@ const rematchPayloadSchema = z.object({
 
 const hashTokenKey = (tokenKey) => createHash('sha256').update(String(tokenKey)).digest('hex');
 
+export function buildSocketCorsOrigins(corsOrigin) {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const configured = [
+    process.env.FRONTEND_URL,
+    ...(process.env.CORS_ALLOWED_ORIGINS || '').split(','),
+  ].flatMap(value => {
+    const trimmed = typeof value === 'string' ? value.trim().replace(/\/$/, '') : '';
+    return trimmed ? [trimmed] : [];
+  });
+  const explicit = Array.isArray(corsOrigin)
+    ? corsOrigin.map(v => String(v || '').trim().replace(/\/$/, '')).filter(Boolean)
+    : typeof corsOrigin === 'string' && corsOrigin.trim()
+      ? [corsOrigin.trim().replace(/\/$/, '')]
+      : [];
+  return [...new Set([
+    ...(isProduction ? [] : ['http://localhost:3000', 'http://localhost:5000']),
+    ...configured,
+    ...explicit,
+  ])];
+}
+
 export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) {
   // Build an explicit origin allowlist for Socket.IO.
-  // Excludes localhost origins in production.
-  const isProduction = process.env.NODE_ENV === 'production';
-  const socketCorsOrigins = [
-    ...(isProduction ? [] : ['http://localhost:3000', 'http://localhost:5000']),
-    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
-  ];
+  // Excludes localhost origins in production while preserving both FRONTEND_URL and CORS_ALLOWED_ORIGINS.
+  const socketCorsOrigins = buildSocketCorsOrigins(corsOrigin);
 
   const userCooldowns = new Map();
   const consumedRematchTokens = new Map();

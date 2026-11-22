@@ -211,7 +211,20 @@ export const uploadImageQuestion = async (req, res) => {
     });
 
     const questionImageUrl = buildImageUrl(key);
-    let regions = optionRegions ? JSON.parse(optionRegions) : null;
+    let regions = null;
+    if (optionRegions) {
+      if (typeof optionRegions === "string") {
+        try {
+          regions = JSON.parse(optionRegions);
+        } catch {
+          return res.status(400).json({ error: "Invalid optionRegions JSON" });
+        }
+      } else if (typeof optionRegions === "object" && !Array.isArray(optionRegions)) {
+        regions = optionRegions;
+      } else {
+        return res.status(400).json({ error: "Invalid optionRegions format" });
+      }
+    }
     const defaultRegions = {
       a: { x: 0, y: 0.6, w: 0.5, h: 0.2 },
       b: { x: 0.5, y: 0.6, w: 0.5, h: 0.2 },

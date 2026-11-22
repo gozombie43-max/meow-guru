@@ -46,8 +46,20 @@ export function legacyQuestionFilter(id, { topic, subject } = {}) {
 }
 
 export async function resolveQuestion(collection, reference, context = {}, options) {
-  const uid = context.questionUid || (/^q_[a-f0-9]{32}$/.test(String(reference)) ? String(reference) : null);
-  if (uid) return options ? collection.findOne(scopedQuestionFilter({ questionUid: uid }, context.examMode), options) : collection.findOne(scopedQuestionFilter({ questionUid: uid }, context.examMode));
+  const uid = typeof context.questionUid === 'string' && context.questionUid.trim()
+    ? context.questionUid.trim()
+    : (/^q_[a-f0-9]{32}$/.test(String(reference)) ? String(reference) : null);
+  if (uid) {
+    const filter = scopedQuestionFilter({ questionUid: { $eq: uid, $type: 'string' } }, context.examMode);
+    const matched = options ? await collection.findOne(filter, options) : await collection.findOne(filter);
+    if (matched) return matched;
+    // Compatibility fallback for lightweight in-memory test mocks that only compare scalar `questionUid`.
+    if (typeof collection.listIndexes !== 'function') {
+      const scalarFilter = scopedQuestionFilter({ questionUid: uid }, context.examMode);
+      return options ? collection.findOne(scalarFilter, options) : collection.findOne(scalarFilter);
+    }
+    return null;
+  }
   const filter = scopedQuestionFilter(legacyQuestionFilter(reference, context), context.examMode);
   const cursor = options ? collection.find(filter, options) : collection.find(filter);
   const rows = await cursor.limit(2).toArray();

@@ -45,7 +45,7 @@ const startBodySchema = z.preprocess(
   z.object({
     restart: z.boolean().optional(),
     language: z.enum(['en', 'bn', 'hi']).optional(),
-  }).passthrough(),
+  }),
 );
 
 const autosaveBodySchema = z.object({
@@ -58,7 +58,7 @@ const autosaveBodySchema = z.object({
   sectionTimers: z.record(z.string(), z.unknown()).optional(),
   language: z.enum(['en', 'bn', 'hi']).optional(),
   advanceSection: z.boolean().optional(),
-}).passthrough();
+});
 
 const adminCreateSlotBodySchema = z.object({
   id: safeIdString,
@@ -67,10 +67,13 @@ const adminCreateSlotBodySchema = z.object({
   title: z.string().trim().min(1).max(240),
   tier: z.string().trim().max(80).nullable().optional(),
   type: z.enum(['mock', 'pyq']).optional(),
+  year: z.union([z.number().int().min(1900).max(2100), z.string().max(20), z.null()]).optional(),
+  shift: z.union([z.number().int().min(1).max(20), z.string().max(40), z.null()]).optional(),
+  examDate: z.string().max(40).nullable().optional(),
   isFree: z.boolean().optional(),
   order: z.coerce.number().int().min(0).max(10000).optional(),
   assessmentMode: z.enum(['practice', 'confidential']).optional(),
-}).passthrough();
+});
 
 const adminUpdateSlotBodySchema = z.object({
   examSlug: examSlugString,
@@ -84,7 +87,7 @@ const adminUpdateSlotBodySchema = z.object({
   order: z.coerce.number().int().min(0).max(10000).optional(),
   configKey: z.string().trim().min(1).max(100).optional(),
   timingPolicy: z.string().trim().max(40).optional(),
-}).passthrough();
+});
 
 function validateQuerySafe(schema) {
   return (req, res, next) => {

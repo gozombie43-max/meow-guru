@@ -244,11 +244,42 @@ describe('QuizChatbot Component', () => {
           mode: 'chat',
           model: 'o4-mini',
         }),
-        expect.any(Object)
+        expect.objectContaining({
+          headers: expect.objectContaining({ 'Idempotency-Key': expect.any(String) }),
+          signal: expect.any(AbortSignal),
+        })
       );
     });
 
     expect(textarea).toHaveValue('');
+  });
+
+  it('guards against rapid double-click prompt submissions with a synchronous lock', async () => {
+    let resolvePost!: (value: { data: { success: boolean; reply: string } }) => void;
+    (api.post as ReturnType<typeof vi.fn>).mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolvePost = resolve;
+      })
+    );
+
+    render(
+      <QuizChatbot
+        isVisible={true}
+        questionNumber={1}
+        topicTitle="General Awareness"
+        question={mockQuestion}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
+    const optionBtn = screen.getByRole('button', { name: /Explain the step-by-step solution/i });
+
+    fireEvent.click(optionBtn);
+    fireEvent.click(optionBtn);
+
+    expect(api.post).toHaveBeenCalledTimes(1);
+    resolvePost({ data: { success: true, reply: 'Single flight answer' } });
+    await screen.findByText('Single flight answer');
   });
 
   it('auto-syncs with activeLang="bn" without rendering a header language toggle', async () => {

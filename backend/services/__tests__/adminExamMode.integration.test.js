@@ -7,7 +7,7 @@ import mockRoutes from '../../routes/mocktest.js';
 import { connectMongoDB, disconnectMongoDB } from '../../config/mongodb.js';
 import { clearSharedLocalCaches } from '../../infrastructure/tieredCache.js';
 import { questionsQueryCache, questionCountsCache } from '../questions/questionCache.js';
-import { normalizedQuestionKeys } from '../questions/questionNormalizer.js';
+import { buildNormalizedQuestionFields } from '../questions/questionNormalizer.js';
 import { patchQuestionImage, patchSolutionImage } from '../../repositories/questionImageRepository.js';
 
 let mongo, db, server, base;
@@ -30,7 +30,7 @@ beforeEach(async () => {
   questionsQueryCache.clear(); questionCountsCache.clear(); clearSharedLocalCaches();
   await db.collection('questions').deleteMany({});
   await db.collection('mockSlots').deleteMany({});
-  await db.collection('questions').insertMany([ssc, { ...ssc, id: 'ssc-2' }, jam, { ...jam, id: 'jam-2' }].map(row => ({ ...row, ...normalizedQuestionKeys(row) })));
+  await db.collection('questions').insertMany([ssc, { ...ssc, id: 'ssc-2' }, jam, { ...jam, id: 'jam-2' }].map(row => ({ ...row, ...buildNormalizedQuestionFields(row) })));
 });
 afterAll(async () => { await new Promise(resolve => server.close(resolve)); await disconnectMongoDB(); await mongo.stop(); vi.unstubAllEnvs(); });
 const get = async path => {

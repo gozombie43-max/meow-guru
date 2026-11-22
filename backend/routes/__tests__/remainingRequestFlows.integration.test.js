@@ -92,9 +92,9 @@ it('persists all public subjects before readiness and repairs missing durable re
 });
 it('refreshes catalogs for external bank mutations and retains usable prior snapshots if a rebuild fails', async () => {
   await initializePublicCatalogs();
-  await mutateQuestionBank(db, () => db.collection('questions').insertOne({ id: 'word', subject: 'english', topic: 'tenses', quizName: 'PYQ' }));
+  await mutateQuestionBank(db, () => db.collection('questions').insertOne({ id: 'word', subject: 'english', subjectKey: 'english', topic: 'tenses', topicKey: 'tenses', modeKey: 'mixed', quizName: 'PYQ', quizNameKey: 'pyq' }));
   clearSharedLocalCaches(); await refreshPublicCatalogs();
-  const saved = await db.collection('questionMetadata').findOne({ _id: 'topic-counts:v3:english:false' });
+  const saved = await db.collection('questionMetadata').findOne({ _id: { $in: ['topic-counts:v3:english:false', 'topic-counts:v3:english:true'] } });
   expect(saved.data.totals.tenses).toBe(1);
   await db.collection('questionMetadata').updateMany({ kind: 'topic-counts' }, { $set: { 'data.generatedAt': new Date(Date.now() - 2 * 3600000).toISOString() } });
   clearSharedLocalCaches();
@@ -104,7 +104,7 @@ it('refreshes catalogs for external bank mutations and retains usable prior snap
   aggregate.mockRestore();
   expect(await db.collection('questionMetadata').countDocuments({ kind: 'topic-counts' })).toBe(4);
 });
-it('attributes four cold and two warm physical authorization commands to request IDs without secret labels', async () => {
+it('attributes two cold and two warm physical authorization commands to request IDs without secret labels', async () => {
   await db.collection('users').insertOne({ id: 'probe-user', role: 'student' });
   await db.collection('authSessions').insertOne({ _id: 'probe-session', userId: 'probe-user', expiresAt: new Date(Date.now() + 60000) });
   const info = vi.spyOn(logger, 'info').mockImplementation(() => {});
@@ -113,7 +113,7 @@ it('attributes four cold and two warm physical authorization commands to request
     expect(response.status).toBe(200); expect(response.headers.get('x-request-id')).toBe(requestId);
   }
   const rows = info.mock.calls.filter(call => call[1] === 'request completed').map(call => call[0]);
-  expect(rows.map(row => row.mongo.total)).toEqual([4, 2]);
+  expect(rows.map(row => row.mongo.total)).toEqual([2, 2]);
   expect(rows[1].mongo.operations).toEqual({ 'authorization:authSessions:find': 1, 'authorization:users:find': 1 });
   const metrics = await registry.metrics();
   expect(metrics).toContain('purpose="authorization"'); expect(metrics).toContain('cache="local"');

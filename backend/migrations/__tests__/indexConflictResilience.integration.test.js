@@ -94,7 +94,23 @@ describe('026 & 027 index conflict resilience', () => {
       key: { examModeKey: 1, topicKey: 1, modeKey: 1, _id: 1 },
     });
     expect(questionIndexes.find(idx => idx.name === 'questions_topic_mode_examKey_id')).toBeDefined();
-    expect(questionIndexes.find(idx => idx.name === 'questions_topic_mode_selection_id')).toBeDefined();
+    expect(questionIndexes.find(idx => idx.name === 'questions_selection_id')).toBeDefined();
+    expect(questionIndexes.find(idx => idx.name === 'questions_topic_selection_id')).toBeDefined();
+    expect(questionIndexes.find(idx => idx.name === 'questions_examMode_subject_selection_id')).toBeDefined();
+    expect(questionIndexes.find(idx => idx.name === 'questions_topic_mode_selection_id')).toBeUndefined();
+    expect(questionIndexes.find(idx => idx.name === 'questions_examMode_subject_mode_selection_id')).toBeUndefined();
+
+    const battleProfileIndexes = await db.collection('battleProfiles').listIndexes().toArray();
+    expect(battleProfileIndexes.some(idx => sameKeySpec(idx.key, { rating: -1, wins: -1, gamesPlayed: -1 }))).toBe(true);
+    expect(battleProfileIndexes.some(idx => sameKeySpec(idx.key, { rating: -1, wins: -1 }))).toBe(false);
+
+    const notificationFeedIndexes = await db.collection('notificationFeed').listIndexes().toArray();
+    expect(notificationFeedIndexes.some(idx => sameKeySpec(idx.key, { audience: 1, userId: 1, createdAt: -1, _id: -1 }))).toBe(true);
+    expect(notificationFeedIndexes.some(idx => sameKeySpec(idx.key, { audience: 1, userId: 1, createdAt: -1 }))).toBe(false);
+
+    const examUpdateIndexes = await db.collection('examUpdates').listIndexes().toArray();
+    expect(examUpdateIndexes.some(idx => sameKeySpec(idx.key, { publishedAt: -1, _id: -1 }))).toBe(true);
+    expect(examUpdateIndexes.some(idx => sameKeySpec(idx.key, { publishedAt: -1 }))).toBe(false);
 
     const quizSessionIndexes = await db.collection('quizSessions').listIndexes().toArray();
     expect(quizSessionIndexes.find(idx => idx.name === 'legacy_quiz_session_id')).toMatchObject({

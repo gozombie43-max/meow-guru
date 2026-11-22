@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { createClient } from 'redis';
 import { LRUCache } from 'lru-cache';
 import { getMongoDB, getUsersCollection } from '../config/mongodb.js';
-import { getRedisClient, redisDelete, redisGetJson, redisKey, redisSetJson, reportRedisFailure } from '../config/redis.js';
+import { getRedisClient, redisDelete, redisGetJson, redisGetJsonMany, redisKey, redisSetJson, reportRedisFailure } from '../config/redis.js';
 import {
   signToken,
   signRefreshToken,
@@ -343,10 +343,15 @@ async function readAuthorizationPayload(decoded, recordCache, { forceFresh = fal
       return cached.payload;
     }
     const fastStartEpoch = localRevocationEpoch;
-    const [shared, tokens] = await Promise.all([
-      redisGetJson(key),
-      readRevocationTokens(decoded.sid, userId),
+    const [shared, sidMarker, userMarker] = await redisGetJsonMany([
+      key,
+      revokedSidKey(decoded.sid, userId),
+      revokedUserKey(userId),
     ]);
+    const tokens = {
+      sidToken: typeof sidMarker?.token === 'string' ? sidMarker.token : null,
+      userToken: typeof userMarker?.token === 'string' ? userMarker.token : null,
+    };
     const checkNow = Date.now();
     const tokenClean = (shared?.sidRevokeToken ?? null) === tokens.sidToken
       && (shared?.userRevokeToken ?? null) === tokens.userToken;
@@ -382,9 +387,6 @@ async function readAuthorizationPayload(decoded, recordCache, { forceFresh = fal
       }
     }
     const shared = forceFresh ? null : await redisGetJson(key);
-    // Protect reads that were already in flight when logout/role removal committed.
-    const after = await authorizationState(decoded);
-    if (after.generation !== current.generation) continue;
 
     // Fence in-flight Mongo reads against concurrent local or cross-instance revocations
     // before writing anything back into L1 or Redis.

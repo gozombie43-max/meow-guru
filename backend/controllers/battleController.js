@@ -278,7 +278,9 @@ export const getSeasonLeaderboardRoute = async (_req, res, next) => {
   try {
     const season = await getActiveBattleSeason();
     if (!season) return res.json({ season: null, items: [] });
-    const profiles = await repo.getSeasonLeaderboardItems(season.key, 5, 100);
+    const profiles = typeof repo.getCachedSeasonLeaderboardItems === "function"
+      ? await repo.getCachedSeasonLeaderboardItems(season.key, 5, 100)
+      : await repo.getSeasonLeaderboardItems(season.key, 5, 100);
     return res.json({ season, items: profiles.map((profile, index) => ({ rank: index + 1, userId: profile.userId, displayName: profile.displayName, rating: profile.rating, tier: profile.tier, gamesPlayed: profile.gamesPlayed, wins: profile.wins, losses: profile.losses, draws: profile.draws, streak: profile.currentWinStreak })) });
   } catch (error) {
     next(error);
@@ -296,12 +298,16 @@ export const getSeasonRewardsListRoute = async (req, res, next) => {
 
 export const getLeaderboardRoute = async (_req, res, next) => {
   try {
-    const profiles = await repo.getGlobalLeaderboardItems(1, 100);
+    const profiles = typeof repo.getCachedGlobalLeaderboardItems === "function"
+      ? await repo.getCachedGlobalLeaderboardItems(1, 100)
+      : await repo.getGlobalLeaderboardItems(1, 100);
     return res.json({ items: profiles.map((profile, index) => ({ rank: index + 1, userId: profile.userId, displayName: profile.displayName, rating: profile.rating, gamesPlayed: profile.gamesPlayed, wins: profile.wins, losses: profile.losses, draws: profile.draws, streak: profile.currentWinStreak })) });
   } catch (error) {
     next(error);
   }
 };
+
+export { invalidateBattleLeaderboardCache } from "../repositories/battleRepository.js";
 
 export const getIntegritySummary = async (req, res, next) => {
   try {

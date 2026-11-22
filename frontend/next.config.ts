@@ -7,6 +7,17 @@ const configuredBackend = process.env.API_URL;
 if (process.env.NODE_ENV === 'production' && !configuredBackend) {
   throw new Error('API_URL is required for production builds');
 }
+if (process.env.NEXT_PUBLIC_ADMIN_SECRET) {
+  if (
+    process.env.VERCEL_ENV === 'production' ||
+    process.env.DEPLOYMENT_ENVIRONMENT === 'production'
+  ) {
+    throw new Error(
+      'NEXT_PUBLIC_ADMIN_SECRET must not be set in production builds; use server-only ADMIN_SECRET instead.'
+    );
+  }
+  delete process.env.NEXT_PUBLIC_ADMIN_SECRET;
+}
 const BACKEND_URL = (configuredBackend || 'http://localhost:10000').replace(/\/+$/, '');
 if (!['http:', 'https:'].includes(new URL(BACKEND_URL).protocol)) throw new Error('Backend URL must use HTTP or HTTPS');
 
@@ -18,9 +29,11 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: [
           { key: 'Content-Security-Policy', value: cspPolicy },
-          { key: 'Content-Security-Policy-Report-Only', value: cspPolicy },
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
         ],
       },
     ];

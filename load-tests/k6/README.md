@@ -1,350 +1,356 @@
-# Meow Question Delivery — k6 Load-Test Suite & 500-VU Scalability Runbook
+# Meow — k6 Load Testing Suite & Windows Beginner Runbook
 
-Production load-testing suite for Meow's standardized `/api/v1/quiz/*` question delivery architecture and legacy `/api/questions/*` compatibility routes.
+Automated, safe, repeatable k6 load-testing system for Meow's `/api/v1/quiz/*`, authentication, progress, and `/api/questions/*` endpoints.
 
-- **Primary script**: [`meow-question-delivery.js`](./meow-question-delivery.js)
-- **Workload model**: Realistic concurrent quiz-taker traffic (85% of VUs) executing the full session lifecycle — weighted across `practice` (40%), `topic` (30%), `speed` (15%), and `mock` (15%) modes — plus a secondary read-only legacy scenario (15% of VUs) exercising `GET /api/questions/meta` and `GET /api/questions/session?limit=25`.
-- **Built-in integrity assertions**:
-  - **Zero answer-key leakage** on `POST /api/v1/quiz/sessions`, `GET /api/v1/quiz/sessions/:id/questions`, legacy `GET /api/questions/session`, and pre-submit `mock`/`speed` answers (`answer_key_leaks_total == 0`).
-  - **Zero duplicate questions** across multi-batch cursor prefetching (`duplicate_questions_total == 0`).
-  - **Zero failed answer submissions** including periodic idempotent `Idempotency-Key` replay checks (`failed_answer_submissions_total == 0`).
-  - **Automatic `/metrics` scraping** before and after the run (when `METRICS_TOKEN` is set) to report tiered & Redis-layer cache hit ratios (`>80%` target) and MongoDB pool waiting counts.
+**Core guarantees built into the suite:**
+- **Production is permanently blocked**: `local` permits loopback hosts only (`127.0.0.1` / `localhost`); `staging` requires explicit `K6_ALLOW_STAGING=true` (`-AllowStaging`) and rejects production hostnames or databases.
+- **No weak auth or shortcuts**: Every authenticated scenario logs in real synthetic accounts, sends real JWT Bearer tokens, rotates refresh cookies against trusted `Origin`, and enforces zero unexpected 401/403s.
+- **No false-PASS results**: Reports distinguish expected business errors from infrastructure failures and fail with `NO_SAMPLES` if a scenario records zero samples.
+- **Zero answer-key leaks & zero duplicates**: Every batch response is inspected for forbidden answer/solution fields (`answer_key_leaks_total == 0`) and cross-batch duplicate UIDs (`duplicate_questions_total == 0`).
 
 ---
 
-## 1. Prerequisites
+## 1. Directory Structure
 
-1. Install [k6](https://grafana.com/docs/k6/latest/set-up/install-k6/):
-   - **Windows (winget)**: `winget install k6 --source winget`
-   - **Windows (Chocolatey)**: `choco install k6`
-   - **macOS (Homebrew)**: `brew install k6`
-   - **Linux (Debian/Ubuntu)**: `sudo apt-get install k6`
-2. Provision synthetic load-test user account(s) on your target staging/local environment.
-   > **Important for Stage 3–6 (250–1000 VUs)**: `questionReadLimiter` enforces per-user rate limits (2,400 req / 15 min authenticated). For 50–100 VUs, a single `TEST_EMAIL` / `AUTH_TOKEN` is sufficient; for 250–1000 VUs, supply a pool of accounts via `TEST_ACCOUNTS_JSON` or `AUTH_TOKENS` (e.g., 20–50 synthetic learners) so load testing measures backend capacity rather than single-user rate limiting.
-
----
-
-## 2. Environment Variables
-
-| Variable | Required | Default | Description |
-| --- | --- | --- | --- |
-| `BASE_URL` | No | `http://127.0.0.1:10000` | Backend API origin (no trailing slash). |
-| `STAGE` | No | `stage4` | Stage profile: `stage1`, `stage2`, `stage3`, `stage4`, `stage5`, `stage6`, or `ramp`. |
-| `REDIS_MODE` | No | `enabled` | Tag for side-by-side comparison (`enabled` or `disabled`). |
-| `AUTH_TOKEN` | Conditional | — | Pre-minted bearer JWT (reused across VUs). |
-| `AUTH_TOKENS` | Conditional | — | Comma-separated pool of bearer JWTs sharded across VUs. |
-| `TEST_EMAIL` / `TEST_PASSWORD` | Conditional | — | Credentials for automatic `POST /auth/login` in `setup()` (with auto-refresh on 401 during long ramps). |
-| `TEST_ACCOUNTS_JSON` | Conditional | — | JSON array of `[{"email":"...","password":"..."}]` logged in during `setup()` and sharded across VUs. |
-| `EXAM_MODE` | No | — | Optional exam mode filter (`ssc` or `iit-jam`). |
-| `TOPIC` | No | — | Optional topic filter (e.g. `Percentage`). |
-| `SUBJECT` | No | — | Optional subject filter (e.g. `mathematics`). |
-| `BATCH_SIZE` | No | `20` | Questions per batch (`1..50`). |
-| `LEGACY_LIMIT` | No | `25` | `limit` param for legacy `GET /api/questions/session`. |
-| `LEGACY_ENABLED` | No | `true` | Set `false` to run 100% of VUs on `/api/v1/quiz/*`. |
-| `LEGACY_RATIO` | No | `0.15` | Fraction of VUs allocated to legacy read-only compatibility (`0.05..0.5`). |
-| `THINK_TIME_SCALE` | No | `1.0` | Multiplier for realistic reading/thinking sleeps (`0.2` for fast smoke tests, `0` to disable sleeps). |
-| `METRICS_TOKEN` | No | — | Bearer token for `GET /metrics` before/after scrape (cache hit ratio & Mongo pool waiting). |
-| `SUMMARY_OUTPUT` | No | `load-tests/k6/results-<stage>-<redis_mode>.json` | Destination path for JSON summary artifact. |
-
----
-
-## 3. Running Stages 1–6 & Full Staged Ramp
-
-Run all commands from the repository root so JSON artifacts land in `load-tests/k6/results-<stage>-<redis_mode>.json`.
-
-### Stage Profiles Overview
-
-| Stage | Peak VUs | Purpose | Ramp / Hold / Cooldown |
-| --- | --- | --- | --- |
-| `stage1` | 50 VUs | Baseline correctness & latency sanity | 20s / 2m / 20s |
-| `stage2` | 100 VUs | Redis cache warming & DB index validation | 30s / 3m / 20s |
-| `stage3` | 250 VUs | Early bottleneck discovery (pool / CPU / serialization) | 45s / 3m / 30s |
-| `stage4` | **500 VUs** | **Production target SLO gate (default)** | 1m / 4m / 30s |
-| `stage5` | 750 VUs | 1.5x headroom & stress verification | 1m30s / 4m / 45s |
-| `stage6` | 1000 VUs | 2x capacity boundary & graceful degradation | 2m / 4m / 45s |
-| `ramp` | 50 → 1000 VUs | Full continuous stepped ramp across all 6 plateaus | ~19m total |
-
-### Exact Commands (Bash / Linux / macOS)
-
-```bash
-export BASE_URL="https://staging-api.example.com"
-export TEST_EMAIL="load-learner-1@staging.invalid"
-export TEST_PASSWORD="replace-with-synthetic-password"
-export METRICS_TOKEN="replace-with-staging-metrics-token"
-
-# Stage 1 — 50 VUs baseline
-k6 run -e BASE_URL -e TEST_EMAIL -e TEST_PASSWORD -e METRICS_TOKEN \
-  -e STAGE=stage1 -e REDIS_MODE=enabled \
-  load-tests/k6/meow-question-delivery.js
-
-# Stage 2 — 100 VUs cache & DB validation
-k6 run -e BASE_URL -e TEST_EMAIL -e TEST_PASSWORD -e METRICS_TOKEN \
-  -e STAGE=stage2 -e REDIS_MODE=enabled \
-  load-tests/k6/meow-question-delivery.js
-
-# Stage 3 — 250 VUs bottleneck discovery
-k6 run -e BASE_URL -e TEST_ACCOUNTS_JSON -e METRICS_TOKEN \
-  -e STAGE=stage3 -e REDIS_MODE=enabled \
-  load-tests/k6/meow-question-delivery.js
-
-# Stage 4 — 500 VUs production target (default STAGE)
-k6 run -e BASE_URL -e TEST_ACCOUNTS_JSON -e METRICS_TOKEN \
-  -e STAGE=stage4 -e REDIS_MODE=enabled \
-  load-tests/k6/meow-question-delivery.js
-
-# Stage 5 — 750 VUs headroom / stress
-k6 run -e BASE_URL -e TEST_ACCOUNTS_JSON -e METRICS_TOKEN \
-  -e STAGE=stage5 -e REDIS_MODE=enabled \
-  load-tests/k6/meow-question-delivery.js
-
-# Stage 6 — 1000 VUs capacity boundary
-k6 run -e BASE_URL -e TEST_ACCOUNTS_JSON -e METRICS_TOKEN \
-  -e STAGE=stage6 -e REDIS_MODE=enabled \
-  load-tests/k6/meow-question-delivery.js
-
-# Full staged ramp (50 -> 100 -> 250 -> 500 -> 750 -> 1000 VUs)
-k6 run -e BASE_URL -e TEST_ACCOUNTS_JSON -e METRICS_TOKEN \
-  -e STAGE=ramp -e REDIS_MODE=enabled \
-  load-tests/k6/meow-question-delivery.js
+```text
+load-tests/k6/
+├── config/
+│   └── environment.js              # Env validation, prod blocklist, 6 load profiles + ramp + stage0..7
+├── helpers/
+│   ├── auth.js                     # Isolated VU auth, token pool sharding, JWT exp refresh, CSRF Origin
+│   ├── data.js                     # Filter builders, weighted quiz modes, leak & duplicate detectors
+│   ├── reporting.js                # JSON + human TXT report builder, VERDICT engine, /metrics scraper
+│   ├── thresholds.js               # Profile-aware SLO thresholds & custom counters
+│   └── thresholds-constants.js     # Required metric & sample counter mappings (pure JS)
+├── scenarios/
+│   ├── health.js                   # GET /live and GET /api/health
+│   ├── authentication.js           # Full auth smoke: login -> /users/me -> refresh -> /users/me -> logout
+│   ├── question-delivery.js        # /topic-counts, /counts, /api/questions, legacy /meta & /session cursor
+│   ├── quiz-session.js             # v1 lifecycle: POST sessions -> cursor prefetch -> answers (idempotency) -> submit -> result
+│   ├── user-progress.js            # /users/me, /api/progress/topics(/private), /api/user/performance, practice-reminder
+│   └── mixed-workload.js           # Realistic multi-journey mix (55% quiz-session, 25% question-delivery, 15% progress, 5% health)
+├── scripts/
+│   ├── preflight.mjs               # 10-point automated preflight check (zero secret leakage)
+│   ├── run-k6.mjs                  # Cross-platform launcher used by npm scripts & run.ps1
+│   └── staging-test-data.mjs       # Safe synthetic user & question seeding/cleanup (staging/local only)
+├── reports/                        # Gitignored timestamped .json and .txt reports + preflight JSON
+├── meow-question-delivery.js       # Backward-compatible entry script refactored onto modular helpers
+├── meow-production-readiness.js    # Comprehensive 6-journey benchmark suite (quiz + mock + training + battle)
+├── run.ps1                         # Single Windows PowerShell launcher
+└── README.md
 ```
 
-### Exact Commands (PowerShell / Windows)
+---
+
+## 2. Installing k6 on Windows
+
+Open **PowerShell** and run one of the following commands:
 
 ```powershell
-$env:BASE_URL = "http://127.0.0.1:10000"
-$env:TEST_EMAIL = "load-learner-1@staging.invalid"
-$env:TEST_PASSWORD = "replace-with-synthetic-password"
-$env:METRICS_TOKEN = "replace-with-metrics-token"
+# Recommended (Windows Package Manager / winget):
+winget install k6 --source winget
 
-# Run Stage 4 (500 VUs production target)
-k6 run -e STAGE=stage4 -e REDIS_MODE=enabled load-tests/k6/meow-question-delivery.js
+# Alternative (Chocolatey):
+choco install k6
+```
 
-# Run Stage 1 with explicit topic & examMode filters
-k6 run -e STAGE=stage1 -e REDIS_MODE=enabled -e EXAM_MODE=ssc -e TOPIC=Percentage `
-  load-tests/k6/meow-question-delivery.js
+Restart your PowerShell terminal after installation and verify k6 and Node.js 22+ are available:
+
+```powershell
+k6 version
+node -v
 ```
 
 ---
 
-## 4. Redis ON vs OFF Side-by-Side Comparison
+## 3. Configuring Staging & Local Environments
 
-Use the exact same stage, dataset, and user pool with Redis enabled (`REDIS_URL` set) vs disabled (`REDIS_URL` unset on the backend) to quantify Redis offloading and verify graceful MongoDB fallback.
+> **Safety Rule:** Never hardcode credentials or commit `.env.k6.*` files. Staging requires BOTH a staging target URL and `-AllowStaging` (`K6_ALLOW_STAGING=true`).
 
-### Step 1: Run with Redis Enabled
+### Staging Environment Defaults (Reference)
+- **Staging API host**: `https://quizguru-stage-1177891703.azurewebsites.net`
+- **Staging trusted frontend Origin**: `https://meowguru.me` (required by `/auth/refresh` and `/auth/logout`)
+- **Staging MongoDB DB**: `quizDB_staging` on cluster host `quizguru-staging.c8bkump.mongodb.net`
 
-Ensure backend has `REDIS_URL`, `REDIS_NAMESPACE`, and `QUESTIONS_NORMALIZED_KEYS=true`, then run:
+> **Staging Capacity Note (B1 Hardware vs Target 500 VUs):**  
+> Staging currently runs on a **single Azure App Service B1 instance (1 vCPU, 1.75 GB RAM, `REDIS_URL` unconfigured unless provisioned)**. Use staging for Stages 1–2 (`smoke` 5 VUs, `baseline` 25 VUs) to verify real Azure network, MongoDB Atlas TLS, and auth behavior, and expect Stage 3–4 (100–500 VUs) to saturate single-B1 CPU unless scaled out (P1v3+) with Azure Cache for Redis / Valkey enabled. Never extrapolate B1 saturation as a code failure, and **never run load tests against production**.
 
-```bash
-k6 run \
-  -e BASE_URL="$BASE_URL" \
-  -e TEST_ACCOUNTS_JSON="$TEST_ACCOUNTS_JSON" \
-  -e METRICS_TOKEN="$METRICS_TOKEN" \
-  -e STAGE=stage4 \
-  -e REDIS_MODE=enabled \
-  load-tests/k6/meow-question-delivery.js
-# Writes: load-tests/k6/results-stage4-enabled.json
+### Option A: PowerShell Session Variables (Recommended)
+
+```powershell
+# 1. Target staging safely (explicit opt-in required)
+$env:K6_ENV = "staging"
+$env:K6_ALLOW_STAGING = "true"
+$env:K6_BASE_URL = "https://quizguru-stage-1177891703.azurewebsites.net"
+$env:K6_ORIGIN = "https://meowguru.me"
+
+# 2. Optional: Staging MongoDB URI to allow preflight to inspect indexes & seed synthetic users
+# $env:STAGING_MONGODB_URI = "mongodb+srv://<user>:<pass>@quizguru-staging.c8bkump.mongodb.net/?retryWrites=true&w=majority"
+# $env:STAGING_MONGODB_DB = "quizDB_staging"
+
+# 3. Synthetic test account pool (see Section 4 to create these safely)
+# Never paste production passwords here!
 ```
 
-### Step 2: Run with Redis Disabled (MongoDB Fallback Validation)
+### Option B: Optional Env File (`-EnvFile`)
 
-Restart the staging/local backend with `REDIS_URL=""` (unset), wait for `/api/health` to report `dependencies.redis === "disabled"` and `state === "ready"`, then run:
+You can place temporary non-committed variables in a local file such as `.env.k6.staging` (outside git):
 
-```bash
-k6 run \
-  -e BASE_URL="$BASE_URL" \
-  -e TEST_ACCOUNTS_JSON="$TEST_ACCOUNTS_JSON" \
-  -e METRICS_TOKEN="$METRICS_TOKEN" \
-  -e STAGE=stage4 \
-  -e REDIS_MODE=disabled \
-  load-tests/k6/meow-question-delivery.js
-# Writes: load-tests/k6/results-stage4-disabled.json
+```ini
+K6_ENV=staging
+K6_ALLOW_STAGING=true
+K6_BASE_URL=https://quizguru-stage-1177891703.azurewebsites.net
+K6_ORIGIN=https://meowguru.me
+K6_USERS_JSON=[{"email":"k6-load-1@loadtest.invalid","password":"REPLACE_ME"}]
 ```
 
-### Step 3: Compare Both JSON Artifacts Side-by-Side
+Then pass `-EnvFile .env.k6.staging` to [`run.ps1`](./run.ps1) — values are loaded into the process without ever being echoed to your terminal or reports.
 
-```bash
+---
+
+## 4. Preparing Synthetic Test Accounts & Rate-Limit Sizing
+
+Meow enforces real rate limits in staging/production (`backend/middleware/rateLimiter.js`):
+- `authLimiter`: **100 requests / 15 min per IP** on `/auth/*` (`POST /auth/login`).
+- `questionReadLimiter`: **2,400 requests / 15 min per authenticated user** across `/api/v1/quiz/*` and `/api/questions/*` (600/15m unauthenticated).
+
+Because `questionReadLimiter` is **per user ID**, a single user account caps out at ~2.6 req/sec sustained over 15 minutes (~40–50 VUs with think time). Size your synthetic account pool properly:
+
+| Stage / Profile | Peak VUs | Recommended Accounts | Why |
+| --- | --- | --- | --- |
+| `smoke` | 5 VUs | 5 accounts | Clean 1:1 VU isolation, zero shared progress/session collisions |
+| `baseline` | 25 VUs | 10–25 accounts | Well below `questionReadLimiter` (2,400/user) & `authLimiter` (100 logins/IP) |
+| `moderate` | 50–100 VUs | 25 accounts | Up to 60,000 req / 15m across pool; 25 logins during `setup()` |
+| `target` | 250–500 VUs | 30–50 accounts | Up to 120,000 req / 15m; stays safely under 100/15m `authLimiter` in `setup()` |
+| `stress` | 750–1,000 VUs | 50–80 accounts | Stays under 100 IP logins during `setup()` while giving 192,000 req / 15m capacity |
+| `soak` | 100–200 VUs (30–60m) | 30–50 accounts | Prevents single-user limiter exhaustion over 30–60 minutes |
+
+> **Important:** All logins in `setup()` originate from your runner IP (`authLimiter` = 100 req/15m/IP). Keep `setup()` account counts `<= 80` (or pre-mint `K6_AUTH_TOKENS`) so `setup()` does not hit 429 on `POST /auth/login`.
+
+### Create Synthetic Staging Accounts (One Command)
+
+```powershell
+# Provision 25 synthetic users in quizDB_staging (does NOT overwrite or delete real users)
+$env:STAGING_MONGODB_URI = "mongodb+srv://<user>:<pass>@quizguru-staging.c8bkump.mongodb.net/?retryWrites=true&w=majority"
+$env:K6_USER_PASSWORD = "UseARandomTestPassword123!"
+
+node load-tests/k6/scripts/staging-test-data.mjs setup `
+  --env staging `
+  --allow-staging `
+  --db quizDB_staging `
+  --expected-host quizguru-staging.c8bkump.mongodb.net `
+  --prefix k6-load `
+  --count 25 `
+  --skip-questions
+```
+
+Export `K6_USERS_JSON` in PowerShell for those accounts without hardcoding secrets:
+
+```powershell
+$env:K6_USERS_JSON = (
+  1..25 | ForEach-Object { @{ email = "k6-load-$_@loadtest.invalid"; password = $env:K6_USER_PASSWORD } } |
+  ConvertTo-Json -Compress
+)
+```
+
+Check status or clean up synthetic users, their quiz sessions, progress, and idempotency records after testing:
+
+```powershell
+# Inspect synthetic user & session counts
+node load-tests/k6/scripts/staging-test-data.mjs status --env staging --allow-staging --db quizDB_staging --expected-host quizguru-staging.c8bkump.mongodb.net --prefix k6-load
+
+# Safe teardown (removes ONLY k6-load-* synthetic records; real users untouched)
+node load-tests/k6/scripts/staging-test-data.mjs cleanup --env staging --allow-staging --db quizDB_staging --expected-host quizguru-staging.c8bkump.mongodb.net --prefix k6-load --count 25
+```
+
+---
+
+## 5. Verifying MongoDB Indexes & Running Automated Preflight
+
+### Step A: Apply & Verify Indexes (When You Have Staging DB Access)
+
+```powershell
+# Apply migrations (001 through 029) safely on staging
+$env:MONGODB_URI = $env:STAGING_MONGODB_URI
+$env:MONGODB_DB = "quizDB_staging"
+npm run db:migrate --workspace backend
+
+# Verify query execution plans (IXSCAN vs COLLSCAN) against local in-memory MongoDB + migrations 001–029
+node backend/scripts/audit-db-explain.js
+```
+
+### Step B: Run 10-Point Automated Preflight (`PASS` / `FAIL`)
+
+```powershell
+# Against staging (fails safely if health, auth, URL, or staging approval is missing)
+.\load-tests\k6\run.ps1 -Environment staging -Profile check -AllowStaging -BaseUrl https://quizguru-stage-1177891703.azurewebsites.net
+
+# Or via npm script (uses current shell env)
+npm run k6:check
+```
+
+The preflight checks:
+1. `k6` binary installed on `PATH`
+2. Valid, credential-free, non-production `BASE_URL`
+3. Environment explicitly approved (`local` loopback or `staging` + `K6_ALLOW_STAGING=true`)
+4. Required environment variables exist (names only, zero secret values printed)
+5. Backend `/api/health` responds HTTP 200 with `ok: true` and `state: "ready"`
+6. Authentication (`POST /auth/login` + protected `GET /users/me`) succeeds
+7. MongoDB connection healthy (`/api/health` + direct ping when DB URI is set)
+8. Required indexes exist (`questions_selection_id`, `questions_topic_selection_id`, `questions_examMode_subject_selection_id`, `question_canonical_identity`, `quizSessions_session_id`, `account_identity`, `account_email_identity`, `canonical_user_question_progress`, `idempotency_expiry`)
+9. Redis/Valkey status (`healthy`, optional `disabled` fallback, or fails on `degraded` / `--require-redis`)
+10. Synthetic accounts & sufficient question volume (`>= 40`) exist
+
+---
+
+## 6. Running Load Tests (Single-Command PowerShell Launcher & npm Scripts)
+
+### Windows PowerShell Launcher (`run.ps1` — Recommended)
+
+```powershell
+# Stage 0: Automated preflight only (10 checks)
+.\load-tests\k6\run.ps1 -Environment staging -Profile check -AllowStaging
+
+# Dedicated Authentication Smoke (login -> /users/me -> refresh -> /users/me -> logout)
+.\load-tests\k6\run.ps1 -Environment staging -Profile auth -AllowStaging
+
+# Stage 1: Smoke (5 VUs, ~50s)
+.\load-tests\k6\run.ps1 -Environment staging -Profile smoke -AllowStaging
+
+# Stage 2: Baseline (25 VUs, ~2m40s)
+.\load-tests\k6\run.ps1 -Environment staging -Profile baseline -AllowStaging
+
+# Stage 3: Moderate (50–100 VUs, ~4m)
+.\load-tests\k6\run.ps1 -Environment staging -Profile moderate -AllowStaging
+
+# Stage 4: Target Capacity (250–500 VUs, ~6m15s)
+.\load-tests\k6\run.ps1 -Environment staging -Profile target -AllowStaging
+
+# Stage 5: Stress / Breaking Point (750–1,000 VUs, ~6m15s)
+.\load-tests\k6\run.ps1 -Environment staging -Profile stress -AllowStaging
+
+# Stage 6: Soak (150 VUs for 30–60 minutes; customize via $env:K6_SOAK_VUS / $env:K6_SOAK_DURATION)
+.\load-tests\k6\run.ps1 -Environment staging -Profile soak -AllowStaging
+
+# Run a specific modular scenario directly (e.g. quiz-session or question-delivery)
+.\load-tests\k6\run.ps1 -Environment staging -Profile baseline -Scenario quiz-session -AllowStaging
+
+# Dry-run config check without launching k6
+.\load-tests\k6\run.ps1 -Environment staging -Profile smoke -AllowStaging -DryRun
+```
+
+### Root `npm` Scripts (Work Across Windows, macOS & Linux)
+
+```powershell
+# Defaults to local (http://127.0.0.1:10000); pass flags after "--" for staging
+npm run k6:check
+npm run k6:auth
+npm run k6:smoke
+npm run k6:baseline
+npm run k6:moderate
+npm run k6:target
+npm run k6:stress
+npm run k6:soak
+
+# Run k6 against staging via npm:
+npm run k6:smoke -- --env staging --allow-staging --base-url https://quizguru-stage-1177891703.azurewebsites.net
+```
+
+### Profile Summary
+
+| Profile | Peak VUs | Duration | Purpose |
+| --- | --- | --- | --- |
+| `check` | 0 VUs | ~2s | 10-point automated preflight readiness gate |
+| `auth` | 5 VUs | ~50s | Dedicated login, refresh rotation, `/users/me`, logout smoke |
+| `smoke` | 5 VUs | ~50s | End-to-end correctness & zero-error sanity |
+| `baseline` | 25 VUs | ~2m 40s | Normal baseline latency & throughput |
+| `moderate` | 100 VUs | ~4m | Early pool, CPU, and index bottleneck detection |
+| `target` | 500 VUs | ~6m 15s | Target capacity validation |
+| `stress` | 1,000 VUs | ~6m 15s | Gradual ramp to identify breaking points |
+| `soak` | 150 VUs | 34m (30–60m hold) | Memory leaks, connection pool leaks, latency drift |
+
+---
+
+## 7. Interpreting Results & Verdicts
+
+Every run automatically saves both human-readable text and machine-readable JSON reports inside `load-tests/k6/reports/`:
+- `<scenario>-<profile>-<env>.txt` and `<scenario>-<profile>-<env>.json` (latest run)
+- `<scenario>-<profile>-<env>-<timestamp>.txt` and `.json` (archived timestamped run)
+- `preflight-<env>-<timestamp>.json` (preflight check output)
+
+Every summary prints:
+- **Profile, environment, duration, peak VUs, total requests, RPS**
+- **Endpoint-level P50 / P90 / P95 / P99 / Max latency**
+- **Integrity counters**: `duplicates`, `answerKeyLeaks`, `failedAnswers`, `authFailures`, `unhandled5xx`, `rateLimit429`, `businessErrors`, `infraErrors`
+- **Final Verdict**:
+  - **`PASS`**: All thresholds satisfied, zero integrity/auth/5xx failures, all required endpoints recorded samples.
+  - **`PASS WITH WARNINGS`**: Performance & integrity passed, but a non-fatal advisory triggered (e.g., `METRICS_TOKEN` skipped or Redis disabled/cache hit ratio `< 80%`).
+  - **`FAIL`**: One or more SLO thresholds failed, unhandled 5xx / unexpected auth failure occurred, data integrity violated, or a required metric had `NO_SAMPLES`.
+
+---
+
+## 8. Troubleshooting Common Failures
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| `Refusing production environment` | `production` passed in `-Environment` or `BASE_URL` contains `prod` | Target `local` or an approved `staging` URL; production is strictly blocked. |
+| `Staging load tests require explicit approval` | Missing `-AllowStaging` / `K6_ALLOW_STAGING=true` | Pass `-AllowStaging` or set `$env:K6_ALLOW_STAGING = "true"`. |
+| `HTTP 401` on `POST /auth/refresh` or `/auth/logout` | Staging `requireTrustedOrigin` rejected `Origin` header | Set `$env:K6_ORIGIN = "https://meowguru.me"` before running `auth` or `mixed-workload`. |
+| `HTTP 401` after staging redeploy | Staging workflow rotates `JWT_SECRET` every deploy | Use `K6_USERS_JSON` (logs in dynamically) rather than stale static `K6_AUTH_TOKENS`. |
+| `HTTP 429` during `setup()` | More than 100 login calls from one IP in 15m (`authLimiter`) | Keep `setup()` account pool at 25–50 accounts (or space runs >15m apart). |
+| `HTTP 429` during `baseline`/`target` | Single account exceeded 2,400 req/15m (`questionReadLimiter`) | Provision 25–50 synthetic accounts (`staging-test-data.mjs`) so load shards across users. |
+| `NO_SAMPLES` verdict on `FAIL` | Backend unreachable or setup failed so endpoints had 0 requests | Run `.\load-tests\k6\run.ps1 -Environment staging -Profile check -AllowStaging` first. |
+| `Missing indexes` in Preflight Check 8 | Migrations not yet applied on target DB | Run `npm run db:migrate --workspace backend` against staging DB. |
+| Staging P95 rises sharply above 25–50 VUs | Staging App Service is a single B1 (1 vCPU) without Valkey | Expected hardware ceiling for B1; scale staging plan (P1v3+) + enable `REDIS_URL` before running `target`/`stress`. |
+
+---
+
+## 9. Appendix: Redis ON vs OFF Comparison & PromQL Queries
+
+### Self-Contained Local 7-Stage Benchmark Harness
+
+To benchmark up to 1,000–1,500 VUs completely offline using `MongoMemoryReplSet` + a local Express process + local TCP Redis stub:
+
+```powershell
+node backend/scripts/run-staged-k6-local.js --stages smoke --duration 10s --ramp 3s --cooldown 2s
+```
+
+### Redis ON vs OFF Comparison (`meow-question-delivery.js`)
+
+Run with `$env:K6_REDIS_MODE = "enabled"` vs `"disabled"` (when comparing Redis provisioned vs disabled backend) and compare:
+
+```powershell
 node -e '
   const fs = require("fs");
-  const on = JSON.parse(fs.readFileSync("load-tests/k6/results-stage4-enabled.json", "utf8"));
-  const off = JSON.parse(fs.readFileSync("load-tests/k6/results-stage4-disabled.json", "utf8"));
-  console.table([
-    {
-      mode: "REDIS ON",
-      verdict: on.verdict.passed ? "PASS" : "FAIL",
-      rps: on.throughput.requestsPerSec,
-      batchP95Ms: on.latency.questionsBatch?.p95Ms,
-      batchP99Ms: on.latency.questionsBatch?.p99Ms,
-      createP95Ms: on.latency.sessionCreate?.p95Ms,
-      errRatePct: +(on.throughput.httpFailedRate * 100).toFixed(3),
-      cacheHitPct: on.prometheusMetrics?.tieredCacheHitRatio ?? "n/a",
-      mongoCmds: on.prometheusMetrics?.mongoCommandsDelta ?? "n/a",
-    },
-    {
-      mode: "REDIS OFF",
-      verdict: off.verdict.passed ? "PASS" : "FAIL",
-      rps: off.throughput.requestsPerSec,
-      batchP95Ms: off.latency.questionsBatch?.p95Ms,
-      batchP99Ms: off.latency.questionsBatch?.p99Ms,
-      createP95Ms: off.latency.sessionCreate?.p95Ms,
-      errRatePct: +(off.throughput.httpFailedRate * 100).toFixed(3),
-      cacheHitPct: off.prometheusMetrics?.tieredCacheHitRatio ?? "n/a",
-      mongoCmds: off.prometheusMetrics?.mongoCommandsDelta ?? "n/a",
-    },
-  ]);
+  const on = JSON.parse(fs.readFileSync("load-tests/k6/reports/mixed-workload-baseline-staging.json", "utf8"));
+  const off = JSON.parse(fs.readFileSync("load-tests/k6/reports/mixed-workload-baseline-local.json", "utf8"));
+  console.table([on, off].map(r => ({
+    env: r.environment,
+    redisMode: r.redisMode,
+    verdict: r.verdict.status,
+    rps: r.rps,
+    p95Ms: r.endpointLatency?.overallHttp?.p95Ms,
+    cacheHitPct: r.prometheusMetrics?.tieredCacheHitRatio ?? "n/a",
+  })));
 '
 ```
 
----
-
-## 5. Production SLO Thresholds
-
-Enforced directly in `meow-question-delivery.js` (`options.thresholds`):
-
-| Metric | Threshold | Meaning |
-| --- | --- | --- |
-| `http_req_duration{endpoint:questions_batch}` | `p(95) < 200ms`, `p(99) < 400ms` | Batch 2+ cursor prefetch (`GET /api/v1/quiz/sessions/:id/questions`) stays sub-200ms at P95. |
-| `http_req_duration{endpoint:session_create}` | `p(95) < 250ms` | Session creation + batch 1 hydration (`POST /api/v1/quiz/sessions`). |
-| `http_req_failed` | `rate < 0.001` (`< 0.1%`) | 99.9%+ HTTP request reliability. |
-| `duplicate_questions_total` | `count == 0` | Zero duplicate question UIDs within any session across batches. |
-| `answer_key_leaks_total` | `count == 0` | Zero `correctAnswer`/`solution`/`explanation` fields in delivered questions or pre-submit exam answers. |
-| `failed_answer_submissions_total` | `count == 0` | 100% atomic idempotent answer persistence. |
-| Tiered / Redis Cache Hit Ratio (`/metrics`) | `> 80%` (when `REDIS_MODE=enabled`) | Verified via `meow_cache_operations_total` before/after delta. |
-
----
-
-## 6. Production Sizing Checklist (500 Concurrent Users + 750–1000 VU Headroom)
-
-### A. Azure App Service (API Tier & Worker Separation)
-
-- **Separate background workers from the API tier**:
-  - Build and deploy [`backend/Dockerfile.worker`](../../backend/Dockerfile.worker) (which runs `npm run start:worker` -> [`backend/worker.js`](../../backend/worker.js)) on a dedicated worker container/App Service instance with `PROCESS_ROLE=worker`.
-  - If Tutor attachments are active, run `npm run start:attachments` (`backend/attachment-worker.js`) with `PROCESS_ROLE=attachments`.
-  - On all **API** instances set:
-    ```env
-    PROCESS_ROLE=api
-    RUN_EMBEDDED_WORKERS=false
-    RUN_CONCEPT_GROUPING_WORKER=false
-    ```
-    This prevents background cron/maintenance jobs, concept grouping, and battle outbox polling from competing with quiz-delivery event loops.
-- **Compute SKU & horizontal scaling**:
-  - Minimum for **500 concurrent users**: **2× Azure App Service P1v3** (2 vCPU, 8 GB RAM each; 4 vCPU total) behind App Service load balancer with **ARR Affinity = Off** (stateless JWT + shared Redis) and **Always On = On**.
-  - Recommended for **750–1000 VU headroom**: **3× P1v3** or **2× P2v3** (4 vCPU, 16 GB RAM each) with autoscale rule on CPU > 65% or HTTP queue length > 50.
-- **Health probes**:
-  - Liveness: `GET /live`
-  - Readiness: `GET /health` (or `GET /api/health`) — verifies MongoDB ping, applied migrations, and reports `redisCacheStats` + `cacheHitSummary`.
-
-### B. Azure Cache for Redis (`allkeys-lru`)
-
-- **SKU**: **Standard C1 (1 GB)** minimum for 500 VUs; **Standard C2 (2.5 GB)** or **Premium P1 (6 GB)** for 750–1000 VUs or multi-region/high-throughput workloads.
-- **Eviction Policy**: Set `maxmemory-policy` to **`allkeys-lru`** on the cache Redis instance (`backend/config/redis.js` exposes `recommendedEvictionPolicy: 'allkeys-lru'`).
-  - **Do NOT share the cache Redis instance with BullMQ durable queues**: if `USE_DURABLE_QUEUE=true`, provision a **separate** Redis instance (`QUEUE_REDIS_URL`) with `noeviction` and AOF/RDB persistence enabled (`QUEUE_REDIS_ALLOW_SHARED=false`).
-- **Required backend env tuning**:
-  ```env
-  REDIS_URL=rediss://:<key>@<name>.redis.cache.windows.net:6380
-  REDIS_NAMESPACE=meow:prod
-  REDIS_COMMANDS_QUEUE_MAX=4096        # Bounds in-flight queue per socket (default 2048; raise to 4096-8192 for 500-1000 VUs)
-  REDIS_COMMAND_TIMEOUT_MS=1000        # Per-command round-trip deadline
-  REDIS_CONSECUTIVE_TIMEOUT_THRESHOLD=3 # Trips circuit breaker without tearing down sockets on 1 slow reply
-  ```
-- **Socket isolation**: Already built into `backend/config/redis.js` (`getRedisClient()` for tiered read cache vs `getRateLimitRedisClient()` for `express-rate-limit` bursts), preventing rate-limit spikes from stalling question-delivery reads.
-
-### C. MongoDB Atlas Sizing & Normalized Keys
-
-- **Cluster Tier**:
-  - **M10** (2 vCPU, 2 GB RAM, 1,500 max connections) — minimum for 500 VUs with Redis hit ratio > 80% and normalized indexes active.
-  - **M30** (2 vCPU, 8 GB RAM, 3,000 max connections) — recommended for 500–1000 VUs and 100k+ question working sets so compound indexes (`questions`, `quizSessions`, `idempotencyRecords`) remain 100% resident in WiredTiger cache even during a full Redis outage.
-- **Required backend env flags**:
-  ```env
-  QUESTIONS_NORMALIZED_KEYS=true       # Enables exact-match normalized keys (topicKey, subjectKey, examKey, conceptKey, modeKey, yearInt, shiftInt) + selectionKey ring scans
-  MONGO_MAX_POOL_SIZE=50               # Per API instance (e.g. 50 x 3 API instances + 15 worker = 165 connections, well below Atlas limit)
-  MONGO_MIN_POOL_SIZE=10               # Pre-warmed pool avoids cold-connect latency spikes during traffic bursts
-  ```
-- **Index & migration verification**:
-  - Confirm all migrations (including `026-mock-pyq-optimization.js` and `quizSessions` / `selectionKey` compound indexes) are applied (`GET /health` -> `migrations` ready).
-  - Never run unindexed `$regex` or deep `$skip` queries on hot paths; use `/api/v1/quiz/sessions*` cursor delivery and `QUESTIONS_NORMALIZED_KEYS=true`.
-
----
-
-## 7. Prometheus Monitoring Queries (PromQL)
-
-All metric names match [`backend/infrastructure/metrics.js`](../../backend/infrastructure/metrics.js) and [`backend/observability/slo-rules.yml`](../../backend/observability/slo-rules.yml).
-
-### HTTP Delivery Latency — P50 / P95 / P99 (ms)
+### Key PromQL Queries (`GET /metrics` & `backend/observability/slo-rules.yml`)
 
 ```promql
-# Overall P50 / P95 / P99 across v1 quiz delivery endpoints (in ms)
-1000 * histogram_quantile(0.50, sum by (le, route) (rate(meow_http_duration_seconds_bucket{route=~"/api/v1/quiz/.*"}[5m])))
-1000 * histogram_quantile(0.95, sum by (le, route) (rate(meow_http_duration_seconds_bucket{route=~"/api/v1/quiz/.*"}[5m])))
-1000 * histogram_quantile(0.99, sum by (le, route) (rate(meow_http_duration_seconds_bucket{route=~"/api/v1/quiz/.*"}[5m])))
-
-# Question batch fetch SLO check (target P95 < 200ms, P99 < 400ms)
+# 1. Question batch P95 / P99 latency (ms)
 1000 * histogram_quantile(0.95, sum by (le) (rate(meow_http_duration_seconds_bucket{route="/api/v1/quiz/sessions/:id/questions",method="GET"}[5m])))
 1000 * histogram_quantile(0.99, sum by (le) (rate(meow_http_duration_seconds_bucket{route="/api/v1/quiz/sessions/:id/questions",method="GET"}[5m])))
 
-# Session create SLO check (target P95 < 250ms)
-1000 * histogram_quantile(0.95, sum by (le) (rate(meow_http_duration_seconds_bucket{route="/api/v1/quiz/sessions",method="POST"}[5m])))
-
-# HTTP 5xx error ratio (target < 0.1% = 0.001)
-sum(rate(meow_http_requests_total{status=~"5.."}[5m])) / clamp_min(sum(rate(meow_http_requests_total[5m])), 0.001)
-```
-
-### Redis & Tiered Cache Hit Ratio (`meow_cache_operations_total`)
-
-```promql
-# Overall Tiered Cache Hit Ratio (L1 + Redis hits & stale vs all reads; target > 0.80)
+# 2. Tiered cache hit ratio (L1 + Redis hits vs total reads; target > 0.80)
 sum(rate(meow_cache_operations_total{layer=~"l1|redis",outcome=~"hit|stale"}[5m]))
-/
-clamp_min(
+/ clamp_min(
   sum(rate(meow_cache_operations_total{layer=~"l1|redis",outcome=~"hit|stale"}[5m]))
   + sum(rate(meow_cache_operations_total{layer="source",outcome="miss"}[5m]))
   + sum(rate(meow_cache_operations_total{outcome="bypass"}[5m])),
   0.001
 )
 
-# Redis-layer-only Hit Ratio (excluding L1 hits)
-sum(rate(meow_cache_operations_total{layer="redis",outcome=~"hit|stale"}[5m]))
-/
-clamp_min(sum(rate(meow_cache_operations_total{layer="redis",outcome=~"hit|stale|miss"}[5m])), 0.001)
-
-# Hit Ratio broken down by cache namespace (question-item, question-key, topic-pool, quiz-session, question-page)
-sum by (cache) (rate(meow_cache_operations_total{layer=~"l1|redis",outcome=~"hit|stale"}[5m]))
-/
-clamp_min(
-  sum by (cache) (rate(meow_cache_operations_total{layer=~"l1|redis",outcome=~"hit|stale"}[5m]))
-  + sum by (cache) (rate(meow_cache_operations_total{layer="source",outcome="miss"}[5m])),
-  0.001
-)
-
-# Redis circuit state (0=closed, 1=open, 2=half-open), timeouts, and fallbacks
-max(meow_redis_circuit_state)
-sum(rate(meow_redis_command_timeout_total[5m]))
-sum(rate(meow_redis_fallback_total[5m]))
-```
-
-### MongoDB Query Duration (`meow_mongo_command_duration_seconds`) & Pool Waiting (`meow_mongo_pool_waiting`)
-
-```promql
-# MongoDB command P50 / P95 / P99 by collection & command (in ms)
-1000 * histogram_quantile(0.50, sum by (le, collection, command) (rate(meow_mongo_command_duration_seconds_bucket{outcome="success"}[5m])))
-1000 * histogram_quantile(0.95, sum by (le, collection, command) (rate(meow_mongo_command_duration_seconds_bucket{outcome="success"}[5m])))
-1000 * histogram_quantile(0.99, sum by (le, collection, command) (rate(meow_mongo_command_duration_seconds_bucket{outcome="success"}[5m])))
-
-# MongoDB QPS on hot quiz collections
-sum by (collection, command) (rate(meow_mongo_commands_total{collection=~"questions|quizSessions|idempotencyRecords"}[5m]))
-
-# Pending MongoDB connection checkouts (should stay near 0; sustained > 5 means raise MONGO_MAX_POOL_SIZE or scale Atlas/Redis)
+# 3. MongoDB connection pool wait queue (target near 0)
 max(meow_mongo_pool_waiting)
-
-# MongoDB connection pool checkout P95 latency (in ms)
-1000 * histogram_quantile(0.95, sum by (le) (rate(meow_dependency_duration_seconds_bucket{dependency="mongo.pool",operation="checkout"}[5m])))
-```
-
-### Question Delivery Payload Size & Duplicate Prevention
-
-```promql
-# P95 serialized payload bytes per question delivery endpoint
-histogram_quantile(0.95, sum by (le, endpoint) (rate(meow_question_delivery_payload_bytes_bucket[5m])))
-
-# Duplicate questions prevented server-side by surface
-sum by (surface) (increase(meow_question_delivery_duplicates_prevented_total[15m]))
 ```

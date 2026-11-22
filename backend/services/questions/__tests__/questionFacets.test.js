@@ -18,10 +18,11 @@ describe('readQuestionFacets', () => {
   });
 
   afterEach(() => {
+    vi.unstubAllEnvs();
     invalidateQuestionCacheRevision();
   });
 
-  it('aggregates all questions when no subject is specified', async () => {
+  it('aggregates all questions when no subject is specified (normalized keys enabled by default)', async () => {
     aggregateMock.mockReturnValue({
       toArray: vi.fn().mockResolvedValue([
         { topics: ['algebra', 'analogy'], exams: ['SSC CGL'], quizNames: ['PYQ'] },
@@ -32,10 +33,10 @@ describe('readQuestionFacets', () => {
     expect(result.topics).toEqual(['algebra', 'analogy']);
 
     const pipeline = aggregateMock.mock.calls[0][0];
-    expect(pipeline[0].$match).toEqual(buildExcludeStudyModeCondition());
+    expect(pipeline[0].$match).toEqual({ modeKey: { $ne: 'studyMode' } });
   });
 
-  it('scopes aggregation to mathematics when subject is mathematics', async () => {
+  it('scopes aggregation to mathematics when subject is mathematics (normalized keys enabled by default)', async () => {
     aggregateMock.mockReturnValue({
       toArray: vi.fn().mockResolvedValue([
         { topics: ['algebra', 'geometry'], exams: ['SSC CGL'], quizNames: ['PYQ'] },
@@ -48,15 +49,13 @@ describe('readQuestionFacets', () => {
     const pipeline = aggregateMock.mock.calls[0][0];
     expect(pipeline[0].$match).toEqual({
       $and: [
-        buildExcludeStudyModeCondition(),
-        { subject: expect.any(RegExp) },
+        { modeKey: { $ne: 'studyMode' } },
+        { subjectKey: 'mathematics' },
       ],
     });
-    expect(pipeline[0].$match.$and[1].subject.test('mathematics')).toBe(true);
-    expect(pipeline[0].$match.$and[1].subject.test('reasoning')).toBe(false);
   });
 
-  it('supports reasoning subject matching both reasoning and logical reasoning', async () => {
+  it('supports reasoning subject matching both reasoning and logicalreasoning keys', async () => {
     aggregateMock.mockReturnValue({
       toArray: vi.fn().mockResolvedValue([
         { topics: ['analogy', 'blood-relations'], exams: ['SSC CGL'], quizNames: ['PYQ'] },
@@ -67,11 +66,44 @@ describe('readQuestionFacets', () => {
     expect(result.topics).toEqual(['analogy', 'blood-relations']);
 
     const pipeline = aggregateMock.mock.calls[0][0];
-    const subjectCond = pipeline[0].$match.$and[1].subject;
-    expect(subjectCond.$in).toBeDefined();
-    expect(subjectCond.$in.some(re => re.test('reasoning'))).toBe(true);
-    expect(subjectCond.$in.some(re => re.test('logical reasoning'))).toBe(true);
-    expect(subjectCond.$in.some(re => re.test('mathematics'))).toBe(false);
+    expect(pipeline[0].$match).toEqual({
+      $and: [
+        { modeKey: { $ne: 'studyMode' } },
+        { subjectKey: { $in: ['reasoning', 'logicalreasoning'] } },
+      ],
+    });
+  });
+
+  it('falls back to legacy $nor and RegExp predicates when QUESTIONS_NORMALIZED_KEYS=false', async () => {
+    vi.stubEnv('QUESTIONS_NORMALIZED_KEYS', 'false');
+    aggregateMock.mockReturnValue({
+      toArray: vi.fn().mockResolvedValue([
+        { topics: ['algebra', 'geometry'], exams: ['SSC CGL'], quizNames: ['PYQ'] },
+      ]),
+    });
+
+    await readQuestionFacets();
+    expect(aggregateMock.mock.calls[0][0][0].$match).toEqual(buildExcludeStudyModeCondition());
+
+    invalidateQuestionCacheRevision();
+    await readQuestionFacets('mathematics');
+    const mathMatch = aggregateMock.mock.calls[1][0][0].$match;
+    expect(mathMatch).toEqual({
+      $and: [
+        buildExcludeStudyModeCondition(),
+        { subject: expect.any(RegExp) },
+      ],
+    });
+    expect(mathMatch.$and[1].subject.test('mathematics')).toBe(true);
+    expect(mathMatch.$and[1].subject.test('reasoning')).toBe(false);
+
+    invalidateQuestionCacheRevision();
+    await readQuestionFacets('reasoning');
+    const reasoningCond = aggregateMock.mock.calls[2][0][0].$match.$and[1].subject;
+    expect(reasoningCond.$in).toBeDefined();
+    expect(reasoningCond.$in.some(re => re.test('reasoning'))).toBe(true);
+    expect(reasoningCond.$in.some(re => re.test('logical reasoning'))).toBe(true);
+    expect(reasoningCond.$in.some(re => re.test('mathematics'))).toBe(false);
   });
 
   it('caches facets separately for different subjects', async () => {

@@ -394,10 +394,7 @@ export async function fetchPracticeTest(params) {
   }
   if (examMode) {
     conditions.push(
-      questionExamModeCondition(
-        examMode,
-        safeParams.useNormalizedKeys !== undefined ? { useNormalizedKeys: safeParams.useNormalizedKeys } : {},
-      ),
+      questionExamModeCondition(examMode, { useNormalizedKeys }),
     );
   }
   if (useNormalizedKeys) {
@@ -440,7 +437,13 @@ export async function fetchPracticeTest(params) {
     }
     if (resources.length === 0) {
       // Fallback for un-backfilled fixtures lacking selectionKey.
-      resources = await runPoolQuery(combineMongoConditions(conditions), poolLimit);
+      const fallbackConditions = [
+        ...(subject ? [{ subject: caseInsensitiveExact(subject) }] : []),
+        ...(difficulty ? [{ difficulty: caseInsensitiveExact(difficulty) }] : []),
+        ...(examMode ? [questionExamModeCondition(examMode, { useNormalizedKeys: false })] : []),
+        buildExcludeStudyModeCondition(),
+      ];
+      resources = await runPoolQuery(combineMongoConditions(fallbackConditions), poolLimit);
     }
   } else {
     resources = await runPoolQuery(combineMongoConditions(conditions), poolLimit);
@@ -739,7 +742,31 @@ export async function exportQuestions(params = {}) {
   const direction = sort === "desc" ? -1 : 1;
   const collation = { locale: "en", numericOrdering: true, strength: 2 };
 
-  const runQuery = (filter) => {
+  const matchesPostFilter = (q) => {
+    if (!q || typeof q !== "object") return false;
+    if (normalizedTopic && queryMode === "topic" && !matchesNormalizedTopic(q, normalizedTopic)) {
+      return false;
+    }
+    if (normalizedQuizName && !matchesQuizNameFilter(q, normalizedQuizName)) {
+      return false;
+    }
+    if (isStudyModeRequested) {
+      return isStudyModeRecord(q);
+    }
+    if (!isAllRequested) {
+      if (normalizedQuestionType) {
+        return (
+          String(q.questionType ?? "")
+            .trim()
+            .toLowerCase() === normalizedQuestionType
+        );
+      }
+      return !isStudyModeRecord(q);
+    }
+    return true;
+  };
+
+  const openCursor = (filter) => {
     let cursor = collection.find(filter).project({ _id: 0 });
     if (typeof cursor.collation === "function") {
       cursor = cursor.collation(collation);
@@ -747,17 +774,38 @@ export async function exportQuestions(params = {}) {
     if (typeof cursor.sort === "function") {
       cursor = cursor.sort({ id: direction, _id: direction });
     }
-    return cursor.toArray();
+    if (typeof cursor.batchSize === "function") {
+      cursor = cursor.batchSize(250);
+    }
+    if (typeof cursor.maxTimeMS === "function") {
+      cursor = cursor.maxTimeMS(30_000);
+    }
+    return cursor;
   };
 
-  let resources = await runQuery(combineMongoConditions(conditions));
+  async function* iterateExportCursor(cursor) {
+    if (cursor && typeof cursor[Symbol.asyncIterator] === "function") {
+      try {
+        for await (const raw of cursor) {
+          if (!matchesPostFilter(raw)) continue;
+          const { _id, ...rest } = raw;
+          yield rest;
+        }
+      } finally {
+        await cursor.close?.().catch(() => {});
+      }
+      return;
+    }
+    const rows = cursor && typeof cursor.toArray === "function" ? await cursor.toArray() : [];
+    for (const raw of rows) {
+      if (!matchesPostFilter(raw)) continue;
+      const { _id, ...rest } = raw;
+      yield rest;
+    }
+  }
 
-  if (
-    topic &&
-    !useNormalizedKeys &&
-    !isSynonymAntonymTopic &&
-    resources.length === 0
-  ) {
+  const primaryFilter = combineMongoConditions(conditions);
+  const buildFallbackFilter = () => {
     const topicRegex = caseInsensitiveExact(topic);
     const fallbackConditions = conditions.filter((c) => !c.topic);
     fallbackConditions.push({
@@ -770,34 +818,38 @@ export async function exportQuestions(params = {}) {
         { source: topicRegex },
       ],
     });
-    resources = await runQuery(combineMongoConditions(fallbackConditions));
-  }
+    return combineMongoConditions(fallbackConditions);
+  };
 
-  if (normalizedTopic && queryMode === "topic") {
-    resources = resources.filter((q) =>
-      matchesNormalizedTopic(q, normalizedTopic)
-    );
-  }
-  if (normalizedQuizName) {
-    resources = resources.filter((q) =>
-      matchesQuizNameFilter(q, normalizedQuizName)
-    );
-  }
-  if (isStudyModeRequested) {
-    resources = resources.filter((q) => isStudyModeRecord(q));
-  } else if (!isAllRequested) {
-    if (normalizedQuestionType) {
-      resources = resources.filter(
-        (q) =>
-          String(q.questionType ?? "")
-            .trim()
-            .toLowerCase() === normalizedQuestionType
-      );
-    } else {
-      resources = resources.filter((q) => !isStudyModeRecord(q));
+  const isJsonFormat = String(params.format || "").toLowerCase() === "json";
+  if (!isJsonFormat) {
+    let effectiveFilter = primaryFilter;
+    let count = 0;
+    if (typeof collection.countDocuments === "function") {
+      count = await collection.countDocuments(primaryFilter, { maxTimeMS: 10_000 });
+      if (count === 0 && topic && !useNormalizedKeys && !isSynonymAntonymTopic) {
+        effectiveFilter = buildFallbackFilter();
+        count = await collection.countDocuments(effectiveFilter, { maxTimeMS: 10_000 });
+      }
     }
+    return {
+      count,
+      stream: iterateExportCursor(openCursor(effectiveFilter)),
+    };
   }
 
-  const cleaned = resources.map(({ _id, ...rest }) => rest);
+  const collectFromFilter = async (filter) => {
+    const collected = [];
+    for await (const item of iterateExportCursor(openCursor(filter))) {
+      collected.push(item);
+    }
+    return collected;
+  };
+
+  let cleaned = await collectFromFilter(primaryFilter);
+  if (topic && !useNormalizedKeys && !isSynonymAntonymTopic && cleaned.length === 0) {
+    cleaned = await collectFromFilter(buildFallbackFilter());
+  }
+
   return { count: cleaned.length, questions: cleaned };
 }

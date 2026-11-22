@@ -8,6 +8,7 @@ import {
   updateUserProgress,
   trackStudyUsage,
   mutateUserList,
+  mutateUserBookmarks,
   findQuestionForBookmark,
 } from '../repositories/userRepository.js';
 import { profileProjection, mergeQuizEntry } from '../services/userHistory.js';
@@ -142,7 +143,7 @@ export const updateBookmarks = async (req, res) => {
       }
     }
 
-    const bookmarkEntries = await mutateUserList(req.user.id, 'bookmarkEntries', entries => {
+    const updated = await mutateUserBookmarks(req.user.id, entries => {
       let next = [...entries];
       if (action === 'add') {
         const existingIndex = next.findIndex((b) => b.questionId === safeId);
@@ -160,14 +161,13 @@ export const updateBookmarks = async (req, res) => {
         .slice(0, 60);
     });
 
-    if (!bookmarkEntries) return res.status(404).json({ error: 'User not found' });
-    
-    const bookmarks = bookmarkEntries.map(e => e.questionId);
-    
-    // Also sync the simple bookmarks array just for the users collection
-    await updateUser(req.user.id, { bookmarks });
-    
-    res.json({ message: 'Bookmarks updated ✅', bookmarks, bookmarkEntries });
+    if (!updated) return res.status(404).json({ error: 'User not found' });
+
+    res.json({
+      message: 'Bookmarks updated ✅',
+      bookmarks: updated.bookmarks,
+      bookmarkEntries: updated.bookmarkEntries,
+    });
   } catch (err) {
     return sendUserError(res, err, 'Failed to update bookmarks');
   }

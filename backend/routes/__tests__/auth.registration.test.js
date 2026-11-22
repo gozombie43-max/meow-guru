@@ -22,7 +22,9 @@ vi.mock('../../repositories/authRegistrationRepository.js', () => ({
   acquireRegistrationLock: mocks.lock, releaseRegistrationLock: mocks.unlock,
   verifyLocalUserEmailByTokenHash: mocks.verify,
   replaceEmailVerificationToken: mocks.replace,
-  issuePasswordResetToken: mocks.issueReset, consumePasswordResetToken: mocks.consumeReset,
+  issuePasswordResetToken: mocks.issueReset,
+  consumePasswordResetToken: mocks.consumeReset,
+  consumeAccountRecoveryToken: mocks.consumeReset,
 }));
 vi.mock('../../services/email/emailService.js', () => ({ sendEmail: mocks.send }));
 vi.mock('../../infrastructure/runtimeLog.js', () => ({ runtimeLog: { error: mocks.log, warn: vi.fn() } }));

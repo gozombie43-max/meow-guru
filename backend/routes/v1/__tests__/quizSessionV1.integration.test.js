@@ -70,6 +70,15 @@ vi.mock('../../../config/redis.js', async (importOriginal) => {
       const val = await redisState.client.get(`test:${key}`).catch(() => null);
       return val == null ? null : JSON.parse(val);
     }),
+    redisGetJsonMany: vi.fn(async (keys) => {
+      if (!keys.length) return [];
+      try {
+        const vals = await redisState.client.mGet(keys.map((k) => `test:${k}`));
+        return vals.map((val) => (val == null ? null : JSON.parse(val)));
+      } catch {
+        return keys.map(() => null);
+      }
+    }),
     redisSetJson: vi.fn(async (key, value) => {
       try {
         await redisState.client.set(`test:${key}`, JSON.stringify(value));
@@ -95,7 +104,7 @@ import { createApp } from '../../../app.js';
 import { buildNormalizedQuestionFields } from '../../../services/questions/questionNormalizer.js';
 import { canonicalQuestionUid } from '../../../services/questions/questionIdentity.js';
 import * as migration028 from '../../../migrations/028-backfill-question-uids.js';
-import { invalidateQuestionCacheRevision } from '../../../services/questions/questionCache.js';
+import { invalidateQuestionCacheRevision, invalidateQuestionCaches } from '../../../services/questions/questionCache.js';
 import { fetchQuestionCursorPage } from '../../../services/questions/questionCursorService.js';
 import { fetchQuestionsSession } from '../../../services/questions/questionSessionService.js';
 import { activePaper, reviewPaper } from '../../../services/mockTestPresentation.js';
@@ -1005,5 +1014,65 @@ describe('Phase 4 & Phase 6: Standardized /api/v1/quiz/sessions Delivery API', (
     expect(JSON.stringify(batchPlan.queryPlanner.winningPlan)).toContain(
       '"indexName":"question_canonical_identity"',
     );
+  });
+
+  it('caches practice countDocuments per revision and canonical filter across L1 and Redis, falls back during Redis errors, and invalidates on question change', async () => {
+    const countSpy = vi.spyOn(Collection.prototype, 'countDocuments');
+    try {
+      // 1. Cold call: hits MongoDB countDocuments once and populates L1 + Redis.
+      const res1 = await api('/api/v1/quiz/sessions', {
+        method: 'POST',
+        body: { mode: 'practice', subject: 'mathematics', difficulty: 'mixed', letter: 'b, a', batchSize: 10 },
+      });
+      expect(res1.status).toBe(201);
+      const body1 = await res1.json();
+      expect(countSpy).toHaveBeenCalledTimes(1);
+
+      // 2. Warm L1 hit with equivalent canonical filter (difficulty omitted vs 'mixed', letter 'A,B' vs 'b, a'): 0 Mongo countDocuments.
+      countSpy.mockClear();
+      const res2 = await api('/api/v1/quiz/sessions', {
+        method: 'POST',
+        body: { mode: 'practice', subject: 'mathematics', letter: 'A,B', batchSize: 10 },
+      });
+      expect(res2.status).toBe(201);
+      expect((await res2.json()).totalCount).toBe(body1.totalCount);
+      expect(countSpy).toHaveBeenCalledTimes(0);
+
+      // 3. Clear L1 only -> warm Redis hit: 0 Mongo countDocuments.
+      clearSharedLocalCaches();
+      const res3 = await api('/api/v1/quiz/sessions', {
+        method: 'POST',
+        body: { mode: 'practice', subject: 'mathematics', letter: 'a,b', batchSize: 10 },
+      });
+      expect(res3.status).toBe(201);
+      expect((await res3.json()).totalCount).toBe(body1.totalCount);
+      expect(countSpy).toHaveBeenCalledTimes(0);
+
+      // 4. Redis outage + cold L1 -> gracefully falls back to MongoDB without failing request.
+      clearSharedLocalCaches();
+      redisState.setFailMode(true);
+      const res4 = await api('/api/v1/quiz/sessions', {
+        method: 'POST',
+        body: { mode: 'practice', subject: 'mathematics', batchSize: 10 },
+      });
+      expect(res4.status).toBe(201);
+      expect((await res4.json()).totalCount).toBe(55);
+      expect(countSpy).toHaveBeenCalledTimes(1);
+      redisState.setFailMode(false);
+
+      // 5. Scoped invalidation evicts cached practice count so subsequent request re-queries MongoDB.
+      countSpy.mockClear();
+      await invalidateQuestionCaches({ subject: 'mathematics', bumpRevision: true });
+      const res5 = await api('/api/v1/quiz/sessions', {
+        method: 'POST',
+        body: { mode: 'practice', subject: 'mathematics', batchSize: 10 },
+      });
+      expect(res5.status).toBe(201);
+      expect((await res5.json()).totalCount).toBe(55);
+      expect(countSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      countSpy.mockRestore();
+      redisState.setFailMode(false);
+    }
   });
 });

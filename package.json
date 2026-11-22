@@ -32,7 +32,16 @@
     "check": "npm run typecheck && npm run lint && npm run test",
     "start": "npm run start --workspace backend",
     "build:contracts": "npm run build --workspace @meow/contracts",
-    "test:coverage": "npm run test:coverage --workspace frontend && npm run test:coverage --workspace backend"
+    "test:coverage": "npm run test:coverage --workspace frontend && npm run test:coverage --workspace backend",
+    "k6:check": "node load-tests/k6/scripts/run-k6.mjs --profile check",
+    "k6:auth": "node load-tests/k6/scripts/run-k6.mjs --profile auth",
+    "k6:smoke": "node load-tests/k6/scripts/run-k6.mjs --profile smoke",
+    "k6:baseline": "node load-tests/k6/scripts/run-k6.mjs --profile baseline",
+    "k6:moderate": "node load-tests/k6/scripts/run-k6.mjs --profile moderate",
+    "k6:target": "node load-tests/k6/scripts/run-k6.mjs --profile target",
+    "k6:stress": "node load-tests/k6/scripts/run-k6.mjs --profile stress",
+    "k6:soak": "node load-tests/k6/scripts/run-k6.mjs --profile soak",
+    "k6:test": "node --test load-tests/k6/__tests__/*.test.mjs"
   },
   "overrides": {
     "@next/eslint-plugin-next": {

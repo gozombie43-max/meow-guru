@@ -1,7 +1,26 @@
 import { runtimeLog } from '../../infrastructure/runtimeLog.js';
+import { createTieredCache } from '../../infrastructure/tieredCache.js';
 import { mockAnswerCorrect, isUnanswered } from '../mockAnswer.js';
 import { getExamConfig } from '../../config/exam-config.js';
 import { getMockAttemptsCollection } from '../../config/mongodb.js';
+
+const percentileCountCache = createTieredCache({
+  name: 'mock-percentile',
+  freshMs: 45_000,
+  staleMs: 60_000,
+  localMs: 15_000,
+  distributedLock: false,
+  isEmpty: value => typeof value !== 'number' || !Number.isFinite(value) || value < 0,
+});
+
+export function invalidateMockPercentileCache(examSlug = null, testId = null) {
+  if (!examSlug && !testId) {
+    percentileCountCache.clear();
+    return;
+  }
+  const prefix = `meow:v1:mock-pct:${examSlug || ''}:${testId || ''}:`;
+  percentileCountCache.deleteWhere(key => String(key || '').startsWith(prefix));
+}
 
 export function gradeAttempt({ attemptDoc }) {
   const paperSections = Array.isArray(attemptDoc.paper?.sections) ? attemptDoc.paper.sections : [];
@@ -83,18 +102,32 @@ export async function computePercentile({
       status: 'completed',
     };
 
+    const numericScore = Number(score);
+    const scoreKey = Number.isFinite(numericScore) ? Math.round(numericScore * 100) / 100 : 0;
+    const keyPrefix = `meow:v1:mock-pct:${examSlug || ''}:${testId || ''}:`;
+
     const [
       countBelow,
       total,
     ] = await Promise.all([
-      attempts.countDocuments({
-        ...baseFilter,
-        'result.totalScore': {
-          $lte: Number(score),
-        },
-      }),
-      attempts.countDocuments(
-        baseFilter
+      percentileCountCache.read(
+        `${keyPrefix}lte:${scoreKey}`,
+        () =>
+          attempts.countDocuments(
+            {
+              ...baseFilter,
+              'result.totalScore': {
+                $lte: numericScore,
+              },
+            },
+            { maxTimeMS: 2000 },
+          ),
+        { allowStale: true },
+      ),
+      percentileCountCache.read(
+        `${keyPrefix}total`,
+        () => attempts.countDocuments(baseFilter, { maxTimeMS: 2000 }),
+        { allowStale: true },
       ),
     ]);
 

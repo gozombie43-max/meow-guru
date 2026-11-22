@@ -40,7 +40,11 @@ export const getOwnedAttemptForAutosave = async (attemptId, userId) => {
 };
 
 export const getAttemptByStartKey = async (userId, startKey) => {
-  return getMockAttemptsCollection().findOne({ userId: String(userId), startKey });
+  if (typeof startKey !== 'string' || !startKey) return null;
+  return getMockAttemptsCollection().findOne({
+    userId: String(userId),
+    startKey: { $eq: startKey, $type: 'string' },
+  });
 };
 
 export const getConfidentialAttempt = async (userId, examSlug, testId) => {

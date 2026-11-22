@@ -145,10 +145,7 @@ export async function commitQuizSessionAnswerAtomic({
 }) {
   const dbRoot = getMongoDB();
   const journal = dbRoot.collection(IDEMPOTENCY_COLLECTION);
-  const existing = await journal.findOne({ _id: idempotencyId });
-  if (existing && existing.status === 'completed') {
-    return replayIdempotentRecord(existing, fingerprint);
-  }
+  const expiresAt = new Date(now.getTime() + IDEMPOTENCY_TTL_MS);
 
   for (let attempt = 0; attempt < 8; attempt++) {
     try {
@@ -157,22 +154,40 @@ export async function commitQuizSessionAnswerAtomic({
         const records = db.collection(IDEMPOTENCY_COLLECTION);
         const sessions = db.collection(COLLECTION_NAME);
 
-        // 1. Reserve durable idempotency record atomically.
-        await records.insertOne(
-          {
+        // Without multi-doc transactions (standalone MongoDB), reserve a pending record
+        // first so failures can roll back the idempotency slot cleanly. Inside a replica-set
+        // transaction, a single completed insert at the end aborts atomically on 11000.
+        if (!session) {
+          await records.insertOne({
             _id: idempotencyId,
             fingerprint,
             status: 'pending',
             createdAt: now,
-            expiresAt: new Date(now.getTime() + IDEMPOTENCY_TTL_MS),
-          },
-          txOpts,
-        );
+            expiresAt,
+          });
+        }
 
         let committedSessionMutation = false;
         try {
-          // 2. Read authoritative session state inside the transaction.
-          const sessionDoc = await sessions.findOne({ sessionId: String(sessionId) }, txOpts);
+          // Read authoritative session state inside the transaction (or standalone session).
+          const sessionDoc = await sessions.findOne(
+            { sessionId: String(sessionId) },
+            {
+              ...txOpts,
+              projection: {
+                _id: 0,
+                sessionId: 1,
+                userId: 1,
+                mode: 1,
+                status: 1,
+                deadlineAt: 1,
+                orderedQuestionUids: 1,
+                revision: 1,
+                answeredCount: 1,
+                answers: 1,
+              },
+            },
+          );
           if (!sessionDoc) throw fail('Quiz session not found', 404, 'SESSION_NOT_FOUND');
           if (String(sessionDoc.userId) !== String(userId)) {
             throw fail('You do not have access to this quiz session', 403, 'FORBIDDEN_SESSION');
@@ -187,7 +202,7 @@ export async function commitQuizSessionAnswerAtomic({
             }
           }
 
-          // 3. Build mode-aware answer entry & response payload.
+          // Build mode-aware answer entry & response payload.
           const currentAnswers =
             sessionDoc.answers && typeof sessionDoc.answers === 'object' ? sessionDoc.answers : {};
           const existingEntry = Object.hasOwn(currentAnswers, questionUid)
@@ -197,9 +212,24 @@ export async function commitQuizSessionAnswerAtomic({
           const outcome = await buildAnswerOutcome({ sessionDoc, existingEntry });
 
           if (!outcome.skipMutation) {
-            const nextAnswers = { ...currentAnswers, [questionUid]: outcome.answerEntry };
-            const nextAnsweredCount = Object.keys(nextAnswers).length;
+            const existingCount = Object.keys(currentAnswers).length;
+            const nextAnsweredCount = existingEntry ? existingCount : existingCount + 1;
             const nextRevision = (Number(sessionDoc.revision) || 0) + 1;
+            const canUseDotPath =
+              typeof questionUid === 'string' && questionUid.length > 0 && !/[.$]/.test(questionUid);
+            const setFields = canUseDotPath
+              ? {
+                  [`answers.${questionUid}`]: outcome.answerEntry,
+                  answeredCount: nextAnsweredCount,
+                  revision: nextRevision,
+                  updatedAt: now,
+                }
+              : {
+                  answers: { ...currentAnswers, [questionUid]: outcome.answerEntry },
+                  answeredCount: nextAnsweredCount,
+                  revision: nextRevision,
+                  updatedAt: now,
+                };
 
             const updateResult = await sessions.updateOne(
               {
@@ -208,14 +238,7 @@ export async function commitQuizSessionAnswerAtomic({
                 status: 'in_progress',
                 revision: Number(sessionDoc.revision) || 0,
               },
-              {
-                $set: {
-                  answers: nextAnswers,
-                  answeredCount: nextAnsweredCount,
-                  revision: nextRevision,
-                  updatedAt: now,
-                },
-              },
+              { $set: setFields },
               txOpts,
             );
 
@@ -235,18 +258,31 @@ export async function commitQuizSessionAnswerAtomic({
             outcome.response.answeredCount = Object.keys(currentAnswers).length;
           }
 
-          // 4. Finalize durable idempotency record inside the same transaction.
-          await records.updateOne(
-            { _id: idempotencyId },
-            {
-              $set: {
+          if (session) {
+            await records.insertOne(
+              {
+                _id: idempotencyId,
+                fingerprint,
                 status: 'completed',
                 response: outcome.response,
+                createdAt: now,
                 completedAt: now,
+                expiresAt,
               },
-            },
-            txOpts,
-          );
+              txOpts,
+            );
+          } else {
+            await records.updateOne(
+              { _id: idempotencyId },
+              {
+                $set: {
+                  status: 'completed',
+                  response: outcome.response,
+                  completedAt: now,
+                },
+              },
+            );
+          }
 
           return { response: outcome.response, replayed: false };
         } catch (innerError) {

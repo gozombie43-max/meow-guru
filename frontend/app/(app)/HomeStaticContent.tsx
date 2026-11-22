@@ -99,7 +99,6 @@ export function MobileHomeContent() {
             alt=""
             fill
             priority
-            unoptimized
             sizes="(max-width: 1023px) 100vw, 640px"
             quality={75}
             className={`${styles.mobileHeroStudyBackdrop} ${styles.mobileHeroBackdropLight}`}
@@ -108,8 +107,7 @@ export function MobileHomeContent() {
             src="/images/home-carousel/study-hero-dark-v2.webp"
             alt=""
             fill
-            priority
-            unoptimized
+            loading="lazy"
             sizes="(max-width: 1023px) 100vw, 640px"
             quality={75}
             className={`${styles.mobileHeroStudyBackdrop} ${styles.mobileHeroBackdropDark}`}

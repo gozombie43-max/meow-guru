@@ -62,4 +62,34 @@ describe('battle socket controller', () => {
     deliver('game:question', { question: 'Next?', options: ['A', 'B'], questionIndex: 1, total: 10, deadline: null });
     expect(result.current.state.correct).toBeNull(); expect(result.current.state.answerStatus).toBe('idle');
   });
+
+  it('emits battle:resume first on a 6s answer timeout and only forces disconnect/connect if still unresponsive', () => {
+    const { result } = renderHook(() => useBattle('token', 'me'));
+    deliver('battle:resumeResult', { reason: 'no-room' });
+    deliver('room:joined', { code: 'ROOM99', players: ['Me', 'Rival'] });
+    deliver('game:start', { scores: { me: { name: 'Me', score: 0, answered: false }, rival: { name: 'Rival', score: 0, answered: false } } });
+    deliver('game:question', { question: '2 + 2?', options: ['3', '4'], questionIndex: 0, total: 10, deadline: null });
+
+    act(() => result.current.submitAnswer(1));
+    expect(fixture.socket.emit).toHaveBeenCalledWith('game:answer', {
+      code: 'ROOM99',
+      questionIndex: 0,
+      type: 'mcq',
+      selectedIndex: 1,
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(6_000);
+    });
+    expect(result.current.connection).toBe('syncing');
+    expect(fixture.socket.emit).toHaveBeenLastCalledWith('battle:resume', { code: 'ROOM99' });
+    expect(fixture.socket.disconnect).not.toHaveBeenCalled();
+
+    // If transport remains unresponsive after another 6s without resume response, force reconnect
+    act(() => {
+      vi.advanceTimersByTime(6_000);
+    });
+    expect(fixture.socket.disconnect).toHaveBeenCalledTimes(1);
+    expect(fixture.socket.connect).toHaveBeenCalledTimes(1);
+  });
 });

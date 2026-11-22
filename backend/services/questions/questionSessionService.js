@@ -494,7 +494,7 @@ export async function fetchQuestionsRevealWindow(rawItems) {
         orFilters.push({ _id: new ObjectId(item.sessionAnchor) });
       }
       if (typeof item.questionUid === 'string' && /^q_[a-f0-9]{32}$/.test(item.questionUid)) {
-        orFilters.push({ questionUid: item.questionUid });
+        orFilters.push({ questionUid: { $eq: item.questionUid, $type: 'string' } });
       }
       // Strictly accept primitive string or finite integer IDs — prevents NoSQL operator injection.
       if (typeof item.id === 'string' && item.id.trim().length > 0 && item.id.length <= 200) {

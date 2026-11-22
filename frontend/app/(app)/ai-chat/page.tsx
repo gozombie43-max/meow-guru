@@ -67,6 +67,8 @@ function AiChatPageContent() {
   useBackLayer(sidebarOpen && isMobileSidebar, () => setSidebarOpen(false));
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sendingRef = useRef(false);
+  const requestControllerRef = useRef<AbortController | null>(null);
   const {
     activeChatId,
     cancelSessionLoad,
@@ -103,8 +105,19 @@ function AiChatPageContent() {
     };
   }, [attachmentPreview]);
 
+  useEffect(() => {
+    return () => {
+      requestControllerRef.current?.abort();
+      pollingRef.current?.abort();
+      sendingRef.current = false;
+    };
+  }, [pollingRef]);
+
   const startNewChat = () => {
-    if (isLoading) return;
+    requestControllerRef.current?.abort();
+    requestControllerRef.current = null;
+    pollingRef.current?.abort();
+    sendingRef.current = false;
     cancelSessionLoad();
     setActiveChatId(null);
     setMessages([]);
@@ -114,7 +127,7 @@ function AiChatPageContent() {
   };
 
   const openChat = (session: ChatSession) => {
-    if (isLoading) return;
+    if (isLoading || sendingRef.current) return;
     setActiveChatId(session.id);
     void loadSession(session);
     composerRef.current?.clear();
@@ -127,7 +140,12 @@ function AiChatPageContent() {
   async function sendMessage(nextText?: string) {
     const text = (nextText ?? '').trim();
     const fileToSend = attachmentFile;
-    if ((!text && !fileToSend) || isLoading) return;
+    if ((!text && !fileToSend) || isLoading || sendingRef.current) return;
+    sendingRef.current = true;
+    requestControllerRef.current?.abort();
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+    const idempotencyKey = createChatId();
 
     const chatId = activeChatId || createChatId();
     const previousMessages = activeChatId ? messages : [];
@@ -148,6 +166,7 @@ function AiChatPageContent() {
 
     try {
       const { tutorRequestSchema, tutorReplySchema, tutorJobResponseSchema } = await import('@meow/contracts/tutor');
+      if (controller.signal.aborted) return;
       tutorRequestSchema.parse({ context, message: text || 'Please solve the attached question.', history: previousMessages.slice(-16) });
       let reply = '';
       let queuedJob = false;
@@ -159,9 +178,11 @@ function AiChatPageContent() {
         formData.append('attachment', fileToSend);
 
         const response = await api.post('/api/ai/tutor-chat', formData, {
-          headers: { 'Content-Type': 'multipart/form-data', 'Idempotency-Key': createChatId() },
+          headers: { 'Content-Type': 'multipart/form-data', 'Idempotency-Key': idempotencyKey },
           timeout: 60000,
+          signal: controller.signal,
         });
+        if (controller.signal.aborted) return;
         if (response.data?.jobId) {
           queuedJob = true;
           tutorJobResponseSchema.parse(response.data);
@@ -179,18 +200,28 @@ function AiChatPageContent() {
             history: previousMessages.slice(-16),
           },
           {
+            headers: { 'Idempotency-Key': idempotencyKey },
             timeout: 60000,
+            signal: controller.signal,
           }
         );
+        if (controller.signal.aborted) return;
         reply = tutorReplySchema.parse(response.data).reply;
       }
 
+      if (controller.signal.aborted) return;
       const nextMessages = [...userMessages, { role: 'bot' as const, content: normalizeSimpleTables(reply) }];
       setMessages(nextMessages.slice(-80));
       const saved = await saveSessionMessages(chatId, nextMessages, text || fileToSend?.name || 'Attached question');
       if (queuedJob && saved && pendingKey) sessionStorage.removeItem(pendingKey);
     } catch (err: unknown) {
-      if ((err instanceof Error && err.name === 'AbortError') || (isAxiosError(err) && err.code === 'ERR_CANCELED')) return;
+      if (
+        controller.signal.aborted ||
+        (err instanceof Error && err.name === 'AbortError') ||
+        (isAxiosError(err) && err.code === 'ERR_CANCELED')
+      ) {
+        return;
+      }
       if (err instanceof TutorJobError && err.terminal && pendingKey) sessionStorage.removeItem(pendingKey);
       const errorMessage =
         (isAxiosError<{ error?: string }>(err) ? err.response?.data?.error : undefined) ||
@@ -206,7 +237,11 @@ function AiChatPageContent() {
       setMessages(nextMessages.slice(-80));
       void saveSessionMessages(chatId, nextMessages, text || fileToSend?.name || 'Attached question');
     } finally {
-      setIsLoading(false);
+      if (requestControllerRef.current === controller) {
+        requestControllerRef.current = null;
+        sendingRef.current = false;
+        setIsLoading(false);
+      }
     }
   }
 

@@ -10,6 +10,7 @@ import { optionalServiceHealth, optionalServiceReady } from './infrastructure/op
 import { dependencyHealth } from './infrastructure/dependencyBoundary.js';
 import { checkReadiness } from './infrastructure/readiness.js';
 import { requestBodyLimits } from './middleware/requestBodyLimits.js';
+import { requestTimeout } from './middleware/requestTimeout.js';
 import adminAuth from './middleware/auth.js';
 import { getReleaseId } from './infrastructure/releaseInfo.js';
 
@@ -25,6 +26,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 
 import { errorHandler } from './middleware/errorHandler.js';
+import { attachSentryErrorHandler } from './infrastructure/sentry.js';
 import {
   globalLimiter,
   trainingIngressLimiter,
@@ -61,6 +63,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   const app = express();
   app.use(requestTrace);
   app.use(requestLogging);
+  app.use(requestTimeout());
   app.set('trust proxy', 1);
 
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -202,6 +205,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
       : res.set('Retry-After', '5').status(503).json({ error: 'Battle service is unavailable' }), lazyRouter(() => import('./routes/battle.routes.js')));
   }
 
+  attachSentryErrorHandler(app);
   app.use(errorHandler);
 
   return { app, corsOrigin };

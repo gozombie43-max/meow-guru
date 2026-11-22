@@ -1,0 +1,165 @@
+name: Staging k6 Load Smoke Check
+
+on:
+  workflow_dispatch:
+    inputs:
+      staging_base_url:
+        description: 'Staging API base URL (never production)'
+        required: true
+        default: 'https://quizguru-stage-1177891703.azurewebsites.net'
+        type: string
+      run_auth_smoke:
+        description: 'Run dedicated authentication login/refresh/logout smoke test'
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: k6-staging-smoke
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  staging-smoke:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      K6_ENV: staging
+      K6_ALLOW_STAGING: 'true'
+      K6_PROFILE: smoke
+      K6_ORIGIN: 'https://meowguru.me'
+      STAGING_MONGODB_DB: quizDB_staging
+      STAGING_MONGODB_EXPECTED_HOST: quizguru-staging.c8bkump.mongodb.net
+    steps:
+      - name: Enforce main branch and staging target safety
+        shell: bash
+        env:
+          INPUT_BASE_URL: ${{ inputs.staging_base_url }}
+          STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+        run: |
+          set -euo pipefail
+          [ "$GITHUB_REF" = "refs/heads/main" ] || {
+            echo '::error::Staging k6 smoke workflow must run from refs/heads/main'; exit 1;
+          }
+          [ -n "$STAGING_MONGODB_URI" ] || {
+            echo '::error::Set repository secret STAGING_MONGODB_URI'; exit 1;
+          }
+          [[ "$STAGING_MONGODB_URI" == *"quizguru-staging.c8bkump.mongodb.net"* ]] || {
+            echo '::error::STAGING_MONGODB_URI must point to the isolated Atlas staging cluster'; exit 1;
+          }
+          if [[ "$INPUT_BASE_URL" != https://* ]]; then
+            echo '::error::staging_base_url must start with https://'; exit 1;
+          fi
+          if [[ "${INPUT_BASE_URL,,}" =~ prod ]]; then
+            echo '::error::Refusing production-looking staging_base_url'; exit 1;
+          fi
+          if [[ "${INPUT_BASE_URL,,}" != *quizguru-stage* && "${INPUT_BASE_URL,,}" != *stag* ]]; then
+            echo '::error::staging_base_url must target a staging host'; exit 1;
+          fi
+          echo "K6_BASE_URL=${INPUT_BASE_URL%/}" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.x'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install locked Node dependencies for k6 helpers
+        run: npm ci --workspace backend --include-workspace-root=false --omit=dev
+
+      - name: Install Grafana k6
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo mkdir -p /etc/apt/keyrings
+          curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/k6-archive-keyring.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq k6
+          k6 version
+
+      - name: Provision ephemeral synthetic staging accounts
+        shell: bash
+        env:
+          STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+        run: |
+          set -euo pipefail
+          prefix="k6-ci-${GITHUB_RUN_ID}"
+          password="$(openssl rand -hex 18)"
+          users_json="$(jq -nc --arg prefix "$prefix" --arg pass "$password" '[range(1; 6) | {email: "\($prefix)-\(.)@loadtest.invalid", password: $pass}]')"
+
+          echo "::add-mask::$password"
+          echo "::add-mask::$users_json"
+
+          echo "K6_CI_PREFIX=$prefix" >> "$GITHUB_ENV"
+          {
+            echo "K6_USERS_JSON<<__K6_USERS_EOF__"
+            echo "$users_json"
+            echo "__K6_USERS_EOF__"
+          } >> "$GITHUB_ENV"
+
+          K6_USER_PASSWORD="$password" node load-tests/k6/scripts/staging-test-data.mjs setup \
+            --env staging \
+            --allow-staging \
+            --db "$STAGING_MONGODB_DB" \
+            --expected-host "$STAGING_MONGODB_EXPECTED_HOST" \
+            --prefix "$prefix" \
+            --count 5 \
+            --skip-questions
+
+      - name: Run 10-point k6 preflight verification
+        shell: bash
+        env:
+          STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+        run: |
+          set -euo pipefail
+          mkdir -p load-tests/k6/reports
+          node load-tests/k6/scripts/preflight.mjs \
+            --env staging \
+            --profile smoke \
+            --allow-staging \
+            --json load-tests/k6/reports/preflight-staging-ci.json
+
+      - name: Run k6 authentication smoke test
+        if: ${{ inputs.run_auth_smoke }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          K6_SUMMARY_OUTPUT="load-tests/k6/reports/auth-smoke-staging-ci.json" \
+            k6 run load-tests/k6/scenarios/authentication.js
+
+      - name: Run k6 mixed-workload smoke test (5 VUs)
+        shell: bash
+        run: |
+          set -euo pipefail
+          K6_SUMMARY_OUTPUT="load-tests/k6/reports/mixed-smoke-staging-ci.json" \
+            k6 run load-tests/k6/scenarios/mixed-workload.js
+
+      - name: Clean up ephemeral synthetic staging accounts
+        if: ${{ always() && env.K6_CI_PREFIX != '' }}
+        shell: bash
+        env:
+          STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+        run: |
+          set -euo pipefail
+          node load-tests/k6/scripts/staging-test-data.mjs cleanup \
+            --env staging \
+            --allow-staging \
+            --db "$STAGING_MONGODB_DB" \
+            --expected-host "$STAGING_MONGODB_EXPECTED_HOST" \
+            --prefix "$K6_CI_PREFIX" \
+            --count 5
+
+      - name: Upload k6 smoke reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: k6-staging-smoke-reports-${{ github.run_number }}
+          path: load-tests/k6/reports/
+          if-no-files-found: warn
+          retention-days: 14

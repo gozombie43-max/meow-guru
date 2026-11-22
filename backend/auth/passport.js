@@ -4,13 +4,15 @@ import { findUserByEmail, normalizeAccountEmail, authUserProjection } from '../r
 import passport from 'passport';
 import { oauthStateStore } from './oauthState.js';
 import { revokeUserSessions } from './sessions.js';
-const dummyPasswordHash = bcrypt.hash('invalid-account-password', 12);
+import { hashPassword, verifyPassword } from './passwordHash.js';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 
 import { getUsersCollection } from '../config/mongodb.js';
+
+let dummyPasswordHashPromise;
+const getDummyPasswordHash = () => (dummyPasswordHashPromise ??= hashPassword('invalid-account-password', 12));
 
 // Remove MongoDB-internal migration fields before passing
 // users into Passport/JWT/API code.
@@ -54,7 +56,7 @@ export const initPassport = () => {
           const user =
             await findUserByEmail(email);
 
-          const valid = await bcrypt.compare(password, user?.passwordHash || await dummyPasswordHash);
+          const valid = await verifyPassword(password, user?.passwordHash || await getDummyPasswordHash());
           if (!user || user.authProvider === 'google' || !user.passwordHash || !valid) {
             return done(null, false, { message: 'Invalid email or password' });
           }

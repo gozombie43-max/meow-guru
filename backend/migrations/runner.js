@@ -4,6 +4,7 @@ import * as questionImportJobs from './025-question-import-jobs.js';
 import * as mockPyqOptimization from './026-mock-pyq-optimization.js';
 import * as questionDeliveryOptimization from './027-question-delivery-optimization.js';
 import * as backfillQuestionUids from './028-backfill-question-uids.js';
+import * as productionScaleIndexes from './029-production-scale-indexes.js';
 import * as userHistory from './017-user-history.js';
 import * as defaultMockSlots from './018-default-mock-slots.js';
 import * as battleCompetitivePolicy from './019-battle-competitive-policy.js';
@@ -29,13 +30,21 @@ import * as idempotency from './013-idempotency.js';
 import * as feedKeysets from './014-feed-keysets.js';
 import * as auditSecurity from './015-audit-security.js';
 
-export const migrations = [existingIndexes, runtime, productionHardening, readiness, training, oauthState, trainingHardening, trainingPerformance, trainingExamWideCandidates, trainingLearnerStateMeta, questionBrowserSort, normalizedQuestionIndexes, idempotency, feedKeysets, auditSecurity, databaseRemediation, userHistory, defaultMockSlots, battleCompetitivePolicy, battleCoordinator, authEmailSecurity, emailLoginOtp, removeDemoMockSlots, mockCatalogMetadata, questionImportJobs, mockPyqOptimization, questionDeliveryOptimization, backfillQuestionUids];
+export const migrations = [existingIndexes, runtime, productionHardening, readiness, training, oauthState, trainingHardening, trainingPerformance, trainingExamWideCandidates, trainingLearnerStateMeta, questionBrowserSort, normalizedQuestionIndexes, idempotency, feedKeysets, auditSecurity, databaseRemediation, userHistory, defaultMockSlots, battleCompetitivePolicy, battleCoordinator, authEmailSecurity, emailLoginOtp, removeDemoMockSlots, mockCatalogMetadata, questionImportJobs, mockPyqOptimization, questionDeliveryOptimization, backfillQuestionUids, productionScaleIndexes];
+
+export function isRetiredIndexCreate(collectionName, key, options = {}) {
+  return (
+    questionDeliveryOptimization.isRetiredIndexCreate(collectionName, key, options)
+    || productionScaleIndexes.isRetiredIndexCreate(collectionName, key, options)
+  );
+}
+
 export async function assertMigrations(db) {
   const applied = await db.collection('schemaMigrations').find({ _id: { $in: migrations.map(m => m.id) }, completedAt: { $exists: true } }, { timeoutMS: 2000 }).toArray();
   if (applied.length !== migrations.length) throw new Error('Database migrations required: run npm run db:migrate before starting this release');
 }
 
-function wrapDbSkippingRetiredIndexes(db) {
+function wrapDbSkippingRetiredIndexes(db, { skip027 = false, skip029 = false } = {}) {
   return new Proxy(db, {
     get(target, prop, receiver) {
       if (prop === 'collection') {
@@ -45,7 +54,10 @@ function wrapDbSkippingRetiredIndexes(db) {
             get(colTarget, colProp, colReceiver) {
               if (colProp === 'createIndex') {
                 return (key, options, ...extra) => {
-                  if (questionDeliveryOptimization.isRetiredIndexCreate(name, key, options)) {
+                  if (
+                    (skip027 && questionDeliveryOptimization.isRetiredIndexCreate(name, key, options))
+                    || (skip029 && productionScaleIndexes.isRetiredIndexCreate(name, key, options))
+                  ) {
                     return Promise.resolve(options?.name || 'skipped_retired_index');
                   }
                   return colTarget.createIndex(key, options, ...extra);
@@ -75,17 +87,31 @@ export async function migrate(db, steps = migrations) {
   }
   try {
     const has027InRun = steps.some(step => step.id === questionDeliveryOptimization.id);
-    const has027Applied = has027InRun || Boolean(
-      await db.collection('schemaMigrations').findOne(
-        { _id: questionDeliveryOptimization.id, completedAt: { $exists: true } },
-        { projection: { _id: 1 } },
-      ),
-    );
-    const wrappedDb = has027Applied ? wrapDbSkippingRetiredIndexes(db) : db;
+    const has029InRun = steps.some(step => step.id === productionScaleIndexes.id);
+    const [applied027, applied029] = await Promise.all([
+      has027InRun
+        ? Promise.resolve(true)
+        : db.collection('schemaMigrations').findOne(
+            { _id: questionDeliveryOptimization.id, completedAt: { $exists: true } },
+            { projection: { _id: 1 } },
+          ),
+      has029InRun
+        ? Promise.resolve(true)
+        : db.collection('schemaMigrations').findOne(
+            { _id: productionScaleIndexes.id, completedAt: { $exists: true } },
+            { projection: { _id: 1 } },
+          ),
+    ]);
+    const has027Applied = Boolean(applied027);
+    const has029Applied = Boolean(applied029);
     for (const step of steps) {
       // Reconcile idempotent index definitions even when the version is recorded,
-      // skipping indexes retired by 027 so deploys never rebuild-and-drop them.
-      const stepDb = has027Applied && step.id !== questionDeliveryOptimization.id ? wrappedDb : db;
+      // skipping indexes retired by 027/029 so deploys never rebuild-and-drop them.
+      const skip027 = has027Applied && step.id !== questionDeliveryOptimization.id;
+      const skip029 = has029Applied && step.id !== productionScaleIndexes.id;
+      const stepDb = skip027 || skip029
+        ? wrapDbSkippingRetiredIndexes(db, { skip027, skip029 })
+        : db;
       await step.up(stepDb);
       await db.collection('schemaMigrations').updateOne({ _id: step.id }, { $set: { completedAt: new Date() } }, { upsert: true });
     }

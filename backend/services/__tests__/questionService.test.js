@@ -50,6 +50,7 @@ function createCursor(resources) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv('QUESTIONS_NORMALIZED_KEYS', 'false');
   invalidateQuestionCacheRevision();
   questionsQueryCache.clear();
   questionCountsCache.clear();

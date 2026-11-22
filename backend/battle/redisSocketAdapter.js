@@ -5,9 +5,13 @@ import { redisKey, reportRedisFailure } from '../config/redis.js';
 export async function prepareBattleRedisAdapter() {
   if (process.env.BATTLE_REDIS_ADAPTER !== 'true') return null;
   if (!process.env.REDIS_URL) throw new Error('BATTLE_REDIS_ADAPTER requires REDIS_URL');
+  const rawConnectTimeout = Number(process.env.REDIS_CONNECT_TIMEOUT_MS);
+  const connectTimeout = Number.isFinite(rawConnectTimeout) && rawConnectTimeout >= 250
+    ? Math.min(15_000, Math.floor(rawConnectTimeout))
+    : 3000;
   const client = createClient({
     url: process.env.REDIS_URL,
-    socket: { connectTimeout: 1000, reconnectStrategy: retries => Math.min(1000 * 2 ** retries, 5000) },
+    socket: { connectTimeout, reconnectStrategy: retries => Math.min(1000 * 2 ** retries, 5000) },
   });
   client.on('error', reportRedisFailure);
   try {

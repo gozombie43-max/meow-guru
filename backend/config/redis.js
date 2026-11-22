@@ -8,8 +8,9 @@ import { createRedisCircuit } from '../infrastructure/redisCircuit.js';
 import { encodeCacheValue, JSON_CACHE_MAX_BYTES, EJSON_CACHE_MAX_BYTES } from '../infrastructure/cacheEncoding.js';
 import { writeWithLease } from '../infrastructure/cacheLease.js';
 
-const DEFAULT_COMMANDS_QUEUE_MAX = 2048;
+const DEFAULT_COMMANDS_QUEUE_MAX = 4096;
 const DEFAULT_COMMAND_TIMEOUT_MS = 1000;
+const DEFAULT_CONNECT_TIMEOUT_MS = 3000;
 const DEFAULT_CONSECUTIVE_TIMEOUT_THRESHOLD = 3;
 const SERVER_INFO_CACHE_TTL_MS = 30_000;
 
@@ -25,6 +26,10 @@ function readBoundedInt(envName, fallback, min, max) {
 
 export function getRedisCommandsQueueMaxLength() {
   return readBoundedInt('REDIS_COMMANDS_QUEUE_MAX', DEFAULT_COMMANDS_QUEUE_MAX, 256, 65536);
+}
+
+export function getRedisConnectTimeoutMs() {
+  return readBoundedInt('REDIS_CONNECT_TIMEOUT_MS', DEFAULT_CONNECT_TIMEOUT_MS, 250, 15_000);
 }
 
 function getCommandTimeoutMs() {
@@ -167,6 +172,7 @@ function createRedisSlot({ role = 'cache', recordCircuitMetric = false } = {}) {
     client = null;
     rawClient = null;
 
+    const connectTimeoutMs = getRedisConnectTimeoutMs();
     let candidate;
     try {
       candidate = createClient({
@@ -174,7 +180,7 @@ function createRedisSlot({ role = 'cache', recordCircuitMetric = false } = {}) {
         disableOfflineQueue: true,
         commandsQueueMaxLength: getRedisCommandsQueueMaxLength(),
         commandOptions: { timeout: getCommandTimeoutMs() },
-        socket: { connectTimeout: 1000, reconnectStrategy: false },
+        socket: { connectTimeout: connectTimeoutMs, reconnectStrategy: false },
       });
     } catch {
       circuit.unavailable(); updateCircuitMetric();
@@ -182,7 +188,7 @@ function createRedisSlot({ role = 'cache', recordCircuitMetric = false } = {}) {
       return null;
     }
     candidate.on('error', () => {});
-    connecting = redisDeadline(() => candidate.connect(), candidate, { destroyOnTimeout: true }).then(() => {
+    connecting = redisDeadline(() => candidate.connect(), candidate, { destroyOnTimeout: true, timeoutMs: connectTimeoutMs }).then(() => {
       consecutiveTimeouts = 0;
       circuit.recovered(); updateCircuitMetric();
       rawClient = candidate;
@@ -293,6 +299,7 @@ export function getRedisCacheStats() {
   return {
     configured: Boolean(process.env.REDIS_URL),
     commandsQueueMaxLength: getRedisCommandsQueueMaxLength(),
+    connectTimeoutMs: getRedisConnectTimeoutMs(),
     commandTimeoutMs: getCommandTimeoutMs(),
     consecutiveTimeoutThreshold: getConsecutiveTimeoutThreshold(),
     recommendedEvictionPolicy: 'allkeys-lru',

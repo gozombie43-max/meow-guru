@@ -1,6 +1,6 @@
 import { readSeparatedHistory, mutateSeparatedHistory, analyticsFields } from './userHistoryRepository.js';
 // backend/repositories/userRepository.js
-import { getMongoDB, getUsersCollection, getStudyActivityDailyCollection, getQuestionsCollection } from '../config/mongodb.js';
+import { getMongoDB, getUsersCollection, getStudyActivityDailyCollection, getQuestionsCollection, withMongoTransaction } from '../config/mongodb.js';
 import { resolveQuestion } from '../services/questions/questionIdentity.js';
 
 export const findQuestionForBookmark = (questionId, context = {}) =>
@@ -11,17 +11,33 @@ export const getUser = async (id, projection) => {
   const selected = projection ? { ...projection, ...(include ? { historyStorageVersion: 1, id: 1 } : {}) } : { aiChats: 0, recentQuizzes: 0, bookmarkEntries: 0, failureMap: 0, masteryMap: 0, timePerQuestion: 0 };
   const user = await getUsersCollection().findOne({ id: String(id), type: { $ne: 'email_lock' } }, { projection: selected });
   if (!user || user.historyStorageVersion !== 1) return user;
+  const db = getMongoDB();
+  const tasks = [];
   for (const field of ['recentQuizzes', 'aiChats', 'bookmarkEntries']) {
     const fields = Object.keys(projection || {}).filter(key => projection[key] === 1 && (key === field || key.startsWith(`${field}.`)));
-    if (!fields.length) { delete user[field]; continue; }
-    const rows = await readSeparatedHistory(getMongoDB(), id, field);
-    user[field] = fields.includes(field) ? rows : rows.map(row => Object.fromEntries(fields.map(key => key.slice(field.length + 1)).filter(key => row[key] !== undefined).map(key => [key, row[key]])));
+    if (!fields.length) {
+      delete user[field];
+      continue;
+    }
+    tasks.push(
+      readSeparatedHistory(db, id, field).then((rows) => {
+        user[field] = fields.includes(field)
+          ? rows
+          : rows.map(row => Object.fromEntries(fields.map(key => key.slice(field.length + 1)).filter(key => row[key] !== undefined).map(key => [key, row[key]])));
+      }),
+    );
   }
   const requestedAnalytics = analyticsFields.filter(field => projection?.[field] === 1);
   if (requestedAnalytics.length) {
-    const data = await getMongoDB().collection('userAnalytics').findOne({ userId: String(id) }, { projection: Object.fromEntries(requestedAnalytics.map(field => [field, 1])) });
-    for (const field of requestedAnalytics) user[field] = data?.[field] || {};
+    tasks.push(
+      db.collection('userAnalytics')
+        .findOne({ userId: String(id) }, { projection: Object.fromEntries(requestedAnalytics.map(field => [field, 1])) })
+        .then((data) => {
+          for (const field of requestedAnalytics) user[field] = data?.[field] || {};
+        }),
+    );
   }
+  if (tasks.length) await Promise.all(tasks);
   return user;
 };
 
@@ -43,6 +59,84 @@ export const mutateUserList = async (id, field, mutate) => {
       [revisionField]: user[revisionField] === undefined ? { $exists: false } : revision },
     { $set: { [field]: value }, $inc: { [revisionField]: 1 } });
     if (result.matchedCount) return value;
+  }
+  throw Object.assign(new Error('History changed concurrently. Please retry.'), { statusCode: 409 });
+};
+
+export const mutateUserBookmarks = async (id, mutate) => {
+  const users = getUsersCollection();
+  const owner = await users.findOne(
+    { id: String(id), type: { $ne: 'email_lock' } },
+    { projection: { _id: 1, id: 1, historyStorageVersion: 1 } },
+  );
+  if (!owner) return null;
+  if (owner.historyStorageVersion === 1) {
+    return withMongoTransaction(async ({ db, session }) => {
+      const user = await db
+        .collection('users')
+        .findOne(
+          { id: String(id), historyStorageVersion: 1 },
+          { session, projection: { _id: 1, id: 1, bookmarkEntriesRevision: 1 } },
+        );
+      if (!user) throw Object.assign(new Error('History storage changed; retry'), { statusCode: 409 });
+      const before = await readSeparatedHistory(db, id, 'bookmarkEntries', session);
+      const bookmarkEntries = mutate(before).slice(0, 60);
+      const beforeById = new Map(before.map((row) => [row?.questionId, row]));
+      const bookmarksCol = db.collection('userBookmarks');
+      for (const entry of bookmarkEntries) {
+        const key = entry?.questionId;
+        if (typeof key !== 'string' || !key) {
+          throw Object.assign(new Error('History identity is required'), { statusCode: 400 });
+        }
+        if (JSON.stringify(entry) !== JSON.stringify(beforeById.get(key))) {
+          await bookmarksCol.replaceOne(
+            { userId: String(id), questionId: key },
+            { ...entry, userId: String(id) },
+            { session, upsert: true },
+          );
+        }
+      }
+      const retained = bookmarkEntries.map((row) => row?.questionId);
+      await bookmarksCol.deleteMany(
+        { userId: String(id), questionId: { $nin: retained } },
+        { session },
+      );
+      const bookmarks = bookmarkEntries.map((e) => e.questionId);
+      await db
+        .collection('users')
+        .updateOne(
+          { _id: user._id, historyStorageVersion: 1 },
+          { $set: { bookmarks }, $inc: { bookmarkEntriesRevision: 1 } },
+          { session },
+        );
+      return { bookmarks, bookmarkEntries };
+    });
+  }
+  const revisionField = 'bookmarkEntriesRevision';
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const user = await getUser(id, { bookmarkEntries: 1, [revisionField]: 1 });
+    if (!user) return null;
+    if (user.historyStorageVersion === 1) {
+      return mutateUserBookmarks(id, mutate);
+    }
+    const bookmarkEntries = mutate(Array.isArray(user.bookmarkEntries) ? user.bookmarkEntries : []);
+    const bookmarks = bookmarkEntries.map((e) => e.questionId);
+    const revision = user[revisionField] ?? 0;
+    const result = await users.updateOne(
+      {
+        id: String(id),
+        type: { $ne: 'email_lock' },
+        historyStorageVersion: { $ne: 1 },
+        [revisionField]: user[revisionField] === undefined ? { $exists: false } : revision,
+      },
+      {
+        $set: { bookmarkEntries, bookmarks },
+        $inc: { [revisionField]: 1 },
+      },
+    );
+    if (result.matchedCount) {
+      return { bookmarks, bookmarkEntries };
+    }
   }
   throw Object.assign(new Error('History changed concurrently. Please retry.'), { statusCode: 409 });
 };

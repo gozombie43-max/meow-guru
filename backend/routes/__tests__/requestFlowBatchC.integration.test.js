@@ -6,6 +6,7 @@ import { once } from 'node:events';
 import { connectMongoDB, disconnectMongoDB } from '../../config/mongodb.js';
 import { clearSharedLocalCaches } from '../../infrastructure/tieredCache.js';
 import { fetchQuestionsSession } from '../../services/questions/questionSessionService.js';
+import { buildNormalizedQuestionFields } from '../../services/questions/questionNormalizer.js';
 import { trainingDashboardData } from '../../repositories/trainingRepository.js';
 import { buildPaper } from '../../services/mock/mockPaperService.js';
 import progressRouter from '../progress.routes.js';
@@ -30,7 +31,8 @@ afterAll(async () => { await new Promise(resolve => server.close(resolve)); awai
 const deferred = () => { let release; const promise = new Promise(resolve => { release = resolve; }); return { promise, release }; };
 
 it('counts a filtered session before its page resolves and leaves totals absent when not requested', async () => {
-  await db.collection('questions').insertOne({ id: 'q1', topic: 'algebra', exam: 'SSC CGL', question: '2+2?', options: ['4'], correctAnswer: 0 });
+  const rawQuestion = { id: 'q1', topic: 'algebra', exam: 'SSC CGL', question: '2+2?', options: ['4'], correctAnswer: 0 };
+  await db.collection('questions').insertOne({ ...rawQuestion, ...buildNormalizedQuestionFields(rawQuestion) });
   const gate = deferred(), original = Collection.prototype.find;
   vi.spyOn(Collection.prototype, 'find').mockImplementation(function (...args) {
     const cursor = original.apply(this, args);

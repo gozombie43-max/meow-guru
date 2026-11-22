@@ -2,15 +2,39 @@ import { runtimeLog } from '../infrastructure/runtimeLog.js';
 // routes/notes.routes.js
 
 import express from "express";
+import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
 
 import { listNotePage, listNotes, findNoteById, insertNote, patchNoteDocument, deleteNoteById } from '../repositories/notesRepository.js';
 
 import adminAuth from "../middleware/auth.js";
+import { validateBody, validateParams } from "../middleware/validation.js";
 import { noteImageKeys } from '../services/notes/imageKeys.js';
 import { retainNoteImages, scheduleNoteImageCleanup } from '../repositories/noteImageRepository.js';
 
 const router = express.Router();
+
+const noteIdParamsSchema = z.object({
+  id: z.string().trim().min(1).max(128),
+});
+
+const noteBodySchema = z.object({
+  title: z.string().max(500).optional(),
+  topic: z.string().max(200).optional(),
+  type: z.string().max(100).optional(),
+  body: z.string().max(2_000_000).optional(),
+  content: z.string().max(2_000_000).optional(),
+  summary: z.string().max(10_000).optional(),
+  thumbnail: z.string().max(2_048).nullable().optional(),
+  tags: z.array(z.string().max(100)).max(50).optional(),
+  subject: z.string().max(200).optional(),
+  chapter: z.string().max(200).optional(),
+  folder: z.string().max(200).optional(),
+  status: z.string().max(60).optional(),
+  isPinned: z.boolean().optional(),
+  order: z.number().int().min(0).max(100_000).optional(),
+  examMode: z.string().max(40).optional(),
+});
 
 const ALLOWED_NOTE_FIELDS = new Set([
   "title",
@@ -144,7 +168,7 @@ router.get("/", async (req, res) => {
 // GET /api/notes/:id
 // ======================================================
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", validateParams(noteIdParamsSchema), async (req, res) => {
   try {
     const note =
       await findNoteById(req.params.id);
@@ -183,6 +207,7 @@ router.get("/:id", async (req, res) => {
 router.post(
   "/",
   adminAuth,
+  validateBody(noteBodySchema),
   async (req, res) => {
     try {
       const now =
@@ -238,6 +263,8 @@ router.post(
 router.put(
   "/:id",
   adminAuth,
+  validateParams(noteIdParamsSchema),
+  validateBody(noteBodySchema),
   async (req, res) => {
     try {
       const id =
@@ -311,6 +338,7 @@ router.put(
 router.delete(
   "/:id",
   adminAuth,
+  validateParams(noteIdParamsSchema),
   async (req, res) => {
     try {
       const existing = await findNoteById(req.params.id);

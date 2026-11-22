@@ -32,6 +32,7 @@ beforeEach(async () => {
   mocks.send.mockReset().mockResolvedValue({ id: 'local-test-email' });
   await db.collection('users').deleteMany({});
   await db.collection('authSessions').deleteMany({});
+  await db.collection('rateLimits').deleteMany({});
   await db.collection('users').insertOne({ id: 'reset-user', name: 'Alice', role: 'student', authProvider: 'local',
     email: 'alice@example.test', emailNormalized: 'alice@example.test', emailVerified: false, passwordHash: oldPasswordHash });
 });

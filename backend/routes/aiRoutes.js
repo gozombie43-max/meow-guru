@@ -45,6 +45,10 @@ const tutorUpload = multer({
   limits: { fileSize: MAX_TUTOR_ATTACHMENT_BYTES, files: 1, fields: 4, parts: 5, fieldSize: 200000 },
 });
 
+const tutorChatIdempotency = idempotency('ai.tutor.chat');
+const optionalTextTutorIdempotency = (req, res, next) =>
+  req.is('multipart/form-data') ? next() : tutorChatIdempotency(req, res, next);
+
 function parseMaybeJSON(value, fallback) {
   if (value === undefined || value === null) return fallback;
   if (typeof value !== "string") return value;
@@ -68,7 +72,7 @@ function wakeTutorAttachmentWorker() {
     });
 }
 
-router.post('/diagram', async (req, res, next) => {
+router.post('/diagram', idempotency('ai.diagram'), async (req, res, next) => {
   const userId = String(req.user?.id || req.user?._id);
   const question = typeof req.body?.question === 'string' ? req.body.question.trim() : '';
   if (!question) return res.status(400).json({ error: 'Question text is required' });
@@ -142,7 +146,7 @@ Return a JSON array like this:
 });
 
 // ── 2. Generate Explanation for a Question ────────────
-router.post("/explain", async (req, res) => {
+router.post("/explain", idempotency('ai.explain'), async (req, res) => {
   const userId = String(req.user?.id || req.user?._id);
 
   const rawQuestion = req.body?.question;
@@ -214,7 +218,7 @@ Give a clear step-by-step explanation. Keep it concise.`;
 });
 
 // ── 2b. Tutor chat for submitted quiz questions ───────
-router.post('/tutor-chat', (req, res, next) => {
+router.post('/tutor-chat', optionalTextTutorIdempotency, (req, res, next) => {
   tutorUpload.single('attachment')(req, res, error => {
     if (!error) return next();
     return res.status(error.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({ error: 'Provide one JPG, PNG, WebP image or PDF, up to 8 MB.' });

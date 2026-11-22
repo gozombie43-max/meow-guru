@@ -4,7 +4,7 @@ import { normalizeError } from '@/shared/api/error';
 import type {} from '@/shared/api/request';
 import { correlationHeaders } from '@/shared/api/correlation';
 import { API_BASE } from '@/lib/api-base';
-import { consumeEarlyRefresh } from './early-session';
+import { consumeEarlyRefresh, setSessionHint } from './early-session';
 
 export const AUTH_TOKEN_CHANGED_EVENT = 'auth-token-changed';
 const LEGACY_AUTH_STORAGE_KEYS = ['token', 'refreshToken'] as const;
@@ -19,6 +19,7 @@ export const clearLegacyAuthStorage = () => {
 
 export const updateAccessToken = (token: string | null) => {
   accessToken = token;
+  setSessionHint(Boolean(token));
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(AUTH_TOKEN_CHANGED_EVENT, { detail: token }));
   }

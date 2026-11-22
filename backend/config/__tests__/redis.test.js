@@ -41,7 +41,7 @@ it('backs off connection failures without issuing a new connect on each cache op
 it('bounds a stalled connection handshake and releases all coalesced callers', async () => {
   raw.connect.mockImplementation(() => new Promise(() => {}));
   const callers = [api.getRedisClient(), api.getRedisClient(), api.getRedisClient()];
-  await vi.advanceTimersByTimeAsync(1000);
+  await vi.advanceTimersByTimeAsync(3000);
   expect(await Promise.all(callers)).toEqual([null, null, null]);
   expect(raw.destroy).toHaveBeenCalled();
   expect(api.redisHealth()).toBe('degraded');
@@ -128,7 +128,7 @@ it('keeps the access-code HTTP route available when the shared limiter waits for
   }
 });
 
-it('raises commandsQueueMaxLength to 2048 by default, isolates the rate-limit client, and reports non-blocking cache stats', async () => {
+it('raises commandsQueueMaxLength to 4096 and connectTimeout to 3000ms by default, isolates the rate-limit client, and reports non-blocking cache stats', async () => {
   const rateRaw = {
     isReady: true, isOpen: true, on: vi.fn(), connect: vi.fn(async () => {}), ping: vi.fn(async () => 'PONG'),
     eval: vi.fn(async () => [1, 8000, Date.now() + 8000]), info: vi.fn(async () => 'used_memory:1024\r\nmaxmemory_policy:allkeys-lru\r\nkeyspace_hits:90\r\nkeyspace_misses:10'),
@@ -140,8 +140,10 @@ it('raises commandsQueueMaxLength to 2048 by default, isolates the rate-limit cl
   expect(cacheClient).not.toBeNull();
   expect(rateClient).not.toBeNull();
   expect(mock.createClient).toHaveBeenCalledTimes(2);
-  expect(mock.createClient.mock.calls[0][0].commandsQueueMaxLength).toBe(2048);
-  expect(mock.createClient.mock.calls[1][0].commandsQueueMaxLength).toBe(2048);
+  expect(mock.createClient.mock.calls[0][0].commandsQueueMaxLength).toBe(4096);
+  expect(mock.createClient.mock.calls[0][0].socket.connectTimeout).toBe(3000);
+  expect(mock.createClient.mock.calls[1][0].commandsQueueMaxLength).toBe(4096);
+  expect(mock.createClient.mock.calls[1][0].socket.connectTimeout).toBe(3000);
 
   // Tripping the rate-limit circuit must NOT open or degrade the cache-read client.
   rateRaw.eval.mockRejectedValue(new Error('rate-limit burst failure'));
@@ -155,7 +157,8 @@ it('raises commandsQueueMaxLength to 2048 by default, isolates the rate-limit cl
   const stats = api.getRedisCacheStats();
   expect(stats).toMatchObject({
     configured: true,
-    commandsQueueMaxLength: 2048,
+    commandsQueueMaxLength: 4096,
+    connectTimeoutMs: 3000,
     recommendedEvictionPolicy: 'allkeys-lru',
     cache: { health: 'healthy', circuit: 'closed' },
     rateLimit: { health: 'degraded', circuit: 'open' },
@@ -192,16 +195,19 @@ it('keeps explicit namespace identity stable across equivalent Mongo URI forms',
 
 it('falls back to defaults (not min bounds) when numeric Redis env vars are empty or whitespace', async () => {
   vi.stubEnv('REDIS_COMMANDS_QUEUE_MAX', '');
+  vi.stubEnv('REDIS_CONNECT_TIMEOUT_MS', '   ');
   vi.stubEnv('REDIS_COMMAND_TIMEOUT_MS', '   ');
   vi.stubEnv('REDIS_CONSECUTIVE_TIMEOUT_THRESHOLD', '');
 
   await api.getRedisClient();
   expect(mock.createClient).toHaveBeenCalledWith(expect.objectContaining({
-    commandsQueueMaxLength: 2048,
+    commandsQueueMaxLength: 4096,
     commandOptions: { timeout: 1000 },
+    socket: expect.objectContaining({ connectTimeout: 3000 }),
   }));
   expect(api.getRedisCacheStats()).toMatchObject({
-    commandsQueueMaxLength: 2048,
+    commandsQueueMaxLength: 4096,
+    connectTimeoutMs: 3000,
     commandTimeoutMs: 1000,
     consecutiveTimeoutThreshold: 3,
   });

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const roomsCollection = { find: vi.fn() };
+const roomsCollection = { find: vi.fn(), findOne: vi.fn(), findOneAndUpdate: vi.fn() };
 const resolveExpiredQuestion = vi.fn();
 const advanceQuestion = vi.fn();
 const getScores = vi.fn();
@@ -8,9 +8,21 @@ const settleBattleResult = vi.fn();
 const finishBattle = vi.fn();
 const emit = vi.fn();
 const io = { to: vi.fn(() => ({ emit })) };
+const mockGetRedisClient = vi.fn().mockResolvedValue(null);
 
 vi.mock("../../config/mongodb.js", () => ({
   getBattleRoomsCollection: () => roomsCollection,
+}));
+vi.mock("../../config/redis.js", () => ({
+  getRedisClient: (...args) => mockGetRedisClient(...args),
+  redisKey: (key) => `test:${key}`,
+  reportRedisFailure: vi.fn(),
+}));
+vi.mock("../../auth/jwt.js", () => ({
+  signBattleRematchToken: () => "mock-rematch-token",
+}));
+vi.mock("../../services/pushNotificationService.js", () => ({
+  sendPushToUser: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("../roomManager.js", () => ({
   resolveExpiredQuestion: (...args) => resolveExpiredQuestion(...args),
@@ -18,6 +30,7 @@ vi.mock("../roomManager.js", () => ({
   getScores: (...args) => getScores(...args),
   buildBattleReveal: room => ({ questionIndex: room.currentIndex, correctIndex: 0, selections: {}, scores: {}, revealEndsAt: null }),
   buildPublicQuestion: room => ({ questionIndex: room.currentIndex, deadline: room.questionDeadline }),
+  buildBattleReview: () => ({ summary: "mock-review" }),
   getRoom: vi.fn(), claimBattleReveal: vi.fn(),
 }));
 vi.mock("../battleRealtime.js", () => ({ getBattleRealtimeServer: () => io }));
@@ -26,6 +39,7 @@ vi.mock("../battleResultService.js", () => ({ settleBattleResult: (...args) => s
 
 const { runBattleQuestionDeadlineWorkerOnce } = await import("../../services/battleQuestionDeadlineWorker.js");
 const { runBattleResultWorkerOnce } = await import("../../services/battleResultWorker.js");
+const { runBattlePresenceWorkerOnce } = await import("../../services/battlePresenceWorker.js");
 
 function cursor(items) {
   return {
@@ -38,6 +52,7 @@ function cursor(items) {
 describe("Battle recovery workers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetRedisClient.mockResolvedValue(null);
     // The reveal path compares resolution and poll timestamps exactly.
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-09-26T00:00:00.000Z"));
@@ -105,5 +120,129 @@ describe("Battle recovery workers", () => {
     await runBattleQuestionDeadlineWorkerOnce();
 
     expect(finishBattle).toHaveBeenCalledWith(io, finished);
+  });
+
+  it("skips worker tick when another instance holds the Redis distributed lease", async () => {
+    const redisMock = {
+      set: vi.fn().mockResolvedValue(null),
+      eval: vi.fn(),
+    };
+    mockGetRedisClient.mockResolvedValue(redisMock);
+
+    await runBattleQuestionDeadlineWorkerOnce();
+    await runBattleResultWorkerOnce();
+    await runBattlePresenceWorkerOnce();
+
+    expect(redisMock.set).toHaveBeenCalledTimes(3);
+    expect(roomsCollection.find).not.toHaveBeenCalled();
+  });
+
+  it("drains multiple batches (>100 rooms) in a single tick up to the batch ceiling", async () => {
+    const firstBatch = Array.from({ length: 100 }, (_, idx) => ({
+      code: `R${1000 + idx}`,
+      status: "finished",
+    }));
+    const secondBatch = Array.from({ length: 25 }, (_, idx) => ({
+      code: `R${2000 + idx}`,
+      status: "finished",
+    }));
+    roomsCollection.find
+      .mockReturnValueOnce(cursor(firstBatch))
+      .mockReturnValueOnce(cursor(secondBatch));
+    settleBattleResult.mockResolvedValue({ alreadyRecorded: false });
+
+    await runBattleResultWorkerOnce();
+
+    expect(roomsCollection.find).toHaveBeenCalledTimes(2);
+    expect(settleBattleResult).toHaveBeenCalledTimes(125);
+  });
+
+  it("emits game:end to user:<userId> with full rating and matchStats parity on forfeit", async () => {
+    const now = new Date();
+    const expiredDeadline = new Date(now.getTime() - 5_000);
+    const activeRoom = {
+      _id: "room-forfeit-1",
+      code: "7777",
+      status: "active",
+      subject: "Quant",
+      topic: "Percentages",
+      questionCount: 5,
+      updatedAt: new Date(now.getTime() - 10_000),
+      players: [
+        { userId: "u-winner", name: "Winner", score: 20, connected: true, answered: true, socketId: "sock-1" },
+        { userId: "u-loser", name: "Loser", score: 10, connected: false, reconnectDeadline: expiredDeadline, socketId: "sock-2" },
+      ],
+    };
+    const finishedRoom = {
+      ...activeRoom,
+      status: "finished",
+      finishReason: "forfeit",
+      winnerUserId: "u-winner",
+      loserUserId: "u-loser",
+    };
+
+    roomsCollection.find.mockReturnValueOnce(cursor([activeRoom]));
+    roomsCollection.findOne.mockResolvedValueOnce(activeRoom);
+    roomsCollection.findOneAndUpdate.mockResolvedValueOnce(finishedRoom);
+    settleBattleResult.mockResolvedValueOnce({
+      match: {
+        rated: true,
+        players: [
+          {
+            userId: "u-winner",
+            ratingBefore: 1200,
+            ratingAfter: 1216,
+            ratingDelta: 16,
+            seasonRatingBefore: 1100,
+            seasonRatingAfter: 1118,
+            seasonRatingDelta: 18,
+            seasonTierBefore: "Silver",
+            seasonTierAfter: "Gold",
+            answerLog: [{ correct: true, timedOut: false, responseTimeMs: 4200 }],
+          },
+          {
+            userId: "u-loser",
+            ratingBefore: 1200,
+            ratingAfter: 1184,
+            ratingDelta: -16,
+            seasonRatingBefore: 1100,
+            seasonRatingAfter: 1082,
+            seasonRatingDelta: -18,
+            seasonTierBefore: "Silver",
+            seasonTierAfter: "Silver",
+            answerLog: [{ correct: false, timedOut: true, responseTimeMs: null }],
+          },
+        ],
+      },
+    });
+
+    await runBattlePresenceWorkerOnce();
+
+    expect(io.to).toHaveBeenCalledWith("user:u-winner");
+    expect(io.to).toHaveBeenCalledWith("user:u-loser");
+    expect(emit).toHaveBeenCalledWith(
+      "game:end",
+      expect.objectContaining({
+        finishReason: "forfeit",
+        winnerUserId: "u-winner",
+        loserUserId: "u-loser",
+        rematchToken: "mock-rematch-token",
+        matchStats: {
+          me: { correct: 1, total: 1, accuracy: 100, averageResponseMs: 4200, timedOut: 0 },
+          opponent: { correct: 0, total: 1, accuracy: 0, averageResponseMs: null, timedOut: 1 },
+        },
+        rating: {
+          lifetime: { before: 1200, after: 1216, delta: 16 },
+          season: {
+            before: 1100,
+            after: 1118,
+            delta: 18,
+            tierBefore: "Silver",
+            tierAfter: "Gold",
+          },
+        },
+        review: { summary: "mock-review" },
+      }),
+    );
   });
 });

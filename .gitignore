@@ -49,3 +49,7 @@ yarn-error.log*
 # Visual baseline screenshots (regenerate locally with Playwright; do not commit)
 design-audit/baseline-screenshots/
 design-audit/baseline-screenshots-light/
+
+# k6 load-test outputs
+load-tests/k6/reports/
+load-tests/k6/results-*.json

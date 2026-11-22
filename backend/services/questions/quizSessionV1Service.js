@@ -4,13 +4,16 @@ import { quizCorrectIndex } from '@meow/contracts/questions';
 import { normalizeCreateQuizSessionInput } from '../../../contracts/quiz-session.js';
 import { getQuestionsCollection } from '../../config/mongodb.js';
 import {
+  cachedPracticeCount,
   cachedQuestionAnswerKey,
-  cachedQuestionById,
+  cachedQuestionAnswerKeysBatch,
+  cachedQuestionsByIds,
   cachedQuizSession,
   cachedTopicPool,
   getQuestionRevision,
   invalidateQuizSessionCache,
   isNormalizedKeysEnabled,
+  peekFreshQuizSession,
 } from './questionCache.js';
 import {
   normalizeFilterKey,
@@ -74,8 +77,15 @@ function fail(message, statusCode, code) {
   return Object.assign(new Error(message), { statusCode, ...(code ? { code } : {}) });
 }
 
-function getCursorSecret() {
-  return process.env.QUIZ_CURSOR_SECRET || process.env.JWT_SECRET || 'meow-quiz-session-cursor-v1';
+const EPHEMERAL_DEV_CURSOR_SECRET = randomBytes(32).toString('hex');
+
+export function getCursorSecret() {
+  const configured = (process.env.QUIZ_CURSOR_SECRET || process.env.JWT_SECRET || '').trim();
+  if (configured) return configured;
+  if (process.env.NODE_ENV === 'production') {
+    throw fail('QUIZ_CURSOR_SECRET or JWT_SECRET must be configured in production', 500, 'CURSOR_SECRET_MISSING');
+  }
+  return EPHEMERAL_DEV_CURSOR_SECRET;
 }
 
 function signSessionCursor(sessionId, payload) {
@@ -215,24 +225,42 @@ function toSafeV1QuestionDTO(doc) {
   return dto;
 }
 
-function buildFilterConditions(filters = {}, { useNormalizedKeys = isNormalizedKeysEnabled(), mode = 'practice' } = {}) {
+function isUnnormalizedFallbackAllowed() {
+  return process.env.QUESTIONS_ALLOW_UNNORMALIZED_FALLBACK === 'true';
+}
+
+export function buildFilterConditions(
+  filters = {},
+  {
+    useNormalizedKeys = isNormalizedKeysEnabled(),
+    allowUnnormalizedFallback = isUnnormalizedFallbackAllowed(),
+    mode = 'practice',
+  } = {},
+) {
   const conditions = [];
+  const exactNormalized = useNormalizedKeys && !allowUnnormalizedFallback;
 
   if (filters.examMode) {
-    conditions.push(questionExamModeCondition(filters.examMode));
+    conditions.push(questionExamModeCondition(filters.examMode, { useNormalizedKeys: exactNormalized }));
   }
 
   const gaGroupSlug = filters.topic ? resolveGeneralAwarenessTopicGroupSlug(filters.topic) : null;
   const isGaQuery = Boolean(gaGroupSlug) || normalizeSearchKey(filters.subject) === 'generalawareness';
 
   if (filters.topic) {
-    const gaTopicCondition = gaGroupSlug ? buildGeneralAwarenessTopicCondition(gaGroupSlug, useNormalizedKeys) : null;
+    const gaTopicCondition = gaGroupSlug
+      ? buildGeneralAwarenessTopicCondition(gaGroupSlug, useNormalizedKeys, exactNormalized ? { exactKeys: true } : {})
+      : null;
     if (gaTopicCondition) {
       conditions.push(gaTopicCondition);
     } else {
       const normalizedTopic = normalizeSearchKey(filters.topic);
       const isSynAnt = normalizedTopic === 'synonymsantonyms' || normalizedTopic === 'antosynopyq';
-      if (useNormalizedKeys) {
+      if (exactNormalized) {
+        conditions.push({
+          topicKey: isSynAnt ? { $in: ['synonymsantonyms', 'antosynopyq'] } : normalizedTopic,
+        });
+      } else if (useNormalizedKeys) {
         conditions.push({
           $or: [
             { topicKey: isSynAnt ? { $in: ['synonymsantonyms', 'antosynopyq'] } : normalizedTopic },
@@ -252,45 +280,57 @@ function buildFilterConditions(filters = {}, { useNormalizedKeys = isNormalizedK
 
   if (filters.subject && (!filters.topic || normalizeSearchKey(filters.subject) === 'iitjamphysics')) {
     const subKey = normalizeSearchKey(filters.subject);
-    if (useNormalizedKeys) {
-      conditions.push({
-        $or: [
-          { subjectKey: subKey },
-          { subjectKey: { $exists: false }, subject: caseInsensitiveExact(filters.subject) },
-        ],
-      });
-    } else {
-      conditions.push({ subject: caseInsensitiveExact(filters.subject) });
-    }
+    conditions.push(
+      exactNormalized
+        ? { subjectKey: subKey }
+        : useNormalizedKeys
+          ? {
+              $or: [
+                { subjectKey: subKey },
+                { subjectKey: { $exists: false }, subject: caseInsensitiveExact(filters.subject) },
+              ],
+            }
+          : { subject: caseInsensitiveExact(filters.subject) },
+    );
   }
 
   if (filters.chapter) {
-    const gaChapter = isGaQuery ? buildGeneralAwarenessChapterCondition(filters.chapter, useNormalizedKeys) : null;
+    const gaChapter = isGaQuery
+      ? buildGeneralAwarenessChapterCondition(filters.chapter, useNormalizedKeys, exactNormalized ? { exactKeys: true } : {})
+      : null;
     if (gaChapter) {
       conditions.push(gaChapter);
-    } else if (useNormalizedKeys) {
-      conditions.push({
-        $or: [
-          { chapterKey: normalizeFilterKey(filters.chapter) },
-          { chapterKey: { $exists: false }, chapter: caseInsensitiveExact(filters.chapter) },
-        ],
-      });
     } else {
-      conditions.push({ chapter: caseInsensitiveExact(filters.chapter) });
+      const chapterKey = normalizeFilterKey(filters.chapter);
+      conditions.push(
+        exactNormalized
+          ? { chapterKey }
+          : useNormalizedKeys
+            ? {
+                $or: [
+                  { chapterKey },
+                  { chapterKey: { $exists: false }, chapter: caseInsensitiveExact(filters.chapter) },
+                ],
+              }
+            : { chapter: caseInsensitiveExact(filters.chapter) },
+      );
     }
   }
 
   if (filters.exam) {
-    if (useNormalizedKeys) {
-      conditions.push({
-        $or: [
-          { examKey: normalizeFilterKey(filters.exam) },
-          { examKey: { $exists: false }, exam: caseInsensitiveExact(filters.exam) },
-        ],
-      });
-    } else {
-      conditions.push({ exam: caseInsensitiveExact(filters.exam) });
-    }
+    const examKey = normalizeFilterKey(filters.exam);
+    conditions.push(
+      exactNormalized
+        ? { examKey }
+        : useNormalizedKeys
+          ? {
+              $or: [
+                { examKey },
+                { examKey: { $exists: false }, exam: caseInsensitiveExact(filters.exam) },
+              ],
+            }
+          : { exam: caseInsensitiveExact(filters.exam) },
+    );
   }
 
   if (filters.tier) {
@@ -298,16 +338,19 @@ function buildFilterConditions(filters = {}, { useNormalizedKeys = isNormalizedK
   }
 
   if (filters.concept) {
-    if (useNormalizedKeys) {
-      conditions.push({
-        $or: [
-          { conceptKey: normalizeFilterKey(filters.concept) },
-          { conceptKey: { $exists: false }, concept: caseInsensitiveExact(filters.concept) },
-        ],
-      });
-    } else {
-      conditions.push({ concept: caseInsensitiveExact(filters.concept) });
-    }
+    const conceptKey = normalizeFilterKey(filters.concept);
+    conditions.push(
+      exactNormalized
+        ? { conceptKey }
+        : useNormalizedKeys
+          ? {
+              $or: [
+                { conceptKey },
+                { conceptKey: { $exists: false }, concept: caseInsensitiveExact(filters.concept) },
+              ],
+            }
+          : { concept: caseInsensitiveExact(filters.concept) },
+    );
   }
 
   if (filters.letter) {
@@ -325,29 +368,34 @@ function buildFilterConditions(filters = {}, { useNormalizedKeys = isNormalizedK
   }
 
   if (filters.difficulty && filters.difficulty !== 'mixed' && filters.difficulty !== 'all') {
+    const diffLower = String(filters.difficulty).trim().toLowerCase();
     conditions.push(
-      useNormalizedKeys
-        ? {
-            $or: [
-              { difficulty: String(filters.difficulty).toLowerCase() },
-              { difficulty: caseInsensitiveExact(filters.difficulty) },
-            ],
-          }
-        : { difficulty: caseInsensitiveExact(filters.difficulty) },
+      exactNormalized
+        ? { difficulty: diffLower }
+        : useNormalizedKeys
+          ? {
+              $or: [
+                { difficulty: diffLower },
+                { difficulty: caseInsensitiveExact(filters.difficulty) },
+              ],
+            }
+          : { difficulty: caseInsensitiveExact(filters.difficulty) },
     );
   }
 
   // Always exclude study-mode flashcard docs from quiz sessions.
-  if (useNormalizedKeys) {
-    conditions.push({
-      $or: [
-        { modeKey: { $exists: true, $ne: 'studyMode' } },
-        { modeKey: { $exists: false }, ...buildExcludeStudyModeCondition() },
-      ],
-    });
-  } else {
-    conditions.push(buildExcludeStudyModeCondition());
-  }
+  conditions.push(
+    exactNormalized
+      ? { modeKey: { $ne: 'studyMode' } }
+      : useNormalizedKeys
+        ? {
+            $or: [
+              { modeKey: { $exists: true, $ne: 'studyMode' } },
+              { modeKey: { $exists: false }, ...buildExcludeStudyModeCondition() },
+            ],
+          }
+        : buildExcludeStudyModeCondition(),
+  );
 
   // Keep `mode` referenced for callers passing mode-specific filtering extensions.
   void mode;
@@ -356,86 +404,82 @@ function buildFilterConditions(filters = {}, { useNormalizedKeys = isNormalizedK
 }
 
 /**
- * Hydrate a batch of questionUids using L1/Redis per-question cache (`cachedQuestionById`),
- * coalescing any cold misses into ONE single MongoDB `$in` query with strict `quizQuestionProjection`
+ * Hydrate a batch of questionUids using L1/Redis per-question MGET cache (`cachedQuestionsByIds`),
+ * fetching all cold misses in ONE single MongoDB `$in` query with strict `quizQuestionProjection`
  * (zero N+1 queries, zero answer-key over-fetching).
  */
 async function hydrateQuestionBatch(uids, legacyDocIdMap = null) {
   if (!Array.isArray(uids) || uids.length === 0) return [];
   const collection = getQuestionsCollection();
 
-  let queuedUids = new Set();
-  let batchPromise = null;
-
-  const flushBatch = () => {
-    const toFetch = [...queuedUids];
-    queuedUids = new Set();
-    batchPromise = null;
-    if (toFetch.length === 0) return Promise.resolve(new Map());
+  const cacheKeys = uids.map((uid) => `quiz-dto:${uid}`);
+  const cachedMap = await cachedQuestionsByIds(cacheKeys, async (missingKeys) => {
+    const toFetch = missingKeys.map((key) => key.slice('quiz-dto:'.length));
+    const stringUids = toFetch.filter((uid) => typeof uid === 'string' && uid.length > 0);
+    const map = new Map();
+    if (stringUids.length === 0) return map;
 
     const query = collection
-      .find({ questionUid: { $in: toFetch } })
+      .find({ questionUid: { $in: stringUids, $type: 'string' } })
       .project(quizQuestionProjection);
     if (typeof query.maxTimeMS === 'function') query.maxTimeMS(5000);
-    return query.toArray().then(async (docs) => {
-      const map = new Map();
-      for (const doc of docs) {
-        const dto = toSafeV1QuestionDTO(doc);
-        if (dto?.questionUid) map.set(dto.questionUid, dto);
-      }
-      if (legacyDocIdMap) {
-        const unresolved = toFetch.filter((uid) => !map.has(uid) && Object.hasOwn(legacyDocIdMap, uid));
-        if (unresolved.length > 0) {
-          const legacyDocs = await loadLegacyDocsByIdMap(
-            collection,
-            unresolved,
-            legacyDocIdMap,
-            quizQuestionProjection,
-          );
-          for (const [uid, doc] of legacyDocs) {
-            const dto = toSafeV1QuestionDTO(doc);
-            if (dto?.questionUid === uid) map.set(uid, dto);
-          }
-        }
-      }
-      return map;
-    });
-  };
-
-  const loadFromCoalescedBatch = (uid) => {
-    queuedUids.add(uid);
-    if (!batchPromise) {
-      batchPromise = new Promise((resolve, reject) => {
-        queueMicrotask(() => {
-          flushBatch().then(resolve, reject);
-        });
-      });
+    const docs = await query.toArray();
+    const fetchedByUid = new Map();
+    for (const doc of docs) {
+      const dto = toSafeV1QuestionDTO(doc);
+      if (dto?.questionUid) fetchedByUid.set(dto.questionUid, dto);
     }
-    return batchPromise.then((map) => map.get(uid) || null);
-  };
 
-  const hydrated = await Promise.all(
-    uids.map(async (uid) => {
-      const cached = await cachedQuestionById(`quiz-dto:${uid}`, () => loadFromCoalescedBatch(uid));
-      if (cached) return cached;
-      if (legacyDocIdMap && Object.hasOwn(legacyDocIdMap, uid)) {
+    if (legacyDocIdMap) {
+      const unresolved = toFetch.filter((uid) => !fetchedByUid.has(uid) && Object.hasOwn(legacyDocIdMap, uid));
+      if (unresolved.length > 0) {
         const legacyDocs = await loadLegacyDocsByIdMap(
           collection,
-          [uid],
+          unresolved,
           legacyDocIdMap,
           quizQuestionProjection,
         );
-        const doc = legacyDocs.get(uid);
-        if (doc) {
+        for (const [uid, doc] of legacyDocs) {
           const dto = toSafeV1QuestionDTO(doc);
-          if (dto?.questionUid === uid) return dto;
+          if (dto?.questionUid === uid) fetchedByUid.set(uid, dto);
         }
       }
-      return null;
-    }),
-  );
+    }
 
-  return hydrated.filter(Boolean);
+    for (const uid of toFetch) {
+      if (fetchedByUid.has(uid)) {
+        map.set(`quiz-dto:${uid}`, fetchedByUid.get(uid));
+      }
+    }
+    return map;
+  });
+
+  const missingLegacyUids = [];
+  if (legacyDocIdMap) {
+    for (const uid of uids) {
+      if (!cachedMap.get(`quiz-dto:${uid}`) && Object.hasOwn(legacyDocIdMap, uid)) {
+        missingLegacyUids.push(uid);
+      }
+    }
+  }
+
+  const legacyDtoByUid = new Map();
+  if (missingLegacyUids.length > 0) {
+    const legacyDocs = await loadLegacyDocsByIdMap(
+      collection,
+      missingLegacyUids,
+      legacyDocIdMap,
+      quizQuestionProjection,
+    );
+    for (const [uid, doc] of legacyDocs) {
+      const dto = toSafeV1QuestionDTO(doc);
+      if (dto?.questionUid === uid) legacyDtoByUid.set(uid, dto);
+    }
+  }
+
+  return uids
+    .map((uid) => cachedMap.get(`quiz-dto:${uid}`) || legacyDtoByUid.get(uid) || null)
+    .filter(Boolean);
 }
 
 const RING_SCAN_PROJECTION = Object.freeze({
@@ -663,7 +707,7 @@ export async function createQuizSession(userId, rawBody) {
 
     const [slice, counted] = await Promise.all([
       fetchOrderedRingSlice(baseFilter, { pivot, count: requestedBatch, cursorState: null }),
-      collection.countDocuments(baseFilter, { maxTimeMS: 5000 }),
+      cachedPracticeCount(filters, () => collection.countDocuments(baseFilter, { maxTimeMS: 5000 })),
     ]);
 
     totalCount = maxQuestions !== null ? Math.min(counted, maxQuestions) : counted;
@@ -805,7 +849,6 @@ export async function createQuizSession(userId, rawBody) {
   };
 
   await insertQuizSession(sessionDoc);
-  await invalidateQuizSessionCache(sessionId);
 
   const response = {
     sessionId,
@@ -1053,21 +1096,16 @@ async function loadServerAnswerKey(questionUid, { legacyDocId = null } = {}) {
 }
 
 /**
- * Batch-load server-only answer keys for post-submit review: hits L1/Redis via
- * `cachedQuestionAnswerKey` and coalesces all cold misses into ONE single MongoDB `$in` query.
+ * Batch-load server-only answer keys for post-submit review: hits L1/Redis MGET via
+ * `cachedQuestionAnswerKeysBatch` and loads all cold misses in ONE single MongoDB `$in` query.
  */
 async function loadServerAnswerKeysBatch(uids, legacyDocIdMap = null) {
   if (!Array.isArray(uids) || uids.length === 0) return [];
   const collection = getQuestionsCollection();
 
-  let queuedUids = new Set();
-  let batchPromise = null;
-
-  const flushBatch = () => {
-    const toFetch = [...queuedUids];
-    queuedUids = new Set();
-    batchPromise = null;
-    if (toFetch.length === 0) return Promise.resolve(new Map());
+  const cachedMap = await cachedQuestionAnswerKeysBatch(uids, async (toFetch) => {
+    const map = new Map();
+    if (toFetch.length === 0) return map;
 
     let query = collection
       .find({
@@ -1078,33 +1116,15 @@ async function loadServerAnswerKeysBatch(uids, legacyDocIdMap = null) {
       })
       .project(ANSWER_KEY_PROJECTION);
     if (typeof query.maxTimeMS === 'function') query = query.maxTimeMS(5000);
-    return query.toArray().then((docs) => {
-      const map = new Map();
-      for (const doc of docs) {
-        const formatted = formatAnswerKeyDoc(doc);
-        if (formatted?.questionUid) map.set(formatted.questionUid, formatted);
-      }
-      return map;
-    });
-  };
-
-  const loadFromCoalescedBatch = (uid) => {
-    queuedUids.add(uid);
-    if (!batchPromise) {
-      batchPromise = new Promise((resolve, reject) => {
-        queueMicrotask(() => {
-          flushBatch().then(resolve, reject);
-        });
-      });
+    const docs = await query.toArray();
+    for (const doc of docs) {
+      const formatted = formatAnswerKeyDoc(doc);
+      if (formatted?.questionUid) map.set(formatted.questionUid, formatted);
     }
-    return batchPromise.then((map) => map.get(uid) || null);
-  };
+    return map;
+  });
 
-  const results = await Promise.all(
-    uids.map((uid) =>
-      cachedQuestionAnswerKey(uid, () => loadFromCoalescedBatch(uid)),
-    ),
-  );
+  const results = uids.map((uid) => cachedMap.get(uid) || null);
 
   if (legacyDocIdMap && typeof legacyDocIdMap === 'object') {
     const missingEntries = [];
@@ -1214,7 +1234,18 @@ export async function submitQuizSessionAnswer(sessionId, userId, body, idempoten
   const now = new Date();
   // Verify session existence, ownership, active status, deadline, and membership BEFORE
   // loading any question answer key (prevents cross-user / bogus-session existence oracles).
-  const precheckSession = await findOwnedQuizSession(sessionId, userId);
+  const cachedPrecheck = peekFreshQuizSession(sessionId);
+  let precheckSession;
+  if (cachedPrecheck) {
+    if (String(cachedPrecheck.userId) !== String(userId)) {
+      throw fail('You do not have access to this quiz session', 403, 'FORBIDDEN_SESSION');
+    }
+    precheckSession = cachedPrecheck;
+  } else {
+    precheckSession = await findOwnedQuizSession(sessionId, userId, {
+      projection: { _id: 0, userId: 1, status: 1, deadlineAt: 1, orderedQuestionUids: 1, legacyQuestionDocIds: 1 },
+    });
+  }
   if (!precheckSession) throw fail('Quiz session not found', 404, 'SESSION_NOT_FOUND');
   if (precheckSession.status !== 'in_progress') {
     throw fail('Quiz session is already completed', 409, 'SESSION_NOT_ACTIVE');

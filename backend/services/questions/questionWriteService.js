@@ -247,7 +247,7 @@ async function resolveQuestionsBatch(collection, uniqueIds, examMode, context = 
   };
 
   if (uidIds.length > 0) {
-    const uidFilter = scopedQuestionFilter({ questionUid: { $in: uidIds } }, examMode);
+    const uidFilter = scopedQuestionFilter({ questionUid: { $in: uidIds, $type: 'string' } }, examMode);
     const uidRows = await readBatch(uidFilter, uidIds.length + 1);
     for (const row of uidRows) {
       if (row?._id !== undefined) resolvedMap.set(String(row._id), row._id);

@@ -89,14 +89,18 @@ export async function getUsers(req, res) {
     // Build filter
     const filter = { type: { $ne: 'email_lock' } };
 
-    const searchStr = typeof search === 'string' ? search.trim() : '';
+    const searchStr = typeof search === 'string' ? search.trim().slice(0, 100) : '';
     if (searchStr) {
-      const escaped = escapeRegex(searchStr);
-      filter.$or = [
-        { name: { $regex: escaped, $options: 'i' } },
-        { email: { $regex: escaped, $options: 'i' } },
-        { id: { $regex: escaped, $options: 'i' } },
-      ];
+      if (/^(?:usr_|u_|user_|[0-9a-f]{24}|[0-9a-f-]{36})/i.test(searchStr)) {
+        const anchoredId = new RegExp(`^${escapeRegex(searchStr)}`);
+        const anchoredEmail = new RegExp(`^${escapeRegex(searchStr.toLowerCase())}`);
+        filter.$or = [
+          { id: anchoredId },
+          { email: anchoredEmail },
+        ];
+      } else {
+        filter.$text = { $search: searchStr };
+      }
     }
 
     if (typeof status === 'string' && ['active', 'suspended', 'banned'].includes(status)) {

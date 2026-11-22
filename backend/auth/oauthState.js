@@ -1,9 +1,10 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { saveOAuthState, consumeOAuthState } from '../repositories/oauthStateRepository.js';
+import { isProductionCookieEnv } from './requestOrigin.js';
 
 const cookieName = 'oauthState';
 const ttl = 10 * 60 * 1000;
-const options = () => ({ httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/' });
+const options = () => ({ httpOnly: true, secure: isProductionCookieEnv(), sameSite: 'lax', path: '/' });
 const hash = value => createHash('sha256').update(value).digest('hex');
 
 // Passport's custom state store works without express-session and across instances.

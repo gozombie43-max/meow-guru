@@ -155,3 +155,68 @@ it('keeps reset credentials out of authentication projections', async () => {
   expect(user).not.toHaveProperty('passwordResetTokenHash');
   expect(user).not.toHaveProperty('passwordResetExpiresAt');
 });
+
+it('supports both canonical (accountRecord: true + emailNormalized) and legacy fallback (no accountRecord) paths while ignoring email_lock decoys', async () => {
+  await getUsersCollection().insertMany([
+    {
+      id: 'email-lock-decoy',
+      type: 'email_lock',
+      email: 'canon@example.test',
+      emailNormalized: 'canon@example.test',
+    },
+    {
+      id: 'canon-user',
+      accountRecord: true,
+      authProvider: 'local',
+      name: 'Canon',
+      email: 'Canon@Example.test',
+      emailNormalized: 'canon@example.test',
+      emailVerified: false,
+    },
+    {
+      id: 'legacy-user',
+      authProvider: 'local',
+      name: 'Legacy',
+      email: 'legacy@example.test',
+      emailVerified: false,
+    },
+  ]);
+
+  const canon = await findUserByEmail('  CANON@EXAMPLE.TEST ');
+  expect(canon?.id).toBe('canon-user');
+
+  const legacy = await findUserByEmail('LEGACY@example.test');
+  expect(legacy?.id).toBe('legacy-user');
+
+  const canonVerifyRot = await replaceEmailVerificationToken({
+    email: 'canon@example.test',
+    tokenHash: 'canon-vhash',
+    expiresAt: new Date(now.getTime() + 60000),
+    now,
+  });
+  expect(canonVerifyRot?.id).toBe('canon-user');
+
+  const legacyVerifyRot = await replaceEmailVerificationToken({
+    email: 'legacy@example.test',
+    tokenHash: 'legacy-vhash',
+    expiresAt: new Date(now.getTime() + 60000),
+    now,
+  });
+  expect(legacyVerifyRot?.id).toBe('legacy-user');
+
+  const canonReset = await issuePasswordResetToken({
+    email: 'canon@example.test',
+    tokenHash: 'canon-rhash',
+    expiresAt: new Date(now.getTime() + 60000),
+    now,
+  });
+  expect(canonReset?.id).toBe('canon-user');
+
+  const legacyReset = await issuePasswordResetToken({
+    email: 'legacy@example.test',
+    tokenHash: 'legacy-rhash',
+    expiresAt: new Date(now.getTime() + 60000),
+    now,
+  });
+  expect(legacyReset?.id).toBe('legacy-user');
+});

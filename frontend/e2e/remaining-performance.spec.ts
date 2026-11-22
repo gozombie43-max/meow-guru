@@ -124,7 +124,10 @@ test('quiz answer retries a lost response with one key and no duplicate counters
 });
 
 async function routeFixture(context: BrowserContext, token: string) {
-  await context.addCookies([{ name: 'access_session', value: 'remaining-performance', url: 'http://127.0.0.1:3110' }]);
+  await context.addCookies([
+    { name: 'access_session', value: 'remaining-performance', url: 'http://127.0.0.1:3110' },
+    { name: 'meow_has_session', value: '1', url: 'http://127.0.0.1:3110' },
+  ]);
   await context.route('**/backend-api/**', async route => {
     const url = new URL(route.request().url());
     const path = url.pathname.replace(/^\/backend-api/, '');

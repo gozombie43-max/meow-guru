@@ -1,13 +1,14 @@
 import * as existing from '../migrations/001-existing-indexes.js';
 import * as competitive from '../migrations/019-battle-competitive-policy.js';
 import * as coordinator from '../migrations/020-battle-coordinator.js';
+import { isRetiredIndexCreate } from '../migrations/runner.js';
 
 // Capture the declared index specifications without invoking a database write.
 export async function inspectBattleReadiness(db, now = new Date()) {
   const required = [];
   for (const migration of [existing, competitive, coordinator]) await migration.up({ collection: name => ({
     createIndex: async (key, options = {}) => {
-      if (name.startsWith('battle') || name === 'socketIoAdapterEvents' || (migration === competitive && name === 'questions')) required.push({ collection: name, key, options });
+      if (!isRetiredIndexCreate(name, key, options) && (name.startsWith('battle') || name === 'socketIoAdapterEvents' || (migration === competitive && name === 'questions'))) required.push({ collection: name, key, options });
       return 'inspection-only';
     },
   }) });

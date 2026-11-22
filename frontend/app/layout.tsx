@@ -10,8 +10,6 @@ import ThemeColor from '@/components/ThemeColor';
 import { API_BASE } from '@/lib/api-base';
 import { earlySessionScript } from '@/lib/early-session';
 import '@fontsource/noto-sans-bengali/400.css';
-import '@fontsource/noto-sans-bengali/500.css';
-import '@fontsource/noto-sans-bengali/600.css';
 import '@fontsource/noto-sans-bengali/700.css';
 import './globals.css';
 

@@ -284,14 +284,26 @@ jobs:
         env:
           MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
           MONGODB_DB: ${{ env.STAGING_MONGODB_DB }}
+          STAGING_QUESTIONS_NORMALIZED_KEYS: ${{ vars.STAGING_QUESTIONS_NORMALIZED_KEYS }}
         run: |
-          normalized_keys="$(az webapp config appsettings list --name "$STAGING_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "[?name=='QUESTIONS_NORMALIZED_KEYS'].value | [0]" --output tsv)"
-          export QUESTIONS_NORMALIZED_KEYS="${normalized_keys:-false}"
+          normalized_keys="${STAGING_QUESTIONS_NORMALIZED_KEYS:-}"
+          if [ -z "$normalized_keys" ] || [ "$normalized_keys" = "null" ]; then
+            normalized_keys="$(az webapp config appsettings list --name "$STAGING_APP_NAME" --resource-group "$RESOURCE_GROUP" --query "[?name=='QUESTIONS_NORMALIZED_KEYS'].value | [0]" --output tsv)"
+          fi
+          export QUESTIONS_NORMALIZED_KEYS="${normalized_keys:-true}"
           npm run db:initialize-public-catalog --workspace backend
       - name: Configure isolated staging runtime
         env:
           STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
           STAGING_CONVEX_JWT_PRIVATE_KEY_B64: ${{ secrets.STAGING_CONVEX_JWT_PRIVATE_KEY_B64 }}
+          # Multi-instance staging overrides (defaults preserve single-instance B1 compatibility):
+          # - Set STAGING_RUN_EMBEDDED_WORKERS=false when deploying standalone worker.js/attachment-worker.js processes.
+          # - Set STAGING_BATTLE_REDIS_ADAPTER=true once isolated staging Valkey (REDIS_URL) is enabled for >1 API instances.
+          STAGING_QUESTIONS_NORMALIZED_KEYS: ${{ vars.STAGING_QUESTIONS_NORMALIZED_KEYS }}
+          STAGING_RUN_EMBEDDED_WORKERS: ${{ vars.STAGING_RUN_EMBEDDED_WORKERS }}
+          STAGING_BATTLE_REDIS_ADAPTER: ${{ vars.STAGING_BATTLE_REDIS_ADAPTER }}
+          STAGING_REDIS_CONNECT_TIMEOUT_MS: ${{ vars.STAGING_REDIS_CONNECT_TIMEOUT_MS }}
+          STAGING_HTTP_REQUEST_TIMEOUT_MS: ${{ vars.STAGING_HTTP_REQUEST_TIMEOUT_MS }}
         shell: bash
         run: |
           set -euo pipefail
@@ -304,6 +316,11 @@ jobs:
 
           jwt_secret="$(openssl rand -hex 32)"
           refresh_secret="$(openssl rand -hex 32)"
+          questions_normalized_keys="${STAGING_QUESTIONS_NORMALIZED_KEYS:-true}"
+          run_embedded_workers="${STAGING_RUN_EMBEDDED_WORKERS:-true}"
+          battle_redis_adapter="${STAGING_BATTLE_REDIS_ADAPTER:-false}"
+          redis_connect_timeout_ms="${STAGING_REDIS_CONNECT_TIMEOUT_MS:-3000}"
+          http_request_timeout_ms="${STAGING_HTTP_REQUEST_TIMEOUT_MS:-60000}"
 
           echo "::add-mask::$jwt_secret"
           echo "::add-mask::$refresh_secret"
@@ -322,12 +339,21 @@ jobs:
             --arg convexAudience "meow-convex-staging" \
             --arg convexKeyId "meow-convex-3b3030964606" \
             --arg convexPrivateKey "$STAGING_CONVEX_JWT_PRIVATE_KEY_B64" \
+            --arg questionsNormalizedKeys "$questions_normalized_keys" \
+            --arg runEmbeddedWorkers "$run_embedded_workers" \
+            --arg battleRedisAdapter "$battle_redis_adapter" \
+            --arg redisConnectTimeoutMs "$redis_connect_timeout_ms" \
+            --arg httpRequestTimeoutMs "$http_request_timeout_ms" \
             '[
               {"name":"MONGODB_URI","value":$mongoUri},
               {"name":"MONGODB_DB","value":"quizDB_staging"},
               {"name":"QUIZ_ONLY_MODE","value":"false"},
-              {"name":"RUN_EMBEDDED_WORKERS","value":"true"},
-              {"name":"RUN_CONCEPT_GROUPING_WORKER","value":"true"},
+              {"name":"RUN_EMBEDDED_WORKERS","value":$runEmbeddedWorkers},
+              {"name":"RUN_CONCEPT_GROUPING_WORKER","value":$runEmbeddedWorkers},
+              {"name":"QUESTIONS_NORMALIZED_KEYS","value":$questionsNormalizedKeys},
+              {"name":"BATTLE_REDIS_ADAPTER","value":$battleRedisAdapter},
+              {"name":"REDIS_CONNECT_TIMEOUT_MS","value":$redisConnectTimeoutMs},
+              {"name":"HTTP_REQUEST_TIMEOUT_MS","value":$httpRequestTimeoutMs},
               {"name":"DEPLOYMENT_ENVIRONMENT","value":"staging"},
               {"name":"PROCESS_ROLE","value":"api"},
               {"name":"NODE_ENV","value":"production"},

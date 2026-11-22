@@ -172,7 +172,14 @@ export function useBattle(token: string | null, userId: string) {
     socket.emit("game:answer", { code: state.code, questionIndex: q.questionIndex, ...answer });
     answerTimer.current = setTimeout(() => {
       setConnection("syncing");
-      socket.disconnect().connect();
+      if (socket.connected) {
+        socket.emit("battle:resume", { code: state.code || remembered(userId) });
+        answerTimer.current = setTimeout(() => {
+          socket.disconnect().connect();
+        }, 6_000);
+      } else {
+        socket.disconnect().connect();
+      }
     }, 6_000);
   };
   return {

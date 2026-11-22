@@ -3,7 +3,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connectMongoDB, disconnectMongoDB } from '../../config/mongodb.js';
 import { fetchQuestions } from '../questions/questionReadService.js';
 import { fetchQuestionsSession } from '../questions/questionSessionService.js';
-import { normalizedQuestionKeys } from '../questions/questionNormalizer.js';
+import { buildNormalizedQuestionFields, normalizedQuestionKeys } from '../questions/questionNormalizer.js';
 import { questionsQueryCache, questionCountsCache, revisionedQuestionCacheKey, clearQuestionRevisionCache } from '../questions/questionCache.js';
 import { up as createBrowserIndex } from '../../migrations/011-question-browser-sort.js';
 
@@ -24,7 +24,7 @@ beforeEach(async () => {
   await db.collection('questionMetadata').deleteMany({});
   const rows = Array.from({ length: 451 }, (_, index) => {
     const row = { id: `q${index}`, topic: 'algebra', subject: 'Mathematics', question: `Example ${index}`, exam: index < 250 ? 'SSC CGL' : 'SSC CHSL', quizName: 'PYQ' };
-    return { ...row, ...normalizedQuestionKeys(row) };
+    return { ...row, ...buildNormalizedQuestionFields(row) };
   });
   await db.collection('questions').insertMany(rows);
 });
