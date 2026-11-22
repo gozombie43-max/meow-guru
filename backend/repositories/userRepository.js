@@ -11,17 +11,33 @@ export const getUser = async (id, projection) => {
   const selected = projection ? { ...projection, ...(include ? { historyStorageVersion: 1, id: 1 } : {}) } : { aiChats: 0, recentQuizzes: 0, bookmarkEntries: 0, failureMap: 0, masteryMap: 0, timePerQuestion: 0 };
   const user = await getUsersCollection().findOne({ id: String(id), type: { $ne: 'email_lock' } }, { projection: selected });
   if (!user || user.historyStorageVersion !== 1) return user;
+  const db = getMongoDB();
+  const tasks = [];
   for (const field of ['recentQuizzes', 'aiChats', 'bookmarkEntries']) {
     const fields = Object.keys(projection || {}).filter(key => projection[key] === 1 && (key === field || key.startsWith(`${field}.`)));
-    if (!fields.length) { delete user[field]; continue; }
-    const rows = await readSeparatedHistory(getMongoDB(), id, field);
-    user[field] = fields.includes(field) ? rows : rows.map(row => Object.fromEntries(fields.map(key => key.slice(field.length + 1)).filter(key => row[key] !== undefined).map(key => [key, row[key]])));
+    if (!fields.length) {
+      delete user[field];
+      continue;
+    }
+    tasks.push(
+      readSeparatedHistory(db, id, field).then((rows) => {
+        user[field] = fields.includes(field)
+          ? rows
+          : rows.map(row => Object.fromEntries(fields.map(key => key.slice(field.length + 1)).filter(key => row[key] !== undefined).map(key => [key, row[key]])));
+      }),
+    );
   }
   const requestedAnalytics = analyticsFields.filter(field => projection?.[field] === 1);
   if (requestedAnalytics.length) {
-    const data = await getMongoDB().collection('userAnalytics').findOne({ userId: String(id) }, { projection: Object.fromEntries(requestedAnalytics.map(field => [field, 1])) });
-    for (const field of requestedAnalytics) user[field] = data?.[field] || {};
+    tasks.push(
+      db.collection('userAnalytics')
+        .findOne({ userId: String(id) }, { projection: Object.fromEntries(requestedAnalytics.map(field => [field, 1])) })
+        .then((data) => {
+          for (const field of requestedAnalytics) user[field] = data?.[field] || {};
+        }),
+    );
   }
+  if (tasks.length) await Promise.all(tasks);
   return user;
 };
 

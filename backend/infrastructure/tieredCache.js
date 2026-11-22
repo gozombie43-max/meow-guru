@@ -1,6 +1,7 @@
 import { LRUCache } from 'lru-cache';
 import { randomUUID, createHash } from 'node:crypto';
-import { getRedisClient, redisGetJson, redisSetJson, redisKey } from '../config/redis.js';
+import * as redisConfig from '../config/redis.js';
+const { getRedisClient, redisGetJson, redisSetJson, redisKey } = redisConfig;
 import { acquireLease, renewLease, releaseLease } from './cacheLease.js';
 import { encodeCacheValue, JSON_CACHE_MAX_BYTES } from './cacheEncoding.js';
 import { createSingleFlight } from './singleFlight.js';
@@ -43,14 +44,16 @@ export function createTieredCache({
   maxEntryBytes = JSON_CACHE_MAX_BYTES,
   format = 'json',
   distributedLock = true,
+  maxPending = 256,
   localCache,
   now = () => Date.now(),
   random = Math.random,
   getShared = redisGetJson,
+  getSharedMany = null,
   setShared = redisSetJson,
 } = {}) {
   const local = localCache || new LRUCache({ max: 300, maxSize: 20 * 1024 * 1024, maxEntrySize: maxEntryBytes, sizeCalculation: entry => entry.cacheBytes });
-  const pending = new Map(), reads = createSingleFlight();
+  const pending = new Map(), reads = createSingleFlight(maxPending);
   let generation = 0;
   const sharedKey = key => `tiered:v2:${key}`;
   const clampedJitter = Number.isFinite(jitterRatio) ? Math.max(0, Math.min(0.5, jitterRatio)) : 0.15;
@@ -121,6 +124,7 @@ export function createTieredCache({
       return toDelete.length;
     },
     read,
+    readMany,
     prime(key, entryOrValue) {
       const entry = isEnvelope(entryOrValue) ? entryOrValue : createEntry(entryOrValue, key);
       remember(redisKey(sharedKey(key)), entry, generation, undefined, key);
@@ -151,7 +155,7 @@ export function createTieredCache({
   async function refresh(key, build, { cacheShared = true, skipInitialSharedCheck = false, background = false } = {}) {
     const scoped = redisKey(sharedKey(key)), currentGeneration = generation;
     if (pending.has(scoped)) return pending.get(scoped);
-    if (pending.size >= 256) throw Object.assign(new Error('Metadata refresh capacity exceeded'), { statusCode: 503 });
+    if (pending.size >= maxPending) throw Object.assign(new Error('Metadata refresh capacity exceeded'), { statusCode: 503 });
     const work = (async () => {
       if (!cacheShared || !distributedLock) {
         if (cacheShared && !skipInitialSharedCheck) {
@@ -277,5 +281,116 @@ export function createTieredCache({
       return refresh(key, build, { cacheShared, skipInitialSharedCheck: checkedShared });
     });
   }
+
+  async function readMany(keys, batchBuild, { allowStale = true, cacheShared = true } = {}) {
+    const results = new Map();
+    if (!Array.isArray(keys) || keys.length === 0) return results;
+
+    const uniqueKeys = [];
+    const seenKeys = new Set();
+    for (const rawKey of keys) {
+      if (typeof rawKey !== 'string' || !rawKey) continue;
+      if (seenKeys.has(rawKey)) continue;
+      seenKeys.add(rawKey);
+      uniqueKeys.push(rawKey);
+    }
+    if (uniqueKeys.length === 0) return results;
+
+    const currentGeneration = generation;
+    const timestamp = now();
+    const l1Misses = [];
+
+    // Pass 1: Check L1 LRU in memory.
+    for (const key of uniqueKeys) {
+      const scoped = redisKey(sharedKey(key));
+      const entry = local.get(scoped);
+      if (entry?.freshUntil > timestamp) {
+        observeCacheOperation({ cache: name, layer: 'l1', outcome: 'hit' });
+        results.set(key, entry.value);
+      } else if (allowStale && entry?.staleUntil > timestamp) {
+        observeCacheOperation({ cache: name, layer: 'l1', outcome: 'stale' });
+        results.set(key, entry.value);
+      } else {
+        l1Misses.push(key);
+      }
+    }
+
+    if (l1Misses.length === 0) return results;
+
+    // Pass 2: Single batched Redis MGET for L1 misses.
+    let sourceMisses = l1Misses;
+    if (cacheShared) {
+      const sharedKeys = l1Misses.map(k => sharedKey(k));
+      const resolvedGetSharedMany = typeof getSharedMany === 'function'
+        ? getSharedMany
+        : (getShared === redisGetJson && typeof redisConfig.redisGetJsonMany === 'function'
+          ? redisConfig.redisGetJsonMany
+          : null);
+
+      let sharedEntries;
+      try {
+        sharedEntries = resolvedGetSharedMany
+          ? await resolvedGetSharedMany(sharedKeys)
+          : await Promise.all(sharedKeys.map(k => getShared(k)));
+      } catch {
+        sharedEntries = l1Misses.map(() => null);
+      }
+
+      const redisCheckTime = now();
+      sourceMisses = [];
+      for (let i = 0; i < l1Misses.length; i++) {
+        const key = l1Misses[i];
+        const shared = Array.isArray(sharedEntries) ? sharedEntries[i] : null;
+        if (shared?.freshUntil > redisCheckTime) {
+          remember(redisKey(sharedKey(key)), shared, currentGeneration, undefined, key);
+          observeCacheOperation({ cache: name, layer: 'redis', outcome: 'hit' });
+          results.set(key, shared.value);
+        } else if (allowStale && shared?.staleUntil > redisCheckTime) {
+          remember(redisKey(sharedKey(key)), shared, currentGeneration, undefined, key);
+          observeCacheOperation({ cache: name, layer: 'redis', outcome: 'stale' });
+          results.set(key, shared.value);
+        } else {
+          observeCacheOperation({ cache: name, layer: 'redis', outcome: 'miss' });
+          sourceMisses.push(key);
+        }
+      }
+    }
+
+    if (sourceMisses.length === 0) return results;
+
+    // Pass 3: Single batched source load for remaining misses.
+    const loaded = await runSourceBuild(() => batchBuild(sourceMisses));
+    const writeTime = now();
+    const redisWrites = [];
+
+    for (const key of sourceMisses) {
+      const value = loaded instanceof Map
+        ? (loaded.has(key) ? loaded.get(key) : null)
+        : (loaded && typeof loaded === 'object' && Object.hasOwn(loaded, key) ? loaded[key] : null);
+      results.set(key, value);
+
+      if (generation !== currentGeneration) continue;
+      const entry = createEntry(value, key);
+      if (entry.staleUntil <= writeTime) continue;
+      const encoded = encodeCacheValue(entry, format, maxEntryBytes);
+      if (!encoded) continue;
+
+      const scoped = redisKey(sharedKey(key));
+      remember(scoped, entry, currentGeneration, encoded, key);
+      if (cacheShared) {
+        const ttlSeconds = Math.max(1, Math.ceil((entry.staleUntil - writeTime) / 1000));
+        redisWrites.push(
+          Promise.resolve().then(() => setShared(sharedKey(key), entry, ttlSeconds, { encoded })),
+        );
+      }
+    }
+
+    if (redisWrites.length > 0) {
+      await Promise.allSettled(redisWrites);
+    }
+
+    return results;
+  }
+
   return api;
 }

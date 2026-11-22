@@ -107,6 +107,8 @@ const questionItemCache = createTieredCache({
   freshMs: CACHE_TTLS.QUESTION_MS,
   staleMs: CACHE_TTLS.QUESTION_MS * 2,
   localMs: 10_000,
+  distributedLock: false,
+  maxPending: 2048,
   localCache: new LRUCache({
     max: 2000,
     maxSize: 20 * 1024 * 1024,
@@ -121,6 +123,8 @@ const questionAnswerKeyCache = createTieredCache({
   freshMs: CACHE_TTLS.QUESTION_MS,
   staleMs: CACHE_TTLS.QUESTION_MS,
   localMs: 10_000,
+  distributedLock: false,
+  maxPending: 2048,
   localCache: new LRUCache({
     max: 4000,
     maxSize: 10 * 1024 * 1024,
@@ -207,11 +211,103 @@ export async function cachedQuestionById(identityKey, loader) {
   return questionItemCache.read(`meow:v1:question:r${revision}:${cleanId}`, loader, { allowStale: true });
 }
 
+export async function cachedQuestionsByIds(identityKeys, batchLoader) {
+  const cleanIds = [];
+  const seen = new Set();
+  for (const raw of identityKeys || []) {
+    const cleanId = String(raw ?? '').trim();
+    if (!cleanId || seen.has(cleanId)) continue;
+    seen.add(cleanId);
+    cleanIds.push(cleanId);
+  }
+  const results = new Map();
+  if (cleanIds.length === 0) return results;
+
+  const revision = await getQuestionRevision();
+  const logicalToId = new Map();
+  const logicalKeys = [];
+  for (const id of cleanIds) {
+    const lk = `meow:v1:question:r${revision}:${id}`;
+    logicalToId.set(lk, id);
+    logicalKeys.push(lk);
+  }
+
+  const cachedMap = await questionItemCache.readMany(
+    logicalKeys,
+    async (missingLogicalKeys) => {
+      const missingIds = missingLogicalKeys.map(lk => logicalToId.get(lk)).filter(Boolean);
+      const loaded = await batchLoader(missingIds);
+      const mapped = new Map();
+      for (const lk of missingLogicalKeys) {
+        const id = logicalToId.get(lk);
+        const val = loaded instanceof Map
+          ? (loaded.has(id) ? loaded.get(id) : null)
+          : (loaded && typeof loaded === 'object' && Object.hasOwn(loaded, id) ? loaded[id] : null);
+        mapped.set(lk, val ?? null);
+      }
+      return mapped;
+    },
+    { allowStale: true },
+  );
+
+  for (const lk of logicalKeys) {
+    const id = logicalToId.get(lk);
+    results.set(id, cachedMap.has(lk) ? cachedMap.get(lk) : null);
+  }
+  return results;
+}
+
 export async function cachedQuestionAnswerKey(questionUid, loader) {
   const cleanUid = String(questionUid ?? '').trim();
   if (!cleanUid) return loader();
   const revision = await getQuestionRevision();
   return questionAnswerKeyCache.read(`meow:v1:question-key:r${revision}:${cleanUid}`, loader, { allowStale: false });
+}
+
+export async function cachedQuestionAnswerKeysBatch(questionUids, batchLoader) {
+  const cleanUids = [];
+  const seen = new Set();
+  for (const raw of questionUids || []) {
+    const cleanUid = String(raw ?? '').trim();
+    if (!cleanUid || seen.has(cleanUid)) continue;
+    seen.add(cleanUid);
+    cleanUids.push(cleanUid);
+  }
+  const results = new Map();
+  if (cleanUids.length === 0) return results;
+
+  const revision = await getQuestionRevision();
+  const logicalToUid = new Map();
+  const logicalKeys = [];
+  for (const uid of cleanUids) {
+    const lk = `meow:v1:question-key:r${revision}:${uid}`;
+    logicalToUid.set(lk, uid);
+    logicalKeys.push(lk);
+  }
+
+  const cachedMap = await questionAnswerKeyCache.readMany(
+    logicalKeys,
+    async (missingLogicalKeys) => {
+      const missingUids = missingLogicalKeys.map(lk => logicalToUid.get(lk)).filter(Boolean);
+      const loaded = await batchLoader(missingUids);
+      const mapped = new Map();
+      for (const lk of missingLogicalKeys) {
+        const uid = logicalToUid.get(lk);
+        const val = loaded instanceof Map
+          ? (loaded.has(uid) ? loaded.get(uid) : null)
+          : (loaded && typeof loaded === 'object' && Object.hasOwn(loaded, uid) ? loaded[uid] : null);
+        mapped.set(lk, val ?? null);
+      }
+      return mapped;
+    },
+    { allowStale: false },
+  );
+
+  for (const lk of logicalKeys) {
+    const uid = logicalToUid.get(lk);
+    results.set(uid, cachedMap.has(lk) ? cachedMap.get(lk) : null);
+  }
+  return results;
 }
 
 export async function cachedTopicPool(poolKey, loader) {
@@ -312,6 +408,13 @@ export async function cachedQuizSession(sessionId, loader) {
   const cleanId = String(sessionId ?? '').trim();
   if (!cleanId) return loader();
   return quizSessionCache.read(`meow:v1:quiz-session:${cleanId}`, loader, { allowStale: false });
+}
+
+export function peekFreshQuizSession(sessionId) {
+  const cleanId = String(sessionId ?? '').trim();
+  if (!cleanId) return null;
+  const result = quizSessionCache.peekFresh(`meow:v1:quiz-session:${cleanId}`);
+  return result?.hit ? result.value : null;
 }
 
 export async function invalidateQuizSessionCache(sessionId) {

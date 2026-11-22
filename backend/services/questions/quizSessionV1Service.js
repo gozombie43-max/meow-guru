@@ -6,12 +6,14 @@ import { getQuestionsCollection } from '../../config/mongodb.js';
 import {
   cachedPracticeCount,
   cachedQuestionAnswerKey,
-  cachedQuestionById,
+  cachedQuestionAnswerKeysBatch,
+  cachedQuestionsByIds,
   cachedQuizSession,
   cachedTopicPool,
   getQuestionRevision,
   invalidateQuizSessionCache,
   isNormalizedKeysEnabled,
+  peekFreshQuizSession,
 } from './questionCache.js';
 import {
   normalizeFilterKey,
@@ -402,87 +404,82 @@ export function buildFilterConditions(
 }
 
 /**
- * Hydrate a batch of questionUids using L1/Redis per-question cache (`cachedQuestionById`),
- * coalescing any cold misses into ONE single MongoDB `$in` query with strict `quizQuestionProjection`
+ * Hydrate a batch of questionUids using L1/Redis per-question MGET cache (`cachedQuestionsByIds`),
+ * fetching all cold misses in ONE single MongoDB `$in` query with strict `quizQuestionProjection`
  * (zero N+1 queries, zero answer-key over-fetching).
  */
 async function hydrateQuestionBatch(uids, legacyDocIdMap = null) {
   if (!Array.isArray(uids) || uids.length === 0) return [];
   const collection = getQuestionsCollection();
 
-  let queuedUids = new Set();
-  let batchPromise = null;
-
-  const flushBatch = () => {
-    const toFetch = [...queuedUids];
-    queuedUids = new Set();
-    batchPromise = null;
-    if (toFetch.length === 0) return Promise.resolve(new Map());
-
+  const cacheKeys = uids.map((uid) => `quiz-dto:${uid}`);
+  const cachedMap = await cachedQuestionsByIds(cacheKeys, async (missingKeys) => {
+    const toFetch = missingKeys.map((key) => key.slice('quiz-dto:'.length));
     const stringUids = toFetch.filter((uid) => typeof uid === 'string' && uid.length > 0);
+    const map = new Map();
+    if (stringUids.length === 0) return map;
+
     const query = collection
       .find({ questionUid: { $in: stringUids, $type: 'string' } })
       .project(quizQuestionProjection);
     if (typeof query.maxTimeMS === 'function') query.maxTimeMS(5000);
-    return query.toArray().then(async (docs) => {
-      const map = new Map();
-      for (const doc of docs) {
-        const dto = toSafeV1QuestionDTO(doc);
-        if (dto?.questionUid) map.set(dto.questionUid, dto);
-      }
-      if (legacyDocIdMap) {
-        const unresolved = toFetch.filter((uid) => !map.has(uid) && Object.hasOwn(legacyDocIdMap, uid));
-        if (unresolved.length > 0) {
-          const legacyDocs = await loadLegacyDocsByIdMap(
-            collection,
-            unresolved,
-            legacyDocIdMap,
-            quizQuestionProjection,
-          );
-          for (const [uid, doc] of legacyDocs) {
-            const dto = toSafeV1QuestionDTO(doc);
-            if (dto?.questionUid === uid) map.set(uid, dto);
-          }
-        }
-      }
-      return map;
-    });
-  };
-
-  const loadFromCoalescedBatch = (uid) => {
-    queuedUids.add(uid);
-    if (!batchPromise) {
-      batchPromise = new Promise((resolve, reject) => {
-        queueMicrotask(() => {
-          flushBatch().then(resolve, reject);
-        });
-      });
+    const docs = await query.toArray();
+    const fetchedByUid = new Map();
+    for (const doc of docs) {
+      const dto = toSafeV1QuestionDTO(doc);
+      if (dto?.questionUid) fetchedByUid.set(dto.questionUid, dto);
     }
-    return batchPromise.then((map) => map.get(uid) || null);
-  };
 
-  const hydrated = await Promise.all(
-    uids.map(async (uid) => {
-      const cached = await cachedQuestionById(`quiz-dto:${uid}`, () => loadFromCoalescedBatch(uid));
-      if (cached) return cached;
-      if (legacyDocIdMap && Object.hasOwn(legacyDocIdMap, uid)) {
+    if (legacyDocIdMap) {
+      const unresolved = toFetch.filter((uid) => !fetchedByUid.has(uid) && Object.hasOwn(legacyDocIdMap, uid));
+      if (unresolved.length > 0) {
         const legacyDocs = await loadLegacyDocsByIdMap(
           collection,
-          [uid],
+          unresolved,
           legacyDocIdMap,
           quizQuestionProjection,
         );
-        const doc = legacyDocs.get(uid);
-        if (doc) {
+        for (const [uid, doc] of legacyDocs) {
           const dto = toSafeV1QuestionDTO(doc);
-          if (dto?.questionUid === uid) return dto;
+          if (dto?.questionUid === uid) fetchedByUid.set(uid, dto);
         }
       }
-      return null;
-    }),
-  );
+    }
 
-  return hydrated.filter(Boolean);
+    for (const uid of toFetch) {
+      if (fetchedByUid.has(uid)) {
+        map.set(`quiz-dto:${uid}`, fetchedByUid.get(uid));
+      }
+    }
+    return map;
+  });
+
+  const missingLegacyUids = [];
+  if (legacyDocIdMap) {
+    for (const uid of uids) {
+      if (!cachedMap.get(`quiz-dto:${uid}`) && Object.hasOwn(legacyDocIdMap, uid)) {
+        missingLegacyUids.push(uid);
+      }
+    }
+  }
+
+  const legacyDtoByUid = new Map();
+  if (missingLegacyUids.length > 0) {
+    const legacyDocs = await loadLegacyDocsByIdMap(
+      collection,
+      missingLegacyUids,
+      legacyDocIdMap,
+      quizQuestionProjection,
+    );
+    for (const [uid, doc] of legacyDocs) {
+      const dto = toSafeV1QuestionDTO(doc);
+      if (dto?.questionUid === uid) legacyDtoByUid.set(uid, dto);
+    }
+  }
+
+  return uids
+    .map((uid) => cachedMap.get(`quiz-dto:${uid}`) || legacyDtoByUid.get(uid) || null)
+    .filter(Boolean);
 }
 
 const RING_SCAN_PROJECTION = Object.freeze({
@@ -852,7 +849,6 @@ export async function createQuizSession(userId, rawBody) {
   };
 
   await insertQuizSession(sessionDoc);
-  await invalidateQuizSessionCache(sessionId);
 
   const response = {
     sessionId,
@@ -1100,21 +1096,16 @@ async function loadServerAnswerKey(questionUid, { legacyDocId = null } = {}) {
 }
 
 /**
- * Batch-load server-only answer keys for post-submit review: hits L1/Redis via
- * `cachedQuestionAnswerKey` and coalesces all cold misses into ONE single MongoDB `$in` query.
+ * Batch-load server-only answer keys for post-submit review: hits L1/Redis MGET via
+ * `cachedQuestionAnswerKeysBatch` and loads all cold misses in ONE single MongoDB `$in` query.
  */
 async function loadServerAnswerKeysBatch(uids, legacyDocIdMap = null) {
   if (!Array.isArray(uids) || uids.length === 0) return [];
   const collection = getQuestionsCollection();
 
-  let queuedUids = new Set();
-  let batchPromise = null;
-
-  const flushBatch = () => {
-    const toFetch = [...queuedUids];
-    queuedUids = new Set();
-    batchPromise = null;
-    if (toFetch.length === 0) return Promise.resolve(new Map());
+  const cachedMap = await cachedQuestionAnswerKeysBatch(uids, async (toFetch) => {
+    const map = new Map();
+    if (toFetch.length === 0) return map;
 
     let query = collection
       .find({
@@ -1125,33 +1116,15 @@ async function loadServerAnswerKeysBatch(uids, legacyDocIdMap = null) {
       })
       .project(ANSWER_KEY_PROJECTION);
     if (typeof query.maxTimeMS === 'function') query = query.maxTimeMS(5000);
-    return query.toArray().then((docs) => {
-      const map = new Map();
-      for (const doc of docs) {
-        const formatted = formatAnswerKeyDoc(doc);
-        if (formatted?.questionUid) map.set(formatted.questionUid, formatted);
-      }
-      return map;
-    });
-  };
-
-  const loadFromCoalescedBatch = (uid) => {
-    queuedUids.add(uid);
-    if (!batchPromise) {
-      batchPromise = new Promise((resolve, reject) => {
-        queueMicrotask(() => {
-          flushBatch().then(resolve, reject);
-        });
-      });
+    const docs = await query.toArray();
+    for (const doc of docs) {
+      const formatted = formatAnswerKeyDoc(doc);
+      if (formatted?.questionUid) map.set(formatted.questionUid, formatted);
     }
-    return batchPromise.then((map) => map.get(uid) || null);
-  };
+    return map;
+  });
 
-  const results = await Promise.all(
-    uids.map((uid) =>
-      cachedQuestionAnswerKey(uid, () => loadFromCoalescedBatch(uid)),
-    ),
-  );
+  const results = uids.map((uid) => cachedMap.get(uid) || null);
 
   if (legacyDocIdMap && typeof legacyDocIdMap === 'object') {
     const missingEntries = [];
@@ -1261,7 +1234,18 @@ export async function submitQuizSessionAnswer(sessionId, userId, body, idempoten
   const now = new Date();
   // Verify session existence, ownership, active status, deadline, and membership BEFORE
   // loading any question answer key (prevents cross-user / bogus-session existence oracles).
-  const precheckSession = await findOwnedQuizSession(sessionId, userId);
+  const cachedPrecheck = peekFreshQuizSession(sessionId);
+  let precheckSession;
+  if (cachedPrecheck) {
+    if (String(cachedPrecheck.userId) !== String(userId)) {
+      throw fail('You do not have access to this quiz session', 403, 'FORBIDDEN_SESSION');
+    }
+    precheckSession = cachedPrecheck;
+  } else {
+    precheckSession = await findOwnedQuizSession(sessionId, userId, {
+      projection: { _id: 0, userId: 1, status: 1, deadlineAt: 1, orderedQuestionUids: 1, legacyQuestionDocIds: 1 },
+    });
+  }
   if (!precheckSession) throw fail('Quiz session not found', 404, 'SESSION_NOT_FOUND');
   if (precheckSession.status !== 'in_progress') {
     throw fail('Quiz session is already completed', 409, 'SESSION_NOT_ACTIVE');

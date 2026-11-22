@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { MongoClient } from 'mongodb';
 
@@ -23,18 +24,50 @@ const idFor = (index) => `staging-probe-${prefix}-${index}`;
 
 async function cleanup(db) {
   const ids = Array.from({ length: count }, (_, i) => idFor(i + 1));
-  const emails = Array.from({ length: count }, (_, i) => emailFor(i + 1));
+  const emails = Array.from({ length: count }, (_, i) => emailFor(i + 1).toLowerCase());
+  const sessionDocs = await db
+    .collection('quizSessions')
+    .find({ userId: { $in: ids } }, { projection: { sessionId: 1, userId: 1, answers: 1 } })
+    .toArray();
+  const idempIds = [];
+  for (const doc of sessionDocs) {
+    if (!doc?.userId || !doc?.sessionId || !doc?.answers || typeof doc.answers !== 'object') continue;
+    for (const entry of Object.values(doc.answers)) {
+      if (!entry?.submissionId) continue;
+      idempIds.push(
+        createHash('sha256')
+          .update(`${doc.userId}:v1.quiz.session.answer:${doc.sessionId}:${entry.submissionId}`)
+          .digest('hex'),
+      );
+    }
+  }
+  if (idempIds.length > 0) {
+    await db.collection('idempotencyRecords').deleteMany({
+      $or: [{ _id: { $in: [...new Set(idempIds)] } }, { userId: { $in: ids } }],
+    });
+  } else {
+    await db.collection('idempotencyRecords').deleteMany({ userId: { $in: ids } });
+  }
   const userIdCollections = [
     'authSessions',
+    'quizSessions',
     'trainingSessions',
     'trainingReviewState',
     'trainingQuestionExposure',
     'trainingSkillState',
     'trainingLearnerStateMeta',
     'userSkillProfile',
+    'userQuestionProgress',
+    'userTopicProgress',
+    'userAnalytics',
+    'studyActivityDaily',
+    'userBookmarks',
+    'userQuizHistory',
   ];
   await Promise.all(userIdCollections.map((name) => db.collection(name).deleteMany({ userId: { $in: ids } })));
-  await db.collection('users').deleteMany({ $or: [{ id: { $in: ids } }, { email: { $in: emails } }] });
+  await db.collection('users').deleteMany({
+    $or: [{ id: { $in: ids } }, { email: { $in: emails } }, { emailNormalized: { $in: emails } }],
+  });
 }
 
 try {
@@ -45,20 +78,31 @@ try {
   if (action === 'create') {
     const password = required('STAGING_PROBE_PASSWORD');
     const passwordHash = await bcrypt.hash(password, 12);
-    const now = new Date().toISOString();
-    const users = Array.from({ length: count }, (_, i) => ({
-      id: idFor(i + 1),
-      name: `Staging Probe ${i + 1}`,
-      email: emailFor(i + 1),
-      role: 'student',
-      authProvider: 'local',
-      passwordHash,
-      progress: {},
-      bookmarks: [],
-      bookmarkEntries: [],
-      recentQuizzes: [],
-      createdAt: now,
-    }));
+    const nowDate = new Date();
+    const now = nowDate.toISOString();
+    const users = Array.from({ length: count }, (_, i) => {
+      const email = emailFor(i + 1).toLowerCase();
+      return {
+        id: idFor(i + 1),
+        name: `Staging Probe ${i + 1}`,
+        email,
+        emailNormalized: email,
+        accountRecord: true,
+        historyStorageVersion: 1,
+        emailVerified: true,
+        emailVerifiedAt: nowDate,
+        role: 'student',
+        authProvider: 'local',
+        passwordHash,
+        progress: {},
+        bookmarks: [],
+        bookmarkEntries: [],
+        recentQuizzes: [],
+        studyTime: 0,
+        dailyGoalMinutes: 60,
+        createdAt: now,
+      };
+    });
     await db.collection('users').insertMany(users);
     console.log(JSON.stringify({ action, count, prefix, emails: users.map((user) => user.email) }));
   } else {

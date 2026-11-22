@@ -70,6 +70,15 @@ vi.mock('../../../config/redis.js', async (importOriginal) => {
       const val = await redisState.client.get(`test:${key}`).catch(() => null);
       return val == null ? null : JSON.parse(val);
     }),
+    redisGetJsonMany: vi.fn(async (keys) => {
+      if (!keys.length) return [];
+      try {
+        const vals = await redisState.client.mGet(keys.map((k) => `test:${k}`));
+        return vals.map((val) => (val == null ? null : JSON.parse(val)));
+      } catch {
+        return keys.map(() => null);
+      }
+    }),
     redisSetJson: vi.fn(async (key, value) => {
       try {
         await redisState.client.set(`test:${key}`, JSON.stringify(value));
