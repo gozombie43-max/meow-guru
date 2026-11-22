@@ -1,5 +1,38 @@
 import { DEFAULT_QUIZ_BATCH_SIZE } from '@/features/quiz/model/constants';
 
+export const SESSION_HINT_KEY = 'meow_has_session';
+
+export function setSessionHint(active: boolean) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (active) {
+      window.localStorage?.setItem(SESSION_HINT_KEY, '1');
+    } else {
+      window.localStorage?.removeItem(SESSION_HINT_KEY);
+    }
+  } catch { /* ignore storage errors */ }
+  try {
+    if (typeof document !== 'undefined') {
+      document.cookie = active
+        ? `${SESSION_HINT_KEY}=1; Path=/; Max-Age=2592000; SameSite=Lax`
+        : `${SESSION_HINT_KEY}=; Path=/; Max-Age=0; SameSite=Lax`;
+    }
+  } catch { /* ignore cookie errors */ }
+}
+
+export function hasSessionHint(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (window.localStorage?.getItem(SESSION_HINT_KEY) === '1') return true;
+  } catch { /* ignore */ }
+  try {
+    if (typeof document !== 'undefined' && /(?:^|;\s*)meow_has_session=1(?:;|$)/.test(document.cookie || '')) {
+      return true;
+    }
+  } catch { /* ignore */ }
+  return false;
+}
+
 type EarlySession = {
   base: string;
   expiresAt: number;
@@ -125,14 +158,60 @@ function startEarlySession(base: string, quizBatchSize: number) {
     }
   }
 
+  const isSkippedAuthRoute = /^\/(login|register|access-code|reset-password|verify-email|check-email)(\/|$)/.test(pathname);
+  const isPublicHome = pathname === '' || pathname === '/';
+  const isOAuthCallback = /^\/auth\/callback(\/|$)/.test(pathname);
+  let hasHint = isOAuthCallback;
+  if (!hasHint) {
+    try {
+      if (browser.localStorage && browser.localStorage.getItem('meow_has_session') === '1') {
+        hasHint = true;
+      }
+    } catch { /* ignore storage errors */ }
+  }
+  if (!hasHint) {
+    try {
+      const cookieStr = browser.document && typeof browser.document.cookie === 'string' ? browser.document.cookie : '';
+      if (/(?:^|;\s*)meow_has_session=1(?:;|$)/.test(cookieStr)) {
+        hasHint = true;
+      }
+    } catch { /* ignore cookie errors */ }
+  }
+  if (isSkippedAuthRoute || (isPublicHome && !hasHint)) {
+    return;
+  }
+
+  const syncHint = (active: boolean) => {
+    try {
+      if (browser.localStorage) {
+        if (active) browser.localStorage.setItem('meow_has_session', '1');
+        else browser.localStorage.removeItem('meow_has_session');
+      }
+    } catch { /* ignore */ }
+    try {
+      if (browser.document && typeof browser.document.cookie === 'string') {
+        browser.document.cookie = active
+          ? 'meow_has_session=1; Path=/; Max-Age=2592000; SameSite=Lax'
+          : 'meow_has_session=; Path=/; Max-Age=0; SameSite=Lax';
+      }
+    } catch { /* ignore */ }
+  };
+
   const refresh = async () => {
     const response = await browser.fetch(`${base}/auth/refresh`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
       credentials: 'include', signal: controller.signal,
     });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403 || response.status === undefined) {
+        syncHint(false);
+      }
+      return null;
+    }
     const data = await response.json();
-    return typeof data.token === 'string' ? data.token : null;
+    const tokenValue = typeof data.token === 'string' && data.token ? data.token : null;
+    syncHint(Boolean(tokenValue));
+    return tokenValue;
   };
   state.refresh = Promise.resolve().then(() => browser.navigator.locks
     ? browser.navigator.locks.request('meow-session-refresh', { signal: controller.signal }, refresh)

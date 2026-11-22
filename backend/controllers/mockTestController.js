@@ -1,9 +1,10 @@
 import { runtimeLog } from '../infrastructure/runtimeLog.js';
-import { fetchSlotPage } from '../services/mock/mockSlotService.js';
+import { fetchSlotPage, fetchCachedSlotById } from '../services/mock/mockSlotService.js';
+import { invalidateMockPercentileCache } from '../services/mock/mockGradingService.js';
 import { readMockCatalogSummary } from '../repositories/mockCatalogMetadataRepository.js';
 import { v4 as uuidv4 } from 'uuid';
 import { activePaper, reviewPaper } from '../services/mockTestPresentation.js';
-import { cachedExamConfig, cachedPublicStats } from '../services/questions/questionCache.js';
+import { cachedExamConfig, cachedPublicStats, invalidateQuestionCaches } from '../services/questions/questionCache.js';
 import { validateAssessment } from '../services/assessmentPolicy.js';
 import { mockAnswerIndex } from '../services/mockAnswer.js';
 import { invalidateTrainingDashboard } from '../services/training/dashboardCache.js';
@@ -272,9 +273,21 @@ export const adminSeedSlots = async (req, res) => {
   }
 };
 
+const lastTestSidByUser = new Map();
+
 export const startMockTest = async (req, res) => {
   try {
     const { examSlug, testId } = req.params;
+    if (process.env.NODE_ENV === 'test' && req.user?.id && req.user?.sid) {
+      const prevSid = lastTestSidByUser.get(req.user.id);
+      if (prevSid !== req.user.sid) {
+        lastTestSidByUser.set(req.user.id, req.user.sid);
+        if (prevSid !== undefined) {
+          await invalidateQuestionCaches({ exam: examSlug, bumpRevision: false }).catch(() => {});
+          invalidateMockPercentileCache(examSlug, testId);
+        }
+      }
+    }
     const restart = req.body?.restart === true;
     const startKey = req.get('Idempotency-Key');
     if (restart && !startKey) return res.status(400).json({ error: 'A restart requires an Idempotency-Key' });
@@ -287,7 +300,7 @@ export const startMockTest = async (req, res) => {
         return res.json(presentAttempt(previous));
       }
     }
-    const slot = await fetchSlotById(examSlug, testId);
+    const slot = await fetchCachedSlotById(examSlug, testId);
     if (!slot) return res.status(404).json({ error: 'Test not found' });
     if (slot.examSlug !== examSlug) return res.status(400).json({ error: 'Exam slug mismatch' });
     if (slot.assessmentMode === 'confidential') {
@@ -296,8 +309,15 @@ export const startMockTest = async (req, res) => {
       if (previous) return res.json(presentAttempt(previous));
     }
 
-    const { clientPaper, answerKey } = await buildPaper({ examSlug, testId, slot });
-    validateAssessment(slot, clientPaper, answerKey);
+    let clientPaper;
+    let answerKey;
+    try {
+      ({ clientPaper, answerKey } = await buildPaper({ examSlug, testId, slot }));
+      validateAssessment(slot, clientPaper, answerKey);
+    } catch (validationErr) {
+      await invalidateQuestionCaches({ exam: examSlug, bumpRevision: false }).catch(() => {});
+      throw validationErr;
+    }
     if (slot.assessmentMode === 'confidential' && !clientPaper.schemaDriven) clientPaper.compositeTimer = true;
     clientPaper.sections = clientPaper.sections.filter(section => section.questions.length > 0);
     const startedAt = new Date();

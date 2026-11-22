@@ -8,6 +8,8 @@ import { createSingleFlight } from './singleFlight.js';
 import { observeCacheOperation } from './metrics.js';
 
 const DEFAULT_REVISION_CACHE_MS = 5_000;
+const DEFAULT_OUTAGE_GRACE_MS = 1_500;
+const COUNTER_MAX_TIME_MS = 1_500;
 
 function resolveRevisionCacheMs(explicit) {
   if (Number.isFinite(explicit)) return Math.max(0, Math.floor(explicit));
@@ -20,11 +22,38 @@ function resolveRevisionCacheMs(explicit) {
   return DEFAULT_REVISION_CACHE_MS;
 }
 
+function resolveOutageGraceMs(explicit, revTtl) {
+  if (revTtl <= 0) return 0;
+  if (Number.isFinite(explicit)) return Math.min(revTtl, Math.max(0, Math.floor(explicit)));
+  const raw = process.env.PROGRESS_OUTAGE_GRACE_MS;
+  if (raw !== undefined && raw !== null && String(raw).trim() !== '') {
+    const envVal = Number(raw);
+    if (Number.isFinite(envVal) && envVal >= 0) return Math.min(revTtl, Math.floor(envVal));
+  }
+  return Math.min(revTtl, DEFAULT_OUTAGE_GRACE_MS);
+}
+
+async function withCounterDeadline(work, timeoutMs = COUNTER_MAX_TIME_MS) {
+  let timer;
+  try {
+    return await Promise.race([
+      Promise.resolve().then(work),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          reject(Object.assign(new Error('Cache revision counter timeout'), { code: 'CACHE_COUNTER_TIMEOUT' }));
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function createDurableProgressCache(
   prefix,
   owner,
   ttlSeconds,
-  { validUntil = () => Infinity, maxEntries = 2000, revisionCacheMs } = {},
+  { validUntil = () => Infinity, maxEntries = 2000, revisionCacheMs, outageGraceMs } = {},
 ) {
   const scope = (...args) => `${prefix}:v2:${owner(...args)}`;
   const bumpMarkerKey = revisionScope => `progress-bump:v2:${revisionScope}`;
@@ -70,6 +99,10 @@ export function createDurableProgressCache(
   // Keep sharedRevisionHandle referenced by the returned cache closure so WeakRef stays alive.
   registerSharedLocalCache(sharedRevisionHandle);
   const flight = createSingleFlight();
+
+  async function readBoundedCacheCounter(revisionScope) {
+    return withCounterDeadline(() => getCacheCounter(revisionScope), COUNTER_MAX_TIME_MS);
+  }
 
   async function writeCrossInstanceBump(revisionScope) {
     if (!process.env.REDIS_URL) return;
@@ -121,40 +154,52 @@ export function createDurableProgressCache(
     load: (args, build) => flight(scope(...args), async () => {
       const revisionScope = scope(...args);
       const revTtl = resolveRevisionCacheMs(revisionCacheMs);
+      const graceMs = resolveOutageGraceMs(outageGraceMs, revTtl);
       const cachedRev = revTtl > 0 ? revisionCache.get(revisionScope) : undefined;
       if (cachedRev && cachedRev.expiresAt > Date.now()) {
         const entryKey = `${revisionScope}:${cachedRev.revision}`;
         if (cache.hasFresh(entryKey)) {
           const bumpState = await readCrossInstanceBumpToken(revisionScope);
-          if (!bumpState.available || bumpState.token !== cachedRev.bumpToken) {
-            revisionCache.delete(revisionScope);
-          } else {
+          if (bumpState.available) {
+            if (cachedRev.degraded || bumpState.token !== cachedRev.bumpToken) {
+              revisionCache.delete(revisionScope);
+            } else {
+              const peeked = cache.peekFresh(entryKey);
+              if (peeked.hit) return peeked.value;
+            }
+          } else if (cachedRev.degraded && graceMs > 0) {
             const peeked = cache.peekFresh(entryKey);
             if (peeked.hit) return peeked.value;
+          } else {
+            revisionCache.delete(revisionScope);
           }
         }
       }
       for (let attempt = 0; attempt < 3; attempt++) {
         const attemptEpoch = currentEpoch(revisionScope);
         const bumpBefore = revTtl > 0 ? await readCrossInstanceBumpToken(revisionScope) : { available: false, token: null };
-        const revision = await getCacheCounter(revisionScope);
+        const revision = await readBoundedCacheCounter(revisionScope);
         const entryKey = `${revisionScope}:${revision}`;
         const peeked = cache.peekFresh(entryKey);
         if (peeked.hit) {
           if (currentEpoch(revisionScope) !== attemptEpoch) continue;
           if (revTtl > 0 && bumpBefore.available) {
-            revisionCache.set(revisionScope, { revision, bumpToken: bumpBefore.token, expiresAt: Date.now() + revTtl });
+            revisionCache.set(revisionScope, { revision, bumpToken: bumpBefore.token, degraded: false, expiresAt: Date.now() + revTtl });
+          } else if (graceMs > 0 && !bumpBefore.available) {
+            revisionCache.set(revisionScope, { revision, bumpToken: null, degraded: true, expiresAt: Date.now() + graceMs });
           }
           return peeked.value;
         }
         const value = await cache.read(entryKey, build, { allowStale: false });
-        if (await getCacheCounter(revisionScope) === revision) {
+        if (await readBoundedCacheCounter(revisionScope) === revision) {
           if (currentEpoch(revisionScope) !== attemptEpoch) {
             revisionCache.delete(revisionScope);
             continue;
           }
           if (revTtl > 0 && bumpBefore.available) {
-            revisionCache.set(revisionScope, { revision, bumpToken: bumpBefore.token, expiresAt: Date.now() + revTtl });
+            revisionCache.set(revisionScope, { revision, bumpToken: bumpBefore.token, degraded: false, expiresAt: Date.now() + revTtl });
+          } else if (graceMs > 0 && !bumpBefore.available) {
+            revisionCache.set(revisionScope, { revision, bumpToken: null, degraded: true, expiresAt: Date.now() + graceMs });
           }
           return value;
         }
@@ -168,11 +213,11 @@ export function createDurableProgressCache(
     }),
     async read(...args) {
       const revisionScope = scope(...args);
-      const revision = await getCacheCounter(revisionScope);
+      const revision = await readBoundedCacheCounter(revisionScope);
       const key = `${revisionScope}:${revision}`;
       const value = await redisGetJson(key);
       // A mutation may commit while the Redis GET is pending.
-      if (value !== null && await getCacheCounter(revisionScope) !== revision) {
+      if (value !== null && await readBoundedCacheCounter(revisionScope) !== revision) {
         revisionCache.delete(revisionScope);
         observeCacheOperation({ cache: prefix, layer: 'redis', outcome: 'miss' });
         return { key: null, value: null };

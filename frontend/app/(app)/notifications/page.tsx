@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   Bell,
@@ -23,6 +23,7 @@ import {
   type UserNotification,
 } from "@/lib/api/notificationApi";
 import { useNotificationCenter } from "@/context/NotificationCenterContext";
+import { useAuth } from "@/context/AuthContext";
 import {
   getNotificationPresentation,
   getSafeNotificationRoute,
@@ -75,59 +76,79 @@ function getItemCategory(item: UserNotification): "battles" | "mocks" | "practic
 
 export default function NotificationsPage() {
   const router = useRouter();
+  const { user, token, loading: authLoading } = useAuth();
   const { decrementUnread, clearUnread } = useNotificationCenter();
 
   const [items, setItems] = useState<UserNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const [markingAll, setMarkingAll] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<CategoryFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const markingAllRef = useRef(false);
+  const markingItemRef = useRef<Set<string>>(new Set());
 
-  // Remove notification alert from avatar icon upon visiting /notifications (and persist read status)
   useEffect(() => {
-    clearUnread();
-    void markAllNotificationsRead().catch(() => {});
-
+    if (authLoading || !user || !token) return;
+    let cancelled = false;
     void fetchNotifications()
       .then((data) => {
+        if (cancelled) return;
         setItems(data?.items || []);
         setUnreadCount(data?.unreadCount || 0);
       })
       .catch(() => {
+        if (cancelled) return;
         setItems([]);
         setUnreadCount(0);
       })
       .finally(() => {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       });
-  }, [clearUnread]);
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user, token]);
 
   const handleBack = useCallback(() => {
     router.replace("/");
   }, [router]);
 
+  const markItemReadIfNeeded = async (item: UserNotification) => {
+    if (item.read || markingItemRef.current.has(item._id)) return;
+    markingItemRef.current.add(item._id);
+    setItems((current) =>
+      current.map((entry) =>
+        entry._id === item._id ? { ...entry, read: true } : entry
+      )
+    );
+    setUnreadCount((count) => Math.max(0, count - 1));
+    decrementUnread();
+
+    try {
+      await markNotificationRead(item._id);
+    } catch {
+      // Best-effort read persistence; keep UI responsive during navigation
+    } finally {
+      markingItemRef.current.delete(item._id);
+    }
+  };
+
   const openNotification = async (item: UserNotification) => {
     if (openingId === item._id) return;
 
     const safeRoute = getSafeNotificationRoute(item.route);
-    if (!safeRoute) return;
+    if (!safeRoute) {
+      await markItemReadIfNeeded(item);
+      return;
+    }
 
     setOpeningId(item._id);
 
     try {
-      if (!item.read) {
-        setItems((current) =>
-          current.map((entry) =>
-            entry._id === item._id ? { ...entry, read: true } : entry
-          )
-        );
-        setUnreadCount((count) => Math.max(0, count - 1));
-        decrementUnread();
-
-        await markNotificationRead(item._id).catch(() => {});
-      }
-
+      await markItemReadIfNeeded(item);
       router.push(safeRoute);
     } finally {
       setOpeningId(null);
@@ -135,22 +156,35 @@ export default function NotificationsPage() {
   };
 
   const markAll = async () => {
-    await markAllNotificationsRead().catch(() => {});
-    clearUnread();
+    if (markingAllRef.current || unreadCount === 0) return;
+    markingAllRef.current = true;
+    setMarkingAll(true);
+    setActionError(null);
 
-    setItems((current) =>
-      current.map((item) => ({
-        ...item,
-        read: true,
-      }))
-    );
-    setUnreadCount(0);
+    try {
+      await markAllNotificationsRead();
+      clearUnread();
+      setItems((current) =>
+        current.map((item) => ({
+          ...item,
+          read: true,
+        }))
+      );
+      setUnreadCount(0);
+    } catch {
+      setActionError("Could not mark all notifications as read. Please try again.");
+    } finally {
+      markingAllRef.current = false;
+      setMarkingAll(false);
+    }
   };
 
   const handleCardClick = (item: UserNotification) => {
     void trackNotificationEngagement(item._id, "opened", "in_app").catch(() => {});
     if (getSafeNotificationRoute(item.route)) {
       void openNotification(item);
+    } else if (!item.read) {
+      void markItemReadIfNeeded(item);
     }
   };
 
@@ -234,12 +268,13 @@ export default function NotificationsPage() {
             {unreadCount > 0 && (
               <button data-ui-button="state"
                 type="button"
-                onClick={markAll}
+                disabled={markingAll}
+                onClick={() => void markAll()}
                 className="notif-read-all-btn"
                 aria-label="Read all notifications"
               >
                 <CheckCheck size={16} />
-                <span>Read all</span>
+                <span>{markingAll ? "Marking…" : "Read all"}</span>
               </button>
             )}
           </div>
@@ -373,6 +408,11 @@ export default function NotificationsPage() {
           </section>
 
           {/* List Content */}
+        {actionError && (
+          <div role="alert" className="mb-3 rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-sm text-rose-600">
+            {actionError}
+          </div>
+        )}
         {loading ? (
           <div className="notif-list" aria-busy="true">
             {[1, 2, 3, 4].map((id) => (

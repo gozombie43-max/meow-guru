@@ -237,7 +237,7 @@ export async function uploadFullPaper({ slotData, questions, paper, examMode }) 
     if (typeof questionsCollection.bulkWrite === 'function') {
       const ops = bankQuestions.map(q => ({
         updateOne: {
-          filter: { questionUid: q.questionUid },
+          filter: { questionUid: { $eq: String(q.questionUid), $type: 'string' } },
           update: {
             $set: { ...q, ...buildNormalizedQuestionFields(q), ...trainingQuestionMetadata(q), ...battleQuestionMetadata(q) },
           },
@@ -256,7 +256,7 @@ export async function uploadFullPaper({ slotData, questions, paper, examMode }) 
       for (const q of bankQuestions) {
         try {
           await questionsCollection.updateOne(
-            { questionUid: q.questionUid },
+            { questionUid: { $eq: String(q.questionUid), $type: 'string' } },
             { $set: { ...q, ...buildNormalizedQuestionFields(q), ...trainingQuestionMetadata(q), ...battleQuestionMetadata(q) } },
             { upsert: true }
           );
@@ -371,10 +371,14 @@ export async function buildPaper({ examSlug, testId, slot: loadedSlot }) {
       if (topicList.length > 0) {
         try {
           const projection = MOCK_DYNAMIC_QUESTION_PROJECTION;
-          const modeFilter = questionExamModeCondition(examMode);
-          const nonStudyFilter = useNormalizedKeys
-            ? { $or: [{ modeKey: { $exists: true, $ne: 'studyMode' } }, { modeKey: { $exists: false }, ...buildExcludeStudyModeCondition() }] }
-            : buildExcludeStudyModeCondition();
+          const allowUnnormalizedFallback = process.env.QUESTIONS_ALLOW_UNNORMALIZED_FALLBACK === 'true';
+          const exactNormalized = useNormalizedKeys && !allowUnnormalizedFallback;
+          const modeFilter = questionExamModeCondition(examMode, { useNormalizedKeys: exactNormalized });
+          const nonStudyFilter = exactNormalized
+            ? { modeKey: { $ne: 'studyMode' } }
+            : useNormalizedKeys
+              ? { $or: [{ modeKey: { $exists: true, $ne: 'studyMode' } }, { modeKey: { $exists: false }, ...buildExcludeStudyModeCondition() }] }
+              : buildExcludeStudyModeCondition();
           const pivot = randomBytes(8).toString('hex');
           const sortSpec = { selectionKey: 1, _id: 1 };
 
@@ -416,7 +420,7 @@ export async function buildPaper({ examSlug, testId, slot: loadedSlot }) {
               // Fallback for un-backfilled fixtures lacking selectionKey/topicKey.
               const topicRegexes = topicList.map((topic) => exactCI(topic));
               const fallbackFilter = combineMongoConditions([
-                modeFilter,
+                questionExamModeCondition(examMode, { useNormalizedKeys: false }),
                 buildExcludeStudyModeCondition(),
                 { topic: { $in: topicRegexes } },
               ]);

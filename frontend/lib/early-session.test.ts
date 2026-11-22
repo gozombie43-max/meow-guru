@@ -13,18 +13,31 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
-function fixture() {
+function fixture(options: { hasSession?: boolean; pathname?: string; search?: string; cookie?: string } = {}) {
+  const { hasSession = true, pathname = '/', search = '', cookie = '' } = options;
+  const storage = new Map<string, string>();
+  if (hasSession) storage.set('meow_has_session', '1');
+  const localStorage = {
+    getItem: vi.fn((key: string) => storage.get(key) ?? null),
+    setItem: vi.fn((key: string, value: string) => { storage.set(key, value); }),
+    removeItem: vi.fn((key: string) => { storage.delete(key); }),
+  };
+  const doc = { cookie };
   const fetch = vi.fn().mockResolvedValueOnce(response({ token: 'server-token' })).mockResolvedValue(response(profile));
   const requestLock = vi.fn((_name: string, _options: LockOptions, run: () => unknown) => run());
   const browser = {
     fetch, navigator: { locks: { request: requestLock } }, AbortController,
+    localStorage,
+    document: doc,
+    location: { pathname, search },
     setTimeout: (callback: () => void, delay: number) => setTimeout(callback, delay),
     clearTimeout: (id: ReturnType<typeof setTimeout>) => clearTimeout(id),
     __MEOW_SESSION_BOOTSTRAP__: undefined as Window['__MEOW_SESSION_BOOTSTRAP__'],
+    __MEOW_ROUTE_BOOTSTRAP__: undefined as Window['__MEOW_ROUTE_BOOTSTRAP__'],
   };
   vi.stubGlobal('window', browser);
-  const start = () => vm.runInNewContext(earlySessionScript(base), { window: browser, Date });
-  return { fetch, requestLock, browser, start };
+  const start = () => vm.runInNewContext(earlySessionScript(base), { window: browser, Date, URLSearchParams });
+  return { fetch, requestLock, browser, localStorage, storage, doc, start };
 }
 
 afterEach(() => {
@@ -173,8 +186,7 @@ describe('HTML session bootstrap', () => {
   });
 
   it('preloads training session route data in parallel with profile and hands it off once', async () => {
-    const { fetch, browser } = fixture();
-    Object.assign(browser, { location: { pathname: '/play/session/lighthouse-training', search: '' } });
+    const { fetch, browser } = fixture({ pathname: '/play/session/lighthouse-training' });
     fetch.mockReset().mockImplementation(async (url: string) => {
       if (url.endsWith('/auth/refresh')) return response({ token: 'server-token' });
       if (url.endsWith('/users/me')) return response(profile);
@@ -187,5 +199,51 @@ describe('HTML session bootstrap', () => {
     const key = `auth:GET:${base}/api/training/sessions/lighthouse-training`;
     await expect(consumeEarlyRouteData(base, key, 'server-token')).resolves.toEqual({ id: 'lighthouse-training', status: 'active' });
     expect(consumeEarlyRouteData(base, key, 'server-token')).toBeNull();
+  });
+
+  it('triggers zero /auth/refresh requests for guests without a session indicator', async () => {
+    const { fetch, start } = fixture({ hasSession: false, pathname: '/' });
+    start();
+    await expect(consumeEarlyRefresh(base)).resolves.toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(['/login', '/register', '/access-code', '/reset-password', '/verify-email'])(
+    'skips /auth/refresh on auth route %s even when a session indicator exists',
+    async (authPath) => {
+      const { fetch, start } = fixture({ hasSession: true, pathname: authPath });
+      start();
+      await expect(consumeEarlyRefresh(base)).resolves.toBeNull();
+      expect(fetch).not.toHaveBeenCalled();
+    }
+  );
+
+  it('pre-warms returning users who have a cookie session indicator and clears the hint on 401', async () => {
+    const { fetch, storage, start } = fixture({
+      hasSession: false,
+      cookie: 'meow_has_session=1',
+      pathname: '/dashboard',
+    });
+    start();
+    await expect(consumeEarlyRefresh(base)).resolves.toBe('server-token');
+    expect(fetch).toHaveBeenCalledWith(`${base}/auth/refresh`, expect.any(Object));
+    expect(storage.get('meow_has_session')).toBe('1');
+
+    discardEarlySession();
+    fetch.mockReset().mockResolvedValueOnce({ ok: false, status: 401, json: async () => ({}) });
+    start();
+    await expect(consumeEarlyRefresh(base)).resolves.toBeNull();
+    expect(storage.has('meow_has_session')).toBe(false);
+  });
+
+  it('refreshes on protected routes even without a client hint cookie/storage flag and sets the hint on success', async () => {
+    const { fetch, storage, start } = fixture({
+      hasSession: false,
+      pathname: '/play',
+    });
+    start();
+    await expect(consumeEarlyRefresh(base)).resolves.toBe('server-token');
+    expect(fetch).toHaveBeenCalledWith(`${base}/auth/refresh`, expect.any(Object));
+    expect(storage.get('meow_has_session')).toBe('1');
   });
 });

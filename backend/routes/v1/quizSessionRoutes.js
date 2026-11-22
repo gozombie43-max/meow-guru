@@ -48,8 +48,8 @@ router.use(questionReadLimiter);
 router.post(
   '/sessions',
   protect,
-  idempotency('v1.quiz.session.create'),
   validateBody(createQuizSessionBodySchema),
+  idempotency('v1.quiz.session.create'),
   createSessionHandler,
 );
 
@@ -80,8 +80,8 @@ router.post(
   '/sessions/:id/submit',
   protect,
   validateParams(quizSessionIdParamsSchema),
-  idempotency('v1.quiz.session.submit'),
   validateBody(submitSessionBodySchema),
+  idempotency('v1.quiz.session.submit'),
   submitSessionHandler,
 );
 

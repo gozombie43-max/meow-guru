@@ -104,6 +104,7 @@ jobs:
         env:
           ACTIONS_MONGODB_URI: ${{ secrets.MONGODB_URI }}
           ACTIONS_MONGODB_DB: ${{ vars.MONGODB_DB }}
+          ACTIONS_QUESTIONS_NORMALIZED_KEYS: ${{ vars.QUESTIONS_NORMALIZED_KEYS }}
         run: |
           set -euo pipefail
           resource_group="Meowguru_group"
@@ -126,8 +127,11 @@ jobs:
           echo "::add-mask::$mongodb_uri"
           echo "MONGODB_URI=$mongodb_uri" >> "$GITHUB_ENV"
           echo "MONGODB_DB=$mongodb_db" >> "$GITHUB_ENV"
-          normalized_keys="$(az webapp config appsettings list --name quizguru-backend --resource-group "$resource_group" --query "[?name=='QUESTIONS_NORMALIZED_KEYS'].value | [0]" --output tsv)"
-          echo "QUESTIONS_NORMALIZED_KEYS=${normalized_keys:-false}" >> "$GITHUB_ENV"
+          normalized_keys="${ACTIONS_QUESTIONS_NORMALIZED_KEYS:-}"
+          if [ -z "$normalized_keys" ] || [ "$normalized_keys" = "null" ]; then
+            normalized_keys="$(az webapp config appsettings list --name quizguru-backend --resource-group "$resource_group" --query "[?name=='QUESTIONS_NORMALIZED_KEYS'].value | [0]" --output tsv)"
+          fi
+          echo "QUESTIONS_NORMALIZED_KEYS=${normalized_keys:-true}" >> "$GITHUB_ENV"
           echo "RESOURCE_GROUP=$resource_group" >> "$GITHUB_ENV"
           host="$(az webapp show --name quizguru-backend --resource-group "$resource_group" --query defaultHostName --output tsv)"
           echo "APP_HOST=$host" >> "$GITHUB_ENV"
@@ -142,6 +146,17 @@ jobs:
 
       - name: Configure always-on full runtime (Basic B1 or higher)
         shell: bash
+        env:
+          # Runtime & multi-instance scaling configuration (repository vars override single-instance defaults):
+          # - Single-instance default: RUN_EMBEDDED_WORKERS=true, BATTLE_REDIS_ADAPTER=false
+          # - Multi-instance target (>1 API replica): set repository vars RUN_EMBEDDED_WORKERS=false,
+          #   RUN_CONCEPT_GROUPING_WORKER=false, BATTLE_REDIS_ADAPTER=true (with dedicated worker.js & Valkey).
+          CONFIG_QUESTIONS_NORMALIZED_KEYS: ${{ vars.QUESTIONS_NORMALIZED_KEYS }}
+          CONFIG_RUN_EMBEDDED_WORKERS: ${{ vars.RUN_EMBEDDED_WORKERS }}
+          CONFIG_RUN_CONCEPT_GROUPING_WORKER: ${{ vars.RUN_CONCEPT_GROUPING_WORKER }}
+          CONFIG_BATTLE_REDIS_ADAPTER: ${{ vars.BATTLE_REDIS_ADAPTER }}
+          CONFIG_REDIS_CONNECT_TIMEOUT_MS: ${{ vars.REDIS_CONNECT_TIMEOUT_MS }}
+          CONFIG_HTTP_REQUEST_TIMEOUT_MS: ${{ vars.HTTP_REQUEST_TIMEOUT_MS }}
         run: |
           set -euo pipefail
           ai_configured="$(az webapp config appsettings list --name quizguru-backend --resource-group "$RESOURCE_GROUP" --query "[?name=='AZURE_OPENAI_KEY' || name=='OPENAI_API_KEY'].value | [?@ != '' && @ != null] | length(@)" --output tsv)"
@@ -149,13 +164,24 @@ jobs:
             echo "::error::Automatic concept grouping requires an AI key in the Web App settings."
             exit 1
           fi
+          questions_normalized_keys="${CONFIG_QUESTIONS_NORMALIZED_KEYS:-${QUESTIONS_NORMALIZED_KEYS:-true}}"
+          run_embedded_workers="${CONFIG_RUN_EMBEDDED_WORKERS:-true}"
+          run_concept_grouping_worker="${CONFIG_RUN_CONCEPT_GROUPING_WORKER:-$run_embedded_workers}"
+          battle_redis_adapter="${CONFIG_BATTLE_REDIS_ADAPTER:-false}"
+          redis_connect_timeout_ms="${CONFIG_REDIS_CONNECT_TIMEOUT_MS:-3000}"
+          http_request_timeout_ms="${CONFIG_HTTP_REQUEST_TIMEOUT_MS:-60000}"
+          echo "EFFECTIVE_RUN_EMBEDDED_WORKERS=$run_embedded_workers" >> "$GITHUB_ENV"
           az webapp config appsettings set \
             --name quizguru-backend \
             --resource-group "$RESOURCE_GROUP" \
             --settings \
               "QUIZ_ONLY_MODE=false" \
-              "RUN_EMBEDDED_WORKERS=true" \
-              "RUN_CONCEPT_GROUPING_WORKER=true" \
+              "RUN_EMBEDDED_WORKERS=$run_embedded_workers" \
+              "RUN_CONCEPT_GROUPING_WORKER=$run_concept_grouping_worker" \
+              "QUESTIONS_NORMALIZED_KEYS=$questions_normalized_keys" \
+              "BATTLE_REDIS_ADAPTER=$battle_redis_adapter" \
+              "REDIS_CONNECT_TIMEOUT_MS=$redis_connect_timeout_ms" \
+              "HTTP_REQUEST_TIMEOUT_MS=$http_request_timeout_ms" \
               "DEPLOYMENT_ENVIRONMENT=production" \
               "PROCESS_ROLE=api" \
             --output none
@@ -180,11 +206,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          expected_workers="healthy"
+          if [ "${EFFECTIVE_RUN_EMBEDDED_WORKERS:-true}" != "true" ]; then
+            expected_workers="disabled"
+          fi
           for attempt in $(seq 1 24); do
             echo "Readiness attempt $attempt/24"
             : > health.json
             status="$(curl --silent --show-error --max-time 20 --output health.json --write-out '%{http_code}' "https://$APP_HOST/health")" || status="transport-error"
-            if [ "$status" = "200" ] && jq -e --arg release "$EXPECTED_RELEASE" '.ok == true and .releaseId == $release and .environment == "production" and .mode == "full" and .dependencies.battle == "healthy" and .dependencies.workers == "healthy"' health.json; then
+            if [ "$status" = "200" ] && jq -e --arg release "$EXPECTED_RELEASE" --arg workers "$expected_workers" '.ok == true and .releaseId == $release and .environment == "production" and .mode == "full" and .dependencies.battle == "healthy" and .dependencies.workers == $workers' health.json; then
               # Exercise the lazy-loaded AI router used by translation admission.
               # No credentials: a healthy route must reject with 401, never 500.
               : > quota.json

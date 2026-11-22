@@ -22,6 +22,7 @@ async function setupAuthenticatedRoutes(
 ) {
   await page.context().addCookies([
     { name: 'access_session', value: 'p0d-shell-chrome-fixture', domain: '127.0.0.1', path: '/' },
+    { name: 'meow_has_session', value: '1', domain: '127.0.0.1', path: '/' },
   ]);
 
   await page.addInitScript((selectedTheme: 'dark' | 'light') => {

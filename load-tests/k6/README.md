@@ -29,7 +29,7 @@ Production load-testing suite for Meow's standardized `/api/v1/quiz/*` question 
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
 | `BASE_URL` | No | `http://127.0.0.1:10000` | Backend API origin (no trailing slash). |
-| `STAGE` | No | `stage4` | Stage profile: `stage1`, `stage2`, `stage3`, `stage4`, `stage5`, `stage6`, or `ramp`. |
+| `STAGE` | No | `stage4` | Stage profile: `smoke`, `stage0` (30 VUs), `stage1`, `stage2`, `stage3`, `stage4`, `stage5`, `stage6`, `stage7` (1200–1500 VUs headroom), or `ramp`. |
 | `REDIS_MODE` | No | `enabled` | Tag for side-by-side comparison (`enabled` or `disabled`). |
 | `AUTH_TOKEN` | Conditional | — | Pre-minted bearer JWT (reused across VUs). |
 | `AUTH_TOKENS` | Conditional | — | Comma-separated pool of bearer JWTs sharded across VUs. |
@@ -56,12 +56,14 @@ Run all commands from the repository root so JSON artifacts land in `load-tests/
 
 | Stage | Peak VUs | Purpose | Ramp / Hold / Cooldown |
 | --- | --- | --- | --- |
+| `stage0` | 30 VUs | Initial baseline ramp (`meow-question-delivery.js`) | 15s / 2m / 15s |
 | `stage1` | 50 VUs | Baseline correctness & latency sanity | 20s / 2m / 20s |
 | `stage2` | 100 VUs | Redis cache warming & DB index validation | 30s / 3m / 20s |
 | `stage3` | 250 VUs | Early bottleneck discovery (pool / CPU / serialization) | 45s / 3m / 30s |
 | `stage4` | **500 VUs** | **Production target SLO gate (default)** | 1m / 4m / 30s |
 | `stage5` | 750 VUs | 1.5x headroom & stress verification | 1m30s / 4m / 45s |
 | `stage6` | 1000 VUs | 2x capacity boundary & graceful degradation | 2m / 4m / 45s |
+| `stage7` | 1200–1500 VUs | 1.5x headroom over 1,000 CCU target | 1m30s / 1m / 3m / 45s |
 | `ramp` | 50 → 1000 VUs | Full continuous stepped ramp across all 6 plateaus | ~19m total |
 
 ### Exact Commands (Bash / Linux / macOS)
@@ -347,4 +349,85 @@ histogram_quantile(0.95, sum by (le, endpoint) (rate(meow_question_delivery_payl
 
 # Duplicate questions prevented server-side by surface
 sum by (surface) (increase(meow_question_delivery_duplicates_prevented_total[15m]))
+```
+
+
+---
+
+## 8. Comprehensive R5 Production Readiness Multi-Journey Suite (`meow-production-readiness.js`)
+
+For end-to-end 1,000+ CCU production readiness validation across **all 6 core user flows**, use [`meow-production-readiness.js`](./meow-production-readiness.js):
+
+1. **Auth**: `POST /auth/login` (bcrypt worker pool + `Origin`) and `POST /auth/refresh` (cookie jar + `Origin`).
+2. **Browse Exam Categories & Catalog**: `GET /api/questions/topic-counts`, `GET /api/mocktest/catalog-metadata`, `GET /api/mocktest/:examSlug/slots`.
+3. **Load Questions**: `GET /api/questions/meta`, `GET /api/questions/session` (asserting 0 answer-key leaks).
+4. **Quiz Session Lifecycle (v1)**: `POST /api/v1/quiz/sessions`, `POST /api/v1/quiz/sessions/:id/answers` (including deliberate duplicate replay asserting `Idempotency-Replayed: true`), `GET /api/v1/quiz/sessions/:id/questions`, `POST /api/v1/quiz/sessions/:id/submit`, `GET /api/v1/quiz/sessions/:id/result` (asserting 0 pre-submit answer-key leaks).
+5. **Mock Test Lifecycle**: `POST /api/mocktest/:examSlug/:testId/start`, `PATCH /api/mocktest/attempt/:id/autosave`, `POST /api/mocktest/attempt/:id/submit` (including deliberate duplicate replay), `GET /api/mocktest/attempt/:id`.
+6. **Training, Leaderboards & Stats**: `GET /api/training/dashboard`, `POST /api/training/sessions`, `POST /api/training/sessions/:id/actions`, `GET /api/battle/leaderboard`, `GET /api/battle/season/leaderboard`, `GET /api/progress/topics`, `GET /users/me`.
+
+### R5 Stage Ladder & SLO Thresholds
+
+| Stage | Target VUs | Default Staging Hold | Local Harness Hold | Key Thresholds |
+| --- | --- | --- | --- | --- |
+| `smoke` | 5 VUs | 30s | 10s | `read_api_duration p(95) < 500ms` |
+| `stage1` | 30 VUs | 5m | 25s | `write_api_duration p(95) < 800ms` |
+| `stage2` | 100 VUs | 5m | 25s | `http_req_failed rate < 0.01` (`< 1%`) |
+| `stage3` | 250 VUs | 5m | 25s | `quiz_journey_failures count == 0` |
+| `stage4` | 500 VUs | 5m | 25s | `duplicate_submissions count == 0` |
+| `stage5` | 750 VUs | 5m | 25s | `answer_key_leaks count == 0` |
+| `stage6` | **1,000 VUs** | 5m | 25s | 1,000 CCU Production Target |
+| `stage7` | **1,200–1,500 VUs** | 5m | 25s | 1.5x Headroom / Breaking Point |
+
+### R5 Environment Variables
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `BASE_URL` | `http://127.0.0.1:10000` | Target API origin (production hostnames strictly blocked). |
+| `K6_ENV` | `local` | `local` (loopback only) or `staging` (requires `K6_ALLOW_STAGING=true`). |
+| `STAGE` | `smoke` | `smoke`, `stage1`..`stage7`. |
+| `STAGE_DURATION` | `60s` | Steady-state duration per stage (e.g. `25s` local, `5m` staging). |
+| `RAMP_DURATION` / `COOLDOWN_DURATION` | Stage default | Ramp-up and ramp-down durations. |
+| `STAGE7_TARGET_VUS` | `1500` | Upper VU target for `stage7` (`1200..1500`). |
+| `THINK_TIME_SCALE` | `1.0` | Multiplier for inter-journey think time (`0..5`). |
+| `AUTH_JOURNEY_WEIGHT` | `6` | Percentage (`1..30`) of iterations running full bcrypt login + refresh. |
+| `LOCAL_BENCH_SPOOF_IP` | `0` | Set `1` in local harness to assign per-VU `X-Forwarded-For` (`10.0.x.y`) over `trust proxy` so real rate limiting stays active without 1,500 VUs colliding on `127.0.0.1`. |
+| `TEST_ACCOUNTS_FILE` | — | Path to JSON file of `[{ email, password, token }]` (avoids Windows env length limits). |
+| `SUMMARY_PATH` | — | File path to export structured JSON summary via `handleSummary`. |
+
+### Self-Contained Local 7-Stage Benchmark Harness
+
+Boots an isolated offline `MongoMemoryReplSet` (migrations `001`–`029`), seeds synthetic users/questions/mock papers/battle seasons, starts the local Express API + TCP RESP3 Redis stub on `127.0.0.1:0`, runs `k6` across all 7 stages, samples Node CPU/RSS/heapUsed/event-loop lag and `/metrics`, and runs direct MongoDB integrity audits after every stage:
+
+```bash
+# Run all 7 stages locally (30 -> 100 -> 250 -> 500 -> 750 -> 1000 -> 1200-1500 VUs)
+node backend/scripts/run-staged-k6-local.js \
+  --stages stage1,stage2,stage3,stage4,stage5,stage6,stage7 \
+  --duration 25s --ramp 5s --cooldown 3s --users 150 --questions 1600
+
+# Quick 10s smoke validation
+node backend/scripts/run-staged-k6-local.js --stages smoke --duration 10s --ramp 3s --cooldown 2s
+```
+
+Artifacts produced:
+- `load-tests/k6/results-local-readiness-<stage>.json` (per-stage k6 metrics + server telemetry + DB integrity audit)
+- `load-tests/k6/results-local-readiness-summary.json` (aggregate 7-stage summary)
+
+### Running Against Remote Staging (Never Production)
+
+```bash
+export K6_ENV="staging"
+export K6_ALLOW_STAGING="true"
+export BASE_URL="https://<staging-app>.azurewebsites.net"
+export K6_ORIGIN="https://<staging-frontend>"
+export TEST_ACCOUNTS_FILE="./staging-synthetic-accounts.json"
+export METRICS_TOKEN="<staging-metrics-token>"
+
+for STAGE in stage1 stage2 stage3 stage4 stage5 stage6 stage7; do
+  k6 run \
+    -e K6_ENV -e K6_ALLOW_STAGING -e BASE_URL -e K6_ORIGIN \
+    -e TEST_ACCOUNTS_FILE -e METRICS_TOKEN \
+    -e STAGE="$STAGE" -e STAGE_DURATION="5m" \
+    -e SUMMARY_PATH="load-tests/k6/results-staging-readiness-${STAGE}.json" \
+    load-tests/k6/meow-production-readiness.js
+done
 ```

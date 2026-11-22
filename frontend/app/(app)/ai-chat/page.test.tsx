@@ -65,12 +65,51 @@ describe('AI chat draft isolation', () => {
     fireEvent.change(input, { target: { value: 'Explain percentages' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
     await screen.findByText('Validated reply');
-    expect(probes.post).toHaveBeenCalledWith('/api/ai/tutor-chat', expect.objectContaining({ message: 'Explain percentages' }), expect.anything());
+    expect(probes.post).toHaveBeenCalledWith(
+      '/api/ai/tutor-chat',
+      expect.objectContaining({ message: 'Explain percentages' }),
+      expect.objectContaining({
+        headers: expect.objectContaining({ 'Idempotency-Key': expect.any(String) }),
+        signal: expect.any(AbortSignal),
+      })
+    );
     expect(input).toHaveValue('');
     probes.post.mockImplementation(async (url: string) => ({ data: url.endsWith('/messages') ? { saved: true } : { success: false, reply: 'Invalid reply must not render' } }));
     fireEvent.change(input, { target: { value: 'Next question' } });
     fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
     await waitFor(() => expect(document.body.textContent).toContain('expected true'));
     expect(screen.queryByText('Invalid reply must not render')).toBeNull();
+  });
+
+  it('prevents duplicate tutor-chat submissions on rapid double-click and aborts on New chat', async () => {
+    probes.get.mockResolvedValue({ data: { aiChats: [] } });
+    let resolveChat!: (value: { data: { success: boolean; reply: string } }) => void;
+    probes.post.mockImplementation((url: string) => {
+      if (url.endsWith('/messages')) return Promise.resolve({ data: { saved: true } });
+      return new Promise((resolve) => {
+        resolveChat = resolve;
+      });
+    });
+
+    render(<AiChatPage />);
+    const starterBtn = await screen.findByRole('button', { name: 'Mensuration formula revision' });
+    fireEvent.click(starterBtn);
+    fireEvent.click(starterBtn);
+
+    await waitFor(() => {
+      const tutorCalls = probes.post.mock.calls.filter(([url]) => url === '/api/ai/tutor-chat');
+      expect(tutorCalls).toHaveLength(1);
+    });
+
+    const tutorCallConfig = probes.post.mock.calls.find(([url]) => url === '/api/ai/tutor-chat')?.[2] as {
+      headers?: Record<string, string>;
+      signal?: AbortSignal;
+    };
+    expect(tutorCallConfig?.headers?.['Idempotency-Key']).toEqual(expect.any(String));
+    expect(tutorCallConfig?.signal?.aborted).toBe(false);
+
+    fireEvent.click(screen.getByRole('button', { name: 'New chat' }));
+    expect(tutorCallConfig?.signal?.aborted).toBe(true);
+    resolveChat({ data: { success: true, reply: 'Late reply' } });
   });
 });

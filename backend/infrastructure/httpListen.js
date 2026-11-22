@@ -1,5 +1,6 @@
 const DEFAULT_KEEP_ALIVE_TIMEOUT_MS = 65000;
 const DEFAULT_HEADERS_TIMEOUT_MS = 66000;
+const DEFAULT_REQUEST_TIMEOUT_MS = 60000;
 
 function parseTimeoutMs(raw, fallback, min = 1000) {
   const parsed = Number.parseInt(String(raw ?? ''), 10);
@@ -10,15 +11,17 @@ export function getHttpTimeoutConfig(env = process.env) {
   const keepAliveTimeout = parseTimeoutMs(env.HTTP_KEEP_ALIVE_TIMEOUT_MS, DEFAULT_KEEP_ALIVE_TIMEOUT_MS);
   const requestedHeadersTimeout = parseTimeoutMs(env.HTTP_HEADERS_TIMEOUT_MS, DEFAULT_HEADERS_TIMEOUT_MS);
   const headersTimeout = Math.max(requestedHeadersTimeout, keepAliveTimeout + 1000);
-  return { keepAliveTimeout, headersTimeout };
+  const requestTimeout = parseTimeoutMs(env.HTTP_REQUEST_TIMEOUT_MS, DEFAULT_REQUEST_TIMEOUT_MS);
+  return { keepAliveTimeout, headersTimeout, requestTimeout };
 }
 
 // Turn asynchronous bind failures into startup errors handled by the caller.
 export function listenServer(server, port, host = '0.0.0.0') {
   if (server && typeof server === 'object') {
-    const { keepAliveTimeout, headersTimeout } = getHttpTimeoutConfig();
+    const { keepAliveTimeout, headersTimeout, requestTimeout } = getHttpTimeoutConfig();
     server.keepAliveTimeout = keepAliveTimeout;
     server.headersTimeout = headersTimeout;
+    server.requestTimeout = requestTimeout;
   }
   return new Promise((resolve, reject) => {
     const onError = (error) => {

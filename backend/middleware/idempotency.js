@@ -38,18 +38,13 @@ export function idempotency(operation, { strict = false } = {}) {
     }
     const send = res.json.bind(res);
     let saving = false;
-    res.on('close', () => {
-      if (!saving && !res.headersSent && !res.writableEnded) {
-        void collection.deleteOne({ _id: id, status: 'pending' }).catch(() => {});
-      }
-    });
     res.json = body => {
       if (saving) return res;
       saving = true;
       const responseStatus = res.statusCode;
-      // Retryable failures (conflicts, rate limits, server errors) must not be cached for 24 hours;
+      // Retryable failures (validation errors, conflicts, rate limits, server errors) must not be cached for 24 hours;
       // release the pending record so the caller can safely retry with the same Idempotency-Key.
-      const retryable = responseStatus >= 500 || responseStatus === 409 || responseStatus === 429;
+      const retryable = responseStatus >= 500 || responseStatus === 400 || responseStatus === 409 || responseStatus === 429;
       void (async () => {
         try {
           if (retryable) {

@@ -75,6 +75,7 @@ export async function routeBackendApi(
         ]
       : []),
     { name: 'access_session', value: accessSession, domain: hostname, path: '/' },
+    ...(token ? [{ name: 'meow_has_session', value: '1', domain: hostname, path: '/' }] : []),
   ];
   await context.addCookies(cookies);
   await context.route('**/backend-api/**', async route => {

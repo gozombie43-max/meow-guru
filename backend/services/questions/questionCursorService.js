@@ -7,7 +7,7 @@ import { ObjectId } from 'mongodb';
 import { createHash } from 'node:crypto';
 import { readQuestionFacets } from './questionFacets.js';
 import { getQuestionsCollection } from '../../config/mongodb.js';
-import { normalizeSearchKey } from './questionNormalizer.js';
+import { normalizeFilterKey, normalizeQuizKey, normalizeSearchKey, parseShiftInt, parseYearInt } from './questionNormalizer.js';
 import {
   buildGeneralAwarenessChapterCondition,
   buildGeneralAwarenessTopicCondition,
@@ -27,7 +27,9 @@ function getCursorQuestionProjection() {
 async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
   const collection = getQuestionsCollection();
   const normalized = isNormalizedQuestionKeysEnabled();
-  const conditions = [questionExamModeCondition(params.examMode)];
+  const allowUnnormalizedFallback = process.env.QUESTIONS_ALLOW_UNNORMALIZED_FALLBACK === 'true';
+  const exactKeys = normalized && !allowUnnormalizedFallback;
+  const conditions = [questionExamModeCondition(params.examMode, { useNormalizedKeys: exactKeys })];
   const sorted = params.sort === 'asc' || params.sort === 'desc';
   const reverse = params.before === 'true' || params.before === true || params.last === 'true' || params.last === true;
   if (reverse && !sorted) throw Object.assign(new Error('Reverse pagination requires an explicit sort'), { statusCode: 400 });
@@ -47,26 +49,49 @@ async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
       ) throw new Error();
     } catch { throw Object.assign(new Error('Invalid question cursor'), { statusCode: 400 }); }
   }
-  if (params.exam) conditions.push({ exam: caseInsensitiveExact(params.exam) });
+  if (params.exam) {
+    const examKey = normalizeFilterKey(params.exam);
+    conditions.push(
+      exactKeys
+        ? { examKey }
+        : normalized
+          ? { $or: [{ examKey }, { examKey: { $exists: false }, exam: caseInsensitiveExact(params.exam) }] }
+          : { exam: caseInsensitiveExact(params.exam) },
+    );
+  }
   if (params.year !== undefined && params.year !== '') {
-    const parsedYear = Number(params.year);
-    if (Number.isInteger(parsedYear)) conditions.push({ year: { $in: [parsedYear, String(parsedYear)] } });
+    const parsedYear = parseYearInt(params.year) ?? Number(params.year);
+    if (Number.isInteger(parsedYear)) {
+      conditions.push(
+        exactKeys
+          ? { yearInt: parsedYear }
+          : { $or: [{ yearInt: parsedYear }, { year: { $in: [parsedYear, String(parsedYear)] } }] },
+      );
+    }
   }
   if (params.shift !== undefined && params.shift !== '') {
     const rawShift = String(params.shift).trim();
+    const parsedShift = parseShiftInt(rawShift);
     const numericShift = Number(rawShift);
-    conditions.push(Number.isInteger(numericShift) ? { shift: { $in: [numericShift, rawShift] } } : { shift: caseInsensitiveExact(rawShift) });
+    if (exactKeys && parsedShift !== null) {
+      conditions.push({ shiftInt: parsedShift });
+    } else {
+      conditions.push(Number.isInteger(numericShift) ? { shift: { $in: [numericShift, rawShift] } } : { shift: caseInsensitiveExact(rawShift) });
+    }
   }
   const effectiveDate = params.examDate || params.date;
-  if (effectiveDate) conditions.push({ examDate: caseInsensitiveExact(String(effectiveDate).trim()) });
+  if (effectiveDate) conditions.push({ examDate: caseInsensitiveExact(String(effectiveDate).trim().slice(0, 32)) });
   if (params.search) {
-    const escaped = String(params.search).slice(0, 200).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    conditions.push({ $or: ['question', 'translations.bn.question', 'id', 'chapter', 'concept', 'exam'].map(field => ({ [field]: new RegExp(escaped, 'i') })) });
+    const trimmedSearch = String(params.search).trim().slice(0, 120);
+    if (trimmedSearch) {
+      const escaped = trimmedSearch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      conditions.push({ $or: ['question', 'translations.bn.question', 'id', 'chapter', 'concept', 'exam'].map(field => ({ [field]: new RegExp(escaped, 'i') })) });
+    }
   }
   const gaGroupSlug = resolveGeneralAwarenessTopicGroupSlug(params.topic);
   const isGaQuery = Boolean(gaGroupSlug) || normalizeSearchKey(params.subject) === 'generalawareness';
   if (params.topic) {
-    const gaTopicCondition = gaGroupSlug ? buildGeneralAwarenessTopicCondition(gaGroupSlug, normalized) : null;
+    const gaTopicCondition = gaGroupSlug ? buildGeneralAwarenessTopicCondition(gaGroupSlug, normalized, { exactKeys }) : null;
     if (gaTopicCondition) {
       conditions.push(gaTopicCondition);
     } else {
@@ -86,16 +111,43 @@ async function buildfetchQuestionCursorPage(params, legacyFingerprint) {
     ));
   }
   if (params.chapter) {
-    const gaChapterCondition = isGaQuery ? buildGeneralAwarenessChapterCondition(params.chapter, normalized) : null;
-    conditions.push(gaChapterCondition || { chapter: caseInsensitiveExact(params.chapter) });
+    const gaChapterCondition = isGaQuery ? buildGeneralAwarenessChapterCondition(params.chapter, normalized, { exactKeys }) : null;
+    const chapterKey = normalizeFilterKey(params.chapter);
+    conditions.push(
+      gaChapterCondition || (
+        exactKeys
+          ? { chapterKey }
+          : normalized
+            ? { $or: [{ chapterKey }, { chapterKey: { $exists: false }, chapter: caseInsensitiveExact(params.chapter) }] }
+            : { chapter: caseInsensitiveExact(params.chapter) }
+      ),
+    );
   }
-  if (params.concept) conditions.push({ concept: caseInsensitiveExact(params.concept) });
+  if (params.concept) {
+    const conceptKey = normalizeFilterKey(params.concept);
+    conditions.push(
+      exactKeys
+        ? { conceptKey }
+        : normalized
+          ? { $or: [{ conceptKey }, { conceptKey: { $exists: false }, concept: caseInsensitiveExact(params.concept) }] }
+          : { concept: caseInsensitiveExact(params.concept) },
+    );
+  }
   if (params.difficulty) conditions.push(normalized ? { difficulty: String(params.difficulty).toLowerCase() } : { difficulty: caseInsensitiveExact(params.difficulty) });
   if (params.quizName) {
-    const regex = caseInsensitiveExact(params.quizName);
-    const alternatives = ['quizName', 'quizId', 'source'].map(field => ({ [field]: regex }));
-    if (normalizeSearchKey(params.quizName) === 'pyq') alternatives.push({ quizName: { $in: [null, ''] } });
-    conditions.push({ $or: alternatives });
+    const quizKey = normalizeQuizKey(params.quizName);
+    if (exactKeys) {
+      conditions.push(
+        quizKey === 'pyq'
+          ? { quizKey: { $in: ['pyq', ''] } }
+          : { quizKey },
+      );
+    } else {
+      const regex = caseInsensitiveExact(params.quizName);
+      const alternatives = ['quizName', 'quizId', 'source'].map(field => ({ [field]: regex }));
+      if (quizKey === 'pyq') alternatives.push({ quizName: { $in: [null, ''] } });
+      conditions.push({ $or: alternatives });
+    }
   }
   const type = String(params.questionType || '').trim().toLowerCase();
   if (['study-mode', 'studymode'].includes(type)) conditions.push(normalized ? { modeKey: 'studyMode' } : buildStudyModeMatchCondition());

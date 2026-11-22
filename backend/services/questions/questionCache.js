@@ -157,6 +157,21 @@ const publicStatsCache = createTieredCache({
   localMs: 10_000,
 });
 
+const practiceCountCache = createTieredCache({
+  name: 'practice-count',
+  freshMs: CACHE_TTLS.PUBLIC_STATS_MS,
+  staleMs: CACHE_TTLS.PUBLIC_STATS_MS,
+  localMs: 10_000,
+  distributedLock: false,
+  isEmpty: value => typeof value !== 'number' || !Number.isFinite(value) || value <= 0,
+  localCache: new LRUCache({
+    max: 1000,
+    maxSize: 2 * 1024 * 1024,
+    maxEntrySize: 16 * 1024,
+    sizeCalculation: entry => entry.cacheBytes,
+  }),
+});
+
 const quizSessionCache = createTieredCache({
   name: 'quiz-session',
   freshMs: CACHE_TTLS.SESSION_META_MS,
@@ -227,6 +242,72 @@ export async function cachedPublicStats(statsKey, loader) {
   return publicStatsCache.read(`meow:v1:public-stats:r${revision}:${tag}:${digestKey(rawKey)}`, loader, { allowStale: true });
 }
 
+function canonicalPracticeCountFilters(filters = {}) {
+  if (!filters || typeof filters !== 'object') return {};
+  const normalized = {};
+  for (const key of Object.keys(filters).sort()) {
+    const raw = filters[key];
+    if (raw === undefined || raw === null) continue;
+    const str = String(raw).trim();
+    if (!str) continue;
+    if (key === 'difficulty') {
+      const lower = str.toLowerCase();
+      if (lower === 'mixed' || lower === 'all') continue;
+      normalized.difficulty = lower;
+      continue;
+    }
+    if (key === 'letter') {
+      const letters = [...new Set(str.split(',').map(item => item.trim().toUpperCase()).filter(Boolean))].sort();
+      if (letters.length > 0) normalized.letter = letters.join(',');
+      continue;
+    }
+    normalized[key] = str.toLowerCase();
+  }
+  return normalized;
+}
+
+export async function cachedPracticeCount(filters, loader) {
+  const cleanFilters = canonicalPracticeCountFilters(filters);
+  const highCardinality = isHighCardinalityFilter(cleanFilters);
+  if (highCardinality) {
+    observeCacheOperation({ cache: 'practice-count', layer: 'redis', outcome: 'bypass' });
+  }
+  let loaderError = null;
+  let loaderResult;
+  let loaderSettled = false;
+  const trackedLoader = async () => {
+    try {
+      loaderResult = await loader();
+      loaderSettled = true;
+      return loaderResult;
+    } catch (error) {
+      loaderError = error;
+      throw error;
+    }
+  };
+  try {
+    const revision = await getQuestionRevision();
+    const normalized = isNormalizedKeysEnabled();
+    const rawKey = JSON.stringify({
+      scope: 'practice-count',
+      revision,
+      normalized,
+      filters: cleanFilters,
+    });
+    const tag = scopeTagFor(cleanFilters);
+    return await practiceCountCache.read(
+      `meow:v1:practice-count:r${revision}:${tag}:${digestKey(rawKey)}`,
+      trackedLoader,
+      { allowStale: false, cacheShared: !highCardinality },
+    );
+  } catch (error) {
+    if (error === loaderError) throw error;
+    observeCacheOperation({ cache: 'practice-count', layer: 'redis', outcome: 'error' });
+    if (loaderSettled) return loaderResult;
+    return loader();
+  }
+}
+
 export async function cachedQuizSession(sessionId, loader) {
   const cleanId = String(sessionId ?? '').trim();
   if (!cleanId) return loader();
@@ -255,7 +336,7 @@ onCacheInvalidation((type, scope) => {
 });
 
 export function isNormalizedQuestionKeysEnabled() {
-  return process.env.QUESTIONS_NORMALIZED_KEYS === 'true';
+  return process.env.QUESTIONS_NORMALIZED_KEYS !== 'false';
 }
 
 // Opt-in normalized-by-default check for modernized delivery paths (Phase 3/4+).
@@ -377,6 +458,7 @@ function evictLocalQuestionCaches(rawScope) {
     topicMetadataCache.clear();
     examConfigCache.clear();
     publicStatsCache.clear();
+    practiceCountCache.clear();
     for (const clear of revisionListeners) {
       try { clear(); } catch { /* noop */ }
     }
@@ -408,6 +490,7 @@ function evictLocalQuestionCaches(rawScope) {
     topicPoolCache.deleteWhere(matchScope);
     topicMetadataCache.deleteWhere(matchScope);
     examConfigCache.deleteWhere(matchScope);
+    practiceCountCache.deleteWhere(matchScope);
     for (const key of [...questionsQueryCache.keys()]) {
       if (matchesLegacyQueryKey(key, scope)) questionsQueryCache.delete(key);
     }
@@ -416,6 +499,7 @@ function evictLocalQuestionCaches(rawScope) {
     pageCache.clear();
     topicPoolCache.clear();
     topicMetadataCache.clear();
+    practiceCountCache.clear();
     questionsQueryCache.clear();
   }
 

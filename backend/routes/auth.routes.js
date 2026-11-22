@@ -4,8 +4,8 @@ import { runtimeLog } from '../infrastructure/runtimeLog.js';
 import express from 'express';
 import firebaseAuthRoutes from './firebaseAuth.routes.js';
 import convexAuthRoutes from './convexAuth.routes.js';
-import { requireTrustedOrigin } from '../auth/requestOrigin.js';
-import bcrypt from 'bcryptjs';
+import { isProductionCookieEnv, requireTrustedOrigin } from '../auth/requestOrigin.js';
+import { hashPassword } from '../auth/passwordHash.js';
 import { v4 as uuid } from 'uuid';
 
 import passport from '../auth/passport.js';
@@ -29,7 +29,7 @@ import {
   verifyEmailOtpSchema,
 } from '../schemas/apiSchemas.js';
 
-import { findUserByEmail, acquireRegistrationLock, releaseRegistrationLock, insertRegisteredUser, verifyLocalUserEmailByTokenHash, replaceEmailVerificationToken, issuePasswordResetToken, consumePasswordResetToken } from '../repositories/authRegistrationRepository.js';
+import { findUserByEmail, acquireRegistrationLock, releaseRegistrationLock, insertRegisteredUser, verifyLocalUserEmailByTokenHash, replaceEmailVerificationToken, issuePasswordResetToken, consumeAccountRecoveryToken } from '../repositories/authRegistrationRepository.js';
 import { createEmailVerificationToken, hashEmailVerificationToken } from '../services/email/emailVerification.js';
 import { sendVerificationEmail } from '../services/email/sendVerificationEmail.js';
 import { createPasswordResetToken, hashPasswordResetToken } from '../services/email/passwordReset.js';
@@ -37,6 +37,7 @@ import { sendPasswordResetEmail } from '../services/email/sendPasswordResetEmail
 import { createEmailLoginOtp, hashEmailLoginCode } from '../services/email/emailLoginOtp.js';
 import { sendLoginOtpEmail } from '../services/email/sendLoginOtpEmail.js';
 import { issueEmailLoginChallenge, consumeEmailLoginChallenge, invalidateEmailLoginChallenge } from '../repositories/emailLoginOtpRepository.js';
+import { getLoginLockoutState, recordLoginFailure, clearLoginFailures, consumeEmailRecoveryQuota } from '../repositories/authLoginLockoutRepository.js';
 import { resolveEmailOtpAccount } from '../services/email/emailOtpAccount.js';
 import { emailOtpRequestLimiter, emailOtpVerifyLimiter } from '../middleware/rateLimiter.js';
 
@@ -50,10 +51,7 @@ router.use('/convex', convexAuthRoutes);
  */
 export const initAuthRoutes = () => router;
 
-const isProd =
-  process.env.NODE_ENV === 'production' ||
-  process.env.RENDER === 'true' ||
-  Boolean(process.env.RENDER_EXTERNAL_URL);
+const isProd = isProductionCookieEnv();
 
 const frontendUrl =
   process.env.FRONTEND_URL ||
@@ -64,6 +62,16 @@ const resendVerificationResponse = {
 };
 const forgotPasswordResponse = {
   message: 'If an account exists for this email, password reset instructions will be sent.',
+};
+
+const getCookieOptions = () => {
+  const prod = isProductionCookieEnv();
+  return {
+    httpOnly: true,
+    secure: prod,
+    sameSite: prod ? 'none' : 'lax',
+    path: '/',
+  };
 };
 
 const cookieOptions = {
@@ -84,7 +92,7 @@ const applyRefreshToken = (
   res.cookie(
     'refreshToken',
     refreshToken,
-    { ...cookieOptions, maxAge: Math.max(0, verifyRefreshToken(refreshToken).exp * 1000 - Date.now()) }
+    { ...getCookieOptions(), maxAge: Math.max(0, verifyRefreshToken(refreshToken).exp * 1000 - Date.now()) }
   );
 };
 
@@ -167,7 +175,7 @@ router.post(
       // ── Create local user ─────────────────────────────
 
       const passwordHash =
-        await bcrypt.hash(
+        await hashPassword(
           password,
           12
         );
@@ -280,6 +288,8 @@ router.post('/resend-verification', validateBody(resendVerificationSchema, {
   res.set('Cache-Control', 'no-store');
   const { email } = req.body;
   try {
+    const quota = await consumeEmailRecoveryQuota({ email, action: 'resend-verification' });
+    if (!quota.allowed) return res.json(resendVerificationResponse);
     const { token, tokenHash, expiresAt } = createEmailVerificationToken();
     const user = await replaceEmailVerificationToken({ email, tokenHash, expiresAt });
     if (user) await sendVerificationEmail(user, token, frontendUrl);
@@ -319,6 +329,8 @@ router.post('/forgot-password', validateBody(forgotPasswordSchema, {
   res.set('Cache-Control', 'no-store');
   const { email } = req.body;
   try {
+    const quota = await consumeEmailRecoveryQuota({ email, action: 'forgot-password' });
+    if (!quota.allowed) return res.json(forgotPasswordResponse);
     const { token, tokenHash, expiresAt } = createPasswordResetToken();
     const user = await issuePasswordResetToken({ email, tokenHash, expiresAt });
     if (user) await sendPasswordResetEmail(user, token, frontendUrl);
@@ -334,8 +346,8 @@ router.post('/reset-password', validateBody(resetPasswordSchema), async (req, re
   try {
     const { token, password } = req.body;
     const tokenHash = hashPasswordResetToken(token);
-    const passwordHash = await bcrypt.hash(password, 12);
-    const user = await consumePasswordResetToken({ tokenHash, passwordHash });
+    const passwordHash = await hashPassword(password, 12);
+    const user = await consumeAccountRecoveryToken({ tokenHash, passwordHash });
     if (!user) {
       return res.status(400).json({
         error: 'Password reset link is invalid or has expired',
@@ -343,7 +355,8 @@ router.post('/reset-password', validateBody(resetPasswordSchema), async (req, re
       });
     }
     await revokeUserSessions(user.id, 'password-reset');
-    res.clearCookie('refreshToken', cookieOptions);
+    await clearLoginFailures(user.email).catch(() => {});
+    res.clearCookie('refreshToken', getCookieOptions());
     return res.json({ message: 'Password changed successfully' });
   } catch {
     runtimeLog.error('Password reset error');
@@ -394,7 +407,7 @@ router.post('/email-otp/verify', requireTrustedOrigin, emailOtpVerifyLimiter, va
     // Re-check at verify time: the address may have been registered since the code was sent.
     if (intent === 'signup' && await findUserByEmail(email)) return emailAlreadyRegistered(res);
     const claimed = await consumeEmailLoginChallenge({ email, challengeId, codeHash: hashEmailLoginCode(email, challengeId, code) });
-    const passwordHash = claimed && password ? await bcrypt.hash(password, 12) : undefined;
+    const passwordHash = claimed && password ? await hashPassword(password, 12) : undefined;
     const user = claimed ? await resolveEmailOtpAccount(email, name, passwordHash) : null;
     if (!user) return res.status(401).json({ error: 'Code is invalid or expired. Request a new code.', code: 'INVALID_OR_EXPIRED_OTP' });
     const { token, refreshToken } = await createSession(user);
@@ -413,7 +426,24 @@ router.post(
   '/login',
   validateBody(loginSchema),
 
-  (req, res, next) => {
+  async (req, res, next) => {
+    const loginEmail = req.body?.email;
+    try {
+      const lockout = await getLoginLockoutState(loginEmail);
+      if (lockout.locked) {
+        if (lockout.retryAfterSeconds) {
+          res.set('Retry-After', String(lockout.retryAfterSeconds));
+        }
+        return res.status(429).json({
+          error: 'Too many failed sign-in attempts. Please try again later.',
+          code: 'ACCOUNT_LOCKED',
+          retryAfter: lockout.retryAfterSeconds,
+        });
+      }
+    } catch {
+      // Fail open on lockout storage error so legitimate users are not blocked.
+    }
+
     passport.authenticate(
       'local',
       {
@@ -436,6 +466,7 @@ router.post(
               code: 'EMAIL_NOT_VERIFIED',
             });
           }
+          await recordLoginFailure(loginEmail).catch(() => {});
           return res
             .status(401)
             .json({
@@ -443,6 +474,8 @@ router.post(
                 'Invalid email or password',
             });
         }
+
+        await clearLoginFailures(loginEmail).catch(() => {});
 
         const payload = {
           id: user.id,
@@ -595,21 +628,26 @@ router.get(
   ),
 
   async (req, res) => {
-    const { refreshToken } = await createSession({
+    try {
+      const { refreshToken } = await createSession({
         id: req.user.id,
         email: req.user.email,
         name: req.user.name,
         role: req.user.role || 'user',
       });
 
-    applyRefreshToken(
-      res,
-      refreshToken
-    );
+      applyRefreshToken(
+        res,
+        refreshToken
+      );
 
-    res.redirect(
-      `${frontendUrl}/auth/callback`
-    );
+      return res.redirect(
+        `${frontendUrl}/auth/callback`
+      );
+    } catch (error) {
+      runtimeLog.error('Google OAuth callback error:', error?.message || error);
+      return res.redirect(`${frontendUrl}/login?error=oauth`);
+    }
   }
 );
 

@@ -20,10 +20,6 @@ import { isAxiosError } from 'axios';
 import { ChatMessage, QuizChatbotProps, buildQuestionContext } from './utils';
 import { generateTutorReply } from "@/features/tutor/api/tutorGateway";
 import { GEMINI_TUTOR_MODEL, GEMINI_FALLBACK_MODEL, geminiErrorMessage } from './gemini';
-import '@fontsource/noto-sans-bengali/400.css';
-import '@fontsource/noto-sans-bengali/500.css';
-import '@fontsource/noto-sans-bengali/600.css';
-import '@fontsource/noto-sans-bengali/700.css';
 import './quiz-chatbot.css';
 
 type SupportedLang = "en" | "hi" | "bn";
@@ -216,6 +212,8 @@ export default function QuizChatbot({
   const [isHolding, setIsHolding] = useState(false);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dragStartRef = useRef<{ startY: number; startTime: number; currentY: number } | null>(null);
+  const sendingRef = useRef(false);
+  const requestControllerRef = useRef<AbortController | null>(null);
 
   const handleClose = useCallback(() => {
     setDragOffset(0);
@@ -243,6 +241,8 @@ export default function QuizChatbot({
   useEffect(() => {
     return () => {
       if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+      requestControllerRef.current?.abort();
+      sendingRef.current = false;
     };
   }, []);
 
@@ -404,7 +404,11 @@ export default function QuizChatbot({
 
   async function sendMessage(nextText?: string) {
     const text = (nextText ?? '').trim();
-    if (!text || isLoading) return;
+    if (!text || isLoading || sendingRef.current) return;
+    sendingRef.current = true;
+    requestControllerRef.current?.abort();
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
 
     composerRef.current?.clear();
     setIsChatView(true);
@@ -415,13 +419,29 @@ export default function QuizChatbot({
 
     try {
       const history = conversationRef.current.context === context ? conversationRef.current.history : [];
-      const reply = await generateTutorReply({ context, message: text, lang: selectedLang, history, model: selectedModel, onModelUsed: setSelectedModel });
+      const reply = await generateTutorReply({
+        context,
+        message: text,
+        lang: selectedLang,
+        history,
+        model: selectedModel,
+        onModelUsed: setSelectedModel,
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
       conversationRef.current = {
         context,
         history: [...history, { role: 'user' as const, content: text }, { role: 'bot' as const, content: reply }].slice(-16),
       };
       setMessages((prev) => [...prev, { role: "bot", content: reply }]);
     } catch (err: unknown) {
+      if (
+        controller.signal.aborted ||
+        (err instanceof Error && err.name === "AbortError") ||
+        (isAxiosError(err) && err.code === "ERR_CANCELED")
+      ) {
+        return;
+      }
       const errorMessage =
         (selectedModel === GEMINI_TUTOR_MODEL || selectedModel === GEMINI_FALLBACK_MODEL) ? geminiErrorMessage(err) :
         (isAxiosError<{ error?: string }>(err) ? err.response?.data?.error : undefined) ||
@@ -437,7 +457,11 @@ export default function QuizChatbot({
         },
       ]);
     } finally {
-      setIsLoading(false);
+      if (requestControllerRef.current === controller) {
+        requestControllerRef.current = null;
+        sendingRef.current = false;
+        setIsLoading(false);
+      }
     }
   }
 

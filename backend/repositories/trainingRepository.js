@@ -206,7 +206,7 @@ export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics
     and.push({ $or: [{ topic: config.topic }, { questionTopic: config.topic }] });
   }
   if (config.mode === 'review') {
-    and.push({ $or: [{ questionUid: { $in: dueIds } }, { id: { $in: dueIds }, questionUid: { $exists: false } }] });
+    and.push({ $or: [{ questionUid: { $in: dueIds, $type: 'string' } }, { id: { $in: dueIds }, questionUid: { $exists: false } }] });
     return query({ $and: and })
       .sort({ updatedAt: -1, _id: 1 })
       .limit(500)
@@ -249,7 +249,7 @@ export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics
 
 export const dueTrainingQuestions = (exam, ids) =>
   getQuestionsCollection()
-    .find({ $and: [process.env.TRAINING_INDEXED_QUESTIONS === 'true' ? { trainingExamSlugs: exam, trainingEligible: true, trainingMetadataVersion: 1 } : examFilter(exam), { $or: [{ questionUid: { $in: ids } }, { id: { $in: ids }, questionUid: { $exists: false } }] }] })
+    .find({ $and: [process.env.TRAINING_INDEXED_QUESTIONS === 'true' ? { trainingExamSlugs: exam, trainingEligible: true, trainingMetadataVersion: 1 } : examFilter(exam), { $or: [{ questionUid: { $in: ids, $type: 'string' } }, { id: { $in: ids }, questionUid: { $exists: false } }] }] })
     .project(process.env.TRAINING_INDEXED_QUESTIONS === 'true' ? { id: 1, questionUid: 1, trainingCandidate: 1 } : {})
     .limit(500)
     .toArray();

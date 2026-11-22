@@ -4,6 +4,7 @@ import { quizCorrectIndex } from '@meow/contracts/questions';
 import { normalizeCreateQuizSessionInput } from '../../../contracts/quiz-session.js';
 import { getQuestionsCollection } from '../../config/mongodb.js';
 import {
+  cachedPracticeCount,
   cachedQuestionAnswerKey,
   cachedQuestionById,
   cachedQuizSession,
@@ -74,8 +75,15 @@ function fail(message, statusCode, code) {
   return Object.assign(new Error(message), { statusCode, ...(code ? { code } : {}) });
 }
 
-function getCursorSecret() {
-  return process.env.QUIZ_CURSOR_SECRET || process.env.JWT_SECRET || 'meow-quiz-session-cursor-v1';
+const EPHEMERAL_DEV_CURSOR_SECRET = randomBytes(32).toString('hex');
+
+export function getCursorSecret() {
+  const configured = (process.env.QUIZ_CURSOR_SECRET || process.env.JWT_SECRET || '').trim();
+  if (configured) return configured;
+  if (process.env.NODE_ENV === 'production') {
+    throw fail('QUIZ_CURSOR_SECRET or JWT_SECRET must be configured in production', 500, 'CURSOR_SECRET_MISSING');
+  }
+  return EPHEMERAL_DEV_CURSOR_SECRET;
 }
 
 function signSessionCursor(sessionId, payload) {
@@ -215,24 +223,42 @@ function toSafeV1QuestionDTO(doc) {
   return dto;
 }
 
-function buildFilterConditions(filters = {}, { useNormalizedKeys = isNormalizedKeysEnabled(), mode = 'practice' } = {}) {
+function isUnnormalizedFallbackAllowed() {
+  return process.env.QUESTIONS_ALLOW_UNNORMALIZED_FALLBACK === 'true';
+}
+
+export function buildFilterConditions(
+  filters = {},
+  {
+    useNormalizedKeys = isNormalizedKeysEnabled(),
+    allowUnnormalizedFallback = isUnnormalizedFallbackAllowed(),
+    mode = 'practice',
+  } = {},
+) {
   const conditions = [];
+  const exactNormalized = useNormalizedKeys && !allowUnnormalizedFallback;
 
   if (filters.examMode) {
-    conditions.push(questionExamModeCondition(filters.examMode));
+    conditions.push(questionExamModeCondition(filters.examMode, { useNormalizedKeys: exactNormalized }));
   }
 
   const gaGroupSlug = filters.topic ? resolveGeneralAwarenessTopicGroupSlug(filters.topic) : null;
   const isGaQuery = Boolean(gaGroupSlug) || normalizeSearchKey(filters.subject) === 'generalawareness';
 
   if (filters.topic) {
-    const gaTopicCondition = gaGroupSlug ? buildGeneralAwarenessTopicCondition(gaGroupSlug, useNormalizedKeys) : null;
+    const gaTopicCondition = gaGroupSlug
+      ? buildGeneralAwarenessTopicCondition(gaGroupSlug, useNormalizedKeys, exactNormalized ? { exactKeys: true } : {})
+      : null;
     if (gaTopicCondition) {
       conditions.push(gaTopicCondition);
     } else {
       const normalizedTopic = normalizeSearchKey(filters.topic);
       const isSynAnt = normalizedTopic === 'synonymsantonyms' || normalizedTopic === 'antosynopyq';
-      if (useNormalizedKeys) {
+      if (exactNormalized) {
+        conditions.push({
+          topicKey: isSynAnt ? { $in: ['synonymsantonyms', 'antosynopyq'] } : normalizedTopic,
+        });
+      } else if (useNormalizedKeys) {
         conditions.push({
           $or: [
             { topicKey: isSynAnt ? { $in: ['synonymsantonyms', 'antosynopyq'] } : normalizedTopic },
@@ -252,45 +278,57 @@ function buildFilterConditions(filters = {}, { useNormalizedKeys = isNormalizedK
 
   if (filters.subject && (!filters.topic || normalizeSearchKey(filters.subject) === 'iitjamphysics')) {
     const subKey = normalizeSearchKey(filters.subject);
-    if (useNormalizedKeys) {
-      conditions.push({
-        $or: [
-          { subjectKey: subKey },
-          { subjectKey: { $exists: false }, subject: caseInsensitiveExact(filters.subject) },
-        ],
-      });
-    } else {
-      conditions.push({ subject: caseInsensitiveExact(filters.subject) });
-    }
+    conditions.push(
+      exactNormalized
+        ? { subjectKey: subKey }
+        : useNormalizedKeys
+          ? {
+              $or: [
+                { subjectKey: subKey },
+                { subjectKey: { $exists: false }, subject: caseInsensitiveExact(filters.subject) },
+              ],
+            }
+          : { subject: caseInsensitiveExact(filters.subject) },
+    );
   }
 
   if (filters.chapter) {
-    const gaChapter = isGaQuery ? buildGeneralAwarenessChapterCondition(filters.chapter, useNormalizedKeys) : null;
+    const gaChapter = isGaQuery
+      ? buildGeneralAwarenessChapterCondition(filters.chapter, useNormalizedKeys, exactNormalized ? { exactKeys: true } : {})
+      : null;
     if (gaChapter) {
       conditions.push(gaChapter);
-    } else if (useNormalizedKeys) {
-      conditions.push({
-        $or: [
-          { chapterKey: normalizeFilterKey(filters.chapter) },
-          { chapterKey: { $exists: false }, chapter: caseInsensitiveExact(filters.chapter) },
-        ],
-      });
     } else {
-      conditions.push({ chapter: caseInsensitiveExact(filters.chapter) });
+      const chapterKey = normalizeFilterKey(filters.chapter);
+      conditions.push(
+        exactNormalized
+          ? { chapterKey }
+          : useNormalizedKeys
+            ? {
+                $or: [
+                  { chapterKey },
+                  { chapterKey: { $exists: false }, chapter: caseInsensitiveExact(filters.chapter) },
+                ],
+              }
+            : { chapter: caseInsensitiveExact(filters.chapter) },
+      );
     }
   }
 
   if (filters.exam) {
-    if (useNormalizedKeys) {
-      conditions.push({
-        $or: [
-          { examKey: normalizeFilterKey(filters.exam) },
-          { examKey: { $exists: false }, exam: caseInsensitiveExact(filters.exam) },
-        ],
-      });
-    } else {
-      conditions.push({ exam: caseInsensitiveExact(filters.exam) });
-    }
+    const examKey = normalizeFilterKey(filters.exam);
+    conditions.push(
+      exactNormalized
+        ? { examKey }
+        : useNormalizedKeys
+          ? {
+              $or: [
+                { examKey },
+                { examKey: { $exists: false }, exam: caseInsensitiveExact(filters.exam) },
+              ],
+            }
+          : { exam: caseInsensitiveExact(filters.exam) },
+    );
   }
 
   if (filters.tier) {
@@ -298,16 +336,19 @@ function buildFilterConditions(filters = {}, { useNormalizedKeys = isNormalizedK
   }
 
   if (filters.concept) {
-    if (useNormalizedKeys) {
-      conditions.push({
-        $or: [
-          { conceptKey: normalizeFilterKey(filters.concept) },
-          { conceptKey: { $exists: false }, concept: caseInsensitiveExact(filters.concept) },
-        ],
-      });
-    } else {
-      conditions.push({ concept: caseInsensitiveExact(filters.concept) });
-    }
+    const conceptKey = normalizeFilterKey(filters.concept);
+    conditions.push(
+      exactNormalized
+        ? { conceptKey }
+        : useNormalizedKeys
+          ? {
+              $or: [
+                { conceptKey },
+                { conceptKey: { $exists: false }, concept: caseInsensitiveExact(filters.concept) },
+              ],
+            }
+          : { concept: caseInsensitiveExact(filters.concept) },
+    );
   }
 
   if (filters.letter) {
@@ -325,29 +366,34 @@ function buildFilterConditions(filters = {}, { useNormalizedKeys = isNormalizedK
   }
 
   if (filters.difficulty && filters.difficulty !== 'mixed' && filters.difficulty !== 'all') {
+    const diffLower = String(filters.difficulty).trim().toLowerCase();
     conditions.push(
-      useNormalizedKeys
-        ? {
-            $or: [
-              { difficulty: String(filters.difficulty).toLowerCase() },
-              { difficulty: caseInsensitiveExact(filters.difficulty) },
-            ],
-          }
-        : { difficulty: caseInsensitiveExact(filters.difficulty) },
+      exactNormalized
+        ? { difficulty: diffLower }
+        : useNormalizedKeys
+          ? {
+              $or: [
+                { difficulty: diffLower },
+                { difficulty: caseInsensitiveExact(filters.difficulty) },
+              ],
+            }
+          : { difficulty: caseInsensitiveExact(filters.difficulty) },
     );
   }
 
   // Always exclude study-mode flashcard docs from quiz sessions.
-  if (useNormalizedKeys) {
-    conditions.push({
-      $or: [
-        { modeKey: { $exists: true, $ne: 'studyMode' } },
-        { modeKey: { $exists: false }, ...buildExcludeStudyModeCondition() },
-      ],
-    });
-  } else {
-    conditions.push(buildExcludeStudyModeCondition());
-  }
+  conditions.push(
+    exactNormalized
+      ? { modeKey: { $ne: 'studyMode' } }
+      : useNormalizedKeys
+        ? {
+            $or: [
+              { modeKey: { $exists: true, $ne: 'studyMode' } },
+              { modeKey: { $exists: false }, ...buildExcludeStudyModeCondition() },
+            ],
+          }
+        : buildExcludeStudyModeCondition(),
+  );
 
   // Keep `mode` referenced for callers passing mode-specific filtering extensions.
   void mode;
@@ -373,8 +419,9 @@ async function hydrateQuestionBatch(uids, legacyDocIdMap = null) {
     batchPromise = null;
     if (toFetch.length === 0) return Promise.resolve(new Map());
 
+    const stringUids = toFetch.filter((uid) => typeof uid === 'string' && uid.length > 0);
     const query = collection
-      .find({ questionUid: { $in: toFetch } })
+      .find({ questionUid: { $in: stringUids, $type: 'string' } })
       .project(quizQuestionProjection);
     if (typeof query.maxTimeMS === 'function') query.maxTimeMS(5000);
     return query.toArray().then(async (docs) => {
@@ -663,7 +710,7 @@ export async function createQuizSession(userId, rawBody) {
 
     const [slice, counted] = await Promise.all([
       fetchOrderedRingSlice(baseFilter, { pivot, count: requestedBatch, cursorState: null }),
-      collection.countDocuments(baseFilter, { maxTimeMS: 5000 }),
+      cachedPracticeCount(filters, () => collection.countDocuments(baseFilter, { maxTimeMS: 5000 })),
     ]);
 
     totalCount = maxQuestions !== null ? Math.min(counted, maxQuestions) : counted;

@@ -50,3 +50,54 @@ groups:
         for: 5m
         labels: { severity: ticket }
         annotations: { summary: 'Backend scrape is unavailable; inspect /live and /health' }
+      - record: meow:write_latency:p95
+        expr: histogram_quantile(0.95, sum by (le) (rate(meow_http_duration_seconds_bucket{method=~"POST|PUT|PATCH|DELETE"}[5m])))
+      - record: meow:mongo_command_latency:p95
+        expr: histogram_quantile(0.95, sum by (le) (rate(meow_mongo_command_duration_seconds_bucket{outcome="success"}[5m])))
+      - record: meow:nodejs_heap_growth_bytes_per_second:30m
+        expr: deriv(meow_nodejs_heap_size_used_bytes[30m])
+      - alert: MeowReadApiLatencyHigh
+        expr: meow:get_latency:p95 > 0.5
+        for: 5m
+        labels: { severity: page }
+        annotations: { summary: 'Read API (GET) p95 latency exceeded 500ms for 5m' }
+      - alert: MeowWriteApiLatencyHigh
+        expr: meow:write_latency:p95 > 0.8
+        for: 5m
+        labels: { severity: page }
+        annotations: { summary: 'Write API (POST/PUT/PATCH/DELETE) p95 latency exceeded 800ms for 5m' }
+      - alert: MeowMongoPoolSaturation
+        expr: max(meow_mongo_pool_waiting) > 5
+        for: 2m
+        labels: { severity: page }
+        annotations: { summary: 'MongoDB connection pool checkout waiters exceeded 5 for 2m' }
+      - alert: MeowMongoCommandLatencyHigh
+        expr: meow:mongo_command_latency:p95 > 0.25
+        for: 5m
+        labels: { severity: ticket }
+        annotations: { summary: 'MongoDB command p95 latency exceeded 250ms for 5m' }
+      - alert: MeowValkeyCircuitOpen
+        expr: max(meow_redis_circuit_state) > 0
+        for: 2m
+        labels: { severity: page }
+        annotations: { summary: 'Valkey/Redis cache circuit breaker is open or half-open for 2m' }
+      - alert: MeowValkeyLatencyHigh
+        expr: meow:redis_latency:p95 > 0.1
+        for: 5m
+        labels: { severity: ticket }
+        annotations: { summary: 'Valkey/Redis dependency p95 latency exceeded 100ms for 5m' }
+      - alert: MeowProcessRssSaturation
+        expr: meow_process_resident_memory_bytes > 1258291200
+        for: 5m
+        labels: { severity: page }
+        annotations: { summary: 'Backend process RSS memory exceeded 1.2 GiB for 5m' }
+      - alert: MeowSustainedHeapGrowth
+        expr: meow:nodejs_heap_growth_bytes_per_second:30m > 65536 and meow_nodejs_heap_size_used_bytes > 536870912
+        for: 15m
+        labels: { severity: ticket }
+        annotations: { summary: 'Node.js heap usage shows sustained growth (>64 KiB/s above 512 MiB for 15m)' }
+      - alert: MeowEventLoopLagHigh
+        expr: max by (instance) (meow_nodejs_eventloop_lag_p99_seconds) > 0.1
+        for: 3m
+        labels: { severity: page }
+        annotations: { summary: 'Node.js event-loop p99 lag exceeded 100ms for 3m' }

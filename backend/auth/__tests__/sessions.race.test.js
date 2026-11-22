@@ -4,6 +4,7 @@ const state = vi.hoisted(() => ({ user: null, session: null, values: new Map(), 
 vi.mock('redis', () => ({ createClient: vi.fn() }));
 vi.mock('../../config/redis.js', () => ({
   redisGetJson: vi.fn(async key => state.values.get(key) ?? null),
+  redisGetJsonMany: vi.fn(async keys => keys.map(key => state.values.get(key) ?? null)),
   redisSetJson: vi.fn(async (key, value) => { state.values.set(key, value); }),
   redisDelete: vi.fn(async (...keys) => { keys.forEach(key => state.values.delete(key)); }),
   getRedisClient: vi.fn(async () => null), redisKey: key => key, reportRedisFailure: vi.fn(),

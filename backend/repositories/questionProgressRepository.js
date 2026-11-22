@@ -20,8 +20,12 @@ export async function recordQuestionAnswerInTransaction(db, session, userId, que
     const utpColl = db.collection('userTopicProgress');
 
     const now = new Date();
+    const uid = String(questionUid);
 
-    const existingDoc = await uqpColl.findOne({ userId: String(userId), questionUid }, { session });
+    const existingDoc = await uqpColl.findOne(
+      { userId: String(userId), questionUid: { $eq: uid, $type: 'string' } },
+      { session },
+    );
 
     let isFirstTime = false;
     let becameMastered = false;
@@ -30,7 +34,7 @@ export async function recordQuestionAnswerInTransaction(db, session, userId, que
        isFirstTime = true;
        await uqpColl.insertOne({
          userId: String(userId),
-         questionUid,
+         questionUid: uid,
          questionId: legacyId,
          topic,
          firstAttemptedAt: now,

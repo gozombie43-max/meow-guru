@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
@@ -9,6 +9,7 @@ import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import type { GeometryDiagram } from "@/components/geometry/diagramSchema";
 import RiskyWidgetBoundary from "@/components/RiskyWidgetBoundary";
+import MathText from "@/components/MathText";
 
 const GeometryRenderer = dynamic(() => import("@/components/geometry/GeometryRenderer"), {
   ssr: false,
@@ -310,15 +311,7 @@ function TableVisual({ block }: { block: VisualTable }) {
   };
 
   const renderCell = (value: string | number | undefined) => (
-    <ReactMarkdown
-      remarkPlugins={[remarkMath, remarkGfm]}
-      rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: "ignore", trust: false }]]}
-      components={{
-        p: ({ children }) => <span>{children}</span>,
-      }}
-    >
-      {normalizeCellMath(value)}
-    </ReactMarkdown>
+    <MathText text={normalizeCellMath(value)} />
   );
 
   return (
@@ -443,7 +436,11 @@ function DiagramVisual({ block }: { block: VisualDiagram }) {
 }
 
 const VisualResponse = memo(function VisualResponse({ content, normalizeMarkdown }: VisualResponseProps) {
-  const { markdown, visuals } = extractVisuals(content);
+  const { markdown, visuals } = useMemo(() => extractVisuals(content), [content]);
+  const normalizedMarkdown = useMemo(
+    () => (markdown ? normalizeMarkdown(markdown) : ""),
+    [markdown, normalizeMarkdown]
+  );
 
   return (
     <>
@@ -462,7 +459,7 @@ const VisualResponse = memo(function VisualResponse({ content, normalizeMarkdown
               td: (props) => <td {...props} />,
             }}
           >
-            {normalizeMarkdown(markdown)}
+            {normalizedMarkdown}
           </ReactMarkdown>
         </div>
       )}

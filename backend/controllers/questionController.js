@@ -149,8 +149,10 @@ const addQuestion = async (req, res) => {
 // ── GET /api/questions/export ──────────────────────────
 const exportQuestions = async (req, res) => {
   try {
-    const { count, questions } = await questionService.exportQuestions(req.query);
+    const exportResult = await questionService.exportQuestions(req.query);
     if (String(req.query.format || '').toLowerCase() === 'json') {
+      const questions = Array.isArray(exportResult?.questions) ? exportResult.questions : [];
+      const count = exportResult?.count ?? questions.length;
       res.set('Cache-Control', 'no-store, max-age=0');
       if (['id', 'identity'].includes(String(req.query.fields || '').toLowerCase())) {
         const useCanonicalIdentity = String(req.query.fields || '').toLowerCase() === 'identity';
@@ -173,13 +175,30 @@ const exportQuestions = async (req, res) => {
       .map(part => String(part).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''))
       .filter(Boolean);
     const filename = `${parts.join('-') || 'questions'}.ndjson`;
-    const body = questions.map(q => JSON.stringify(q)).join('\n') + (questions.length ? '\n' : '');
+    const count = exportResult?.count ?? (Array.isArray(exportResult?.questions) ? exportResult.questions.length : 0);
     res.set('Cache-Control', 'no-store, max-age=0');
     res.set('Content-Type', 'application/x-ndjson; charset=utf-8');
     res.set('Content-Disposition', `attachment; filename="${filename}"`);
     res.set('X-Question-Count', String(count));
-    return res.send(body);
+    const iterable = exportResult?.stream || exportResult?.questions || [];
+    if (typeof res.write === 'function' && typeof res.end === 'function') {
+      for await (const q of iterable) {
+        if (res.writableEnded || res.destroyed) break;
+        const chunk = `${JSON.stringify(q)}\n`;
+        if (!res.write(chunk)) {
+          await new Promise(resolve => res.once('drain', resolve));
+        }
+      }
+      return res.end();
+    }
+    const lines = [];
+    for await (const q of iterable) lines.push(JSON.stringify(q));
+    return res.send(lines.join('\n') + (lines.length ? '\n' : ''));
   } catch (err) {
+    if (res.headersSent) {
+      runtimeLog.error('Question export stream error:', err);
+      return res.end?.();
+    }
     return sendQuestionError(res, err, 'Failed to export questions');
   }
 };

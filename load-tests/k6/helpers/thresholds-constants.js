@@ -1,0 +1,23 @@
+// Pure threshold mapping constants (zero k6/* imports).
+export const ENDPOINT_SAMPLE_COUNTER_MAP = {
+  'http_req_duration{endpoint:questions_batch}': 'questions_batch_requests_total',
+  'http_req_duration{endpoint:session_create}': 'session_create_requests_total',
+  'http_req_duration{endpoint:answer_submit}': 'answer_submit_requests_total',
+  'http_req_duration{endpoint:session_submit}': 'session_submit_requests_total',
+  'http_req_duration{endpoint:session_result}': 'session_result_requests_total',
+  'http_req_duration{endpoint:legacy_questions_session}': 'legacy_session_requests_total',
+  'http_req_duration{endpoint:legacy_meta}': 'legacy_meta_requests_total',
+  'http_req_duration{endpoint:health_check}': 'health_checks_total',
+  'http_req_duration{endpoint:auth_login}': 'auth_journeys_total',
+  'http_req_duration{endpoint:user_progress}': 'progress_requests_total',
+  questions_batch_duration_ms: 'questions_batch_requests_total',
+  session_create_duration_ms: 'session_create_requests_total',
+  answer_submit_duration_ms: 'answer_submit_requests_total',
+  session_submit_duration_ms: 'session_submit_requests_total',
+  session_result_duration_ms: 'session_result_requests_total',
+  legacy_session_duration_ms: 'legacy_session_requests_total',
+  legacy_meta_duration_ms: 'legacy_meta_requests_total',
+  health_duration_ms: 'health_checks_total',
+  auth_login_duration_ms: 'auth_journeys_total',
+  user_progress_duration_ms: 'progress_requests_total',
+};

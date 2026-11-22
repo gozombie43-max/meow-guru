@@ -41,7 +41,9 @@ export async function submitQuizAnswer(userId, command) {
           } };
         let question = command.questionAnchor
           ? await db.collection('questions').findOne({ _id: new ObjectId(command.questionAnchor),
-            ...(command.questionUid ? { questionUid: command.questionUid } : {}) }, readOptions)
+            ...(typeof command.questionUid === 'string' && command.questionUid
+              ? { questionUid: { $eq: command.questionUid, $type: 'string' } }
+              : {}) }, readOptions)
           : null;
         if (!question) {
           question = await resolveQuestion(db.collection('questions'), command.questionId,

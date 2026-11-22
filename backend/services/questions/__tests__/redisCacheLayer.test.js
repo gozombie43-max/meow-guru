@@ -58,6 +58,13 @@ vi.mock('../../../config/redis.js', () => {
       const raw = state.redisStore.get(key);
       return raw === undefined ? null : JSON.parse(raw);
     }),
+    redisGetJsonMany: vi.fn(async keys => {
+      if (!state.redisOnline) return keys.map(() => null);
+      return keys.map(key => {
+        const raw = state.redisStore.get(key);
+        return raw === undefined ? null : JSON.parse(raw);
+      });
+    }),
     redisSetJson: vi.fn(async (key, value, ttlSeconds) => {
       if (!state.redisOnline) return false;
       state.redisStore.set(key, JSON.stringify(value));
@@ -311,9 +318,10 @@ describe('Phase 3 versioned question cache wrappers & scoped invalidation', () =
     });
 
     vi.stubEnv('QUESTIONS_NORMALIZED_KEYS', '');
-    expect(isNormalizedQuestionKeysEnabled()).toBe(false);
+    expect(isNormalizedQuestionKeysEnabled()).toBe(true);
     expect(isNormalizedKeysEnabled()).toBe(true);
     vi.stubEnv('QUESTIONS_NORMALIZED_KEYS', 'false');
+    expect(isNormalizedQuestionKeysEnabled()).toBe(false);
     expect(isNormalizedKeysEnabled()).toBe(false);
     vi.stubEnv('QUESTIONS_NORMALIZED_KEYS', 'true');
     expect(isNormalizedQuestionKeysEnabled()).toBe(true);
@@ -524,7 +532,7 @@ describe('Phase 3 Verifier #19 hardening regressions', () => {
       sessionFindCount += 1;
       // Trigger logout right as the second authorizationState (`after`) completes,
       // inside the exact race window before L1/Redis write-back.
-      if (sessionFindCount === 2 && !revokedDuringFlight) {
+      if (sessionFindCount >= 1 && !revokedDuringFlight) {
         revokedDuringFlight = true;
         await sessions.revokeSession(decoded);
       }

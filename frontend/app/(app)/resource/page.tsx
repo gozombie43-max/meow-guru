@@ -76,13 +76,15 @@ function ResourceContent() {
   const [notice, setNotice] = useState("");
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showSections, setShowSections] = useState(false);
+  const [openingFileId, setOpeningFileId] = useState<string | null>(null);
+  const openingFilesRef = useRef<Set<string>>(new Set());
 
   const selectedSubject = subjects.find((s) => s.id === activeSubject) || subjects[0];
   const activeCategory = getCategory(activeTab);
   const apiUrl = useCallback((path: string) => (API ? `${API}${path}` : path), [API]);
 
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
     const loadFiles = async () => {
       setLoading(true);
@@ -93,25 +95,32 @@ function ResourceContent() {
           topic: activeSubject,
           category: activeCategory,
         });
-        const res = await fetchWithRetry(apiUrl(`/api/pdfs?${params.toString()}`));
+        const res = await fetchWithRetry(apiUrl(`/api/pdfs?${params.toString()}`), {
+          signal: controller.signal,
+        });
+        if (controller.signal.aborted) return;
         if (!res.ok) throw new Error(`Resource fetch failed: ${res.status}`);
 
         const data = (await res.json()) as { pdfs?: ResourceFile[] };
-        if (!cancelled) setFiles(sortFiles(data.pdfs || []));
+        if (!controller.signal.aborted) setFiles(sortFiles(data.pdfs || []));
       } catch (err) {
-        console.error("Failed to load resources", err);
-        if (!cancelled) {
-          setFiles([]);
-          setNotice("Unable to load files.");
+        if (
+          controller.signal.aborted ||
+          (err instanceof Error && (err.name === "AbortError" || err.name === "CanceledError"))
+        ) {
+          return;
         }
+        console.error("Failed to load resources", err);
+        setFiles([]);
+        setNotice("Unable to load files.");
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
-    loadFiles();
+    void loadFiles();
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, [activeCategory, activeSubject, apiUrl]);
 
@@ -126,6 +135,10 @@ function ResourceContent() {
   }, [files, query]);
 
   const openFile = async (file: ResourceFile) => {
+    const fileKey = file.id || file.streamUrl;
+    if (openingFilesRef.current.has(fileKey)) return;
+    openingFilesRef.current.add(fileKey);
+    setOpeningFileId(fileKey);
     try {
       const res = await fetchWithRetry(apiUrl(file.streamUrl), {}, { retries: 1 });
       if (!res.ok) throw new Error("Unable to open file.");
@@ -142,6 +155,9 @@ function ResourceContent() {
     } catch (err) {
       console.error("Failed to open resource", err);
       window.open(apiUrl(file.streamUrl), "_blank", "noopener,noreferrer");
+    } finally {
+      openingFilesRef.current.delete(fileKey);
+      setOpeningFileId((current) => (current === fileKey ? null : current));
     }
   };
 
@@ -346,13 +362,18 @@ function ResourceContent() {
             </div>
           ) : visibleFiles.length > 0 ? (
             <div className={styleClasses("res-card-list")}>
-              {visibleFiles.map((file, index) => (
+              {visibleFiles.map((file, index) => {
+                const fileKey = file.id || file.streamUrl;
+                const isOpening = openingFileId === fileKey;
+                return (
                 <button data-ui-button="state"
                   key={file.id}
                   type="button"
+                  disabled={isOpening}
+                  aria-busy={isOpening}
                   className={styleClasses("res-card")}
                   style={{ animationDelay: `${Math.min(index, 12) * 35}ms` }}
-                  onClick={() => openFile(file)}
+                  onClick={() => void openFile(file)}
                 >
                   <div className={styleClasses("res-card-icon-wrap")} aria-hidden="true">
                     <PdfIcon />
@@ -376,7 +397,8 @@ function ResourceContent() {
                     <ChevronRight size={18} />
                   </div>
                 </button>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className={styleClasses("res-empty-state")}>

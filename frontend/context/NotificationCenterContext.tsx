@@ -15,10 +15,6 @@ import {
 } from "@/context/AuthContext";
 
 import {
-  getSocket,
-} from "@/lib/socket";
-
-import {
   fetchUnreadNotificationCount,
 } from "@/lib/api/notificationApi";
 
@@ -117,7 +113,8 @@ export function NotificationCenterProvider({
   useEffect(() => {
     if (
       loading ||
-      !user
+      !user ||
+      !token
     ) {
       if (!loading) {
         const timer = window.setTimeout(() => setUnreadCount(0), 0);
@@ -127,44 +124,23 @@ export function NotificationCenterProvider({
       return;
     }
 
-    const initialTimer = window.setTimeout(() => void refreshUnreadCount(), 0);
-
-    const socket =
-      getSocket(
-        token ||
-        undefined
-      );
-
-    const handleNewNotification =
-      () => {
-        /*
-         * Query the server instead of
-         * blindly incrementing.
-         *
-         * This avoids race conditions
-         * with read-all or duplicates.
-         */
+    const initialTimer = window.setTimeout(() => {
+      if (typeof document === "undefined" || document.visibilityState === "visible") {
         void refreshUnreadCount();
-      };
-
-    socket.on(
-      "notification:new",
-      handleNewNotification
-    );
+      }
+    }, 0);
 
     /*
-     * REST safety net:
-     * catches events produced on another
-     * Azure instance when Socket.IO has
-     * no distributed adapter yet.
+     * Visibility-aware lightweight REST polling (60-120s).
+     * Socket.IO remains exclusively lazy-loaded on /battle and /battle/social.
      */
     let stopped = false;
     let pollTimer: number | undefined;
     const schedulePoll = () => {
       window.clearTimeout(pollTimer);
-      if (stopped || document.visibilityState !== 'visible') return;
+      if (stopped || document.visibilityState !== "visible") return;
       pollTimer = window.setTimeout(async () => {
-        if (document.visibilityState === 'visible') await refreshUnreadCount();
+        if (document.visibilityState === "visible") await refreshUnreadCount();
         schedulePoll();
       }, 60_000 + Math.floor(Math.random() * 60_000));
     };
@@ -172,7 +148,9 @@ export function NotificationCenterProvider({
 
     const handleFocus =
       () => {
-        void refreshUnreadCount();
+        if (document.visibilityState === "visible") {
+          void refreshUnreadCount();
+        }
       };
 
     const handleVisibility =
@@ -200,11 +178,6 @@ export function NotificationCenterProvider({
     return () => {
       stopped = true;
       window.clearTimeout(initialTimer);
-      socket.off(
-        "notification:new",
-        handleNewNotification
-      );
-
       window.clearTimeout(pollTimer);
 
       window.removeEventListener(

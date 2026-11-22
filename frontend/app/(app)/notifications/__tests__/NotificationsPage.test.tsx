@@ -7,6 +7,16 @@ import NotificationsPage from "../page";
 import * as NotificationApiModule from "@/lib/api/notificationApi";
 import * as NotificationCenterContextModule from "@/context/NotificationCenterContext";
 
+const authState = vi.hoisted(() => ({
+  user: { id: "user-1", name: "Student" } as { id: string; name: string } | null,
+  token: "test-token" as string | null,
+  loading: false,
+}));
+
+vi.mock("@/context/AuthContext", () => ({
+  useAuth: () => authState,
+}));
+
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -61,6 +71,9 @@ describe("NotificationsPage", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    authState.user = { id: "user-1", name: "Student" };
+    authState.token = "test-token";
+    authState.loading = false;
 
     vi.spyOn(NotificationCenterContextModule, "useNotificationCenter").mockReturnValue({
       unreadCount: 2,
@@ -166,12 +179,35 @@ describe("NotificationsPage", () => {
     expect(screen.getByText("You're all caught up")).toBeInTheDocument();
   });
 
-  it("removes notification alert from avatar icon upon visiting /notifications", async () => {
+  it("does not automatically mark all notifications as read upon visiting /notifications", async () => {
     render(<NotificationsPage />);
 
+    expect(await screen.findByText("Rahul challenged you")).toBeInTheDocument();
+    expect(mockClearUnread).not.toHaveBeenCalled();
+    expect(NotificationApiModule.markAllNotificationsRead).not.toHaveBeenCalled();
+  });
+
+  it("prevents duplicate mark-all-read requests on rapid double-click and surfaces errors", async () => {
+    let resolveMarkAll!: () => void;
+    const pendingMarkAll = new Promise<void>((resolve) => {
+      resolveMarkAll = resolve;
+    });
+    vi.spyOn(NotificationApiModule, "markAllNotificationsRead")
+      .mockReturnValueOnce(pendingMarkAll)
+      .mockRejectedValueOnce(new Error("Server error"));
+
+    render(<NotificationsPage />);
+
+    const readAllBtn = await screen.findByRole("button", { name: /read all/i });
+    fireEvent.click(readAllBtn);
+    fireEvent.click(readAllBtn);
+
+    expect(NotificationApiModule.markAllNotificationsRead).toHaveBeenCalledTimes(1);
+    resolveMarkAll();
+
     await waitFor(() => {
-      expect(mockClearUnread).toHaveBeenCalled();
-      expect(NotificationApiModule.markAllNotificationsRead).toHaveBeenCalled();
+      expect(mockClearUnread).toHaveBeenCalledTimes(1);
+      expect(screen.getByText("You're all caught up")).toBeInTheDocument();
     });
   });
 
@@ -186,5 +222,17 @@ describe("NotificationsPage", () => {
 
     expect(screen.getByText("New Mock Test 🎯")).toBeInTheDocument();
     expect(screen.queryByText("Rahul challenged you")).not.toBeInTheDocument();
+  });
+
+  it("does not fetch notifications while auth is loading or user is signed out", () => {
+    authState.loading = true;
+    const { rerender } = render(<NotificationsPage />);
+    expect(NotificationApiModule.fetchNotifications).not.toHaveBeenCalled();
+
+    authState.loading = false;
+    authState.user = null;
+    authState.token = null;
+    rerender(<NotificationsPage />);
+    expect(NotificationApiModule.fetchNotifications).not.toHaveBeenCalled();
   });
 });

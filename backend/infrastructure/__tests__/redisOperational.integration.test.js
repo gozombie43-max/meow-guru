@@ -8,6 +8,7 @@ import { beforeAll, afterAll, describe, it, expect, vi } from 'vitest';
 import { connectMongoDB, disconnectMongoDB } from '../../config/mongodb.js';
 import { createSession } from '../../auth/sessions.js';
 import { migrate } from '../../migrations/runner.js';
+import { buildNormalizedQuestionFields } from '../../services/questions/questionNormalizer.js';
 import { queueConnection, startMaintenanceQueue, enqueueMaintenance, maintenanceQueueHealth } from '../maintenanceQueue.js';
 import { disposableRedis, freePort, ownedProcess, stopOwned, until, probeRedis } from './fixtures/redisFaultRuntime.js';
 
@@ -50,7 +51,10 @@ describe.skipIf(!process.env.REDIS_FAULT_TEST_BIN)('operational Redis faults on 
     token = (await createSession({ id: 'learner' })).token;
     logoutToken = (await createSession({ id: 'logout-user' })).token;
     adminToken = (await createSession({ id: 'admin-user' })).token;
-    await db.collection('questions').insertMany(Array.from({ length: 451 }, (_, index) => ({ id: `q${index}`, questionUid: uid(index), subject: 'mathematics', topic: 'percentages', exam: 'ssc-cgl', quizName: 'PYQ', question: `Question ${index}`, options: ['A', 'B'], correctAnswer: 0 })));
+    await db.collection('questions').insertMany(Array.from({ length: 451 }, (_, index) => {
+      const row = { id: `q${index}`, questionUid: uid(index), subject: 'mathematics', topic: 'percentages', exam: 'ssc-cgl', quizName: 'PYQ', question: `Question ${index}`, options: ['A', 'B'], correctAnswer: 0 };
+      return { ...row, ...buildNormalizedQuestionFields(row) };
+    }));
     cache = await disposableRedis(); queueRedis = await disposableRedis('noeviction');
     const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048, privateKeyEncoding: { type: 'pkcs8', format: 'pem' }, publicKeyEncoding: { type: 'spki', format: 'pem' } });
     environment = {
@@ -90,23 +94,31 @@ describe.skipIf(!process.env.REDIS_FAULT_TEST_BIN)('operational Redis faults on 
       await snapshot.set(key, JSON.stringify({ ...entry, freshUntil: Date.now() + 120000, staleUntil: Date.now() + 120000 }), { EX: 120 });
     }
     await snapshot.sendCommand(['SAVE']); snapshot.destroy();
-    await cache.stop();
-    const submission = randomUUID();
-    const answer = { method: 'POST', body: { answer: 0, questionUid: uid(0), topic: 'percentages', submissionId: submission }, idempotency: submission };
-    expect(await request(first, '/api/questions/q0/answer', answer)).toMatchObject({ status: 200, body: { isFirstTime: true } });
-    expect((await progress(second)).body.userProgress.percentages.userSolved).toBe(1);
-    expect((await request(second, '/api/training/dashboard?exam=ssc-cgl')).status).toBe(200);
-    // Another process retries the same HTTP mutation while Redis is absent.
-    expect((await request(second, '/api/questions/q0/answer', answer)).status).toBe(200);
-    expect(await db.collection('userQuestionProgress').countDocuments({ userId: 'learner' })).toBe(1);
-    expect((await request(first, '/auth/logout', { auth: logoutToken, method: 'POST' })).status).toBe(200);
-    expect((await request(second, '/api/training/capabilities', { auth: logoutToken })).status).toBe(401);
-    await db.collection('users').updateOne({ id: 'admin-user' }, { $set: { role: 'student' }, $inc: { authRevision: 1 } });
-    for (const instance of [first, second]) expect((await request(instance, '/api/questions/q0', { auth: adminToken, method: 'PUT', body: { question: 'Unauthorized' } })).status).toBe(403);
-    const resumed = await request(second, '/api/questions/session?topic=percentages&resumeIndex=240&limit=100');
-    expect(resumed.status).toBe(200); expect(resumed.body.startIndex).toBe(200);
-    expect(resumed.body.questions).toHaveLength(100); expect(resumed.body.questions[40]).toMatchObject({ id: 'q240', questionUid: uid(240), sessionAnchor: expect.any(String) });
-    await cache.start();
+    let cacheStopped = false;
+    let resumed;
+    try {
+      await cache.stop();
+      cacheStopped = true;
+      const submission = randomUUID();
+      const answer = { method: 'POST', body: { answer: 0, questionUid: uid(0), topic: 'percentages', submissionId: submission }, idempotency: submission };
+      expect(await request(first, '/api/questions/q0/answer', answer)).toMatchObject({ status: 200, body: { isFirstTime: true } });
+      expect((await progress(second)).body.userProgress.percentages.userSolved).toBe(1);
+      expect((await request(second, '/api/training/dashboard?exam=ssc-cgl')).status).toBe(200);
+      // Another process retries the same HTTP mutation while Redis is absent.
+      expect((await request(second, '/api/questions/q0/answer', answer)).status).toBe(200);
+      expect(await db.collection('userQuestionProgress').countDocuments({ userId: 'learner' })).toBe(1);
+      expect((await request(first, '/auth/logout', { auth: logoutToken, method: 'POST' })).status).toBe(200);
+      expect((await request(second, '/api/training/capabilities', { auth: logoutToken })).status).toBe(401);
+      await db.collection('users').updateOne({ id: 'admin-user' }, { $set: { role: 'student' }, $inc: { authRevision: 1 } });
+      for (const instance of [first, second]) expect((await request(instance, '/api/questions/q0', { auth: adminToken, method: 'PUT', body: { question: 'Unauthorized' } })).status).toBe(403);
+      resumed = await request(second, '/api/questions/session?topic=percentages&resumeIndex=240&limit=100');
+      expect(resumed.status).toBe(200); expect(resumed.body.startIndex).toBe(200);
+      expect(resumed.body.questions).toHaveLength(100); expect(resumed.body.questions[40]).toMatchObject({ id: 'q240', questionUid: uid(240), sessionAnchor: expect.any(String) });
+      await cache.start();
+      cacheStopped = false;
+    } finally {
+      if (cacheStopped) await cache.start();
+    }
     const restored = await probeRedis(cache.url); probes.push(restored);
     expect(JSON.parse(await restored.get(staleKeys[0])).value).toEqual([]);
     expect(await restored.pTTL(staleKeys[0])).toBeGreaterThan(0);
@@ -160,13 +172,20 @@ describe.skipIf(!process.env.REDIS_FAULT_TEST_BIN)('operational Redis faults on 
     const optional = await api(options);
     const critical = await api({ ...options, BATTLE_REDIS_CRITICAL: 'true' });
     await until(async () => (await request(optional, '/health')).body.dependencies.battle === 'healthy');
-    await cache.stop();
-    await until(async () => (await request(optional, '/health')).body.dependencies.battle === 'degraded');
-    expect((await request(optional, '/health')).status).toBe(200);
-    expect(await request(critical, '/health')).toMatchObject({ status: 503, body: { dependencies: { mongo: 'healthy', battle: 'degraded' } } });
-    expect((await request(optional, '/api/questions/session?topic=percentages&limit=10')).status).toBe(200);
-    expect((await request(optional, '/api/battle')).status).toBe(503);
-    await cache.start();
+    let cacheStopped = false;
+    try {
+      await cache.stop();
+      cacheStopped = true;
+      await until(async () => (await request(optional, '/health')).body.dependencies.battle === 'degraded');
+      expect((await request(optional, '/health')).status).toBe(200);
+      expect(await request(critical, '/health')).toMatchObject({ status: 503, body: { dependencies: { mongo: 'healthy', battle: 'degraded' } } });
+      expect((await request(optional, '/api/questions/session?topic=percentages&limit=10')).status).toBe(200);
+      expect((await request(optional, '/api/battle')).status).toBe(503);
+      await cache.start();
+      cacheStopped = false;
+    } finally {
+      if (cacheStopped) await cache.start();
+    }
     await until(async () => {
       const health = await request(critical, '/health');
       return health.status === 200 && health.body.dependencies.battle === 'healthy';

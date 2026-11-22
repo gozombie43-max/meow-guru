@@ -11,8 +11,11 @@ import {
 import { getMongoSlowQueryThresholdMs, logger, observeMongo } from '../../../infrastructure/logger.js';
 import { getHttpTimeoutConfig, listenServer } from '../../../infrastructure/httpListen.js';
 import { clearSharedLocalCaches } from '../../../infrastructure/tieredCache.js';
-import { migrate, migrations } from '../../../migrations/runner.js';
+import { isRetiredIndexCreate, migrate, migrations } from '../../../migrations/runner.js';
+import { sameKeySpec } from '../../../migrations/indexUtils.js';
 import * as migration027 from '../../../migrations/027-question-delivery-optimization.js';
+import * as migration028 from '../../../migrations/028-backfill-question-uids.js';
+import * as migration029 from '../../../migrations/029-load-readiness-indexes.js';
 import {
   buildNormalizedQuestionFields,
   deriveExamModeKey,
@@ -181,6 +184,14 @@ describe('Phase 2 MongoDB Optimization & Infrastructure Tuning', () => {
   let indexCountAfter027 = 0;
   let adaptiveIndexesBefore027 = 0;
   let adaptiveIndexesAfter027 = 0;
+  let indexCountBefore029 = 0;
+  let indexCountAfter029 = 0;
+  let battleProfilesBefore029 = 0;
+  let battleProfilesAfter029 = 0;
+  let notificationFeedBefore029 = 0;
+  let notificationFeedAfter029 = 0;
+  let examUpdatesBefore029 = 0;
+  let examUpdatesAfter029 = 0;
 
   beforeAll(async () => {
     vi.stubEnv('MONGO_MAX_POOL_SIZE', '64');
@@ -195,7 +206,9 @@ describe('Phase 2 MongoDB Optimization & Infrastructure Tuning', () => {
     await db.collection('questions').insertMany(buildSeedQuestions());
 
     // Run migrations 001..026, record baseline index counts.
-    const priorSteps = migrations.filter(step => step.id !== migration027.id);
+    const priorSteps = migrations.filter(
+      step => step.id !== migration027.id && step.id !== migration028.id && step.id !== migration029.id,
+    );
     await migrate(db, priorSteps);
     indexCountBefore027 = (await db.collection('questions').listIndexes().toArray()).length;
     adaptiveIndexesBefore027 = (await db.collection('adaptiveQuizSessions').listIndexes().toArray()).length;
@@ -204,6 +217,19 @@ describe('Phase 2 MongoDB Optimization & Infrastructure Tuning', () => {
     await migrate(db, [migration027]);
     indexCountAfter027 = (await db.collection('questions').listIndexes().toArray()).length;
     adaptiveIndexesAfter027 = (await db.collection('adaptiveQuizSessions').listIndexes().toArray()).length;
+
+    // Run migration 028, record pre-029 counts, then run 029 via runner.
+    await migrate(db, [migration028]);
+    indexCountBefore029 = (await db.collection('questions').listIndexes().toArray()).length;
+    battleProfilesBefore029 = (await db.collection('battleProfiles').listIndexes().toArray()).length;
+    notificationFeedBefore029 = (await db.collection('notificationFeed').listIndexes().toArray()).length;
+    examUpdatesBefore029 = (await db.collection('examUpdates').listIndexes().toArray()).length;
+
+    await migrate(db, [migration029]);
+    indexCountAfter029 = (await db.collection('questions').listIndexes().toArray()).length;
+    battleProfilesAfter029 = (await db.collection('battleProfiles').listIndexes().toArray()).length;
+    notificationFeedAfter029 = (await db.collection('notificationFeed').listIndexes().toArray()).length;
+    examUpdatesAfter029 = (await db.collection('examUpdates').listIndexes().toArray()).length;
   }, 120000);
 
   afterAll(async () => {
@@ -248,11 +274,13 @@ describe('Phase 2 MongoDB Optimization & Infrastructure Tuning', () => {
       warnSpy.mockRestore();
     }
 
-    expect(getHttpTimeoutConfig({})).toEqual({ keepAliveTimeout: 65000, headersTimeout: 66000 });
-    expect(getHttpTimeoutConfig({ HTTP_KEEP_ALIVE_TIMEOUT_MS: '70000', HTTP_HEADERS_TIMEOUT_MS: '60000' })).toEqual({
-      keepAliveTimeout: 70000,
-      headersTimeout: 71000,
-    });
+    expect(getHttpTimeoutConfig({})).toEqual(expect.objectContaining({ keepAliveTimeout: 65000, headersTimeout: 66000 }));
+    expect(getHttpTimeoutConfig({ HTTP_KEEP_ALIVE_TIMEOUT_MS: '70000', HTTP_HEADERS_TIMEOUT_MS: '60000' })).toEqual(
+      expect.objectContaining({
+        keepAliveTimeout: 70000,
+        headersTimeout: 71000,
+      }),
+    );
 
     const httpServer = createServer((_req, res) => res.end('ok'));
     await listenServer(httpServer, 0, '127.0.0.1');
@@ -352,12 +380,22 @@ describe('Phase 2 MongoDB Optimization & Infrastructure Tuning', () => {
     });
     expect(missingAfter).toBe(0);
 
-    // Index count on questions dropped cleanly (40 -> 36) and retired adaptiveQuizSessions indexes removed.
+    // Index count on questions dropped cleanly (40 -> 36) in 027, then 36 -> 37 in 029
+    // (+3 ESR ring-scan indexes, -2 ESR-broken 027 indexes) and strict-prefix duplicates dropped.
     expect(indexCountBefore027).toBe(40);
     expect(indexCountAfter027).toBeLessThan(indexCountBefore027);
     expect(indexCountAfter027).toBe(36);
     expect(adaptiveIndexesBefore027).toBe(3);
     expect(adaptiveIndexesAfter027).toBe(1);
+
+    expect(indexCountBefore029).toBe(36);
+    expect(indexCountAfter029).toBe(37);
+    expect(battleProfilesBefore029).toBe(5);
+    expect(battleProfilesAfter029).toBe(5);
+    expect(notificationFeedBefore029).toBe(7);
+    expect(notificationFeedAfter029).toBe(6);
+    expect(examUpdatesBefore029).toBe(5);
+    expect(examUpdatesAfter029).toBe(4);
 
     const questionIndexNames = (await questions.listIndexes().toArray()).map(idx => idx.name);
     expect(questionIndexNames).toEqual(
@@ -365,16 +403,31 @@ describe('Phase 2 MongoDB Optimization & Infrastructure Tuning', () => {
         'questions_examMode_topic_mode_id',
         'questions_topic_mode_examKey_id',
         'questions_topic_mode_conceptKey_id',
-        'questions_topic_mode_selection_id',
-        'questions_examMode_subject_mode_selection_id',
+        'questions_selection_id',
+        'questions_topic_selection_id',
+        'questions_examMode_subject_selection_id',
         'questions_topic_chapterKey_mode_id',
         'questions_topicGroupKey_mode_id',
       ]),
     );
+    expect(questionIndexNames).not.toContain('questions_topic_mode_selection_id');
+    expect(questionIndexNames).not.toContain('questions_examMode_subject_mode_selection_id');
     expect(questionIndexNames).not.toContain('topic_1');
     expect(questionIndexNames).not.toContain('subject_1');
     expect(questionIndexNames).not.toContain('training_quality_candidates');
     expect(questionIndexNames).not.toContain('training_topic_candidates');
+
+    const battleProfileIndexes = await db.collection('battleProfiles').listIndexes().toArray();
+    expect(battleProfileIndexes.some(idx => sameKeySpec(idx.key, { rating: -1, wins: -1, gamesPlayed: -1 }))).toBe(true);
+    expect(battleProfileIndexes.some(idx => sameKeySpec(idx.key, { rating: -1, wins: -1 }))).toBe(false);
+
+    const notificationFeedIndexes = await db.collection('notificationFeed').listIndexes().toArray();
+    expect(notificationFeedIndexes.some(idx => sameKeySpec(idx.key, { audience: 1, userId: 1, createdAt: -1, _id: -1 }))).toBe(true);
+    expect(notificationFeedIndexes.some(idx => sameKeySpec(idx.key, { audience: 1, userId: 1, createdAt: -1 }))).toBe(false);
+
+    const examUpdateIndexes = await db.collection('examUpdates').listIndexes().toArray();
+    expect(examUpdateIndexes.some(idx => sameKeySpec(idx.key, { publishedAt: -1, _id: -1 }))).toBe(true);
+    expect(examUpdateIndexes.some(idx => sameKeySpec(idx.key, { publishedAt: -1 }))).toBe(false);
 
     const uqpIndexNames = (await db.collection('userQuestionProgress').listIndexes().toArray()).map(idx => idx.name);
     expect(uqpIndexNames).toContain('userQuestionProgress_user_topic');
@@ -388,9 +441,13 @@ describe('Phase 2 MongoDB Optimization & Infrastructure Tuning', () => {
       ]),
     );
 
-    // Idempotent re-run of migration 027 (and full runner replay must NOT rebuild/re-drop retired indexes).
+    // Idempotent re-run of migration 027 & 029 (and full runner replay must NOT rebuild/re-drop retired indexes).
     await expect(migration027.up(db)).resolves.toBeUndefined();
-    expect((await questions.listIndexes().toArray()).length).toBe(indexCountAfter027);
+    await expect(migration029.up(db)).resolves.toBeUndefined();
+    expect((await questions.listIndexes().toArray()).length).toBe(indexCountAfter029);
+    expect((await db.collection('battleProfiles').listIndexes().toArray()).length).toBe(battleProfilesAfter029);
+    expect((await db.collection('notificationFeed').listIndexes().toArray()).length).toBe(notificationFeedAfter029);
+    expect((await db.collection('examUpdates').listIndexes().toArray()).length).toBe(examUpdatesAfter029);
 
     const origCreateIndex = Collection.prototype.createIndex;
     const createIndexCalls = [];
@@ -403,14 +460,14 @@ describe('Phase 2 MongoDB Optimization & Infrastructure Tuning', () => {
       await expect(migrate(db)).resolves.toBeUndefined();
       expect(dropIndexSpy).not.toHaveBeenCalled();
       const rebuiltRetired = createIndexCalls.filter(({ collection, key, opts }) =>
-        migration027.isRetiredIndexCreate(collection, key, opts),
+        isRetiredIndexCreate(collection, key, opts),
       );
       expect(rebuiltRetired).toHaveLength(0);
     } finally {
       createIndexSpy.mockRestore();
       dropIndexSpy.mockRestore();
     }
-    expect((await questions.listIndexes().toArray()).length).toBe(indexCountAfter027);
+    expect((await questions.listIndexes().toArray()).length).toBe(indexCountAfter029);
   });
 
   it('uses IXSCAN with zero COLLSCAN, zero blocking SORT, and totalDocsExamined <= limit + 1 on core delivery queries', async () => {
@@ -438,16 +495,25 @@ describe('Phase 2 MongoDB Optimization & Infrastructure Tuning', () => {
         expectedIndex: 'questions_topic_mode_conceptKey_id',
       },
       {
-        label: 'topic + mode + selectionKey ring-scan',
-        filter: { topicKey: 'percentages', modeKey: 'concept', selectionKey: { $gte: '4000000000000000' } },
+        label: 'unfiltered selectionKey ring-scan',
+        filter: { modeKey: { $ne: 'studyMode' }, selectionKey: { $gte: '4000000000000000' } },
         sort: { selectionKey: 1, _id: 1 },
-        expectedIndex: 'questions_topic_mode_selection_id',
+        expectedIndex: 'questions_selection_id',
+        maxAllowedExamined: limit + 1 + 10,
       },
       {
-        label: 'examMode + subject + mode + selectionKey ring-scan',
-        filter: { examModeKey: 'ssc', subjectKey: 'mathematics', modeKey: 'concept', selectionKey: { $gte: '4000000000000000' } },
+        label: 'topic + non-studyMode + selectionKey ring-scan',
+        filter: { topicKey: 'percentages', modeKey: { $ne: 'studyMode' }, selectionKey: { $gte: '4000000000000000' } },
         sort: { selectionKey: 1, _id: 1 },
-        expectedIndex: 'questions_examMode_subject_mode_selection_id',
+        expectedIndex: 'questions_topic_selection_id',
+        maxAllowedExamined: limit + 1 + 10,
+      },
+      {
+        label: 'examMode + subject + non-studyMode + selectionKey ring-scan',
+        filter: { examModeKey: 'ssc', subjectKey: 'mathematics', modeKey: { $ne: 'studyMode' }, selectionKey: { $gte: '4000000000000000' } },
+        sort: { selectionKey: 1, _id: 1 },
+        expectedIndex: 'questions_examMode_subject_selection_id',
+        maxAllowedExamined: limit + 1 + 10,
       },
       {
         label: 'GA topicGroupKey + mode cursor',
@@ -480,7 +546,7 @@ describe('Phase 2 MongoDB Optimization & Infrastructure Tuning', () => {
       expect(
         plan.executionStats.totalDocsExamined,
         `${testCase.label} totalDocsExamined`,
-      ).toBeLessThanOrEqual(maxAllowedExamined);
+      ).toBeLessThanOrEqual(testCase.maxAllowedExamined ?? maxAllowedExamined);
     }
   });
 
@@ -724,6 +790,277 @@ describe('Phase 2 MongoDB Optimization & Infrastructure Tuning', () => {
       expect(questionFindCalls.length).toBe(1);
     } finally {
       findSpy.mockRestore();
+    }
+  });
+
+  it('proves IXSCAN, zero COLLSCAN, and zero blocking SORT via explain(executionStats) across all audited question, session, progress, mock attempt, training, and auth queries', async () => {
+    const questions = db.collection('questions');
+    const quizSessions = db.collection('quizSessions');
+    const uqp = db.collection('userQuestionProgress');
+    const mockAttempts = db.collection('mockAttempts');
+    const users = db.collection('users');
+
+    const assertExplainIxscan = async (cursor, { label, expectedIndex, maxDocsExamined, allowSort = false }) => {
+      const plan = await cursor.explain('executionStats');
+      const stages = collectStages(plan.queryPlanner.winningPlan);
+      const indexNames = collectIndexNames(plan.queryPlanner.winningPlan);
+      expect(
+        stages.some(stage => stage === 'IXSCAN' || stage === 'EXPRESS_IXSCAN'),
+        `${label} stages (${JSON.stringify(stages)})`,
+      ).toBe(true);
+      expect(stages, `${label} must not COLLSCAN`).not.toContain('COLLSCAN');
+      if (!allowSort) {
+        expect(stages, `${label} must not blocking SORT`).not.toContain('SORT');
+      }
+      if (expectedIndex) {
+        expect(indexNames, `${label} expected index`).toContain(expectedIndex);
+      }
+      if (maxDocsExamined !== undefined) {
+        expect(plan.executionStats.totalDocsExamined, `${label} totalDocsExamined`).toBeLessThanOrEqual(maxDocsExamined);
+      }
+      return plan;
+    };
+
+    const uid1 = `q_${String(1).padStart(32, '0')}`;
+    const uid2 = `q_${String(2).padStart(32, '0')}`;
+    const uid3 = `q_${String(3).padStart(32, '0')}`;
+    const now = new Date('2026-11-22T10:00:00Z');
+    const future = new Date('2026-11-22T12:00:00Z');
+
+    try {
+      // Populate representative training metadata on existing math_* docs without changing topic counts,
+      // plus >= 15 realistic docs + decoys in quizSessions, userQuestionProgress, mockAttempts, and users.
+      const mathIds = Array.from({ length: 25 }, (_, i) => `math_${i}`);
+      await questions.updateMany(
+        { id: { $in: mathIds } },
+        {
+          $set: {
+            trainingExamSlugs: ['ssc-cgl'],
+            trainingEligible: true,
+            trainingMetadataVersion: 1,
+            trainingSubjectSlug: 'mathematics',
+            trainingTopicSlug: 'percentages',
+            trainingCandidate: { difficulty: 0.5, discrimination: 0.7 },
+            updatedAt: now,
+          },
+        },
+      );
+
+      await quizSessions.insertMany(
+        Array.from({ length: 16 }, (_, i) => ({
+          sessionId: `qs_exp_${i + 1}`,
+          userId: i < 8 ? 'u_exp_1' : 'u_exp_2',
+          status: i % 2 === 0 ? 'in_progress' : 'completed',
+          updatedAt: new Date(now.getTime() + i * 1000),
+          expiresAt: future,
+        })),
+      );
+
+      await uqp.insertMany([
+        ...Array.from({ length: 15 }, (_, i) => ({
+          userId: i < 8 ? 'u_exp_1' : 'u_exp_2',
+          questionUid: `q_${String(i + 1).padStart(32, '0')}`,
+          topic: 'percentages',
+          attempts: 1,
+        })),
+        { userId: 'u_exp_legacy', topic: 'percentages', attempts: 1 }, // decoy missing questionUid
+      ]);
+
+      await mockAttempts.insertMany([
+        ...Array.from({ length: 12 }, (_, i) => ({
+          id: `att_exp_${i + 1}`,
+          userId: i < 6 ? 'u_exp_1' : 'u_exp_2',
+          startKey: `sk_${i + 1}`,
+          status: 'in_progress',
+        })),
+        ...Array.from({ length: 4 }, (_, i) => ({
+          id: `att_nostart_${i + 1}`,
+          userId: 'u_exp_1',
+          status: 'completed',
+        })),
+      ]);
+
+      await users.insertMany([
+        ...Array.from({ length: 12 }, (_, i) => ({
+          id: `u_exp_${i + 1}`,
+          accountRecord: true,
+          authProvider: 'local',
+          email: `exp${i + 1}@test.local`,
+          emailNormalized: `exp${i + 1}@test.local`,
+          emailVerified: i % 2 === 0,
+          emailVerificationTokenHash: `vhash_${i + 1}`,
+          emailVerificationExpiresAt: future,
+          passwordResetTokenHash: `rhash_${i + 1}`,
+          passwordResetExpiresAt: future,
+        })),
+        ...Array.from({ length: 4 }, (_, i) => ({
+          id: `lock_exp_${i + 1}`,
+          type: 'email_lock',
+          email: `lock${i + 1}@test.local`,
+        })),
+      ]);
+
+      // 1. hydrateQuestionBatch ($in + $type: 'string')
+      await assertExplainIxscan(
+        questions.find({ questionUid: { $in: [uid1, uid2, uid3], $type: 'string' } }, { projection: PUBLIC_QUESTION_PROJECTION }),
+        { label: 'questions hydrateQuestionBatch', expectedIndex: 'question_canonical_identity', maxDocsExamined: 3 },
+      );
+
+      // 2. resolveQuestion (single uid + $type: 'string', unscoped & examMode-scoped)
+      await assertExplainIxscan(
+        questions.find({ questionUid: { $eq: uid1, $type: 'string' } }).limit(1),
+        { label: 'questions resolveQuestion unscoped', expectedIndex: 'question_canonical_identity', maxDocsExamined: 1 },
+      );
+      await assertExplainIxscan(
+        questions.find({ $and: [{ questionUid: { $eq: uid1, $type: 'string' } }, questionExamModeCondition('ssc')] }).limit(1),
+        { label: 'questions resolveQuestion examMode-scoped', expectedIndex: 'question_canonical_identity', maxDocsExamined: 1 },
+      );
+
+      // 3. fetchQuestionsRevealWindow ($or of $type: 'string' predicates)
+      await assertExplainIxscan(
+        questions.find({
+          $or: [
+            { questionUid: { $eq: uid1, $type: 'string' } },
+            { questionUid: { $eq: uid2, $type: 'string' } },
+          ],
+        }).limit(24),
+        { label: 'questions fetchQuestionsRevealWindow', expectedIndex: 'question_canonical_identity', maxDocsExamined: 2 },
+      );
+
+      // 4. fetchPracticeTest (exact normalized examModeKey + subjectKey + non-studyMode + selectionKey)
+      await assertExplainIxscan(
+        questions
+          .find({
+            $and: [
+              { subjectKey: 'mathematics' },
+              { examModeKey: 'ssc' },
+              { modeKey: { $ne: 'studyMode' } },
+              { selectionKey: { $gte: '4000000000000000' } },
+            ],
+          })
+          .sort({ selectionKey: 1, _id: 1 })
+          .limit(30),
+        { label: 'questions fetchPracticeTest', expectedIndex: 'questions_examMode_subject_selection_id', maxDocsExamined: 40 },
+      );
+
+      // 5. quizSessions lookups
+      await assertExplainIxscan(
+        quizSessions.find({ sessionId: 'qs_exp_1' }).limit(1),
+        { label: 'quizSessions findQuizSessionById', expectedIndex: 'quizSessions_session_id', maxDocsExamined: 1 },
+      );
+      await assertExplainIxscan(
+        quizSessions.find({ userId: 'u_exp_1', status: 'in_progress' }).sort({ updatedAt: -1 }).limit(10),
+        { label: 'quizSessions user status updatedAt', expectedIndex: 'quizSessions_user_status_updated', maxDocsExamined: 10 },
+      );
+
+      // 6. userQuestionProgress (recordQuestionAnswerInTransaction)
+      await assertExplainIxscan(
+        uqp.find({ userId: 'u_exp_1', questionUid: { $eq: uid1, $type: 'string' } }).limit(1),
+        { label: 'userQuestionProgress canonical lookup', expectedIndex: 'canonical_user_question_progress', maxDocsExamined: 1 },
+      );
+
+      // 7. mockAttempts (getAttemptByStartKey)
+      await assertExplainIxscan(
+        mockAttempts.find({ userId: 'u_exp_1', startKey: { $eq: 'sk_1', $type: 'string' } }).limit(1),
+        { label: 'mockAttempts getAttemptByStartKey', expectedIndex: 'mock_start_idempotency', maxDocsExamined: 1 },
+      );
+
+      // 8. trainingRepository (trainingQuestionPool standard queries + dueTrainingQuestions)
+      const trainingBase = {
+        $and: [
+          { trainingExamSlugs: 'ssc-cgl', trainingEligible: true, trainingMetadataVersion: 1 },
+          { trainingSubjectSlug: 'mathematics' },
+        ],
+      };
+      await assertExplainIxscan(
+        questions.find(trainingBase).sort({ updatedAt: -1, _id: 1 }).limit(20),
+        { label: 'trainingQuestionPool latest', expectedIndex: 'training_indexed_latest', maxDocsExamined: 20 },
+      );
+      await assertExplainIxscan(
+        questions.find(trainingBase).sort({ updatedAt: 1, _id: 1 }).limit(20),
+        { label: 'trainingQuestionPool oldest', expectedIndex: 'training_indexed_oldest', maxDocsExamined: 20 },
+      );
+      await assertExplainIxscan(
+        questions.find(trainingBase).sort({ 'trainingCandidate.difficulty': -1, 'trainingCandidate.discrimination': -1, updatedAt: -1 }).limit(20),
+        { label: 'trainingQuestionPool quality', expectedIndex: 'training_indexed_quality', maxDocsExamined: 20 },
+      );
+      await assertExplainIxscan(
+        questions
+          .find({
+            $and: [
+              { trainingExamSlugs: 'ssc-cgl', trainingEligible: true, trainingMetadataVersion: 1 },
+              {
+                $or: [
+                  { questionUid: { $in: [uid1, uid2], $type: 'string' } },
+                  { id: { $in: ['math_0'] }, questionUid: { $exists: false } },
+                ],
+              },
+            ],
+          })
+          .limit(500),
+        { label: 'dueTrainingQuestions', maxDocsExamined: 3 },
+      );
+
+      // 9. users auth queries (authRegistrationRepository canonical + fallback + token hashes + identity)
+      await assertExplainIxscan(
+        users.find({
+          accountRecord: true,
+          emailNormalized: { $eq: 'exp1@test.local', $type: 'string' },
+          type: { $ne: 'email_lock' },
+        }).limit(2),
+        { label: 'users findUserByEmail canonical', expectedIndex: 'account_email_identity', maxDocsExamined: 1 },
+      );
+      await assertExplainIxscan(
+        users.find({
+          email: 'exp1@test.local',
+          type: { $ne: 'email_lock' },
+        }).limit(2),
+        { label: 'users findUserByEmail fallback', expectedIndex: 'email_1', maxDocsExamined: 1 },
+      );
+      await assertExplainIxscan(
+        users.find({
+          authProvider: 'local',
+          emailVerified: { $ne: true },
+          emailVerificationTokenHash: { $eq: 'vhash_2', $type: 'string' },
+          emailVerificationExpiresAt: { $gt: now },
+          type: { $ne: 'email_lock' },
+        }).limit(1),
+        { label: 'users verifyLocalUserEmailByTokenHash', expectedIndex: 'email_verification_token_lookup', maxDocsExamined: 1 },
+      );
+      await assertExplainIxscan(
+        users.find({
+          authProvider: 'local',
+          passwordResetTokenHash: { $eq: 'rhash_1', $type: 'string' },
+          passwordResetExpiresAt: { $gt: now },
+          type: { $ne: 'email_lock' },
+        }).limit(1),
+        { label: 'users consumePasswordResetToken', expectedIndex: 'password_reset_token_lookup', maxDocsExamined: 1 },
+      );
+      await assertExplainIxscan(
+        users.find({ id: 'u_exp_1', type: { $ne: 'email_lock' } }).limit(1),
+        { label: 'users user_identity_lookup', expectedIndex: 'user_identity_lookup', maxDocsExamined: 1 },
+      );
+    } finally {
+      await Promise.all([
+        questions.updateMany(
+          { id: { $regex: /^math_/ } },
+          {
+            $unset: {
+              trainingExamSlugs: '',
+              trainingEligible: '',
+              trainingMetadataVersion: '',
+              trainingSubjectSlug: '',
+              trainingTopicSlug: '',
+              trainingCandidate: '',
+              updatedAt: '',
+            },
+          },
+        ),
+        quizSessions.deleteMany({ sessionId: { $regex: /^qs_exp_/ } }),
+        uqp.deleteMany({ userId: { $in: ['u_exp_1', 'u_exp_2', 'u_exp_legacy'] } }),
+        mockAttempts.deleteMany({ id: { $regex: /^att_(exp|nostart)_/ } }),
+        users.deleteMany({ id: { $regex: /^(u_exp_|lock_exp_)/ } }),
+      ]);
     }
   });
 });

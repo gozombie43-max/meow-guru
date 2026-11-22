@@ -2,8 +2,11 @@ import 'dotenv/config';
 import { validateEnvironment } from './config/environment.js';
 import { getReleaseId } from './infrastructure/releaseInfo.js';
 import { sanitizedExporter } from './infrastructure/traceExporter.js';
+import { initSentry, flushSentry } from './infrastructure/sentry.js';
 
 validateEnvironment();
+
+let shutdownOtel = null;
 
 // Preload before any HTTP/Mongo/provider modules are imported. Export is opt-in.
 if (process.env.OTEL_ENABLED === 'true') {
@@ -32,5 +35,14 @@ if (process.env.OTEL_ENABLED === 'true') {
     ],
   });
   instance.start();
-  globalThis.__shutdownTelemetry = () => instance.shutdown();
+  shutdownOtel = () => instance.shutdown();
 }
+
+initSentry();
+
+globalThis.__shutdownTelemetry = async () => {
+  await Promise.allSettled([
+    shutdownOtel ? shutdownOtel() : Promise.resolve(),
+    flushSentry(),
+  ]);
+};

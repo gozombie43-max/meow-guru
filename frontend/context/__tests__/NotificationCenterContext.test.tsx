@@ -7,15 +7,10 @@ import {
 } from '../NotificationCenterContext';
 import * as AuthContextModule from '../AuthContext';
 import * as NotificationApiModule from '@/lib/api/notificationApi';
-
-const mockSocketOn = vi.fn();
-const mockSocketOff = vi.fn();
+import { getSocket } from '@/lib/socket';
 
 vi.mock('@/lib/socket', () => ({
-  getSocket: vi.fn(() => ({
-    on: mockSocketOn,
-    off: mockSocketOff,
-  })),
+  getSocket: vi.fn(),
   disconnectSocket: vi.fn(),
 }));
 
@@ -31,7 +26,7 @@ describe('NotificationCenterContext', () => {
     expect(typeof result.current.clearUnread).toBe('function');
   });
 
-  it('fetches unread count and listens to socket notification:new when user is authenticated', async () => {
+  it('fetches unread count via visibility-aware REST polling without opening a Socket.IO connection', async () => {
     vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
       user: { id: 'user_1', name: 'User 1', email: 'u1@test.com', progress: {}, bookmarks: [] },
       token: 'jwt_1',
@@ -54,7 +49,7 @@ describe('NotificationCenterContext', () => {
       expect(result.current.unreadCount).toBe(3);
     });
 
-    expect(mockSocketOn).toHaveBeenCalledWith('notification:new', expect.any(Function));
+    expect(getSocket).not.toHaveBeenCalled();
   });
 
   it('updates unread count when decrementUnread and clearUnread are called', async () => {

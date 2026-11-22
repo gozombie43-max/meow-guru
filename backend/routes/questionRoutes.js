@@ -8,6 +8,7 @@ import multer from 'multer';
 import questionController from '../controllers/questionController.js';
 import adminAuth from "../middleware/auth.js";
 import { protect } from "../middleware/protect.js";
+import { validateParams } from "../middleware/validation.js";
 import { quizAnswerCommandSchema } from '@meow/contracts/progress';
 import { submitQuizAnswer } from '../services/quizAnswerService.js';
 import { fetchConceptGroupingStatus } from '../services/questions/conceptGroupService.js';
@@ -15,6 +16,18 @@ import { runtimeLog } from '../infrastructure/runtimeLog.js';
 
 const router = express.Router();
 router.use(questionReadLimiter);
+
+const questionIdParamsSchema = z.object({
+  id: z.string().trim().min(1).max(200),
+});
+
+const conceptGroupParamsSchema = z.object({
+  fingerprint: z.string().trim().min(1).max(128),
+});
+
+const topicCountsQuerySchema = z.object({
+  subject: z.string().trim().max(200).optional(),
+});
 
 const practiceTestQuerySchema = z.object({
   subject: z.string().trim().max(200).optional(),
@@ -54,13 +67,18 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (!file.mimetype || !file.mimetype.startsWith('image/')) {
-      return cb(new Error('Only image files are allowed'));
+      return cb(
+        Object.assign(new Error('Only image files are allowed'), {
+          statusCode: 400,
+          code: 'INVALID_UPLOAD_FILE_TYPE',
+        }),
+      );
     }
     return cb(null, true);
   },
 });
 
-const questionUpload = upload.fields([
+const rawQuestionUpload = upload.fields([
   { name: 'questionImage', maxCount: 1 },
   { name: 'optionAImage', maxCount: 1 },
   { name: 'optionBImage', maxCount: 1 },
@@ -68,6 +86,17 @@ const questionUpload = upload.fields([
   { name: 'optionDImage', maxCount: 1 },
   { name: 'solutionImage', maxCount: 1 },
 ]);
+
+const questionUpload = (req, res, next) => {
+  rawQuestionUpload(req, res, (err) => {
+    if (!err) return next();
+    if (err instanceof multer.MulterError || err.code === 'INVALID_UPLOAD_FILE_TYPE') {
+      const status = err.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
+      return res.status(status).json({ error: err.message || 'Upload failed' });
+    }
+    return next(err);
+  });
+};
 
 // ── Specific named routes FIRST (before /:id) ──────────
 
@@ -85,7 +114,7 @@ router.post(['/image-zip', '/admin/image-zip'], uploadLimiter, adminAuth, async 
 });
 router.post('/bulk-delete', adminAuth, questionController.bulkDeleteQuestions);
 router.post('/check-duplicates', adminAuth, questionController.checkDuplicates);
-router.get('/topic-counts', async (req, res) => {
+router.get('/topic-counts', validateQuerySafe(topicCountsQuerySchema), async (req, res) => {
   try {
     const snapshot = await fetchPublicTopicCountSnapshot(req.query.subject);
     res.set('Cache-Control', 'no-cache');
@@ -106,7 +135,7 @@ router.get('/session', questionController.getQuestionsSession);
 router.post('/session', questionController.getQuestionsSession);
 router.post('/prefetch-reveal', protect, questionController.prefetchQuestionsReveal);
 router.get('/meta', questionController.getQuestionsMeta);
-router.get('/concept-groups/:fingerprint', async (req, res) => {
+router.get('/concept-groups/:fingerprint', validateParams(conceptGroupParamsSchema), async (req, res) => {
   try {
     res.set('Cache-Control', 'no-store');
     res.json(await fetchConceptGroupingStatus(req.params.fingerprint));
@@ -142,19 +171,10 @@ router.get('/', questionController.getQuestions);
 
 // ── Param routes LAST ───────────────────────────────────
 
-router.post('/:id/answer', protect, idempotency('questions.answer'), questionController.submitAnswer);
-router.get('/:id', questionController.getQuestionById);
-router.put('/:id', adminAuth, questionController.updateQuestion);
-router.patch('/:id', adminAuth, questionController.updateQuestion);
-router.delete('/:id', adminAuth, questionController.deleteQuestion);
-
-// ── Error handler ───────────────────────────────────────
-
-router.use((err, _req, res, _next) => {
-  if (err) {
-    return res.status(400).json({ error: err.message || 'Upload failed' });
-  }
-  return res.status(500).json({ error: 'Upload failed' });
-});
+router.post('/:id/answer', protect, validateParams(questionIdParamsSchema), idempotency('questions.answer'), questionController.submitAnswer);
+router.get('/:id', validateParams(questionIdParamsSchema), questionController.getQuestionById);
+router.put('/:id', adminAuth, validateParams(questionIdParamsSchema), questionController.updateQuestion);
+router.patch('/:id', adminAuth, validateParams(questionIdParamsSchema), questionController.updateQuestion);
+router.delete('/:id', adminAuth, validateParams(questionIdParamsSchema), questionController.deleteQuestion);
 
 export default router;
