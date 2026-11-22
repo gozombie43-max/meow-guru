@@ -292,7 +292,7 @@ export async function runPreflight(options = {}) {
     env.K6_ALLOW_STAGING = 'true';
   }
 
-  let peakVus = 5;
+  let peakVus;
   try {
     peakVus = getStageProfile(effectiveProfileName, env).peakVus;
   } catch {

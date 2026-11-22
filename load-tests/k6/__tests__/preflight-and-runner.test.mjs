@@ -170,7 +170,7 @@ test('runPreflight fails safely on production targets, unapproved staging, bad a
       profile: 'smoke',
       baseUrl,
       execCommand: fakeK6Exec,
-      env: { K6_AUTH_TOKEN: 'tok-abc-12345' },
+      env: { K6_AUTH_TOKEN: 'dummy-token' },
     });
     assert.equal(optionalRedis.passed, true);
     assert.ok(optionalRedis.checks[8].warning);
@@ -181,7 +181,7 @@ test('runPreflight fails safely on production targets, unapproved staging, bad a
       baseUrl,
       requireRedis: true,
       execCommand: fakeK6Exec,
-      env: { K6_AUTH_TOKEN: 'tok-abc-12345' },
+      env: { K6_AUTH_TOKEN: 'dummy-token' },
     });
     assert.equal(requiredRedis.passed, false);
     assert.equal(requiredRedis.checks[8].status, 'FAIL');
@@ -194,7 +194,7 @@ test('runPreflight fails safely on production targets, unapproved staging, bad a
       profile: 'smoke',
       baseUrl,
       execCommand: fakeK6Exec,
-      env: { K6_AUTH_TOKEN: 'tok-abc-12345' },
+      env: { K6_AUTH_TOKEN: 'dummy-token' },
     });
     assert.equal(degradedRedis.passed, false);
     assert.equal(degradedRedis.checks[8].status, 'FAIL');
