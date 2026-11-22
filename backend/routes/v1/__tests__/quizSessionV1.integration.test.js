@@ -950,6 +950,7 @@ describe('Phase 4 & Phase 6: Standardized /api/v1/quiz/sessions Delivery API', (
     const storedSession = await db.collection('quizSessions').findOne({ sessionId: postBackfillSession.sessionId });
     expect(storedSession.legacyQuestionDocIds).toBeUndefined();
 
+    const findOneSpy = vi.spyOn(Collection.prototype, 'findOne');
     const postBackfillAnswer = await api(`/api/v1/quiz/sessions/${postBackfillSession.sessionId}/answers`, {
       method: 'POST',
       headers: { 'Idempotency-Key': 'post_backfill_ans_01' },
@@ -957,5 +958,52 @@ describe('Phase 4 & Phase 6: Standardized /api/v1/quiz/sessions Delivery API', (
     });
     expect(postBackfillAnswer.status).toBe(200);
     expect((await postBackfillAnswer.json()).evaluation).toMatchObject({ isCorrect: true, correct: 1 });
+
+    // Confirm loadServerAnswerKey uses $type: 'string' so MongoDB uses the partial question_canonical_identity index.
+    const answerKeyQueryFilter = findOneSpy.mock.calls.find(
+      ([filter]) => filter?.questionUid && typeof filter.questionUid === 'object',
+    )?.[0];
+    findOneSpy.mockRestore();
+    expect(answerKeyQueryFilter).toEqual({
+      questionUid: { $eq: expectedStagingUid, $type: 'string' },
+    });
+
+    const singlePlan = await db
+      .collection('questions')
+      .find(answerKeyQueryFilter)
+      .limit(1)
+      .explain('queryPlanner');
+    expect(JSON.stringify(singlePlan.queryPlanner.winningPlan)).toContain('"stage":"IXSCAN"');
+    expect(JSON.stringify(singlePlan.queryPlanner.winningPlan)).toContain(
+      '"indexName":"question_canonical_identity"',
+    );
+
+    const postBackfillSubmit = await api(`/api/v1/quiz/sessions/${postBackfillSession.sessionId}/submit`, {
+      method: 'POST',
+    });
+    expect(postBackfillSubmit.status).toBe(200);
+
+    clearSharedLocalCaches();
+    redisState.store.clear();
+    const findSpy = vi.spyOn(Collection.prototype, 'find');
+    const postBackfillResult = await api(`/api/v1/quiz/sessions/${postBackfillSession.sessionId}/result`);
+    expect(postBackfillResult.status).toBe(200);
+
+    const batchKeyQueryFilter = findSpy.mock.calls.find(
+      ([filter]) => filter?.questionUid && Array.isArray(filter.questionUid.$in),
+    )?.[0];
+    findSpy.mockRestore();
+    expect(batchKeyQueryFilter).toEqual({
+      questionUid: { $in: expect.arrayContaining([expectedStagingUid]), $type: 'string' },
+    });
+
+    const batchPlan = await db
+      .collection('questions')
+      .find(batchKeyQueryFilter)
+      .explain('queryPlanner');
+    expect(JSON.stringify(batchPlan.queryPlanner.winningPlan)).toContain('"stage":"IXSCAN"');
+    expect(JSON.stringify(batchPlan.queryPlanner.winningPlan)).toContain(
+      '"indexName":"question_canonical_identity"',
+    );
   });
 });
