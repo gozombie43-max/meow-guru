@@ -1,0 +1,23 @@
+# Replace the upstream blocks in meow-api.conf with these only after
+# all three API processes are running and /live returns HTTP 200 on each port.
+#
+# Same VPS: use 127.0.0.1:10000, :10001, :10002.
+# Separate VPSs: use private-network IPs, with ports reachable only from Nginx.
+#
+# REST uses least_conn. Socket.IO uses ip_hash so a polling session continues
+# to reach the same API process when WebSocket transport is unavailable.
+
+upstream meow_api_http {
+    least_conn;
+    server 127.0.0.1:10000 max_fails=2 fail_timeout=10s;
+    server 127.0.0.1:10001 max_fails=2 fail_timeout=10s;
+    server 127.0.0.1:10002 max_fails=2 fail_timeout=10s;
+    keepalive 96;
+}
+
+upstream meow_api_socket {
+    ip_hash;
+    server 127.0.0.1:10000 max_fails=2 fail_timeout=10s;
+    server 127.0.0.1:10001 max_fails=2 fail_timeout=10s;
+    server 127.0.0.1:10002 max_fails=2 fail_timeout=10s;
+}
